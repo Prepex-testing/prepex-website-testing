@@ -1,26 +1,146 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #faf7f2;
+  --surface: #ffffff;
+  --ink: #1a1a4e;
+  --brand: #1a1a4e;
+  --body-text: #333333;
+  --muted: #666666;
+  --cta: #ff7a59;
+  --tint: #eff2fe;
+  --tint-strong: #eef0f8;
+  --warning: #d68910;
+  --warning-bg: rgb(214 137 16 / 0.1);
+  --success: #16a34a;
+  --success-bg: #f0fdf4;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --info: #7e22ce;
+  --info-bg: #f3e8ff;
+  --chart-1: #1a1a4e;
+  --chart-2: #818cf8;
+  --chart-3: #93c5fd;
+  --chart-recovery: #fdba74;
+  --focus-ring: rgb(255 122 89 / 0.5);
+
+  --shadow-hover: 0 2px 8px rgb(26 26 78 / 0.08);
+  --shadow-modal: 0 8px 24px rgb(26 26 78 / 0.12);
+}
+
+[data-theme="dark"] {
+  --background: #14143a;
+  --surface: #1e1e4d;
+  --ink: #f5f6fb;
+  --brand: #6d6dc4;
+  --body-text: #e4e5f1;
+  --muted: #9a9cc4;
+  --cta: #ff8a6b;
+  --tint: #23234f;
+  --tint-strong: #2b2b63;
+  --warning: #f2b84d;
+  --warning-bg: rgb(242 184 77 / 0.15);
+  --success: #4ade80;
+  --success-bg: rgb(74 222 128 / 0.12);
+  --danger: #f87171;
+  --danger-bg: rgb(248 113 113 / 0.12);
+  --info: #d8b4fe;
+  --info-bg: rgb(216 180 254 / 0.15);
+  --chart-1: #aeb0f0;
+  --chart-2: #a5b4fc;
+  --chart-3: #7dd3fc;
+  --chart-recovery: #fdba74;
+  --focus-ring: rgb(255 138 107 / 0.6);
+
+  --shadow-hover: 0 2px 8px rgb(0 0 0 / 0.35);
+  --shadow-modal: 0 8px 24px rgb(0 0 0 / 0.5);
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-brand: var(--brand);
+  --color-body-text: var(--body-text);
+  --color-muted: var(--muted);
+  --color-cta: var(--cta);
+  --color-tint: var(--tint);
+  --color-tint-strong: var(--tint-strong);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-recovery: var(--chart-recovery);
+  --color-focus-ring: var(--focus-ring);
+
+  --font-sans: var(--font-jakarta);
+
+  --text-h1: 28px;
+  --text-h1--font-weight: 700;
+  --text-h2: 22px;
+  --text-h2--font-weight: 700;
+  --text-body-lg: 16px;
+  --text-caption: 12px;
+
+  --shadow-hover: var(--shadow-hover);
+  --shadow-modal: var(--shadow-modal);
+  --radius-md: 16px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  overflow-x: clip;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-body-text);
+  font-family: var(--font-sans), sans-serif;
+  overflow-x: clip;
+}
+
+/*
+ * Theme toggle switches CSS variables on [data-theme] instantly, which
+ * otherwise makes every themed color snap at once. Transition the specific
+ * properties driven by those variables so light/dark switches fade instead.
+ * Layout-affecting properties (transform, opacity, etc.) are deliberately
+ * excluded so this doesn't interfere with other component animations.
+ */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, fill, stroke,
+    box-shadow, outline-color, text-decoration-color;
+  transition-duration: 200ms;
+  transition-timing-function: ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pl-safe {
+  padding-left: env(safe-area-inset-left);
+}
+
+.pr-safe {
+  padding-right: env(safe-area-inset-right);
 }

@@ -1,0 +1,27 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Logo } from "@/components/ui/Logo";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
+
+const REDIRECT_DELAY_MS = 2000;
+
+export default function SplashPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      router.push("/login");
+    }, REDIRECT_DELAY_MS);
+
+    return () => clearTimeout(timer);
+  }, [router]);
+
+  return (
+    <main className="flex flex-1 flex-col items-center justify-center gap-[25px] bg-background px-6">
+      <Logo />
+      <LoadingIndicator />
+    </main>
+  );
+}
