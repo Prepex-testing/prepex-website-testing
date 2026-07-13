@@ -20,7 +20,7 @@ export function RadioOption({
   return (
     <div
       className={`rounded-xl border p-4 transition-colors ${
-        selected ? "border-brand bg-tint-strong" : "border-brand/15 bg-surface"
+        selected ? "border-brand bg-surface" : "border-brand/15 bg-surface"
       }`}
     >
       <label className="flex cursor-pointer items-center gap-3">

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CircularProgress } from "@/components/ui/CircularProgress";
-import { ArrowLeftIcon, BellIcon, BoltIcon, ClockIcon, CheckIcon } from "@/components/ui/icons";
+import { ArrowLeftIcon, BellIcon, BoltIcon, ClockIcon, CheckIcon, BoltIcons } from "@/components/ui/icons";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 
@@ -57,13 +57,22 @@ export default function DayPlanPage() {
         </span>
       </div>
 
-      <div className="flex items-center gap-3 rounded-2xl border border-brand/10 bg-surface p-4">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-tint text-ink">
-          <BoltIcon />
-        </span>
-        <p className="text-sm text-ink">
-          Plan was lighter today. Energy was heavy, so recovery activated automatically.
-        </p>
+      <div className="flex items-center gap-4 rounded-2xl border border-[#E5E7EB] bg-white p-6">
+        {/* Icon */}
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F6]">
+          <div className="flex h-6 w-6 items-center justify-center">
+            <BoltIcons className="h-4.5 w-4 text-[#1A1A4E]" />
+          </div>
+        </div>
+
+        {/* Text */}
+        <div className="w-160">
+          <p className="text-[18px] font-medium leading-[29.25px] tracking-normal text-[#333333]">
+            Plan was lighter today. Energy was heavy,
+            <br />
+            so recovery activated automatically.
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -127,36 +136,32 @@ export default function DayPlanPage() {
           {TASK_LOG.map((task) => (
             <div key={task.title} className="flex items-center gap-3 rounded-xl border border-brand/10 p-3">
               <span
-                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-                  task.status === "done"
-                    ? "bg-success text-white"
-                    : "border-2 border-brand/15 text-transparent"
-                }`}
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${task.status === "done"
+                  ? "bg-success text-white"
+                  : "border-2 border-brand/15 text-transparent"
+                  }`}
               >
                 {task.status === "done" && <CheckIcon />}
               </span>
               <div className="flex-1">
                 <p
-                  className={`text-sm font-semibold ${
-                    task.status === "skipped" ? "text-muted" : "text-ink"
-                  }`}
+                  className={`text-sm font-semibold ${task.status === "skipped" ? "text-muted" : "text-ink"
+                    }`}
                 >
                   {task.subject}
                 </p>
                 <p
-                  className={`text-xs ${
-                    task.status === "skipped" ? "italic text-muted/70" : "text-muted"
-                  }`}
+                  className={`text-xs ${task.status === "skipped" ? "italic text-muted/70" : "text-muted"
+                    }`}
                 >
                   {task.title}
                 </p>
               </div>
               <span
-                className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
-                  task.status === "done"
-                    ? "bg-success-bg text-success"
-                    : "bg-tint-strong text-muted"
-                }`}
+                className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${task.status === "done"
+                  ? "bg-success-bg text-success"
+                  : "bg-tint-strong text-muted"
+                  }`}
               >
                 {task.status === "done" ? "Done" : "Skipped"}
               </span>

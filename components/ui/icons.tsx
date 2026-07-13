@@ -1,3 +1,5 @@
+import { SVGProps } from "react";
+
 export function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
@@ -37,16 +39,16 @@ export function AppleIcon({ className = "h-4 w-3" }: { className?: string }) {
 export function CheckIcon() {
   return (
     <svg
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
+      width="32"
+      height="32"
+      viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
     >
       <path
-        d="M2.5 6.3l2.2 2.2L9.5 3.5"
+        d="M5 12.5L10 17.5L19 8.5"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -391,17 +393,18 @@ export function CloudMoonIcon() {
 
 export function MoonIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
-        d="M11.5 3.2a5.2 5.2 0 1 0 3.3 9.3A6.2 6.2 0 0 1 11.5 3.2Z"
+        d="M15.2 3.6a8 8 0 1 0 5.2 13.7A9 9 0 0 1 15.2 3.6Z"
         stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M13.8 3.5l.4 1 1 .4-1 .4-.4 1-.4-1-1-.4 1-.4.4-1Z"
-        stroke="currentColor"
-        strokeWidth="1"
+        strokeWidth="2"
+        strokeLinecap="round"
         strokeLinejoin="round"
       />
     </svg>
@@ -436,7 +439,7 @@ export function CheckCircleIcon() {
   );
 }
 
-export function ClockIcon() {
+export function ClockIcons() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4" />
@@ -481,14 +484,26 @@ export function ChartBarIcon() {
 
 export function BellIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
-        d="M4.5 12.5v-4a4.5 4.5 0 0 1 9 0v4l1.2 1.8H3.3L4.5 12.5Z"
+        d="M12 4a4 4 0 0 0-4 4v2.2c0 .8-.3 1.6-.8 2.2L6 14h12l-1.2-1.6a3.5 3.5 0 0 1-.8-2.2V8a4 4 0 0 0-4-4Z"
         stroke="currentColor"
-        strokeWidth="1.4"
+        strokeWidth="2"
         strokeLinejoin="round"
       />
-      <path d="M7.3 15.8a1.7 1.7 0 0 0 3.4 0" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+
+      <path
+        d="M10.3 17a1.8 1.8 0 0 0 3.4 0"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -509,11 +524,18 @@ export function SparkleIcon() {
 
 export function FlameIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg
+      width="27"
+      height="30"
+      viewBox="0 0 27 30"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
-        d="M8 1.5c2.5 2.3 4 4.8 4 7.2a4 4 0 0 1-8 0c0-1.1 0.4-2 1-2.7 0 1.3 0.7 2 1.4 2 0.8 0 1.3-0.7 1.1-1.6C7.1 5.2 6.5 3.6 8 1.5Z"
+        d="M13.5 2.5c4.2 3.8 6.7 8 6.7 12.1a6.7 6.7 0 0 1-13.4 0c0-1.8.7-3.4 1.7-4.6 0 2.2 1.1 3.4 2.4 3.4 1.4 0 2.2-1.2 1.9-2.7-.6-2-1.6-4.7.7-8.2Z"
         stroke="currentColor"
-        strokeWidth="1.3"
+        strokeWidth="2"
+        strokeLinecap="round"
         strokeLinejoin="round"
       />
     </svg>
@@ -964,6 +986,125 @@ export function LinkIcon() {
         strokeWidth="1.3"
         strokeLinecap="round"
         strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function CompleteIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.4" />
+      <path
+        d="M6 9.2L8.2 11.4L12.2 7.4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+
+export function MockIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path
+        d="M9 2.2L10.7 6.2L15 6.6L11.8 9.3L12.8 13.5L9 11.3L5.2 13.5L6.2 9.3L3 6.6L7.3 6.2L9 2.2Z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function RecoveryIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path
+        d="M9 14.5c-2.8-1.8-5.5-4.2-5.5-7.2A3 3 0 0 1 9 5a3 3 0 0 1 5.5 2.3c0 3-2.7 5.4-5.5 7.2Z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function JournalIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <rect x="3" y="3" width="2" height="12" rx="1" fill="currentColor" />
+      <rect x="8" y="6" width="2" height="9" rx="1" fill="currentColor" />
+      <rect x="13" y="1.5" width="2" height="13.5" rx="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function NoStudyIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.4" />
+      <path
+        d="M5 5L13 13"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function ClockIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.4" />
+      <path
+        d="M9 5.5V9L11.8 10.8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function CheckInIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.4" />
+
+      <circle cx="6.7" cy="7.3" r="0.6" fill="currentColor" />
+      <circle cx="11.3" cy="7.3" r="0.6" fill="currentColor" />
+
+      <path
+        d="M6.5 10.4C7.1 11.2 7.9 11.6 9 11.6C10.1 11.6 10.9 11.2 11.5 10.4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+
+export function BoltIcons(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 16 18"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <path
+        d="M8.5 1.5L3 9H7L6.5 14.5L13 7H9L8.5 1.5Z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+        strokeLinecap="round"
       />
     </svg>
   );

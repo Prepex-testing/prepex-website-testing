@@ -28,7 +28,7 @@ export function Logo({ size = "hero", showTagline = true }: LogoProps) {
       </p>
       {showTagline && (
         <p
-          className={`${classes.tagline} font-bold uppercase tracking-[0.3em] text-cta`}
+          className={`${classes.tagline} font-bold uppercase tracking-[0.3em] text-black`}
         >
           Plan·Execute·Survive·Win
         </p>

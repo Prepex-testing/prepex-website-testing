@@ -89,7 +89,7 @@ export default function WhereDoYouStudyPage() {
 
       <p className="mt-4 text-center text-xs text-muted">or</p>
 
-      <div className="mt-4 rounded-xl bg-tint-strong p-4">
+      <div className="mt-4 rounded-xl  p-4">
         <p className="text-sm font-semibold text-ink">
           Got a schedule screenshot?
         </p>

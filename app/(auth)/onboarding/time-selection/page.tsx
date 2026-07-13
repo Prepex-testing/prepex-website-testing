@@ -99,7 +99,7 @@ export default function TimeSelectionPage() {
         <p className="text-xs text-muted">Pick all that apply</p>
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {TIME_SLOTS.map((slot) => {
           const selected = selectedSlots.includes(slot.id);
           return (

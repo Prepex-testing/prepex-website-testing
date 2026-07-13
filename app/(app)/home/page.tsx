@@ -32,6 +32,7 @@ import {
   InfoIcon,
   PencilIcon,
 } from "@/components/ui/icons";
+import { useTheme } from "@/components/theme/ThemeProvider";
 
 const TASKS: Task[] = [
   {
@@ -136,7 +137,7 @@ const CONSISTENCY_STYLES: Record<ConsistencyStatus, string> = {
 };
 
 function subscribeNoop() {
-  return () => {};
+  return () => { };
 }
 
 function getIsFridaySnapshot() {
@@ -163,6 +164,9 @@ export default function HomePage() {
     getIsFridayServerSnapshot,
   );
 
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -175,7 +179,14 @@ export default function HomePage() {
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className={`
+    flex h-11 w-11 items-center justify-center rounded-full
+    transition-colors
+    ${isDark
+                ? "bg-slate-800 text-white hover:bg-slate-700"
+                : "bg-white text-[#1B245A] hover:bg-tint-strong"
+              }
+  `}
           >
             <BellIcon />
           </button>
@@ -184,54 +195,99 @@ export default function HomePage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-brand/10 bg-surface p-4">
-          <p className="text-xs text-muted">Today&apos;s Energy</p>
-          <div className="mt-2 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-tint text-lg">
-                {energyMood.emoji}
-              </span>
-              <span className="text-base font-bold text-ink">{energyMood.label}</span>
+        <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+
+            {/* Left */}
+            <div className="flex items-center gap-4">
+
+              {/* Emoji */}
+              <div className="flex h-15 w-15 items-center justify-center rounded-xl bg-tint">
+                <span className="text-[32px] leading-none">
+                  {energyMood.emoji}
+                </span>
+              </div>
+
+              {/* Text */}
+              <div className="flex h-15.25 w-54.25 flex-col justify-between gap-1">
+                <p className="text-sm leading-none text-muted">
+                  Today&apos;s Energy
+                </p>
+
+                <h3 className="text-3xl font-bold leading-none text-ink">
+                  {energyMood.label}
+                </h3>
+
+                <p className="text-sm leading-none text-muted">
+                  Plan optimized for you
+                </p>
+              </div>
+
             </div>
+
+            {/* Right */}
             <button
               type="button"
               onClick={() => setCheckInOpen(true)}
-              className="text-xs font-semibold text-ink underline"
+              className="text-sm font-semibold text-brand hover:underline"
             >
               Change
             </button>
+
           </div>
-          <p className="mt-2 text-xs text-muted">Plan optimized for you</p>
         </div>
 
         <Link
           href="/home/streak"
-          className="rounded-2xl border border-brand/10 bg-surface p-4 hover:border-brand/30"
+          className="rounded-2xl border border-brand/10 bg-surface p-6 hover:border-brand/30"
         >
-          <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-cta/10 text-cta">
+          <div className="flex items-center gap-4">
+
+            {/* Icon */}
+            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-cta/10 text-cta">
               <FlameIcon />
-            </span>
-            <span className="text-base font-bold text-ink">14 Day Streak</span>
+            </div>
+
+            {/* Text */}
+            <div className="flex h-12 w-52.5 flex-col justify-between">
+              <h3 className="text-2xl font-bold leading-none text-ink">
+                14 Day Streak
+              </h3>
+
+              <p className="text-sm leading-none text-muted">
+                Keep going.
+              </p>
+            </div>
+
           </div>
-          <p className="mt-2 text-xs text-muted">Keep going.</p>
         </Link>
 
-        <div className="rounded-2xl border border-brand/10 bg-surface p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-muted">Today&apos;s Progress</p>
-            <span className="rounded-full bg-tint-strong px-2 py-0.5 text-[10px] font-semibold text-ink">
-              Live
+        <div className="rounded-2xl border border-brand/10 bg-surface px-6 pt-4 pb-6">
+          {/* Date */}
+          <div className="flex justify-end">
+            <span className="text-[11px] leading-none text-muted">
+              Friday 5 June
             </span>
           </div>
-          <div className="mt-2 flex items-center gap-3">
-            <CircularProgress percent={22} size={56} />
-            <p className="text-xs text-muted">1.3h / 6h completed</p>
+
+          {/* Content */}
+          <div className="-mt-1 flex items-center gap-4">
+            <CircularProgress percent={22} size={64} />
+
+            <div className="flex h-12 flex-col justify-between">
+              <h3 className="text-2xl font-bold leading-none text-ink">
+                Today's Progress
+              </h3>
+
+              <p className="text-sm leading-none text-muted">
+                1.3h / 6h completed
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_475px]">
         <div className="flex min-w-0 flex-col gap-6">
           {isFriday && (
             <div className="rounded-2xl border border-brand/10 bg-surface p-5">
@@ -285,18 +341,19 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => setRegenerateOpen(true)}
-                  className="flex items-center gap-1"
+                  className="flex h-9 items-center gap-2 rounded-lg border border-brand/10 bg-surface px-3 text-xs font-medium text-ink transition-colors hover:bg-tint"
                 >
                   <RefreshIcon />
-                  Regenerate Plan
+                  <span>Regenerate Plan</span>
                 </button>
+
                 <button
                   type="button"
                   onClick={() => setAddTaskOpen(true)}
-                  className="flex items-center gap-1"
+                  className="flex h-9 items-center gap-2 rounded-lg border border-brand/10 bg-surface px-3 text-xs font-medium text-ink transition-colors hover:bg-tint"
                 >
                   <PlusIcon />
-                  Add task
+                  <span>Add task</span>
                 </button>
               </div>
             </div>
@@ -322,26 +379,43 @@ export default function HomePage() {
 
         <div className="flex flex-col gap-6">
           <div className="rounded-2xl border border-brand/10 bg-surface p-4">
-            <p className="text-sm font-bold text-ink">Quick Access</p>
-            <div className="mt-3 flex flex-col gap-1">
+            <p className="text-base font-bold text-ink">
+              Quick Access
+            </p>
+
+            <div className="mt-4 flex flex-col gap-3">
               {QUICK_ACCESS.map((item) => {
                 const content = (
                   <>
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tint text-ink">
-                      {item.icon}
-                    </span>
-                    <span>
-                      <span className="block text-sm font-semibold text-ink">
-                        {item.label}
+                    <div className="flex items-center gap-4">
+                      {/* Icon */}
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
+                        {item.icon}
                       </span>
-                      {item.subtitle && (
-                        <span className="block text-[11px] text-muted">
-                          {item.subtitle}
-                        </span>
-                      )}
+
+                      {/* Text */}
+                      <div className="flex flex-col">
+                        <p className="text-sm font-semibold text-ink">
+                          {item.label}
+                        </p>
+
+                        {item.subtitle && (
+                          <p className="text-xs text-muted">
+                            {item.subtitle}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Arrow */}
+                    <span className="text-xl text-muted">
+                      ›
                     </span>
                   </>
                 );
+
+                const classes =
+                  "flex h-15 items-center justify-between rounded-xl border border-brand/10 bg-surface px-4 transition-colors hover:bg-tint";
 
                 if (item.isModal) {
                   return (
@@ -349,7 +423,7 @@ export default function HomePage() {
                       key={item.label}
                       type="button"
                       onClick={() => setQuickFocusOpen(true)}
-                      className="flex items-center gap-3 rounded-lg px-2 py-2 text-left hover:bg-tint-strong"
+                      className={classes}
                     >
                       {content}
                     </button>
@@ -360,7 +434,7 @@ export default function HomePage() {
                   <a
                     key={item.label}
                     href={item.href}
-                    className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-tint-strong"
+                    className={classes}
                   >
                     {content}
                   </a>
@@ -369,10 +443,16 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-brand/10 bg-surface p-4">
-            <p className="text-sm font-bold text-ink">Study Consistency</p>
-            <div className="mt-3 flex flex-col gap-1.5">
-              <div className="grid grid-cols-7 gap-1.5">
+          <div className="h-64.5 rounded-2xl border border-brand/10 bg-surface p-4">
+            <h3 className="text-base font-bold text-ink">
+              Study Consistency
+            </h3>
+
+            <div className="mt-5">
+              {/* Header */}
+              <div className="grid grid-cols-[56px_repeat(7,12px)] items-center gap-x-6">
+                <div />
+
                 {CONSISTENCY_DAYS.map((day, index) => (
                   <span
                     key={`${day}-${index}`}
@@ -382,33 +462,50 @@ export default function HomePage() {
                   </span>
                 ))}
               </div>
-              {CONSISTENCY_DATA.map((week, weekIndex) => (
-                <div key={weekIndex} className="grid grid-cols-7 gap-1.5">
-                  {week.map((status, dayIndex) => (
-                    <span
-                      key={dayIndex}
-                      className={`aspect-square rounded-md ${CONSISTENCY_STYLES[status]}`}
-                    />
-                  ))}
-                </div>
-              ))}
+
+              {/* Weeks */}
+              <div className="mt-4 flex flex-col gap-3">
+                {CONSISTENCY_DATA.map((week, weekIndex) => (
+                  <div
+                    key={weekIndex}
+                    className="grid grid-cols-[56px_repeat(7,12px)] items-center gap-x-6"
+                  >
+                    <span className="text-caption text-muted">
+                      Week {weekIndex + 1}
+                    </span>
+
+                    {week.map((status, dayIndex) => (
+                      <span
+                        key={dayIndex}
+                        className={`h-3 w-3 rounded-sm ${CONSISTENCY_STYLES[status]}`}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="mt-3 flex items-center gap-3 text-[11px] text-muted">
-              <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-brand" />
-                Completed
+
+            {/* Legend */}
+            <div className="mt-6 flex items-center justify-between text-xs text-muted">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-brand" />
+                Complete
               </span>
-              <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-brand/40" />
+
+              <span className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-brand/40" />
                 Partial
               </span>
-              <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-brand/10" />
+
+              <span className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-brand/10" />
                 Missed
               </span>
             </div>
           </div>
         </div>
+
+
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warning/30 bg-warning/10 px-5 py-4">
