@@ -33,15 +33,16 @@ export function CircularProgress({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="var(--tint)"
+          stroke="#E2E8F0" 
           strokeWidth={strokeWidth}
         />
+
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="var(--brand)"
+          stroke="#28B485" 
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
           strokeDashoffset={offset}

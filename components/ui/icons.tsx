@@ -1109,3 +1109,47 @@ export function BoltIcons(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+export function BatteryIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width="20"
+      height="12"
+      viewBox="0 0 20 12"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      {...props}
+    >
+      {/* Battery Body */}
+      <rect
+        x="1"
+        y="1"
+        width="16"
+        height="10"
+        rx="2"
+        stroke="#FB923C"
+        strokeWidth="2"
+      />
+
+      {/* Battery Positive Terminal */}
+      <rect
+        x="18"
+        y="4"
+        width="2"
+        height="4"
+        rx="1"
+        fill="#FB923C"
+      />
+
+      {/* Low Battery Indicator */}
+      <rect
+        x="3"
+        y="3"
+        width="3"
+        height="6"
+        rx="1"
+        fill="#FB923C"
+      />
+    </svg>
+  );
+}
