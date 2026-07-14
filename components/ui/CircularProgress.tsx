@@ -4,6 +4,8 @@ type CircularProgressProps = {
   size?: number;
   suffix?: string;
   displayValue?: string | number;
+  trackColor?: string;
+  progressColor?: string;
 };
 
 export function CircularProgress({
@@ -12,6 +14,8 @@ export function CircularProgress({
   size = 120,
   suffix = "%",
   displayValue,
+  trackColor = "#E2E8F0",
+  progressColor = "#28B485",
 }: CircularProgressProps) {
   const strokeWidth = 8;
   const radius = (size - strokeWidth) / 2;
@@ -33,7 +37,7 @@ export function CircularProgress({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#E2E8F0" 
+          stroke={trackColor}
           strokeWidth={strokeWidth}
         />
 
@@ -42,7 +46,7 @@ export function CircularProgress({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#28B485" 
+          stroke={progressColor}
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
           strokeDashoffset={offset}

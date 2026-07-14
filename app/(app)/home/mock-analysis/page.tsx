@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Button } from "@/components/ui/Button";
 import {
   BellIcon,
@@ -89,13 +90,7 @@ export default function MockAnalysisPage() {
           Mock Analysis
         </h1>
         <div className="flex items-center gap-2 sm:gap-4">
-          <button
-            type="button"
-            aria-label="Refresh"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-muted transition hover:bg-tint-strong sm:h-11 sm:w-11"
-          >
-            <RefreshIcon />
-          </button>
+          <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
