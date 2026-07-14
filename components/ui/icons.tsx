@@ -1277,3 +1277,45 @@ export function WildGuessIcon() {
     </svg>
   );
 }
+
+export function ExternalLinkIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path
+        d="M6 2.5H2.5C2.22386 2.5 2 2.72386 2 3V11.5C2 11.7761 2.22386 12 2.5 12H11C11.2761 12 11.5 11.7761 11.5 11.5V8"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8 2H12V6"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 2L6.5 7.5"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function CircleXIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
+      <path
+        d="M9.5 9.5L14.5 14.5M14.5 9.5L9.5 14.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}

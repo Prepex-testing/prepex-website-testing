@@ -66,35 +66,50 @@ const APRIL_ENTRIES: HistoryEntry[] = [
 
 function HistoryCard({ entry }: { entry: HistoryEntry }) {
   return (
-    <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <span className="inline-block rounded-full bg-tint px-2 py-0.5 text-[10px] font-semibold uppercase text-ink">
+    <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        {/* LEFT SIDE */}
+        <div className="flex w-full max-w-[672px] flex-col gap-1">
+          {/* Badge */}
+          <span className="inline-flex w-fit items-center rounded-full bg-tint px-2 py-1 text-[9px] font-extrabold uppercase leading-[13.5px] tracking-[0.45px] text-ink">
             {entry.badge}
           </span>
-          <p className="mt-1 text-base font-bold text-ink">{entry.title}</p>
+
+          {/* Title */}
+          <p className="mt-1 text-[20px] font-extrabold leading-[28px] text-ink">
+            {entry.title}
+          </p>
+
+          {/* Description */}
           {entry.description && (
-            <p className="mt-1 text-xs text-muted">{entry.description}</p>
+            <p className="text-[13px] leading-[20px] text-muted">
+              {entry.description}
+            </p>
           )}
-          <div className="mt-3 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wide text-muted">
+
+          {/* Progress */}
+          <div className="mt-2 flex w-full max-w-[320px] items-center justify-between text-[10px] font-semibold uppercase tracking-wide text-muted">
             <span>{entry.progressLabel}</span>
             <span className="text-ink">{entry.progressValue}</span>
           </div>
-          <div className="mt-1 h-1.5 rounded-full bg-tint-strong">
+          <div className="h-[6px] w-full max-w-[320px] rounded-full bg-tint-strong">
             <div
-              className="h-1.5 rounded-full bg-brand"
+              className="h-full rounded-full bg-brand"
               style={{ width: `${entry.progressPercent}%` }}
             />
           </div>
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-3">
-          <span className="flex items-center gap-1 text-xs text-muted">
+
+        {/* RIGHT SIDE */}
+        <div className="flex w-full shrink-0 flex-row items-center justify-between gap-4 lg:w-[160px] lg:flex-col lg:items-end lg:justify-between lg:gap-[54px]">
+          <span className="flex items-center gap-1.5 text-xs text-muted">
             <CalendarIcon />
             {entry.dateRange}
           </span>
+
           <Link
             href="/home/journal"
-            className="inline-flex h-9 items-center justify-center rounded-lg border border-brand/15 bg-surface px-4 text-sm font-semibold text-body-text hover:bg-tint-strong"
+            className="inline-flex h-12 w-[160px] items-center justify-center gap-3 rounded-lg border border-brand px-8 py-4 text-[16px] font-bold text-ink transition-colors hover:bg-tint-strong"
           >
             View Card
           </Link>
@@ -133,27 +148,48 @@ export default function WinJournalHistoryPage() {
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-2xl border border-brand/10 bg-surface p-6">
-        <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-tint-strong" />
-        <div className="relative flex flex-wrap items-center justify-between gap-4">
-          <div className="min-w-0">
-            <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-tint px-2 py-0.5 text-[10px] font-semibold uppercase text-ink">
-                New Achievement
+      <div className="relative overflow-hidden rounded-2xl border border-brand/10 bg-surface px-6 py-8 sm:px-8 lg:px-10 lg:pt-12 lg:pb-10 min-h-[312px]">
+        {/* Background Circle */}
+        <div className="pointer-events-none absolute -top-20 -right-20 h-56 w-56 rounded-full bg-tint-strong opacity-40" />
+
+        <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-10 h-full">
+          {/* Left Section */}
+          <div className="flex w-full max-w-[568px] flex-col gap-4">
+            {/* Top Labels */}
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="rounded-full bg-tint px-3 py-1 text-[10px] font-bold uppercase text-ink">
+                NEW ACHIEVEMENT
               </span>
-              <span className="rounded-full bg-tint-strong px-2 py-0.5 text-[10px] font-semibold uppercase text-ink">
-                This Week&apos;s Win
+
+              <span className="text-[10px] font-bold uppercase tracking-wide text-muted">
+                THIS WEEK&apos;S WIN
               </span>
             </div>
-            <h2 className="mt-2 text-h1 text-ink">14-Day Consistency Streak</h2>
-            <p className="mt-1 max-w-md text-sm text-muted">
+
+            {/* Heading */}
+            <h2 className="text-[32px] font-extrabold leading-none text-ink">
+              14-Day Consistency
+              <br />
+              Streak
+            </h2>
+
+            {/* Description */}
+            <p className="max-w-[568px] text-[18px] leading-[29px] text-muted">
               Your strongest streak this month. You showed up every day and maintained
               momentum.
             </p>
           </div>
-          <Button href="/home/journal" variant="secondary" size="sm" className="shrink-0">
-            View Full Card
-          </Button>
+
+          {/* Right Section */}
+          <div className="flex w-full justify-start lg:w-auto lg:justify-end">
+            <Button
+              href="/home/journal"
+              variant="secondary"
+              className="h-[55px] w-full sm:w-[236px] rounded-xl px-8 text-[18px] font-bold"
+            >
+              View Full Card
+            </Button>
+          </div>
         </div>
       </div>
 
