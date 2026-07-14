@@ -12,7 +12,7 @@ import {
   MoreIcon,
   CalendarIcon,
   ClockIcon,
-  ChevronDownIcon,
+  ChevronRightIcon,
 } from "@/components/ui/icons";
 
 const STAT_CARDS = [
@@ -83,182 +83,213 @@ const RECENT_MOCKS = [
 
 export default function MockAnalysisPage() {
   return (
-    <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="w-[166px] h-[32px] text-[24px] font-bold leading-[32px] text-ink">
+    <div className="flex w-full flex-col gap-6 p-4 sm:p-6 lg:p-8">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-[24px] font-bold leading-8 text-ink sm:text-[28px]">
           Mock Analysis
         </h1>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <button
             type="button"
             aria-label="Refresh"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-muted transition hover:bg-tint-strong sm:h-11 sm:w-11"
           >
             <RefreshIcon />
           </button>
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-muted transition hover:bg-tint-strong sm:h-11 sm:w-11"
           >
             <BellIcon />
           </button>
           <UserMenu />
         </div>
-      </div>
+      </header>
 
-      {/* Top stats grid: gap-24 */}
-      <div className="grid grid-cols-2 gap-[24px] lg:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {STAT_CARDS.map((card) => (
           <div
             key={card.label}
-            className="flex items-start gap-4 rounded-2xl border border-brand/10 bg-surface p-4"
+            className="flex items-start gap-4 rounded-2xl border border-brand/10 bg-surface p-4 shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.22)]"
           >
             <span
-              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] ${card.iconClass} [&>svg]:h-6 [&>svg]:w-6`}
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${card.iconClass} [&>svg]:h-6 [&>svg]:w-6`}
             >
               {card.icon}
             </span>
-            <div>
-              <p className="text-[12px] font-semibold leading-[16px] text-muted">
+            <div className="min-w-0">
+              <p className="text-caption font-semibold leading-4 text-muted">
                 {card.label}
               </p>
-              <p className="text-[24px] font-bold leading-[32px] text-ink">
+              <p className="text-[22px] font-bold leading-8 text-ink sm:text-[24px]">
                 {card.value}
               </p>
-              <p className="pt-[3px] text-[11px] font-bold leading-[16.5px] text-ink">
+              <p className="pt-1 text-[11px] font-bold leading-[16.5px] text-ink">
                 {card.caption}
               </p>
             </div>
           </div>
         ))}
-      </div>
+      </section>
 
-      {/* Scheduled Mocks */}
-      <div className="flex flex-col gap-[24px] rounded-[16px] border border-[#F3F4F6] bg-surface p-[32px] shadow-[0px_4px_20px_0px_#00000008]">
+      <section className="flex flex-col gap-6 rounded-[20px] border border-brand/10 bg-surface p-4 shadow-[0_4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.24)] sm:p-6 lg:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-tint p-2 text-ink [&>svg]:h-6 [&>svg]:w-6">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint p-2 text-ink [&>svg]:h-6 [&>svg]:w-6">
               <CalendarIcon />
             </span>
-            <p className="text-[20px] font-bold leading-[28px] text-ink">
+            <p className="text-[18px] font-bold leading-7 text-ink sm:text-[20px]">
               Scheduled Mocks
             </p>
           </div>
           <button
             type="button"
-            className="flex items-center gap-2 text-[16px] font-semibold leading-[24px] text-ink"
+            className="flex items-center gap-2 text-body-lg font-semibold leading-6 text-ink"
           >
             View Calendar
             <span className="[&>svg]:h-4 [&>svg]:w-4">
-              <ChevronDownIcon className="-rotate-90" />
+              <ChevronRightIcon />
             </span>
           </button>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-6 sm:flex-nowrap sm:gap-0">
-            <div className="flex shrink-0 flex-col items-center justify-center border-r border-brand/10 px-[32px] py-[14px] text-center">
-              <span className="text-[36px] font-bold leading-[40px] text-ink">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch">
+          <div className="flex min-w-0 flex-1 flex-col items-start gap-4 rounded-xl border border-brand/10 bg-surface p-4 sm:flex-row sm:items-center sm:p-6">
+            <div className="flex w-full shrink-0 flex-col items-center justify-center rounded-lg border border-brand/10 bg-surface px-4 py-4 text-center sm:w-[120px] sm:py-5">
+              <span className="text-[32px] font-bold leading-8 text-ink sm:text-[36px]">
                 24
               </span>
-              <span className="mt-1 text-[12px] font-semibold text-muted">
+              <span className="mt-1 text-[14px] font-medium leading-5 text-muted">
                 May 2026
               </span>
-              <span className="text-[11px] text-muted">Sunday</span>
+              <span className="text-[14px] leading-5 text-muted">Sunday</span>
             </div>
 
-            <div className="min-w-0 flex-1 pl-[40px]">
-              <p className="text-[18px] font-bold leading-[28px] text-ink">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-[18px] font-bold leading-7 text-ink sm:text-[20px]">
                 Allen Major Test – 15
+              </h3>
+
+              <p className="mt-1 text-[14px] leading-5 text-muted">
+                Full Syllabus Mock
               </p>
-              <p className="mt-1 text-sm text-muted">Full Syllabus Mock</p>
-              <div className="mt-3 flex items-center gap-2">
+
+              <div className="mt-4 flex items-center gap-2">
                 <span className="text-muted [&>svg]:h-4 [&>svg]:w-4">
                   <ClockIcon />
                 </span>
-                <span className="text-[14px] font-medium leading-[20px] text-muted">
+
+                <span className="text-[14px] font-medium leading-5 text-muted">
                   180 Minutes
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-3 rounded-2xl bg-tint p-4">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface text-ink [&>svg]:h-4 [&>svg]:w-4">
-              <ClockIcon />
-            </span>
+          <div className="flex w-full items-center gap-4 rounded-xl border border-brand/10 bg-tint p-4 sm:p-6 lg:w-[340px] lg:flex-shrink-0">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface shadow-sm sm:h-13 sm:w-13">
+              <span className="text-ink [&>svg]:h-5 [&>svg]:w-5">
+                <ClockIcon />
+              </span>
+            </div>
+
             <div>
-              <p className="text-sm font-bold text-ink">1 day to go</p>
-              <p className="text-xs text-muted">
-                Prepare well and stay consistent.
+              <h4 className="text-[18px] font-bold leading-7 text-ink sm:text-[20px]">
+                1 day to go
+              </h4>
+
+              <p className="mt-1 text-[14px] leading-5 text-muted">
+                Prepare well and stay
+                <br />
+                consistent.
               </p>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Recent Mocks */}
-      <div className="rounded-[32px] border border-[#F9FAFB] bg-surface shadow-[0px_4px_20px_0px_#00000008]">
-        <div className="border-b border-brand/10 px-6 py-6 sm:px-[89px]">
-          <p className="text-[18px] font-extrabold leading-[28px] text-ink">
+      <section className="overflow-hidden rounded-[24px] border border-brand/10 bg-surface shadow-[0_4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.22)]">
+        <div className="border-b border-brand/10 px-4 py-5 sm:px-6 lg:px-8">
+          <h2 className="text-[18px] font-extrabold leading-7 text-ink">
             Recent Mocks
-          </p>
+          </h2>
         </div>
 
-        <div className="overflow-x-auto px-6 pb-6 sm:px-[32px]">
-          <table className="w-full min-w-[640px] border-collapse text-left">
+        <div className="hidden overflow-x-auto px-4 py-4 md:block sm:px-6 lg:px-8">
+          <table className="w-full min-w-[720px] border-collapse">
             <thead>
               <tr className="border-b border-brand/10">
-                <th className="px-[32px] py-4 text-[12px] font-bold uppercase tracking-[0.6px] leading-[16px] text-muted">
+                <th className="py-4 pl-2 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted sm:pl-4 lg:pl-6">
                   Mock Test
                 </th>
-                <th className="px-[32px] py-4 text-[12px] font-bold uppercase tracking-[0.6px] leading-[16px] text-muted">
+                <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted">
                   Date
                 </th>
-                <th className="px-[32px] py-4 text-[12px] font-bold uppercase tracking-[0.6px] leading-[16px] text-muted">
+                <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted">
                   Score
                 </th>
-                <th className="px-[32px] py-4 text-[12px] font-bold uppercase tracking-[0.6px] leading-[16px] text-muted">
+                <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted">
                   Accuracy
                 </th>
-                <th className="px-[24px] py-4 text-[12px] font-bold uppercase tracking-[0.6px] leading-[16px] text-muted">
+                <th className="py-4 text-center text-caption font-bold uppercase tracking-[0.6px] text-muted">
                   Action
                 </th>
-                <th className="px-[24px] py-4" />
+                <th className="w-10"></th>
               </tr>
             </thead>
+
             <tbody>
               {RECENT_MOCKS.map((mock) => (
-                <tr key={mock.id} className="border-b border-brand/5 last:border-0">
-                  <td className="px-[32px] py-[27px] text-[16px] font-bold leading-[100%] text-ink">
-                    {mock.name}
+                <tr
+                  key={mock.id}
+                  className="border-b border-brand/5 last:border-0"
+                >
+                  <td className="py-5 pl-2 sm:pl-4 lg:pl-6">
+                    <p className="text-body-lg font-bold leading-5 text-ink">
+                      {mock.name}
+                    </p>
                   </td>
-                  <td className="px-[32px] py-[27px] text-[14px] text-muted">
-                    {mock.date}
+
+                  <td className="py-5">
+                    <p className="text-[14px] leading-5 text-muted">
+                      {mock.date}
+                    </p>
                   </td>
-                  <td className="px-[32px] py-[27px] text-[16px] font-bold leading-[100%] text-ink">
-                    {mock.score}
+
+                  <td className="py-5">
+                    <p className="text-body-lg font-bold leading-5 text-ink">
+                      {mock.score}
+                    </p>
+                    {mock.accuracy && (
+                      <p className="mt-0.5 text-caption leading-4 text-muted">
+                        {mock.accuracy}
+                      </p>
+                    )}
                   </td>
-                  <td className="px-[32px] py-[27px] text-[14px] text-muted">
-                    {mock.accuracy}
+
+                  <td className="py-5">
+                    <p className="text-body-lg font-bold leading-5 text-ink">
+                      {mock.accuracy}
+                    </p>
                   </td>
-                  <td className="px-[24px] py-[24.5px]">
+
+                  <td className="py-5 text-center">
                     <Link
                       href="/home/mock-analysis/view-analytics"
-                      className="inline-flex h-[30px] items-center justify-center rounded-[8px] border border-brand/15 bg-surface px-[16px] py-[6px] text-[12px] font-bold leading-[16px] text-ink transition-colors hover:border-cta hover:bg-cta hover:text-white"
+                      className="inline-flex h-8 min-w-[112px] items-center justify-center rounded-lg border border-brand bg-surface px-3 text-caption font-bold leading-4 text-brand transition hover:bg-brand hover:text-white"
                     >
                       {mock.action}
                     </Link>
                   </td>
-                  <td className="px-[24px] py-[26.5px] text-right">
+
+                  <td className="py-5 text-center">
                     <button
                       type="button"
                       aria-label={`More options for ${mock.name}`}
-                      className="flex h-5 w-5 items-center justify-center text-muted [&>svg]:h-5 [&>svg]:w-5"
+                      className="inline-flex h-5 w-5 items-center justify-center text-muted"
                     >
-                      <span className="inline-block rotate-90">
+                      <span className="rotate-90">
                         <MoreIcon />
                       </span>
                     </button>
@@ -269,31 +300,91 @@ export default function MockAnalysisPage() {
           </table>
         </div>
 
-        <p className="pb-6 text-center text-xs text-muted">Showing 4 of 12 mocks</p>
-      </div>
+        <div className="flex flex-col gap-3 p-4 md:hidden sm:p-6">
+          {RECENT_MOCKS.map((mock) => (
+            <div
+              key={mock.id}
+              className="rounded-xl border border-brand/10 bg-surface/90 p-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-body-lg font-bold leading-5 text-ink">
+                    {mock.name}
+                  </p>
+                  <p className="mt-1 text-[14px] leading-5 text-muted">
+                    {mock.date}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  aria-label={`More options for ${mock.name}`}
+                  className="inline-flex h-5 w-5 items-center justify-center text-muted"
+                >
+                  <span className="rotate-90">
+                    <MoreIcon />
+                  </span>
+                </button>
+              </div>
 
-      {/* Upload Scorecard */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-[16px] border border-[#F3F4F6] bg-surface pt-[40px] pr-[32px] pb-[32px] pl-[32px] shadow-[0px_4px_20px_0px_#00000008]">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-tint text-ink">
+              <div className="mt-4 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[14px] font-medium text-muted">Score</p>
+                  <p className="text-body-lg font-bold leading-5 text-ink">
+                    {mock.score}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[14px] font-medium text-muted">Accuracy</p>
+                  <p className="text-body-lg font-bold leading-5 text-ink">
+                    {mock.accuracy}
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                href="/home/mock-analysis/view-analytics"
+                className="mt-4 inline-flex h-9 items-center justify-center rounded-lg border border-brand bg-surface px-4 text-caption font-bold leading-4 text-brand transition hover:bg-brand hover:text-white"
+              >
+                {mock.action}
+              </Link>
+            </div>
+          ))}
+        </div>
+
+        <div className="border-t border-brand/10 py-5 text-center">
+          <p className="text-caption leading-4 text-muted">
+            Showing 4 of 12 mocks
+          </p>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4 rounded-[20px] border border-brand/10 bg-surface px-4 py-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.18)] sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8 lg:py-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-brand/20 bg-surface text-ink">
             <UploadIcon />
-          </span>
-          <div className="min-w-0">
-            <p className="text-sm font-bold text-ink">Have a new mock score?</p>
-            <p className="text-xs text-muted">
-              Upload your scorecard or enter manually to get instant analysis.
+          </div>
+
+          <div>
+            <h3 className="text-[18px] font-bold leading-7 text-ink">
+              Have a new mock score?
+            </h3>
+
+            <p className="mt-1 text-body-lg leading-6 text-muted">
+              Upload your scorecard or enter manually to get your analysis.
             </p>
           </div>
         </div>
-        <Button
-          href="/home/mock-analysis/upload-scorecard"
-          variant="primary"
-          className="flex h-[60px] w-[224px] shrink-0 items-center justify-center gap-2 rounded-[12px] bg-cta pt-[16px] pr-[32px] pb-[16px] pl-[32px] text-[18px] font-bold leading-[28px] text-white"
-        >
-          <UploadIcon />
-          Upload Scorecard
-        </Button>
-      </div>
+
+        <div className="w-full shrink-0 sm:w-auto">
+          <Button
+            href="/home/mock-analysis/upload-scorecard/manual"
+            variant="primary"
+            className="h-14 w-full rounded-xl px-6 py-4 text-[16px] font-bold leading-7 sm:w-56 sm:text-[18px]"
+          >
+            Upload Scorecard
+          </Button>
+        </div>
+      </section>
     </div>
   );
 }
