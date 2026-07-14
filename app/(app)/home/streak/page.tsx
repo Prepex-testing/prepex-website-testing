@@ -150,21 +150,21 @@ export default function StreakPage() {
       </div>
 
       {/* Tagline: 380x40, gap-8, 40x40 gradient icon + 332x35 heading */}
-      <div className="flex items-center gap-2 w-full max-w-[380px] h-[40px]">
+      <div className="flex min-w-0 flex-wrap items-center gap-2 w-full max-w-[380px] min-h-[40px]">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-b from-[#FFB22F] to-[#F0C73E] text-white [&>svg]:h-5 [&>svg]:w-5">
           <StarIcon />
         </span>
-        <p className="w-[332px] h-[35px] text-[28px] font-bold leading-[100%] tracking-normal text-ink">
+        <p className="min-w-0 w-full sm:max-w-[332px] min-h-[35px] text-[28px] font-bold leading-[100%] tracking-normal text-ink">
           7 days. Real consistency
         </p>
       </div>
 
       {/* Stat cards: fills full width, ratios/padding from Figma preserved */}
-      <div className="grid grid-cols-2 gap-6 lg:grid-cols-4 w-full lg:gap-[24px]">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 w-full lg:gap-[24px]">
         {STAT_CARDS.map((card) => (
           <div
             key={card.label}
-            className={`flex flex-col gap-4 rounded-2xl border border-brand/10 bg-surface pt-[24px] pr-[24px] pl-[24px] ${card.pb} shadow-[0px_1px_2px_0px_#0000000D]`}
+            className={`flex w-full flex-col gap-4 rounded-2xl border border-brand/10 bg-surface pt-[24px] pr-[24px] pl-[24px] ${card.pb} shadow-[0px_1px_2px_0px_#0000000D]`}
           >
             <div className="flex items-center gap-4">
               <span
@@ -252,9 +252,9 @@ export default function StreakPage() {
                   </span>
                 ))}
               </div>
-              <div className="mt-2 flex flex-col gap-1">
+              <div className="mt-2 flex flex-col gap-1 overflow-x-auto pb-2 sm:overflow-visible">
                 {CALENDAR_ROWS.map((row, rowIndex) => (
-                  <div key={rowIndex} className="grid grid-cols-7 gap-2">
+                  <div key={rowIndex} className="grid min-w-[380px] w-full grid-cols-7 gap-2">
                     {row.map((cell, cellIndex) => (
                       <div
                         key={cellIndex}
@@ -317,19 +317,19 @@ export default function StreakPage() {
             </p>
           </div>
 
-          <div className="flex h-[188px] gap-[48px] pb-[8px]">
-            <div className="flex w-[58px] flex-col items-center justify-center gap-1 rounded-[70px] bg-tint-strong">
+          <div className="flex flex-col gap-[24px] pb-[8px] sm:flex-row sm:h-[188px] sm:gap-[48px]">
+            <div className="flex min-w-[58px] flex-col items-center justify-center gap-1 text-center">
               <span className="text-[36px] font-extrabold leading-[40px] text-ink">
                 78
               </span>
-              <span className="text-[10px] font-semibold text-muted text-center px-1">
+              <span className="text-[10px] font-semibold text-muted px-1">
                 Good Effort
               </span>
             </div>
 
-            <div className="flex flex-1 flex-col justify-between">
+            <div className="flex flex-1 flex-col gap-4">
               {EFFORT_METRICS.map((metric) => (
-                <div key={metric.label}>
+                <div key={metric.label} className="flex flex-col gap-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="flex items-center gap-1 font-semibold text-ink">
                       {metric.icon}
@@ -339,7 +339,7 @@ export default function StreakPage() {
                       {metric.value} / {metric.total}
                     </span>
                   </div>
-                  <div className="mt-1 h-1.5 rounded-full bg-tint-strong">
+                  <div className="h-1.5 rounded-full bg-tint-strong">
                     <div
                       className="h-1.5 rounded-full bg-brand"
                       style={{ width: `${(metric.value / metric.total) * 100}%` }}

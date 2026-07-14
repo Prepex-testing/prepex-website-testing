@@ -26,7 +26,10 @@ export function Input({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="text-sm font-semibold text-ink">
+      <label
+        htmlFor={inputId}
+        className="text-[14px] font-semibold leading-[20px] text-[#334155]"
+      >
         {label}
       </label>
       {helperText && (

@@ -21,14 +21,24 @@ import {
 import type { ReactNode } from "react";
 
 type Tone = "danger" | "warning" | "info" | "success";
-
-const TONE_CLASSES: Record<Tone, { icon: string; badge: string }> = {
-  danger: { icon: "bg-danger-bg text-danger", badge: "text-danger" },
-  warning: { icon: "bg-warning-bg text-warning", badge: "text-warning" },
-  info: { icon: "bg-info-bg text-info", badge: "text-info" },
-  success: { icon: "bg-success-bg text-success", badge: "text-success" },
+const TONE_CLASSES = {
+  danger: {
+    icon: "bg-danger-bg text-danger",
+    badge: "bg-[#EEF0F8] text-[#1A1A4E]",
+  },
+  warning: {
+    icon: "bg-warning-bg text-warning",
+    badge: "bg-[#EEF0F8] text-[#1A1A4E]",
+  },
+  info: {
+    icon: "bg-info-bg text-info",
+    badge: "bg-[#EEF0F8] text-[#1A1A4E]",
+  },
+  success: {
+    icon: "bg-success-bg text-success",
+    badge: "bg-[#EEF0F8] text-[#1A1A4E]",
+  },
 };
-
 const HEADER_STATS: { icon: ReactNode; label: string; value: string }[] = [
   { icon: <CalendarIcon />, label: "Test Date", value: "20 Nov 2026, Fri" },
   { icon: <ClockIcon />, label: "Duration", value: "180 min" },
@@ -44,43 +54,43 @@ const MISTAKE_PATTERNS: {
   tone: Tone;
   icon: ReactNode;
 }[] = [
-  {
-    label: "Conceptual Gap",
-    marksValue: "16",
-    description: "Recoverable with targeted practice",
-    detail: "14 questions",
-    badge: "Critical",
-    tone: "danger",
-    icon: <BookIcon />,
-  },
-  {
-    label: "Silly Error",
-    marksValue: "12",
-    description: "Recoverable with careful revision",
-    detail: "15 questions",
-    badge: "Optimize",
-    tone: "warning",
-    icon: <AlertTriangleIcon />,
-  },
-  {
-    label: "Time Pressure",
-    marksValue: "8",
-    description: "Recoverable with time management",
-    detail: "6 questions, avg extra 30 min",
-    badge: "Strategic",
-    tone: "info",
-    icon: <ClockIcon />,
-  },
-  {
-    label: "Wild Guess",
-    marksValue: "4",
-    description: "Recoverable with better elimination",
-    detail: "12 questions, both negative marked",
-    badge: "Refined",
-    tone: "success",
-    icon: <HelpCircleIcon />,
-  },
-];
+    {
+      label: "Conceptual Gap",
+      marksValue: "16",
+      description: "Recoverable with targeted practice",
+      detail: "14 questions",
+      badge: "Critical",
+      tone: "danger",
+      icon: <BookIcon />,
+    },
+    {
+      label: "Silly Error",
+      marksValue: "12",
+      description: "Recoverable with careful revision",
+      detail: "15 questions",
+      badge: "Optimize",
+      tone: "warning",
+      icon: <AlertTriangleIcon />,
+    },
+    {
+      label: "Time Pressure",
+      marksValue: "8",
+      description: "Recoverable with time management",
+      detail: "6 questions, avg extra 30 min",
+      badge: "Strategic",
+      tone: "info",
+      icon: <ClockIcon />,
+    },
+    {
+      label: "Wild Guess",
+      marksValue: "4",
+      description: "Recoverable with better elimination",
+      detail: "12 questions, both negative marked",
+      badge: "Refined",
+      tone: "success",
+      icon: <HelpCircleIcon />,
+    },
+  ];
 
 const SUBJECT_PERFORMANCE = [
   { label: "Physics", percent: 62, delta: "+4" },
@@ -122,64 +132,113 @@ export default function ViewAnalyticsPage() {
       </div>
 
       {/* Mock summary card */}
-      <div className="flex flex-wrap items-center justify-between gap-6 rounded-3xl border border-brand/10 bg-surface px-6 py-6 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_1px_3px_rgba(0,0,0,0.05)] sm:pt-8">
-        <div className="flex min-w-0 items-center gap-5">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tint text-ink [&>svg]:h-6 [&>svg]:w-6">
+      <div className="flex flex-col gap-6 rounded-[24px] border border-[#F1F5F9] bg-white px-[24px] pt-[32px] pb-[24px] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] sm:flex-row sm:items-center sm:justify-between">
+        {/* Left Section */}
+        <div className="flex items-center gap-5">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-[#EEF2FF]">
             <FileIcon />
-          </span>
-          <div className="min-w-0">
-            <p className="text-lg font-bold text-ink">Allen GT 14</p>
-            <p className="text-sm font-semibold text-muted">Full Syllabus Mock</p>
+          </div>
+
+          <div>
+            <h2 className="text-[18px] font-bold leading-[28px] text-ink">
+              Allen GT 14
+            </h2>
+
+            <p className="text-[14px] font-medium leading-[20px] text-muted">
+              Full Syllabus Mock
+            </p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-8 sm:gap-12">
+
+        {/* Right Section */}
+        <div className="flex flex-wrap gap-4 sm:gap-[64px]">
           {HEADER_STATS.map((stat) => (
-            <div key={stat.label} className="flex flex-col gap-1">
-              <span className="flex items-center gap-1.5 text-sm font-medium text-muted">
+            <div key={stat.label} className="flex flex-col">
+              {/* Label */}
+              <span className="text-[14px] font-medium leading-[20px] text-[#94A3B8]">
                 {stat.label}
-                <span className="[&>svg]:h-3.5 [&>svg]:w-3.5">{stat.icon}</span>
               </span>
-              <span className="text-sm font-bold text-ink">{stat.value}</span>
+
+              {/* Icon + Value */}
+              <div className="mt-[4px] flex items-center gap-[6px]">
+                <span className="flex h-4 w-4 items-center justify-center text-ink [&>svg]:h-4 [&>svg]:w-4">
+                  {stat.icon}
+                </span>
+
+                <span className="text-[16px] font-bold leading-[24px] text-ink whitespace-nowrap">
+                  {stat.value}
+                </span>
+              </div>
             </div>
           ))}
         </div>
-        <Button variant="secondary" size="sm" className="shrink-0">
-          <DownloadIcon />
-          Download Report
-        </Button>
       </div>
 
       {/* Score summary row */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-        <div className="flex flex-col justify-center rounded-2xl border border-brand/10 bg-surface p-8 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_1px_3px_rgba(0,0,0,0.05)]">
-          <p className="text-sm font-semibold uppercase tracking-wide text-muted">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+
+        <div className="flex flex-col items-center rounded-[16px] border border-[#F1F5F9] bg-white px-[32px] pt-[28px] pb-[24px] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)]">
+          {/* Title */}
+          <p className="text-[18px] font-bold uppercase leading-[28px] tracking-[0.5px] text-[#94A3B8]">
             Total Score
           </p>
-          <p className="mt-2 flex items-baseline gap-1">
-            <span className="text-4xl font-extrabold text-ink">168</span>
-            <span className="text-xl font-semibold text-muted">/300</span>
-          </p>
-          <div className="mt-4 flex w-fit items-center gap-3 rounded-xl bg-success-bg px-3 py-2">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-success/15 text-success [&>svg]:h-4 [&>svg]:w-4">
-              <TrendingUpIcon />
+
+          {/* Score */}
+          <div className="mt-3 flex items-end justify-center">
+            <span className="text-[68px] font-extrabold leading-none text-[#0F172A]">
+              168
             </span>
+
+            <span className="mb-[5px] text-[40px] font-bold leading-none text-[#CBD5E1]">
+              /300
+            </span>
+          </div>
+
+          {/* Improvement */}
+          <div className="mt-6 flex w-full items-center gap-4 rounded-[16px] bg-[#ECFDF5] px-5 py-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-[#D1FAE5]">
+              <span className="text-[#00A651] [&>svg]:h-6 [&>svg]:w-6">
+                <TrendingUpIcon />
+              </span>
+            </div>
+
             <div>
-              <p className="text-sm font-bold leading-tight text-success">12 Marks</p>
-              <p className="text-[11px] leading-tight text-success/80">vs last mock</p>
+              <p className="text-[18px] font-bold leading-[24px] text-[#00A651]">
+                ↑ 12 Marks
+              </p>
+
+              <p className="text-[16px] leading-[20px] text-[#64748B]">
+                vs last mock
+              </p>
             </div>
           </div>
         </div>
-        <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-brand/10 bg-surface p-8 text-center shadow-[0_1px_2px_rgba(0,0,0,0.03),0_1px_3px_rgba(0,0,0,0.05)]">
+
+
+        <div className="flex flex-col items-center rounded-[16px] border border-[#F1F5F9] bg-white px-[32px] py-[28px] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)]">
           <CircularProgress
             percent={56}
-            label="Accuracy"
-            size={100}
+            size={140}
             trackColor="var(--tint-strong)"
             progressColor="var(--brand)"
           />
+
+          <p className="mt-5 text-[16px] font-semibold leading-none text-[#94A3B8]">
+            Accuracy
+          </p>
         </div>
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-brand/10 bg-surface p-8 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_1px_3px_rgba(0,0,0,0.05)]">
-          <PercentileGauge value={82} label="Percentile" size={110} />
+
+
+        <div className="flex flex-col items-center justify-center rounded-[16px] border border-[#F1F5F9] bg-white px-8 py-7 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)]">
+          <PercentileGauge
+            value={82}
+            size={250}
+            showLabel={false}
+          />
+
+          <p className="-mt-3 text-[16px] font-semibold text-[#94A3B8]">
+            Percentile
+          </p>
         </div>
       </div>
 
@@ -194,7 +253,7 @@ export default function ViewAnalyticsPage() {
             Insight detected: You spent <strong className="font-bold">90 min</strong> on{" "}
             <strong className="font-bold">Maths</strong> (your middle subject), leaving only{" "}
             <strong className="font-bold">45 min</strong> for{" "}
-            <strong className="font-bold">Chemistry</strong>. Your{" "}
+            <strong className="font-bold">Chemistry</strong>. <br />Your{" "}
             <strong className="font-bold">12 &lsquo;Time Pressure&rsquo; errors</strong> were all
             in Chemistry.
           </p>
@@ -202,39 +261,63 @@ export default function ViewAnalyticsPage() {
       </div>
 
       {/* Mistake patterns + side column */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[11fr_10fr]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[11fr_10fr]">
         <div className="flex flex-col gap-6 rounded-2xl border border-brand/10 bg-surface p-6 shadow-[0_8px_32px_rgba(23,22,88,0.04)] backdrop-blur-xl">
           <p className="text-xl font-bold text-ink">Mistake Patterns &middot; ALLEN GT 14</p>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {MISTAKE_PATTERNS.map((pattern) => {
               const tone = TONE_CLASSES[pattern.tone];
+
               return (
                 <div
                   key={pattern.label}
-                  className="flex flex-col gap-1 rounded-2xl border border-brand/10 bg-tint-strong/30 p-5"
+                  className="flex h-[237px] flex-col rounded-2xl border border-brand/10 bg-tint-strong/30 p-5"
                 >
-                  <div className="flex items-center justify-between gap-3">
+                  {/* Icon + Badge */}
+                  <div className="flex items-center justify-between">
                     <span
-                      className={`flex h-10.5 w-10.5 items-center justify-center rounded-lg ${tone.icon} [&>svg]:h-5 [&>svg]:w-5`}
+                      className={`flex h-[42px] w-[42px] items-center justify-center rounded-[12px] bg-[#EEF0F8] text-[#1A1A4E] [&>svg]:h-[18px] [&>svg]:w-[18px]`}
                     >
                       {pattern.icon}
                     </span>
+
                     <span
-                      className={`text-[10px] font-extrabold uppercase tracking-wide ${tone.badge}`}
+                      className={`inline-flex h-[23px] items-center justify-center rounded-[4px] px-2 py-1 font-['Plus_Jakarta_Sans'] text-[10px] font-black uppercase leading-[15px] ${tone.badge}`}
                     >
                       {pattern.badge}
                     </span>
                   </div>
-                  <p className="mt-2 flex items-baseline gap-1">
-                    <span className="text-2xl font-extrabold text-ink">
+
+                  {/* Title */}
+                  <h3 className="mt-4 text-[14px] font-semibold leading-none text-[#64748B] break-words">
+                    {pattern.label}
+                  </h3>
+
+                  {/* Marks */}
+                  <div className="mt-4 flex items-end gap-2">
+                    <span className="text-[22px] font-bold leading-none text-ink">
                       {pattern.marksValue}
                     </span>
-                    <span className="text-xs font-medium text-muted">Marks</span>
+
+                    <span className="text-[14px] font-semibold leading-5 text-[#94A3B8]">
+                      Marks
+                    </span>
+                  </div>
+
+                  {/* Description */}
+                  <p className="mt-4 text-[14px] leading-5 text-[#64748B] break-words">
+                    {pattern.description}
                   </p>
-                  <p className="text-sm font-semibold text-ink">{pattern.label}</p>
-                  <p className="text-xs text-muted">{pattern.description}</p>
-                  <p className="mt-2 border-t border-brand/10 pt-2 text-[11px] text-muted">
+
+                  {/* Push footer to bottom */}
+                  <div className="flex-1" />
+
+                  {/* Divider */}
+                  <div className="border-t border-brand/10" />
+
+                  {/* Footer */}
+                  <p className="pt-4 text-[14px] font-semibold leading-5 text-[#94A3B8] break-words">
                     {pattern.detail}
                   </p>
                 </div>
@@ -262,9 +345,14 @@ export default function ViewAnalyticsPage() {
                     {subject.label}
                   </span>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-bold text-ink">{subject.percent}/100</span>
+                    <span className="font-bold">
+                      <span className="text-ink">{subject.percent}</span>
+                      <span className="text-[#D1D5DB]">/100</span>
+                    </span>
+
                     <span className="flex items-center gap-1 font-bold text-ink">
-                      {subject.percent}%
+                      <span>{subject.percent}%</span>
+
                       {subject.delta && (
                         <span className="text-success">&uarr; {subject.delta}</span>
                       )}
@@ -308,7 +396,7 @@ export default function ViewAnalyticsPage() {
               ))}
             </div>
 
-            <div className="rounded-lg border border-brand/10 bg-tint-strong p-4">
+            <div className="w-full max-w-[320px] rounded-lg border border-brand/10 bg-tint-strong p-4">
               <p className="text-[11px] font-bold uppercase tracking-[1.1px] text-ink">
                 Strategy Note
               </p>
@@ -335,7 +423,7 @@ export default function ViewAnalyticsPage() {
         </Button>
       </div>
 
-      <div className="rounded-2xl bg-brand py-3 text-center text-xs font-medium text-white">
+      <div className="rounded-sm bg-brand py-3 text-center text-xs font-medium text-white">
         Mock scores never visible to partner.
       </div>
     </div>

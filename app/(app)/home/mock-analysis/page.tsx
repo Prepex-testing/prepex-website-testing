@@ -106,7 +106,7 @@ export default function MockAnalysisPage() {
         {STAT_CARDS.map((card) => (
           <div
             key={card.label}
-            className="flex items-start gap-4 rounded-2xl border border-brand/10 bg-surface p-4 shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.22)]"
+            className="flex items-start gap-4 rounded-2xl border border-brand/10 bg-surface p-4 shadow-sm dark:shadow-[0_1px_4px_rgba(0,0,0,0.16)]"
           >
             <span
               className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${card.iconClass} [&>svg]:h-6 [&>svg]:w-6`}
@@ -128,7 +128,7 @@ export default function MockAnalysisPage() {
         ))}
       </section>
 
-      <section className="flex flex-col gap-6 rounded-[20px] border border-brand/10 bg-surface p-4 shadow-[0_4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.24)] sm:p-6 lg:p-8">
+      <section className="flex flex-col gap-6 rounded-[20px] border border-brand/10 bg-surface p-4 shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_1px_6px_rgba(0,0,0,0.18)] sm:p-5 lg:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint p-2 text-ink [&>svg]:h-6 [&>svg]:w-6">
@@ -150,8 +150,8 @@ export default function MockAnalysisPage() {
         </div>
 
         <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch">
-          <div className="flex min-w-0 flex-1 flex-col items-start gap-4 rounded-xl border border-brand/10 bg-surface p-4 sm:flex-row sm:items-center sm:p-6">
-            <div className="flex w-full shrink-0 flex-col items-center justify-center rounded-lg border border-brand/10 bg-surface px-4 py-4 text-center sm:w-[120px] sm:py-5">
+          <div className="flex min-w-0 flex-1 flex-col items-start gap-4 rounded-xl border border-brand/10 bg-surface p-4 sm:flex-row sm:items-center sm:p-5">
+            <div className="flex w-full shrink-0 flex-col items-center justify-center rounded-lg border border-brand/10 bg-surface px-4 py-3 text-center sm:w-[112px] sm:py-4">
               <span className="text-[32px] font-bold leading-8 text-ink sm:text-[36px]">
                 24
               </span>
@@ -182,7 +182,7 @@ export default function MockAnalysisPage() {
             </div>
           </div>
 
-          <div className="flex w-full items-center gap-4 rounded-xl border border-brand/10 bg-tint p-4 sm:p-6 lg:w-[340px] lg:flex-shrink-0">
+          <div className="flex w-full items-center gap-4 rounded-xl border border-brand/10 bg-tint p-4 sm:p-5 lg:w-[320px] lg:flex-shrink-0">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface shadow-sm sm:h-13 sm:w-13">
               <span className="text-ink [&>svg]:h-5 [&>svg]:w-5">
                 <ClockIcon />
@@ -204,7 +204,7 @@ export default function MockAnalysisPage() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[24px] border border-brand/10 bg-surface shadow-[0_4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.22)]">
+      <section className="overflow-hidden rounded-[24px] border border-brand/10 bg-surface shadow-sm dark:shadow-[0_1px_4px_rgba(0,0,0,0.16)]">
         <div className="border-b border-brand/10 px-4 py-5 sm:px-6 lg:px-8">
           <h2 className="text-[18px] font-extrabold leading-7 text-ink">
             Recent Mocks
@@ -372,7 +372,7 @@ export default function MockAnalysisPage() {
 
         <div className="w-full shrink-0 sm:w-auto">
           <Button
-            href="/home/mock-analysis/upload-scorecard/manual"
+            href="/home/mock-analysis/upload-scorecard"
             variant="primary"
             className="h-14 w-full rounded-xl px-6 py-4 text-[16px] font-bold leading-7 sm:w-56 sm:text-[18px]"
           >
