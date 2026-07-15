@@ -82,7 +82,7 @@ export default function FocusSessionPage() {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-xl rounded-2xl border border-brand/10 bg-surface p-6">
+      <div className="w-full rounded-2xl border border-brand/10 bg-surface p-6">
         <div className="text-center">
           <p className="flex items-center justify-center gap-1 text-xs font-bold uppercase tracking-wide text-muted">
             <ClockIcon />
