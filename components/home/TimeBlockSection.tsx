@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { ChevronDownIcon } from "@/components/ui/icons";
+import Link from "next/link";
+import { ChevronDownIcon, BookmarkIcon } from "@/components/ui/icons";
 
 type TimeBlockSectionProps = {
   icon: ReactNode;
@@ -22,18 +23,20 @@ export function TimeBlockSection({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
-        className="flex w-full items-center gap-2 text-left"
+        className="flex w-full items-center gap-3 pt-2 text-left"
       >
-        <span className="shrink-0 text-ink">{icon}</span>
-        <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink">{title}</span>
-        <span className="shrink-0 text-xs text-muted">{meta}</span>
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
+          {icon}
+        </span>
+        <span className="text-[20px] font-bold leading-7 text-ink">{title}</span>
+        <span className="text-[14px] font-medium leading-5 text-muted">{meta}</span>
         <ChevronDownIcon
-          className={`ml-auto h-4 w-4 text-muted transition-transform ${
+          className={`ml-auto h-5 w-5 shrink-0 text-muted transition-transform ${
             open ? "" : "-rotate-90"
           }`}
         />

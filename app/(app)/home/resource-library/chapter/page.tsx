@@ -60,61 +60,99 @@ export default function ResourceChapterPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
-      <div>
+      <div className="flex flex-col gap-4">
         <Link
           href="/home/resource-library"
-          className="flex w-fit items-center gap-1 text-sm font-semibold text-ink"
+          className="flex w-fit items-center gap-2 text-sm font-semibold text-ink hover:text-brand transition-colors"
         >
           <ArrowLeftIcon />
           Back to Library
         </Link>
 
-        <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-xs text-muted">Physics</p>
-            <h1 className="text-h1 text-ink">Waves</h1>
-            <p className="text-sm text-muted">Chapter 8</p>
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          {/* Left Content */}
+          <div className="min-w-0 flex-1">
+            <p className="text-[14px] font-semibold leading-5 text-ink">
+              Physics
+            </p>
+
+            <h1 className="mt-1 text-[36px] font-extrabold leading-none tracking-[-1px] text-ink sm:text-[42px] lg:text-[48px]">
+              Waves
+            </h1>
+
+            <p className="mt-2 text-[16px] font-medium leading-6 text-muted">
+              Chapter 8
+            </p>
           </div>
+
+          {/* Right Button */}
           <button
             type="button"
-            className="inline-flex h-11 shrink-0 items-center justify-center rounded-lg bg-cta px-5 text-sm font-semibold text-white hover:bg-cta/90"
+            className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-[#FF7A59] px-6 text-[16px] font-bold text-white transition-all hover:bg-[#FF6A45] sm:w-[209px]"
           >
             Practice this chapter
           </button>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-        <p className="flex items-center gap-2 text-sm font-bold text-ink">
-          <FileIcon />
-          Notes <span className="font-normal text-muted">{NOTES.length} resources</span>
-        </p>
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
+            <FileIcon />
+          </span>
+
+          <div className="flex items-center gap-3">
+            <h2 className="text-[24px] font-bold leading-8 text-ink">
+              Notes
+            </h2>
+
+            <span className="text-[14px] font-semibold text-muted">
+              {NOTES.length} resources
+            </span>
+          </div>
+        </div>
+
+        {/* Cards */}
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
           {NOTES.map((resource) => (
             <div
               key={resource.id}
-              className={`flex items-start justify-between gap-2 rounded-xl border bg-surface p-3 ${
-                bookmarked.has(resource.id) ? "border-brand" : "border-brand/10"
-              }`}
+              className={`flex items-center justify-between rounded-2xl border p-5 transition-all ${bookmarked.has(resource.id)
+                  ? "border-brand shadow-sm"
+                  : "border-brand/10 hover:border-brand/20"
+                }`}
             >
-              <div className="flex items-start gap-2">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
+              {/* Left */}
+              <div className="flex min-w-0 items-center gap-4">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
                   <FileIcon />
                 </span>
-                <div>
-                  <p className="text-sm font-bold text-ink">{resource.title}</p>
-                  <p className="text-xs text-muted">
-                    <span className="font-semibold text-ink">{resource.typeLabel}</span>
-                    {" · "}Updated {resource.updated}
-                  </p>
+
+                <div className="min-w-0">
+                  <h3 className="truncate text-[16px] font-bold leading-6 text-ink">
+                    {resource.title}
+                  </h3>
+
+                  <div className="mt-1 flex flex-wrap items-center gap-1 text-[14px] text-muted">
+                    <span className="font-semibold text-ink">
+                      {resource.typeLabel}
+                    </span>
+
+                    <span>•</span>
+
+                    <span>Updated {resource.updated}</span>
+                  </div>
                 </div>
               </div>
+
+              {/* Bookmark */}
               <button
                 type="button"
                 onClick={() => toggleBookmark(resource.id)}
-                aria-pressed={bookmarked.has(resource.id)}
                 aria-label={`Bookmark ${resource.title}`}
-                className="flex h-8 w-8 shrink-0 items-center justify-center text-muted hover:text-ink"
+                aria-pressed={bookmarked.has(resource.id)}
+                className="ml-4 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-tint hover:text-ink"
               >
                 <BookmarkIcon filled={bookmarked.has(resource.id)} />
               </button>
@@ -123,40 +161,64 @@ export default function ResourceChapterPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-        <p className="flex items-center gap-2 text-sm font-bold text-ink">
-          <ChartBarIcon />
-          Formula Sheets{" "}
-          <span className="font-normal text-muted">
-            {FORMULA_SHEETS.length} resources
+      <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
+            <ChartBarIcon />
           </span>
-        </p>
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+
+          <div className="flex items-center gap-3">
+            <h2 className="text-[24px] font-bold leading-8 text-ink">
+              Formula Sheets
+            </h2>
+
+            <span className="text-[14px] font-semibold text-muted">
+              {FORMULA_SHEETS.length} resources
+            </span>
+          </div>
+        </div>
+
+        {/* Cards */}
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
           {FORMULA_SHEETS.map((resource) => (
             <div
               key={resource.id}
-              className={`flex items-start justify-between gap-2 rounded-xl border bg-surface p-3 ${
-                bookmarked.has(resource.id) ? "border-brand" : "border-brand/10"
-              }`}
+              className={`flex items-center justify-between rounded-2xl border p-5 transition-all ${bookmarked.has(resource.id)
+                  ? "border-brand shadow-sm"
+                  : "border-brand/10 hover:border-brand/20"
+                }`}
             >
-              <div className="flex items-start gap-2">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-tint text-xs font-bold text-ink">
+              {/* Left */}
+              <div className="flex min-w-0 items-center gap-4">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint text-[14px] font-bold text-ink">
                   fx
                 </span>
-                <div>
-                  <p className="text-sm font-bold text-ink">{resource.title}</p>
-                  <p className="text-xs text-muted">
-                    <span className="font-semibold text-ink">{resource.typeLabel}</span>
-                    {" · "}Updated {resource.updated}
-                  </p>
+
+                <div className="min-w-0">
+                  <h3 className="truncate text-[16px] font-bold leading-6 text-ink">
+                    {resource.title}
+                  </h3>
+
+                  <div className="mt-1 flex flex-wrap items-center gap-1 text-[14px] text-muted">
+                    <span className="font-semibold text-ink">
+                      {resource.typeLabel}
+                    </span>
+
+                    <span>•</span>
+
+                    <span>Updated {resource.updated}</span>
+                  </div>
                 </div>
               </div>
+
+              {/* Bookmark */}
               <button
                 type="button"
                 onClick={() => toggleBookmark(resource.id)}
                 aria-pressed={bookmarked.has(resource.id)}
                 aria-label={`Bookmark ${resource.title}`}
-                className="flex h-8 w-8 shrink-0 items-center justify-center text-muted hover:text-ink"
+                className="ml-4 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-tint hover:text-ink"
               >
                 <BookmarkIcon filled={bookmarked.has(resource.id)} />
               </button>
