@@ -14,8 +14,8 @@ export function CircularProgress({
   size = 120,
   suffix = "%",
   displayValue,
-  trackColor = "#E2E8F0",
-  progressColor = "#28B485",
+  trackColor = "var(--tint-strong)",
+  progressColor = "var(--success)",
 }: CircularProgressProps) {
   const strokeWidth = 8;
   const radius = (size - strokeWidth) / 2;

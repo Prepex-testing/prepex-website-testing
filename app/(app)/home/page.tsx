@@ -92,7 +92,7 @@ const JOURNAL_STATS = [
 ];
 
 const QUICK_ACCESS = [
-  { href: "/practice", label: "Practice", subtitle: "Solve Questions", icon: <TargetIcon /> },
+  { href: "/practice/sessions", label: "Practice", subtitle: "Solve Questions", icon: <TargetIcon /> },
   {
     href: "/home/journal",
     label: "Weekly Win Journal",
@@ -287,7 +287,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_475px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_475px]">
         <div className="flex min-w-0 flex-col gap-6">
           {isFriday && (
             <div className="rounded-2xl border border-brand/10 bg-surface p-5">

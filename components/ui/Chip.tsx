@@ -9,8 +9,8 @@ type ChipProps = {
 export function Chip({ children, selected = false, onClick }: ChipProps) {
   const classes = `inline-flex h-[34px] items-center justify-center rounded-[8px] border px-4 py-[6px] font-['Plus_Jakarta_Sans'] text-[14px] font-medium leading-5 transition-colors ${
     selected
-      ? "border-[#1A1A4E] bg-[#1A1A4E] text-white"
-      : "border-[#E5E7EB] bg-white text-[#6B7280]"
+      ? "border-brand bg-brand text-white"
+      : "border-brand/15 bg-surface text-muted"
   }`;
 
   if (onClick) {

@@ -24,19 +24,19 @@ type Tone = "danger" | "warning" | "info" | "success";
 const TONE_CLASSES = {
   danger: {
     icon: "bg-danger-bg text-danger",
-    badge: "bg-[#EEF0F8] text-[#1A1A4E]",
+    badge: "bg-tint text-ink",
   },
   warning: {
     icon: "bg-warning-bg text-warning",
-    badge: "bg-[#EEF0F8] text-[#1A1A4E]",
+    badge: "bg-tint text-ink",
   },
   info: {
     icon: "bg-info-bg text-info",
-    badge: "bg-[#EEF0F8] text-[#1A1A4E]",
+    badge: "bg-tint text-ink",
   },
   success: {
     icon: "bg-success-bg text-success",
-    badge: "bg-[#EEF0F8] text-[#1A1A4E]",
+    badge: "bg-tint text-ink",
   },
 };
 const HEADER_STATS: { icon: ReactNode; label: string; value: string }[] = [
@@ -132,10 +132,10 @@ export default function ViewAnalyticsPage() {
       </div>
 
       {/* Mock summary card */}
-      <div className="flex flex-col gap-6 rounded-[24px] border border-[#F1F5F9] bg-white px-[24px] pt-[32px] pb-[24px] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-6 rounded-[24px] border border-brand/10 bg-surface px-[24px] pt-[32px] pb-[24px] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)] sm:flex-row sm:items-center sm:justify-between">
         {/* Left Section */}
         <div className="flex items-center gap-5">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-[#EEF2FF]">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-tint">
             <FileIcon />
           </div>
 
@@ -155,7 +155,7 @@ export default function ViewAnalyticsPage() {
           {HEADER_STATS.map((stat) => (
             <div key={stat.label} className="flex flex-col">
               {/* Label */}
-              <span className="text-[14px] font-medium leading-[20px] text-[#94A3B8]">
+              <span className="text-[14px] font-medium leading-[20px] text-muted">
                 {stat.label}
               </span>
 
@@ -177,37 +177,37 @@ export default function ViewAnalyticsPage() {
       {/* Score summary row */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
 
-        <div className="flex flex-col items-center rounded-[16px] border border-[#F1F5F9] bg-white px-[32px] pt-[28px] pb-[24px] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)]">
+        <div className="flex flex-col items-center rounded-[16px] border border-brand/10 bg-surface px-[32px] pt-[28px] pb-[24px] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
           {/* Title */}
-          <p className="text-[18px] font-bold uppercase leading-[28px] tracking-[0.5px] text-[#94A3B8]">
+          <p className="text-[18px] font-bold uppercase leading-[28px] tracking-[0.5px] text-muted">
             Total Score
           </p>
 
           {/* Score */}
           <div className="mt-3 flex items-end justify-center">
-            <span className="text-[68px] font-extrabold leading-none text-[#0F172A]">
+            <span className="text-[68px] font-extrabold leading-none text-ink">
               168
             </span>
 
-            <span className="mb-[5px] text-[40px] font-bold leading-none text-[#CBD5E1]">
+            <span className="mb-[5px] text-[40px] font-bold leading-none text-muted/50">
               /300
             </span>
           </div>
 
           {/* Improvement */}
-          <div className="mt-6 flex w-full items-center gap-4 rounded-[16px] bg-[#ECFDF5] px-5 py-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-[#D1FAE5]">
-              <span className="text-[#00A651] [&>svg]:h-6 [&>svg]:w-6">
+          <div className="mt-6 flex w-full items-center gap-4 rounded-[16px] bg-success-bg px-5 py-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-success/20">
+              <span className="text-success [&>svg]:h-6 [&>svg]:w-6">
                 <TrendingUpIcon />
               </span>
             </div>
 
             <div>
-              <p className="text-[18px] font-bold leading-[24px] text-[#00A651]">
+              <p className="text-[18px] font-bold leading-[24px] text-success">
                 ↑ 12 Marks
               </p>
 
-              <p className="text-[16px] leading-[20px] text-[#64748B]">
+              <p className="text-[16px] leading-[20px] text-muted">
                 vs last mock
               </p>
             </div>
@@ -215,7 +215,7 @@ export default function ViewAnalyticsPage() {
         </div>
 
 
-        <div className="flex flex-col items-center rounded-[16px] border border-[#F1F5F9] bg-white px-[32px] py-[28px] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)]">
+        <div className="flex flex-col items-center rounded-[16px] border border-brand/10 bg-surface px-[32px] py-[28px] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
           <CircularProgress
             percent={56}
             size={140}
@@ -223,20 +223,20 @@ export default function ViewAnalyticsPage() {
             progressColor="var(--brand)"
           />
 
-          <p className="mt-5 text-[16px] font-semibold leading-none text-[#94A3B8]">
+          <p className="mt-5 text-[16px] font-semibold leading-none text-muted">
             Accuracy
           </p>
         </div>
 
 
-        <div className="flex flex-col items-center justify-center rounded-[16px] border border-[#F1F5F9] bg-white px-8 py-7 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)]">
+        <div className="flex flex-col items-center justify-center rounded-[16px] border border-brand/10 bg-surface px-8 py-7 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
           <PercentileGauge
             value={82}
             size={250}
             showLabel={false}
           />
 
-          <p className="-mt-3 text-[16px] font-semibold text-[#94A3B8]">
+          <p className="-mt-3 text-[16px] font-semibold text-muted">
             Percentile
           </p>
         </div>
@@ -277,7 +277,7 @@ export default function ViewAnalyticsPage() {
                   {/* Icon + Badge */}
                   <div className="flex items-center justify-between">
                     <span
-                      className={`flex h-[42px] w-[42px] items-center justify-center rounded-[12px] bg-[#EEF0F8] text-[#1A1A4E] [&>svg]:h-[18px] [&>svg]:w-[18px]`}
+                      className={`flex h-[42px] w-[42px] items-center justify-center rounded-[12px] bg-tint text-ink [&>svg]:h-[18px] [&>svg]:w-[18px]`}
                     >
                       {pattern.icon}
                     </span>
@@ -290,7 +290,7 @@ export default function ViewAnalyticsPage() {
                   </div>
 
                   {/* Title */}
-                  <h3 className="mt-4 text-[14px] font-semibold leading-none text-[#64748B] break-words">
+                  <h3 className="mt-4 text-[14px] font-semibold leading-none text-muted break-words">
                     {pattern.label}
                   </h3>
 
@@ -300,13 +300,13 @@ export default function ViewAnalyticsPage() {
                       {pattern.marksValue}
                     </span>
 
-                    <span className="text-[14px] font-semibold leading-5 text-[#94A3B8]">
+                    <span className="text-[14px] font-semibold leading-5 text-muted">
                       Marks
                     </span>
                   </div>
 
                   {/* Description */}
-                  <p className="mt-4 text-[14px] leading-5 text-[#64748B] break-words">
+                  <p className="mt-4 text-[14px] leading-5 text-muted break-words">
                     {pattern.description}
                   </p>
 
@@ -317,7 +317,7 @@ export default function ViewAnalyticsPage() {
                   <div className="border-t border-brand/10" />
 
                   {/* Footer */}
-                  <p className="pt-4 text-[14px] font-semibold leading-5 text-[#94A3B8] break-words">
+                  <p className="pt-4 text-[14px] font-semibold leading-5 text-muted break-words">
                     {pattern.detail}
                   </p>
                 </div>
@@ -347,7 +347,7 @@ export default function ViewAnalyticsPage() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-bold">
                       <span className="text-ink">{subject.percent}</span>
-                      <span className="text-[#D1D5DB]">/100</span>
+                      <span className="text-muted/50">/100</span>
                     </span>
 
                     <span className="flex items-center gap-1 font-bold text-ink">

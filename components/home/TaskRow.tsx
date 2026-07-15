@@ -151,7 +151,9 @@ export function TaskRow({
             href={
               task.actionLabel === "Start Session"
                 ? "/home/session"
-                : undefined
+                : task.actionLabel === "Start Revision"
+                  ? "/revision-session"
+                  : undefined
             }
             onClick={
               isStartPractice

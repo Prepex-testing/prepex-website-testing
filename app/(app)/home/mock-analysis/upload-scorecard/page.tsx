@@ -3,6 +3,7 @@
 import { useId, useState } from "react";
 import Link from "next/link";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { DateInput } from "@/components/ui/DateInput";
@@ -71,13 +72,7 @@ export default function UploadScorecardPage() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <button
-            type="button"
-            aria-label="Refresh"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-muted hover:bg-tint-strong"
-          >
-            <RefreshIcon />
-          </button>
+          <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
@@ -133,7 +128,7 @@ function ManualForm() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Select label="Source" placeholder="Select Source" options={SOURCE_OPTIONS} />
         <div className="flex flex-col gap-1">
-          <label className="text-[14px] font-semibold leading-[20px] text-[#334155]">
+          <label className="text-[14px] font-semibold leading-[20px] text-ink">
             Total Marks
           </label>
           <div className="mt-1 flex gap-2">
@@ -168,7 +163,7 @@ function ManualForm() {
         </div>
         <button
           type="button"
-          className="flex h-[34px] w-[186px] shrink-0 items-center justify-center gap-2 rounded-[8px] border border-[#1A1A4E] bg-white px-4 py-2 font-['Plus_Jakarta_Sans'] text-[12px] font-bold leading-4 text-[#1A1A4E] transition-colors"
+          className="flex h-[34px] w-[186px] shrink-0 items-center justify-center gap-2 rounded-[8px] border border-brand bg-surface px-4 py-2 font-['Plus_Jakarta_Sans'] text-[12px] font-bold leading-4 text-brand transition-colors"
         >
           <span className="flex h-4 w-4 items-center justify-center">
             <PlusIcon />
@@ -204,7 +199,7 @@ function UploadImageForm() {
           Drag &amp; drop your screenshot here
         </p>
 
-        <p className="text-xs font-medium text-[#6B7280]">
+        <p className="text-xs font-medium text-muted">
           or
         </p>
 
@@ -246,15 +241,15 @@ function UploadImageForm() {
 
 function QuickLogForm() {
   return (
-    <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6">
+    <div className="rounded-2xl border border-brand/10 bg-surface p-6">
       <div className="flex flex-col gap-8">
         {/* Header */}
         <div>
-          <h2 className="font-['Plus_Jakarta_Sans'] text-[20px] font-bold leading-7 text-[#101828]">
+          <h2 className="font-['Plus_Jakarta_Sans'] text-[20px] font-bold leading-7 text-ink">
             Quickly log your mock score
           </h2>
 
-          <p className="mt-1 font-['Inter'] text-[16px] font-normal leading-6 text-[#667085]">
+          <p className="mt-1 font-['Inter'] text-[16px] font-normal leading-6 text-muted">
             Save now and analyze in detail later.
           </p>
         </div>
@@ -300,7 +295,7 @@ function QuickLogForm() {
         {/* Row 3 */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
-            <label className="mb-2 block text-[14px] font-semibold text-[#344054]">
+            <label className="mb-2 block text-[14px] font-semibold text-ink">
               Time Taken
             </label>
 
@@ -320,8 +315,8 @@ function QuickLogForm() {
           </div>
 
           <div>
-            <label className="mb-2 block text-[14px] font-semibold text-[#344054]">
-              Test Duration <span className="text-[#98A2B3]">(optional)</span>
+            <label className="mb-2 block text-[14px] font-semibold text-ink">
+              Test Duration <span className="text-muted">(optional)</span>
             </label>
 
             <div className="grid grid-cols-2 gap-3">
@@ -344,9 +339,9 @@ function QuickLogForm() {
         <div>
           <label
             htmlFor="quick-log-notes"
-            className="mb-2 block text-[14px] font-semibold text-[#344054]"
+            className="mb-2 block text-[14px] font-semibold text-ink"
           >
-            Notes <span className="text-[#98A2B3]">(optional)</span>
+            Notes <span className="text-muted">(optional)</span>
           </label>
 
           <textarea
@@ -354,10 +349,10 @@ function QuickLogForm() {
             rows={5}
             maxLength={200}
             placeholder="Add any quick notes about this mock..."
-            className="w-full resize-none rounded-xl border border-[#D0D5DD] bg-white px-4 py-3 text-sm outline-none placeholder:text-[#98A2B3] focus:border-[#1A1A4E]"
+            className="w-full resize-none rounded-xl border border-brand/15 bg-surface px-4 py-3 text-sm text-body-text outline-none placeholder:text-muted/70 focus:border-focus-ring"
           />
 
-          <p className="mt-2 text-right text-xs text-[#98A2B3]">
+          <p className="mt-2 text-right text-xs text-muted">
             0 / 200
           </p>
         </div>

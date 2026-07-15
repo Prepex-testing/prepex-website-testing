@@ -36,7 +36,7 @@ export function PercentileGauge({
               A ${radius} ${radius} 0 0 1 ${size - stroke / 2} ${center}
             `}
             fill="none"
-            stroke="#EEF2F7"
+            stroke="var(--tint-strong)"
             strokeWidth={stroke}
             strokeLinecap="round"
           />
@@ -48,7 +48,7 @@ export function PercentileGauge({
               A ${radius} ${radius} 0 0 1 ${size - stroke / 2} ${center}
             `}
             fill="none"
-            stroke="#4C1D95"
+            stroke="var(--brand)"
             strokeWidth={stroke}
             strokeLinecap="round"
             strokeDasharray={circumference}
@@ -57,28 +57,28 @@ export function PercentileGauge({
         </svg>
 
         {/* Top */}
-        <span className="absolute left-1/2 top-0 -translate-x-1/2 text-[10px] font-semibold text-[#94A3B8]">
+        <span className="absolute left-1/2 top-0 -translate-x-1/2 text-[10px] font-semibold text-muted">
           50
         </span>
 
         {/* Left */}
-        <span className="absolute bottom-[36px] left-0 text-[10px] font-semibold text-[#94A3B8]">
+        <span className="absolute bottom-[36px] left-0 text-[10px] font-semibold text-muted">
           0
         </span>
 
         {/* Right */}
-        <span className="absolute bottom-[36px] right-0 text-[10px] font-semibold text-[#94A3B8]">
+        <span className="absolute bottom-[36px] right-0 text-[10px] font-semibold text-muted">
           100
         </span>
 
         {/* Center */}
         <div className="absolute left-1/2 top-[80px] -translate-x-1/2 text-center">
-          <div className="text-[60px] font-bold leading-[60px] tracking-[-0.5px] text-[#0F172A]">
+          <div className="text-[60px] font-bold leading-[60px] tracking-[-0.5px] text-ink">
             {value}
           </div>
 
           {showLabel && (
-            <div className="mt-1 text-[16px] font-semibold text-[#94A3B8]">
+            <div className="mt-1 text-[16px] font-semibold text-muted">
               PERCENTILE
             </div>
           )}

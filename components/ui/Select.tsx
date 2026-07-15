@@ -30,7 +30,7 @@ export function Select({
     <div className="flex flex-col gap-1">
       <label
         htmlFor={selectId}
-        className="text-[14px] font-semibold leading-[20px] text-[#334155]"
+        className="text-[14px] font-semibold leading-[20px] text-ink"
       >
         {label}
         {required && <span className="text-cta"> *</span>}

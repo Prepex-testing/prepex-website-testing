@@ -85,7 +85,13 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
         <Button
           variant="task"
           size="sm"
-          href={task.actionLabel === "Start Session" ? "/home/session" : undefined}
+          href={
+            task.actionLabel === "Start Session"
+              ? "/home/session"
+              : task.actionLabel === "Start Revision"
+                ? "/revision-session"
+                : undefined
+          }
           onClick={isStartPractice ? onStartPractice : undefined}
         >
           {task.actionLabel}
