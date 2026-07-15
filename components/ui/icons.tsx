@@ -639,6 +639,41 @@ export function TrophyIcon() {
   );
 }
 
+type IconProps = {
+  size?: number;
+};
+
+export function TrophyIcons({ size = 16 }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M5 2h6v4a3 3 0 0 1-6 0V2Z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M5 3H3v1.5A2.5 2.5 0 0 0 5.5 7M11 3h2v1.5A2.5 2.5 0 0 1 10.5 7"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
+      <path
+        d="M8 8.5V11M5.5 14h5l-0.5-1.5h-4L5.5 14Z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function InfoIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -664,7 +699,7 @@ export function GripVerticalIcon() {
 
 export function TrendingUpIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg width="24" height="24" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path
         d="M2 11.5 6.5 7l2.5 2.5L14 5"
         stroke="currentColor"
@@ -761,7 +796,7 @@ export function StarIcon() {
 
 export function CopyIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg width="24" height="24" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
       <path
         d="M3 10.5V3.5A1 1 0 0 1 4 2.5h7"
@@ -775,7 +810,7 @@ export function CopyIcon() {
 
 export function PrinterIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg width="24" height="24" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path
         d="M4.5 6V2.5h7V6"
         stroke="currentColor"
