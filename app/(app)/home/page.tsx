@@ -111,7 +111,7 @@ const QUICK_ACCESS = [
     label: "This Week's Focus Topic",
     icon: <LayersIcon />,
   },
-  { href: "/plan/focus-next", label: "Where to focus next", icon: <RadarIcon /> },
+  { href: "/home/focus-next", label: "Where to focus next", icon: <RadarIcon /> },
   { href: "/home/partner", label: "Partner", icon: <UserIcon /> },
   { href: "/home/leaderboard", label: "Leader Board", icon: <TrophyIcon /> },
   { href: "/home/resource-library", label: "Resource Library", icon: <BriefcaseIcon /> },
