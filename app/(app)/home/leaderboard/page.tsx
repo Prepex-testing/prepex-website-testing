@@ -134,7 +134,7 @@ export default function LeaderboardPage() {
       {/* Leaderboard + You panel */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px] lg:gap-8">
         {/* Leaderboard table card */}
-        <div className="overflow-hidden rounded-2xl border border-[#F3F4F6] bg-white shadow-[0px_1px_2px_0px_#0000000D]">
+        <div className="overflow-hidden rounded-2xl border border-[#F3F4F6] bg-surface shadow-[0px_1px_2px_0px_#0000000D]">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#F9FAFB] px-4 py-4 text-xs text-[#9CA3AF] sm:px-6">
             <span className="flex items-center gap-1">
               <ClockIcon />
@@ -210,32 +210,69 @@ export default function LeaderboardPage() {
             </table>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 border-t border-[#F3F4F6] px-4 py-4 text-xs text-muted sm:justify-between sm:px-6">
-            <span className="flex items-center gap-1">
-              Rows per page: 20
-              <ChevronDownIcon className="h-3 w-3" />
-            </span>
-            <div className="flex items-center gap-1">
-              <button type="button" className="px-1 disabled:opacity-30" disabled>
+          {/* Pagination footer — was a fixed h-[65px] single row, now wraps on small screens */}
+          <div className="flex flex-col items-center gap-3 border-t border-[#F3F4F6] px-4 py-4 text-xs sm:flex-row sm:justify-between sm:px-6">
+            {/* Rows per page */}
+            <div className="flex items-center gap-2 text-[#6B7280]">
+              <span>Rows per page:</span>
+              <button
+                type="button"
+                className="flex h-8 items-center gap-1 rounded-md border border-[#E5E7EB] px-2 text-[#6B7280]"
+              >
+                20
+                <ChevronDownIcon className="h-3 w-3" />
+              </button>
+            </div>
+
+            {/* Pagination controls */}
+            <div className="order-first flex flex-wrap items-center justify-center gap-1 sm:order-none">
+              <button
+                type="button"
+                disabled
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-[#9CA3AF] disabled:opacity-40"
+              >
                 ‹
               </button>
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand text-white">
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FF7F5C] text-sm font-semibold text-white"
+              >
                 1
-              </span>
-              <span className="px-1">2</span>
-              <span className="px-1">3</span>
-              <span className="px-1">…</span>
-              <span className="px-1">5</span>
-              <button type="button" className="px-1">
+              </button>
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium text-[#374151] hover:bg-[#F9FAFB]"
+              >
+                2
+              </button>
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium text-[#374151] hover:bg-[#F9FAFB]"
+              >
+                3
+              </button>
+              <span className="px-1 text-[#9CA3AF]">…</span>
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium text-[#374151] hover:bg-[#F9FAFB]"
+              >
+                5
+              </button>
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-[#6B7280]"
+              >
                 ›
               </button>
             </div>
-            <span>Showing 1-10 of 50 students</span>
+
+            {/* Showing count */}
+            <div className="text-[#6B7280]">Showing 1-10 of 50 students</div>
           </div>
         </div>
 
-        {/* You panel */}
-        <div className="flex h-fit flex-col gap-6 rounded-[24px] border border-[#C4C5D84D] bg-white p-8 shadow-[0px_4px_20px_0px_#1A1F360D]">
+        {/* You panel — stretches to match left card height via grid's default align-items: stretch */}
+        <div className="flex flex-col gap-6 rounded-[24px] border border-[#C4C5D84D] bg-surface p-8 shadow-[0px_4px_20px_0px_#1A1F360D]">
           <div className="flex items-center gap-4">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand text-base font-bold text-white">
               R
@@ -257,7 +294,7 @@ export default function LeaderboardPage() {
             </div>
           </div>
 
-          <div className="rounded-xl bg-tint-strong px-4 pb-2 pt-[7px] text-center">
+          <div className="mt-auto rounded-xl bg-tint-strong px-4 pb-2 pt-[7px] text-center">
             <p className="text-2xl font-extrabold text-ink">1184</p>
             <p className="text-[10px] uppercase tracking-wide text-muted">Total Score</p>
           </div>
@@ -265,50 +302,58 @@ export default function LeaderboardPage() {
       </div>
 
       {/* Insight tiles */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-brand/10 bg-surface p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-muted">Rank Velocity</p>
-            <span className="rounded-full bg-success-bg px-2 py-0.5 text-[10px] font-semibold text-success">
+      <div className="grid w-full grid-cols-1 gap-4 pt-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+        {/* Rank Velocity */}
+        <div className="flex min-h-[137px] flex-col justify-between gap-4 rounded-2xl border border-[#EEF0F8] bg-surface p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-bold leading-4 text-[#6B7280]">Rank Velocity</p>
+            <span className="rounded bg-[#DCFCE7] px-2 py-1 text-[10px] font-bold leading-none text-[#16A34A]">
               +12%
             </span>
           </div>
-          <div className="mt-2 flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-tint text-ink">
+
+          <div className="flex items-center gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#EEF0F8] text-[#1A1A4B]">
               <TrendingUpIcon />
             </span>
-            <p className="text-xl font-extrabold text-ink">+2</p>
+            <div>
+              <p className="text-2xl font-bold leading-8 text-[#1A1A4B]">+2</p>
+              <p className="text-xs font-medium text-[#9CA3AF]">Positions</p>
+            </div>
           </div>
-          <p className="text-xs text-muted">Positions</p>
         </div>
 
-        <div className="rounded-2xl border border-brand/10 bg-surface p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-muted">Percentile</p>
-            <span className="rounded-full bg-cta/10 px-2 py-0.5 text-[10px] font-semibold text-cta">
-              Top 5%
-            </span>
+        {/* Percentile */}
+        <div className="flex min-h-[137px] flex-col justify-between gap-4 rounded-2xl border border-[#EEF0F8] bg-surface p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-bold leading-4 text-[#6B7280]">Percentile</p>
+            <span className="text-[10px] font-semibold uppercase text-[#6B7280]">TOP 5%</span>
           </div>
-          <div className="mt-2 flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-tint text-ink">
+
+          <div className="flex items-center gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#EEF0F8] text-[#1A1A4B]">
               <ChartBarIcon />
             </span>
-            <p className="text-xl font-extrabold text-ink">95.42</p>
+            <div>
+              <p className="text-2xl font-bold leading-8 text-[#1A1A4B]">95.42</p>
+            </div>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-brand/10 bg-surface p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-muted">Current Tier</p>
-            <span className="rounded-full bg-info-bg px-2 py-0.5 text-[10px] font-semibold text-info">
-              Gold Tier
-            </span>
+        {/* Current Tier */}
+        <div className="flex min-h-[137px] flex-col justify-between gap-4 rounded-2xl border border-[#EEF0F8] bg-surface p-5 sm:p-6 sm:col-span-2 lg:col-span-1">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-bold leading-4 text-[#6B7280]">Current Tier</p>
+            <span className="text-[10px] font-medium text-[#9CA3AF]">Gold Tier</span>
           </div>
-          <div className="mt-2 flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-info-bg text-info">
+
+          <div className="flex items-center gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#FFF7ED] text-[#F59E0B]">
               <TrophyIcon />
             </span>
-            <p className="text-xl font-extrabold text-ink">Gold</p>
+            <div>
+              <p className="text-[20px] font-bold leading-8 text-[#1A1A4B]">Gold</p>
+            </div>
           </div>
         </div>
       </div>
