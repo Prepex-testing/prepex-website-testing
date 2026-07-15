@@ -123,13 +123,6 @@ export default function TodayPlanPage() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-4">
-          <Link
-            href="/home/streak"
-            className="flex items-center gap-1.5 rounded-full border border-brand/15 bg-surface px-3 py-1.5 text-xs font-semibold text-cta hover:bg-tint-strong"
-          >
-            <FlameIcon />
-            14 Day Streak
-          </Link>
           <ThemeToggle />
           <button
             type="button"
@@ -142,32 +135,53 @@ export default function TodayPlanPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-[280px_1fr]">
-        <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-brand/10 bg-surface p-5 text-center">
-          <CircularProgress percent={35} label="Overall" size={100} />
-          <p className="mt-1 text-sm font-bold text-ink">Daily Goal Progress</p>
-          <span className="flex items-center gap-1 rounded-full bg-success-bg px-2 py-0.5 text-[10px] font-semibold text-success">
-            <span className="h-1.5 w-1.5 rounded-full bg-success" />
-            On Track
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr]">
+        {/* Progress Card */}
+        <div className="flex min-h-[220px] flex-col items-center justify-center rounded-2xl border border-brand/10 bg-surface p-6 text-center shadow-[0px_1px_2px_0px_#1A1A4E0F]">
+          <CircularProgress
+            percent={35}
+            label="Overall"
+            size={110}
+          />
+
+          <p className="mt-6 text-xl font-semibold text-ink">
+            Daily Goal Progress
+          </p>
+
+          <span className="mt-3 inline-flex items-center gap-1 rounded-full border border-[#DCFCE7] bg-white px-3 py-1 text-[10px] font-bold uppercase leading-[15px] text-[#16A34A] dark:border-[#166534] dark:bg-white dark:text-[#16A34A]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" />
+            ON TRACK
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        {/* Stats */}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           {STAT_TILES.map((tile) => (
-            <div key={tile.label} className="rounded-2xl border border-brand/10 bg-surface p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">
+            <div
+              key={tile.label}
+              className="flex min-h-[102px] flex-col justify-between rounded-2xl border border-brand/10 bg-surface p-6 shadow-[0px_1px_2px_0px_#1A1A4E0F]"
+            >
+              <div className="flex items-start justify-between">
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
                   {tile.label}
                 </p>
-                <span className="text-ink">{tile.icon}</span>
+
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#EEF0F8] text-[#1A1A4E]">
+                  {tile.icon}
+                </span>
               </div>
-              <p className="mt-1 text-lg font-extrabold text-ink">{tile.value}</p>
+
+              <p className="mt-5 text-[32px] font-extrabold leading-none text-ink">
+                {tile.value}
+              </p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex flex-col gap-6 rounded-2xl border border-brand/10 bg-surface p-5">
+
+      <div className="flex flex-col gap-6 rounded-2xl p-5">
         <TimeBlockSection icon={<CloudSunIcon />} title="Morning" meta="2 Tasks • 1h 45m">
           <div className="flex flex-col gap-3">
             {MORNING_TASKS.map((task) => (
@@ -193,17 +207,32 @@ export default function TodayPlanPage() {
         </TimeBlockSection>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-        <Button variant="secondary" size="sm" onClick={() => setAddTaskOpen(true)}>
-          <PlusIcon />
-          Add Custom Task
-        </Button>
-        <Button variant="primary" size="sm" onClick={() => setRegenerateOpen(true)}>
-          <RefreshIcon />
-          Regenerate Today&apos;s Plan
-        </Button>
-      </div>
 
+      <div className="py-6">
+        <div className="grid grid-cols-1 gap-7 lg:grid-cols-[7fr_8fr]">
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setAddTaskOpen(true)}
+            className="h-[50px] w-full text-[14px] font-bold"
+          >
+            <PlusIcon />
+            Add Custom Task
+          </Button>
+
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setRegenerateOpen(true)}
+            className="h-[50px] w-full text-[14px] font-bold"
+          >
+            <RefreshIcon />
+            Regenerate Today&apos;s Plan
+          </Button>
+
+        </div>
+      </div>
       <RegeneratePlanModal
         open={isRegenerateOpen}
         onClose={() => setRegenerateOpen(false)}
