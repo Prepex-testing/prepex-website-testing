@@ -195,41 +195,36 @@ export default function HomePage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+
         <div className="rounded-2xl border border-brand/10 bg-surface p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
 
-            {/* Left */}
             <div className="flex items-center gap-4">
-
-              {/* Emoji */}
-              <div className="flex h-15 w-15 items-center justify-center rounded-xl bg-tint">
+              <div className="flex h-15 w-15 shrink-0 items-center justify-center rounded-xl bg-tint">
                 <span className="text-[32px] leading-none">
                   {energyMood.emoji}
                 </span>
               </div>
 
-              {/* Text */}
-              <div className="flex h-15.25 w-54.25 flex-col justify-between gap-1">
-                <p className="text-sm leading-none text-muted">
-                  Today&apos;s Energy
+              <div>
+                <p className="text-sm text-muted">
+                  Today's Energy
                 </p>
 
                 <h3 className="text-3xl font-bold leading-none text-ink">
                   {energyMood.label}
                 </h3>
 
-                <p className="text-sm leading-none text-muted">
+                <p className="text-sm text-muted">
                   Plan optimized for you
                 </p>
               </div>
-
             </div>
 
-            {/* Right */}
             <button
               type="button"
               onClick={() => setCheckInOpen(true)}
-              className="text-sm font-semibold text-brand hover:underline"
+              className="self-start text-sm font-semibold text-ink hover:underline xl:self-center"
             >
               Change
             </button>
@@ -237,24 +232,23 @@ export default function HomePage() {
           </div>
         </div>
 
+
         <Link
           href="/home/streak"
           className="rounded-2xl border border-brand/10 bg-surface p-6 hover:border-brand/30"
         >
           <div className="flex items-center gap-4">
 
-            {/* Icon */}
-            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-cta/10 text-cta">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-cta/10 text-cta">
               <FlameIcon />
             </div>
 
-            {/* Text */}
-            <div className="flex h-12 w-52.5 flex-col justify-between">
+            <div>
               <h3 className="text-2xl font-bold leading-none text-ink">
                 14 Day Streak
               </h3>
 
-              <p className="text-sm leading-none text-muted">
+              <p className="mt-2 text-sm text-muted">
                 Keep going.
               </p>
             </div>
@@ -285,6 +279,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_475px]">
@@ -333,7 +328,7 @@ export default function HomePage() {
                 <div className="min-w-0">
                   <p className="text-base font-bold text-ink">AI Plan for Today</p>
                   <p className="text-xs text-muted">
-                    AI-arranged around your energy today
+                    Generated at 6:00 AM • Based on your energy, backlog & revision schedule
                   </p>
                 </div>
               </div>
@@ -443,16 +438,13 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="h-64.5 rounded-2xl border border-brand/10 bg-surface p-4">
-            <h3 className="text-base font-bold text-ink">
-              Study Consistency
-            </h3>
+          <div className="rounded-2xl border border-brand/10 bg-surface p-4 sm:p-5">
+            <h3 className="text-base font-bold text-ink">Study Consistency</h3>
 
             <div className="mt-5">
               {/* Header */}
-              <div className="grid grid-cols-[56px_repeat(7,12px)] items-center gap-x-6">
+              <div className="grid grid-cols-[36px_repeat(7,1fr)] items-center gap-x-1.5 sm:grid-cols-[48px_repeat(7,1fr)] sm:gap-x-2.5">
                 <div />
-
                 {CONSISTENCY_DAYS.map((day, index) => (
                   <span
                     key={`${day}-${index}`}
@@ -464,21 +456,22 @@ export default function HomePage() {
               </div>
 
               {/* Weeks */}
-              <div className="mt-4 flex flex-col gap-3">
+              <div className="mt-3 flex flex-col gap-2 sm:gap-2.5">
                 {CONSISTENCY_DATA.map((week, weekIndex) => (
                   <div
                     key={weekIndex}
-                    className="grid grid-cols-[56px_repeat(7,12px)] items-center gap-x-6"
+                    className="grid grid-cols-[36px_repeat(7,1fr)] items-center gap-x-1.5 sm:grid-cols-[48px_repeat(7,1fr)] sm:gap-x-2.5"
                   >
                     <span className="text-caption text-muted">
                       Week {weekIndex + 1}
                     </span>
 
                     {week.map((status, dayIndex) => (
-                      <span
-                        key={dayIndex}
-                        className={`h-3 w-3 rounded-sm ${CONSISTENCY_STYLES[status]}`}
-                      />
+                      <span key={dayIndex} className="flex justify-center">
+                        <span
+                          className={`aspect-square w-full max-w-[26px] rounded-lg ${CONSISTENCY_STYLES[status]}`}
+                        />
+                      </span>
                     ))}
                   </div>
                 ))}
@@ -493,7 +486,7 @@ export default function HomePage() {
               </span>
 
               <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-brand/40" />
+                <span className="h-2.5 w-2.5 rounded-full bg-brand/25" />
                 Partial
               </span>
 
