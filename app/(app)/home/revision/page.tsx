@@ -195,7 +195,7 @@ export default function RevisionPage() {
                 {/* Content */}
                 <div className="min-w-0 flex-1">
                   <span
-                    className={`inline-flex rounded-md px-2 py-1 text-[10px] font-bold uppercase ${DIFFICULTY_STYLES[topic.difficulty]}`}
+                    className={`inline-flex rounded-sm px-2 py-1 text-[10px] font-bold uppercase ${DIFFICULTY_STYLES[topic.difficulty]}`}
                   >
                     {topic.difficulty}
                   </span>

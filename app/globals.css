@@ -24,17 +24,22 @@
   --chart-recovery: #fdba74;
   --focus-ring: rgb(255 122 89 / 0.5);
 
+  --subject-bg: #eef0f8;
+  --subject-text: #1a1a4e;
+  --icon-chip-bg: #eef0f8;
+  --plan-avatar-bg: #eef2ff;
+
   --shadow-hover: 0 2px 8px rgb(26 26 78 / 0.08);
   --shadow-modal: 0 8px 24px rgb(26 26 78 / 0.12);
 }
 
 [data-theme="dark"] {
-  --background: #14143a;
-  --surface: #1e1e4d;
-  --ink: #f5f6fb;
+  --background: #0D0D2B;
+  --surface: #111145;
+  --ink: #faf7f2;
   --brand: #6d6dc4;
   --body-text: #e4e5f1;
-  --muted: #9a9cc4;
+  --muted: #8b8998;
   --cta: #ff8a6b;
   --tint: #23234f;
   --tint-strong: #2b2b63;
@@ -51,6 +56,11 @@
   --chart-3: #7dd3fc;
   --chart-recovery: #fdba74;
   --focus-ring: rgb(255 138 107 / 0.6);
+
+  --subject-bg: #1a1a4e;
+  --subject-text: #faf7f2;
+  --icon-chip-bg: #ffffff;
+  --plan-avatar-bg: #1a1a4e;
 
   --shadow-hover: 0 2px 8px rgb(0 0 0 / 0.35);
   --shadow-modal: 0 8px 24px rgb(0 0 0 / 0.5);
@@ -79,6 +89,10 @@
   --color-chart-3: var(--chart-3);
   --color-chart-recovery: var(--chart-recovery);
   --color-focus-ring: var(--focus-ring);
+  --color-subject-bg: var(--subject-bg);
+  --color-subject-text: var(--subject-text);
+  --color-icon-chip-bg: var(--icon-chip-bg);
+  --color-plan-avatar-bg: var(--plan-avatar-bg);
 
   --font-sans: var(--font-jakarta);
 

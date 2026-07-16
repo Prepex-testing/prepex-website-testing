@@ -3,6 +3,7 @@ type PercentileGaugeProps = {
   max?: number;
   size?: number;
   showLabel?: boolean;
+  progressColor?: string;
 };
 
 export function PercentileGauge({
@@ -10,6 +11,7 @@ export function PercentileGauge({
   max = 100,
   size = 140,
   showLabel = true,
+  progressColor = "var(--brand)",
 }: PercentileGaugeProps) {
   const stroke = 12;
 
@@ -48,7 +50,7 @@ export function PercentileGauge({
               A ${radius} ${radius} 0 0 1 ${size - stroke / 2} ${center}
             `}
             fill="none"
-            stroke="var(--brand)"
+            stroke={progressColor}
             strokeWidth={stroke}
             strokeLinecap="round"
             strokeDasharray={circumference}

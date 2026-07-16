@@ -66,10 +66,10 @@ export function TaskRow({
     rounded-lg
     border
     border-[#D6E4FF]
-    bg-white
+    bg-subject-bg
     text-[18px]
     font-bold
-    text-[#1B245A]
+    text-subject-text
   "
           >
             {task.subjectLabel}

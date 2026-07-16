@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import Link from "next/link";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { DateInput } from "@/components/ui/DateInput";
@@ -89,7 +90,7 @@ export default function UploadScorecardPage() {
         <div
           role="tablist"
           aria-label="Upload method"
-          className="mb-6 flex h-[41px] w-fit rounded-[8px] bg-[#1A1A4E] p-1"
+          className="mb-6 flex h-[41px] w-full rounded-[8px] bg-[#1A1A4E] p-1 sm:w-fit"
         >
           {TABS.map((item) => (
             <button
@@ -98,7 +99,7 @@ export default function UploadScorecardPage() {
               role="tab"
               aria-selected={tab === item.id}
               onClick={() => setTab(item.id)}
-              className={`flex h-[33px] items-center justify-center whitespace-nowrap rounded-[6px] px-5 text-[14px] font-semibold leading-[21px] transition-colors ${tab === item.id
+              className={`flex h-[33px] flex-1 items-center justify-center whitespace-nowrap rounded-[6px] px-2 text-[12px] font-semibold leading-[21px] transition-colors sm:flex-none sm:px-5 sm:text-[14px] ${tab === item.id
                 ? "bg-[#FAF7F2] text-[#1A1A4E]"
                 : "bg-transparent text-white hover:bg-white/10"
                 }`}
@@ -240,6 +241,9 @@ function UploadImageForm() {
 }
 
 function QuickLogForm() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   return (
     <div className="rounded-2xl border border-brand/10 bg-surface p-6">
       <div className="flex flex-col gap-8">
@@ -359,11 +363,17 @@ function QuickLogForm() {
 
         {/* Buttons */}
         <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <Button variant="secondary">
+          <Button
+            variant="secondary"
+            style={isDark ? { borderColor: "#FAF7F2" } : undefined}
+          >
             Save &amp; Analyze Now
           </Button>
 
-          <Button variant="primary">
+          <Button
+            variant="primary"
+            className={isDark ? "border border-[#FAF7F2]" : undefined}
+          >
             Save
           </Button>
         </div>

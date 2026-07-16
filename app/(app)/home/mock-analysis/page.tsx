@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
 import {
   BellIcon,
@@ -83,6 +86,10 @@ const RECENT_MOCKS = [
 ];
 
 export default function MockAnalysisPage() {
+  const { resolvedTheme } = useTheme();
+  const iconBgStyle =
+    resolvedTheme === "dark" ? { backgroundColor: "#13133D" } : undefined;
+
   return (
     <div className="flex w-full flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <header className="flex flex-wrap items-center justify-between gap-3">
@@ -110,6 +117,7 @@ export default function MockAnalysisPage() {
           >
             <span
               className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${card.iconClass} [&>svg]:h-6 [&>svg]:w-6`}
+              style={iconBgStyle}
             >
               {card.icon}
             </span>
@@ -120,7 +128,7 @@ export default function MockAnalysisPage() {
               <p className="text-[22px] font-bold leading-8 text-ink sm:text-[24px]">
                 {card.value}
               </p>
-              <p className="pt-1 text-[11px] font-bold leading-[16.5px] text-ink">
+              <p className="pt-1 text-[11px] font-bold leading-[16.5px] text-muted">
                 {card.caption}
               </p>
             </div>
@@ -131,7 +139,10 @@ export default function MockAnalysisPage() {
       <section className="flex flex-col gap-6 rounded-[20px] border border-brand/10 bg-surface p-4 shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_1px_6px_rgba(0,0,0,0.18)] sm:p-5 lg:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint p-2 text-ink [&>svg]:h-6 [&>svg]:w-6">
+            <span
+              className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint p-2 text-ink [&>svg]:h-6 [&>svg]:w-6"
+              style={iconBgStyle}
+            >
               <CalendarIcon />
             </span>
             <p className="text-[18px] font-bold leading-7 text-ink sm:text-[20px]">
@@ -183,7 +194,10 @@ export default function MockAnalysisPage() {
           </div>
 
           <div className="flex w-full items-center gap-4 rounded-xl border border-brand/10 bg-tint p-4 sm:p-5 lg:w-[320px] lg:flex-shrink-0">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface shadow-sm sm:h-13 sm:w-13">
+            <div
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface shadow-sm sm:h-13 sm:w-13"
+              style={iconBgStyle}
+            >
               <span className="text-ink [&>svg]:h-5 [&>svg]:w-5">
                 <ClockIcon />
               </span>
@@ -272,7 +286,7 @@ export default function MockAnalysisPage() {
                   <td className="py-5 text-center">
                     <Link
                       href="/home/mock-analysis/view-analytics"
-                      className="inline-flex h-8 min-w-[112px] items-center justify-center rounded-lg border border-brand bg-surface px-3 text-caption font-bold leading-4 text-brand transition hover:bg-brand hover:text-white"
+                      className="inline-flex h-8 min-w-[112px] items-center justify-center rounded-lg border border-ink bg-surface px-3 text-caption font-bold leading-4 text-ink transition hover:border-cta hover:bg-cta hover:text-white"
                     >
                       {mock.action}
                     </Link>
@@ -338,7 +352,7 @@ export default function MockAnalysisPage() {
 
               <Link
                 href="/home/mock-analysis/view-analytics"
-                className="mt-4 inline-flex h-9 items-center justify-center rounded-lg border border-brand bg-surface px-4 text-caption font-bold leading-4 text-brand transition hover:bg-brand hover:text-white"
+                className="mt-4 inline-flex h-9 items-center justify-center rounded-lg border border-ink bg-surface px-4 text-caption font-bold leading-4 text-ink transition hover:border-cta hover:bg-cta hover:text-white"
               >
                 {mock.action}
               </Link>
@@ -355,7 +369,10 @@ export default function MockAnalysisPage() {
 
       <section className="flex flex-col gap-4 rounded-[20px] border border-brand/10 bg-surface px-4 py-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.18)] sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8 lg:py-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-brand/20 bg-surface text-ink">
+          <div
+            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-brand/20 bg-surface text-ink"
+            style={iconBgStyle}
+          >
             <UploadIcon />
           </div>
 

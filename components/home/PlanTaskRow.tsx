@@ -49,14 +49,14 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
       </span>
 
       {/* Avatar — 56x56, rounded-lg (8px), #EEF2FF fill, 24px bold #1A1A4E */}
-      <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[#EEF2FF] text-2xl font-bold leading-8 text-[#1A1A4E]">
+      <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-plan-avatar-bg text-2xl font-bold leading-8 text-subject-text">
         {task.subjectLabel}
       </span>
 
       {/* Content column */}
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] font-bold uppercase leading-[15px] tracking-[1px] text-[#1A1A4E]">
+          <span className="text-[10px] font-bold uppercase leading-[15px] tracking-[1px] text-muted">
             {task.subjectName}
           </span>
           <span
@@ -66,7 +66,7 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
           </span>
         </div>
 
-        <p className="mt-0.5 text-base font-bold leading-6 text-[#111827]">
+        <p className="mt-0.5 text-base font-bold leading-6 text-ink">
           {task.title}
         </p>
 

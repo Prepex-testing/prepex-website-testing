@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { TimeBlockSection } from "@/components/home/TimeBlockSection";
 import { PlanTaskRow } from "@/components/home/PlanTaskRow";
 import type { PlanTask } from "@/components/home/PlanTaskRow";
@@ -110,6 +111,9 @@ export default function TodayPlanPage() {
   const [isPracticeModalOpen, setPracticeModalOpen] = useState(false);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
 
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -143,6 +147,10 @@ export default function TodayPlanPage() {
             percent={35}
             label="Overall"
             size={110}
+            progressColor={isDark ? "#FAF7F2" : undefined}
+            progressGradient={
+              isDark ? undefined : { from: "#1A1A4E", to: "#4C1D95" }
+            }
           />
 
           <p className="mt-6 text-xl font-semibold text-ink">
@@ -167,7 +175,7 @@ export default function TodayPlanPage() {
                   {tile.label}
                 </p>
 
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#EEF0F8] text-[#1A1A4E]">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-icon-chip-bg text-[#1A1A4E]">
                   {tile.icon}
                 </span>
               </div>

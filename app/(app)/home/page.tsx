@@ -133,7 +133,7 @@ const CONSISTENCY_DATA: ConsistencyStatus[][] = [
 const CONSISTENCY_STYLES: Record<ConsistencyStatus, string> = {
   completed: "bg-brand",
   partial: "bg-brand/40",
-  missed: "bg-brand/10",
+  missed: "bg-tint-strong",
 };
 
 function subscribeNoop() {
@@ -486,12 +486,12 @@ export default function HomePage() {
               </span>
 
               <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-brand/25" />
+                <span className="h-2.5 w-2.5 rounded-full bg-brand/40" />
                 Partial
               </span>
 
               <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-brand/10" />
+                <span className="h-2.5 w-2.5 rounded-full bg-tint-strong" />
                 Missed
               </span>
             </div>

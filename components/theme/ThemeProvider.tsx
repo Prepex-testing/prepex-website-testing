@@ -83,6 +83,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", resolvedTheme);
+
+    // Next's viewport.themeColor only follows OS-level prefers-color-scheme,
+    // so it goes stale the moment someone picks a theme in-app that differs
+    // from their system setting. Force both media-variant meta tags to match
+    // what's actually rendered.
+    const themeColor = resolvedTheme === "dark" ? "#000000" : "#faf7f2";
+    document
+      .querySelectorAll('meta[name="theme-color"]')
+      .forEach((meta) => meta.setAttribute("content", themeColor));
   }, [resolvedTheme]);
 
   const setTheme = useCallback((next: Theme) => writeStoredTheme(next), []);

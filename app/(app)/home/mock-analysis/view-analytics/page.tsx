@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { PercentileGauge } from "@/components/ui/PercentileGauge";
@@ -105,6 +108,9 @@ const TEST_STRATEGY = [
 ];
 
 export default function ViewAnalyticsPage() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   return (
     <div className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -135,7 +141,10 @@ export default function ViewAnalyticsPage() {
       <div className="flex flex-col gap-6 rounded-[24px] border border-brand/10 bg-surface px-[24px] pt-[32px] pb-[24px] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)] sm:flex-row sm:items-center sm:justify-between">
         {/* Left Section */}
         <div className="flex items-center gap-5">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-tint">
+          <div
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-tint"
+            style={isDark ? { backgroundColor: "var(--ink)" } : undefined}
+          >
             <FileIcon />
           </div>
 
@@ -155,17 +164,26 @@ export default function ViewAnalyticsPage() {
           {HEADER_STATS.map((stat) => (
             <div key={stat.label} className="flex flex-col">
               {/* Label */}
-              <span className="text-[14px] font-medium leading-[20px] text-muted">
+              <span
+                className="text-[14px] font-medium leading-[20px] text-muted"
+                style={isDark ? { color: "var(--ink)" } : undefined}
+              >
                 {stat.label}
               </span>
 
               {/* Icon + Value */}
               <div className="mt-[4px] flex items-center gap-[6px]">
-                <span className="flex h-4 w-4 items-center justify-center text-ink [&>svg]:h-4 [&>svg]:w-4">
+                <span
+                  className="flex h-4 w-4 items-center justify-center text-ink [&>svg]:h-4 [&>svg]:w-4"
+                  style={isDark ? { color: "var(--muted)" } : undefined}
+                >
                   {stat.icon}
                 </span>
 
-                <span className="text-[16px] font-bold leading-[24px] text-ink whitespace-nowrap">
+                <span
+                  className="text-[16px] font-bold leading-[24px] text-ink whitespace-nowrap"
+                  style={isDark ? { color: "var(--muted)" } : undefined}
+                >
                   {stat.value}
                 </span>
               </div>
@@ -195,7 +213,11 @@ export default function ViewAnalyticsPage() {
           </div>
 
           {/* Improvement */}
-          <div className="mt-6 flex w-full items-center gap-4 rounded-[16px] bg-success-bg px-5 py-3">
+          <div
+            className={`mt-6 flex w-full items-center gap-4 rounded-[16px] px-5 py-3 ${
+              isDark ? "" : "bg-success-bg"
+            }`}
+          >
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-success/20">
               <span className="text-success [&>svg]:h-6 [&>svg]:w-6">
                 <TrendingUpIcon />
@@ -220,7 +242,10 @@ export default function ViewAnalyticsPage() {
             percent={56}
             size={140}
             trackColor="var(--tint-strong)"
-            progressColor="var(--brand)"
+            progressColor={isDark ? "var(--ink)" : undefined}
+            progressGradient={
+              isDark ? undefined : { from: "#1A1A4E", to: "#4C1D95" }
+            }
           />
 
           <p className="mt-5 text-[16px] font-semibold leading-none text-muted">
@@ -234,6 +259,7 @@ export default function ViewAnalyticsPage() {
             value={82}
             size={250}
             showLabel={false}
+            progressColor={isDark ? "#4C1D95" : undefined}
           />
 
           <p className="-mt-3 text-[16px] font-semibold text-muted">
@@ -249,7 +275,10 @@ export default function ViewAnalyticsPage() {
         </span>
         <div>
           <p className="text-sm font-bold uppercase tracking-wide text-ink">AI Insight</p>
-          <p className="mt-1 text-base leading-6 text-body-text">
+          <p
+            className="mt-1 text-[18px] leading-6 text-body-text"
+            style={{ color: isDark ? "var(--muted)" : "#374151" }}
+          >
             Insight detected: You spent <strong className="font-bold">90 min</strong> on{" "}
             <strong className="font-bold">Maths</strong> (your middle subject), leaving only{" "}
             <strong className="font-bold">45 min</strong> for{" "}
@@ -277,7 +306,7 @@ export default function ViewAnalyticsPage() {
                   {/* Icon + Badge */}
                   <div className="flex items-center justify-between">
                     <span
-                      className={`flex h-[42px] w-[42px] items-center justify-center rounded-[12px] bg-tint text-ink [&>svg]:h-[18px] [&>svg]:w-[18px]`}
+                      className={`flex h-[42px] w-[42px] items-center justify-center rounded-[12px] [&>svg]:h-[18px] [&>svg]:w-[18px] ${tone.icon}`}
                     >
                       {pattern.icon}
                     </span>
@@ -290,7 +319,10 @@ export default function ViewAnalyticsPage() {
                   </div>
 
                   {/* Title */}
-                  <h3 className="mt-4 text-[14px] font-semibold leading-none text-muted break-words">
+                  <h3
+                    className="mt-4 text-[14px] font-semibold leading-none text-muted break-words"
+                    style={isDark ? { color: "var(--ink)" } : undefined}
+                  >
                     {pattern.label}
                   </h3>
 
@@ -306,7 +338,10 @@ export default function ViewAnalyticsPage() {
                   </div>
 
                   {/* Description */}
-                  <p className="mt-4 text-[14px] leading-5 text-muted break-words">
+                  <p
+                    className="mt-4 text-[14px] leading-5 text-muted break-words"
+                    style={isDark ? { color: "var(--ink)" } : undefined}
+                  >
                     {pattern.description}
                   </p>
 
@@ -325,11 +360,20 @@ export default function ViewAnalyticsPage() {
             })}
           </div>
 
-          <div className="rounded-2xl border border-warning bg-warning-bg p-6 text-sm leading-5 text-body-text">
+          <div
+            className={`rounded-2xl p-6 text-sm leading-5 text-body-text ${
+              isDark ? "bg-tint-strong" : "border border-warning bg-warning-bg"
+            }`}
+          >
             <strong className="font-bold">
               Biggest score leak: Conceptual Gaps. Focus on these areas to recover
             </strong>{" "}
-            <span className="font-bold text-cta">+12 to +16 marks.</span>
+            <span
+              className="font-bold text-cta"
+              style={!isDark ? { color: "#F59E0B" } : undefined}
+            >
+              +12 to +16 marks.
+            </span>
           </div>
         </div>
 
@@ -374,7 +418,10 @@ export default function ViewAnalyticsPage() {
             <div className="flex flex-col gap-4">
               {TEST_STRATEGY.map((item, index) => (
                 <div key={item.label} className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand text-xs font-bold text-white">
+                  <span
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ink text-xs font-bold text-white"
+                    style={isDark ? { color: "#1A1A4E" } : undefined}
+                  >
                     {index + 1}
                   </span>
                   <div className="min-w-0 flex-1">
@@ -400,7 +447,7 @@ export default function ViewAnalyticsPage() {
               <p className="text-[11px] font-bold uppercase tracking-[1.1px] text-ink">
                 Strategy Note
               </p>
-              <p className="mt-2 text-xs leading-5 text-muted">
+              <p className="mt-2 text-link leading-5">
                 Excessive time in Maths impacted Chemistry quality. Rebalance next time.
               </p>
             </div>
@@ -418,12 +465,11 @@ export default function ViewAnalyticsPage() {
           </p>
         </div>
         <Button variant="primary" size="sm">
-          <SwapVerticalIcon />
           Swap &amp; Solve
         </Button>
       </div>
 
-      <div className="rounded-sm bg-brand py-3 text-center text-xs font-medium text-white">
+      <div className="rounded-sm bg-tint-strong/30 py-3 text-center text-[16px] font-semibold leading-none text-ink">
         Mock scores never visible to partner.
       </div>
     </div>
