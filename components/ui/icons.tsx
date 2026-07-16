@@ -1391,3 +1391,23 @@ export function FireIcon({ className = "h-6 w-6" }: { className?: string }) {
     </svg>
   );
 }
+
+export function LightningIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M9.9 1.8L4.8 9H8.1L7.2 16.2L13.2 7.8H9.9L9.9 1.8Z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

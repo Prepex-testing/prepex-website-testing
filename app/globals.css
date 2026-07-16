@@ -31,6 +31,9 @@
 
   --shadow-hover: 0 2px 8px rgb(26 26 78 / 0.08);
   --shadow-modal: 0 8px 24px rgb(26 26 78 / 0.12);
+
+  --question-dot-active: #1E1B4B;
+  --question-dot-inactive: #D1D5DB;
 }
 
 [data-theme="dark"] {
@@ -64,6 +67,9 @@
 
   --shadow-hover: 0 2px 8px rgb(0 0 0 / 0.35);
   --shadow-modal: 0 8px 24px rgb(0 0 0 / 0.5);
+
+  --question-dot-active: #FAF7F2;
+  --question-dot-inactive: rgba(250, 247, 242, 0.25);
 }
 
 @theme inline {
@@ -106,6 +112,9 @@
   --shadow-hover: var(--shadow-hover);
   --shadow-modal: var(--shadow-modal);
   --radius-md: 16px;
+
+  --color-question-dot-active: var(--question-dot-active);
+  --color-question-dot-inactive: var(--question-dot-inactive);
 }
 
 html {

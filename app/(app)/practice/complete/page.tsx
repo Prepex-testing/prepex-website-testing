@@ -13,6 +13,7 @@ import {
   BoltIcon,
   AlertTriangleIcon,
   BookIcon,
+  LightningIcon,
 } from "@/components/ui/icons";
 
 type Mastery = "mastered" | "on-track" | "needs-work" | "critical";
@@ -72,137 +73,189 @@ function PracticeCompleteContent() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-brand/10 bg-surface p-5">
-        <div className="flex min-w-0 items-center gap-4">
-          <CircularProgress percent={percent} displayValue={`${correct}/${total}`} suffix="" label="Score" size={90} />
-          <div className="min-w-0">
-            <p className="text-lg font-bold text-ink">Practice Complete</p>
-            <p className="text-sm text-muted">Maths • Coordinate Geometry</p>
-            <div className="mt-2 flex items-center gap-2">
-              <span className="rounded-full border border-brand/15 px-3 py-1 text-xs font-semibold text-ink">
+      <div className="w-full rounded-3xl border border-brand/10 bg-surface shadow-hover">
+        <div className="grid h-[274px] grid-cols-[220px_1fr_240px] items-center gap-10 px-10">
+
+          {/* Score */}
+          <div className="flex items-center justify-center pl-4">
+            <CircularProgress
+              percent={percent}
+              displayValue={`${correct}/${total}`}
+              suffix=""
+              label="SCORE"
+              size={168}
+            />
+          </div>
+
+          {/* Content */}
+          <div className="flex flex-col justify-center">
+            <h2 className="text-[36px] font-extrabold leading-[40px] tracking-[-0.9px] text-ink whitespace-nowrap">
+              Practice Complete
+            </h2>
+
+            <p className="mt-2 text-[20px] font-semibold leading-7 text-ink whitespace-nowrap">
+              Maths • Coordinate Geometry
+            </p>
+
+            <div className="mt-5 flex items-center gap-3">
+              <span className="flex h-9 items-center gap-2 rounded-2xl border border-muted px-4 text-[14px] font-bold text-muted">
+                <ClockIcon />
                 {minutes} min
               </span>
-              <span className="rounded-full border border-brand/15 px-3 py-1 text-xs font-semibold text-ink">
+
+              <span className="flex h-9 items-center gap-2 rounded-2xl border border-muted px-4 text-[14px] font-bold text-muted whitespace-nowrap">
+                <LightningIcon />
                 Avg {avgPerQuestion} min/Q
               </span>
             </div>
           </div>
+
+          {/* Button */}
+          <div className="flex items-center justify-end">
+            <Button
+              href="/practice/custom"
+              className="h-[46px] w-[217px] whitespace-nowrap rounded-xl bg-cta px-10 text-base font-semibold text-white hover:bg-cta"
+            >
+              Add Custom Practice
+            </Button>
+          </div>
+
         </div>
-        <Button href="/practice/custom" variant="secondary" size="sm" className="shrink-0">
-          Add Custom Practice
-        </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
-        <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">
-            Performance Breakdown
+    <div className="mx-auto w-full max-w-[1046px]">
+  <div className="grid grid-cols-1 gap-10 xl:grid-cols-[minmax(0,684px)_322px]">
+
+    {/* LEFT COLUMN */}
+    <div className="flex min-w-0 flex-col gap-6">
+
+      {/* PERFORMANCE BREAKDOWN */}
+      <div className="flex h-[72px] items-center rounded-2xl border border-brand/10 bg-surface px-6">
+        <p className="text-[14px] font-bold uppercase tracking-[1.4px] leading-5 text-body-text">
+          PERFORMANCE BREAKDOWN
+        </p>
+      </div>
+
+      {/* Four Cards */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {SKILLS.map((skill) => {
+          const skillPercent = Math.round(
+            (skill.correct / skill.total) * 100
+          );
+
+          return (
+            <div
+              key={skill.name}
+              className="flex min-h-[126px] flex-col justify-between rounded-2xl border border-brand/10 bg-surface p-6"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-base font-bold text-ink">
+                  {skill.name}
+                </p>
+
+                <span
+                  className={`rounded-full px-2 py-1 text-[9px] font-bold uppercase whitespace-nowrap ${MASTERY_STYLES[skill.mastery]}`}
+                >
+                  {MASTERY_LABELS[skill.mastery]}
+                </span>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-sm text-muted">
+                  {skill.correct}/{skill.total} Correct
+                </span>
+
+                <span className="text-[14px] font-bold text-ink">
+                  {skillPercent}%
+                </span>
+              </div>
+
+              <div className="mt-3 h-2 rounded-full bg-tint-strong">
+                <div
+                  className="h-2 rounded-full bg-brand"
+                  style={{ width: `${skillPercent}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Consistency */}
+      <div className="flex min-h-[121px] flex-col justify-center rounded-2xl border border-brand/10 bg-surface p-6">
+        <p className="text-[10px] font-bold uppercase tracking-[1.2px] text-muted">
+          CONSISTENCY
+        </p>
+
+        <p className="mt-2 text-[42px] font-extrabold leading-none text-ink">
+          12 Day Streak
+        </p>
+      </div>
+    </div>
+
+    {/* RIGHT COLUMN */}
+    <div className="flex min-w-0 flex-col gap-6">
+
+      {/* Recovery */}
+      <div className="min-h-[291px] rounded-2xl border-l-4 border-cta bg-surface p-6 shadow-sm">
+        <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[1.2px] text-cta">
+          <BoltIcon />
+          Recovery Detected
+        </p>
+
+        <div className="mt-5">
+          <h3 className="text-[18px] font-bold leading-7 text-ink">
+            Common Tangents needs work
+          </h3>
+
+          <p className="mt-3 text-[16px] leading-8 text-body-text">
+            System analysis suggests reviewing geometric properties of
+            intersecting circles before next attempt.
           </p>
-          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {SKILLS.map((skill) => {
-              const skillPercent = Math.round((skill.correct / skill.total) * 100);
-              return (
-                <div key={skill.name} className="rounded-xl border border-brand/10 p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-sm font-bold text-ink">{skill.name}</p>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${MASTERY_STYLES[skill.mastery]}`}
-                    >
-                      {MASTERY_LABELS[skill.mastery]}
-                    </span>
-                  </div>
-                  <div className="mt-2 flex items-center justify-between text-xs">
-                    <span className="text-muted">
-                      {skill.correct}/{skill.total} Correct
-                    </span>
-                    <span className="font-semibold text-ink">{skillPercent}%</span>
-                  </div>
-                  <div className="mt-1 h-1.5 rounded-full bg-tint-strong">
-                    <div
-                      className="h-1.5 rounded-full bg-brand"
-                      style={{ width: `${skillPercent}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-4 rounded-xl bg-cta/10 p-4">
-            <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-cta">
-              <AlertTriangleIcon />
-              Next Focus
-            </p>
-            <p className="mt-1 text-sm font-bold text-ink">Gap to close</p>
-            <p className="text-xs text-muted">
-              The trouble was finding circle intersections. Three more focused attempts and
-              you&apos;ll have it.
-            </p>
-          </div>
-
-          <div className="mt-4 flex flex-col gap-2">
-            <Link
-              href="/practice/analysis"
-              className="flex h-11 w-full items-center justify-center rounded-lg bg-cta text-sm font-semibold text-white hover:bg-cta/90"
-            >
-              View Question by Question Analysis
-            </Link>
-            <button
-              type="button"
-              className="flex h-11 w-full items-center justify-center rounded-lg border border-brand/15 bg-surface text-sm font-semibold text-body-text hover:bg-tint-strong"
-            >
-              View Solution
-            </button>
-          </div>
         </div>
+      </div>
 
-        <div className="flex flex-col gap-4">
-          <div className="rounded-2xl border border-brand/10 bg-surface p-4">
-            <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-cta">
-              <BoltIcon />
-              Recovery Detected
+      {/* Notebook */}
+      <div className="min-h-[94px] rounded-2xl border border-brand/10 bg-surface p-4">
+        <div className="flex items-center gap-4">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-tint">
+            <BookIcon />
+          </span>
+
+          <div className="min-w-0">
+            <p className="text-[16px] font-semibold leading-6 text-ink">
+              5 questions added to Mistake Notebook
             </p>
-            <p className="mt-1 text-sm font-bold text-ink">Common Tangents needs work</p>
-            <p className="mt-1 text-xs text-muted">
-              System analysis suggests reviewing geometric properties of intersecting circles
-              before next attempt.
+
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-[1.2px] text-muted">
+              Automated Update
             </p>
-          </div>
-
-          <div className="flex items-start gap-3 rounded-2xl border border-brand/10 bg-surface p-4">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tint text-ink">
-              <BookIcon />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-ink">
-                5 questions added to Mistake Notebook
-              </p>
-              <p className="text-[10px] uppercase tracking-wide text-muted">
-                Automated Update
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 rounded-2xl border border-brand/10 bg-surface p-4">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tint text-ink">
-              <ClockIcon />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-ink">Tomorrow&apos;s plan updated</p>
-              <p className="text-[10px] uppercase tracking-wide text-muted">
-                AI Scheduler
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-brand/10 bg-surface p-4">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
-              Consistency
-            </p>
-            <p className="text-lg font-bold text-ink">12 Day Streak</p>
           </div>
         </div>
       </div>
+
+      {/* Tomorrow */}
+      <div className="min-h-[94px] rounded-2xl border border-brand/10 bg-surface p-4">
+        <div className="flex items-center gap-4">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-tint">
+            <ClockIcon />
+          </span>
+
+          <div className="min-w-0">
+            <p className="text-[16px] font-semibold leading-6 text-ink">
+              Tomorrow&apos;s plan updated
+            </p>
+
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-[1.2px] text-muted">
+              AI Scheduler
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
     </div>
   );
 }
