@@ -19,7 +19,7 @@ const GROUPS = [
   {
     id: "awareness",
     title: "Awareness",
-    subtitle: "Progress and learning awareness notifications.",
+    subtitle: " and learning awareness notifications.",
     items: ["Weekly Win Journal", "Accountability Partner Signals", "Mock Test Reminders"],
     enabled: true,
   },

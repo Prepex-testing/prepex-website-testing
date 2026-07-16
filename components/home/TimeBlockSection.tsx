@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
@@ -23,12 +22,14 @@ export function TimeBlockSection({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="flex flex-col gap-4">
+    // width: fill (w-full, default block behavior) · height: hug (h-auto, default)
+    // gap: 16px between header and task rows → gap-4
+    <div className="flex w-full flex-col gap-4 rounded-2xl border border-brand/10 bg-surface p-5">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
-        className="flex w-full items-center gap-3 pt-2 text-left"
+        className="flex w-full items-center gap-3 text-left"
       >
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
           {icon}
@@ -41,7 +42,6 @@ export function TimeBlockSection({
           }`}
         />
       </button>
-
       {open && <div className="flex flex-col gap-3">{children}</div>}
     </div>
   );

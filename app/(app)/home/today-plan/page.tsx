@@ -181,7 +181,7 @@ export default function TodayPlanPage() {
       </div>
 
 
-      <div className="flex flex-col gap-6 rounded-2xl p-5">
+      <div className="flex flex-col gap-6">
         <TimeBlockSection icon={<CloudSunIcon />} title="Morning" meta="2 Tasks • 1h 45m">
           <div className="flex flex-col gap-3">
             {MORNING_TASKS.map((task) => (
@@ -189,7 +189,6 @@ export default function TodayPlanPage() {
             ))}
           </div>
         </TimeBlockSection>
-
         <TimeBlockSection icon={<SunIcon />} title="Afternoon" meta="1 Task • 1h 15m">
           <div className="flex flex-col gap-3">
             {AFTERNOON_TASKS.map((task) => (
@@ -197,7 +196,6 @@ export default function TodayPlanPage() {
             ))}
           </div>
         </TimeBlockSection>
-
         <TimeBlockSection icon={<CloudMoonIcon />} title="Evening" meta="2 Tasks • 2h 00m">
           <div className="flex flex-col gap-3">
             {EVENING_TASKS.map((task) => (

@@ -145,12 +145,9 @@ export default function PartnerPage() {
 
       <div className="rounded-3xl border border-brand/10 bg-surface p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-8">
-
           {/* Top Section */}
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-
               {/* Avatar */}
               <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-brand/10 bg-tint text-2xl font-extrabold text-ink">
                 PS
@@ -158,7 +155,6 @@ export default function PartnerPage() {
 
               {/* Details */}
               <div className="min-w-0">
-
                 <span className="inline-flex rounded-md bg-tint px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.5px] text-ink">
                   YOUR PARTNER
                 </span>
@@ -175,22 +171,17 @@ export default function PartnerPage() {
                   <span>📍 Maharashtra</span>
                   <span>JEE Main + Advanced 2027</span>
                 </p>
-
               </div>
-
             </div>
-
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
             {STAT_CARDS.map((stat) => (
               <div
                 key={stat.label}
                 className="flex items-center gap-4 rounded-2xl border border-brand/10 bg-surface p-6 shadow-sm transition-colors"
               >
-
                 {/* Icon */}
                 <div
                   className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${stat.iconBg}`}
@@ -200,31 +191,21 @@ export default function PartnerPage() {
 
                 {/* Text */}
                 <div>
-
                   <p className="text-[36px] font-extrabold leading-none text-ink">
                     {stat.value}
                   </p>
-
-                  <p className="mt-1 text-xs font-bold text-muted">
-                    {stat.label}
-                  </p>
-
+                  <p className="mt-1 text-xs font-bold text-muted">{stat.label}</p>
                 </div>
-
               </div>
             ))}
-
           </div>
-
         </div>
       </div>
 
       <div className="rounded-3xl border border-brand/10 bg-surface p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-
           {/* Left */}
           <div className="flex min-w-0 items-center gap-6">
-
             {/* Icon */}
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-brand/10 bg-tint shadow-sm">
               <CalendarIcon />
@@ -241,12 +222,10 @@ export default function PartnerPage() {
                 together.
               </p>
             </div>
-
           </div>
 
           {/* Right */}
           <div className="flex shrink-0 flex-col items-start gap-3 lg:items-end">
-
             <Button
               variant="primary"
               onClick={() => setGoalOpen(true)}
@@ -258,9 +237,7 @@ export default function PartnerPage() {
             <p className="text-center text-[11px] italic text-muted lg:text-right">
               Only available on Sundays
             </p>
-
           </div>
-
         </div>
       </div>
 
@@ -305,184 +282,132 @@ export default function PartnerPage() {
         </div>
       </div>
 
-      <div className="mx-auto flex w-[1082px] gap-6">
-
+      {/* Recent Signals + Send Signal — rebuilt with theme tokens (was hardcoded
+          bg-white/hex colors that stayed white in dark mode) and a responsive
+          grid (was a fixed w-[1082px]/w-[529px] pair that overflowed on
+          anything narrower than that) */}
+      <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-2">
         {/* LEFT PANEL */}
-        <div className="w-[529px] h-[811px] rounded-2xl border border-[#F9FAFB] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] px-8 pt-8 pb-[108px]">
-
+        <div className="flex w-full flex-col rounded-2xl border border-brand/10 bg-surface p-6 shadow-sm sm:p-8">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <h2 className="text-[18px] font-bold text-[#1A1A3F]">
-              Recent Signals
-            </h2>
-
-            <button className="text-sm font-semibold text-[#1A1A4E]">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg font-bold text-ink">Recent Signals</h2>
+            <button type="button" className="text-sm font-semibold text-ink">
               View all
             </button>
           </div>
 
           {/* Signals */}
-          <div className="mt-8 flex flex-col gap-6">
-
+          <div className="mt-6 flex flex-col gap-5 sm:mt-8">
             {signals.map((signal) => (
               <div
                 key={signal.id}
-                className="flex h-[85px] border-b border-[#F3F4F6] pb-5"
+                className="flex items-start gap-4 border-b border-brand/10 pb-5 last:border-0 last:pb-0"
               >
-
                 {/* Icon */}
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#EEF0F8] text-[#1A1A3F]">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
                   {SIGNAL_TYPE_ICONS[signal.type]}
                 </div>
 
                 {/* Content */}
-                <div className="ml-4 flex-1">
-
-                  <div className="flex justify-between">
-
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#7C7C96]">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted">
                       {SIGNAL_TYPES.find((t) => t.id === signal.type)?.label}
                     </p>
-
-                    <span className="text-xs text-[#8E8EA9]">
-                      {signal.time}
-                    </span>
-
+                    <span className="shrink-0 text-xs text-muted">{signal.time}</span>
                   </div>
 
-                  <p className="mt-1 text-[16px] font-bold text-[#1A1A3F]">
-                    {signal.message}
-                  </p>
-
-                  <p className="mt-1 text-sm text-[#6E6E87]">
-                    {signal.note}
-                  </p>
-
+                  <p className="mt-1 text-base font-bold text-ink">{signal.message}</p>
+                  <p className="mt-1 text-sm text-muted">{signal.note}</p>
                 </div>
-
               </div>
             ))}
-
           </div>
-
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="w-[529px] h-[811px] rounded-2xl border border-[#F9FAFB] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] p-8">
-
+        <div className="flex w-full flex-col rounded-2xl border border-brand/10 bg-surface p-6 shadow-sm sm:p-8">
           {/* Heading */}
-          <h2 className="text-[18px] font-bold text-[#1A1A3F]">
-            Send Signal
-          </h2>
-
-          <p className="mt-1 text-sm text-[#6E6E87]">
-            Choose a signal type
-          </p>
+          <h2 className="text-lg font-bold text-ink">Send Signal</h2>
+          <p className="mt-1 text-sm text-muted">Choose a signal type</p>
 
           {/* Signal Type */}
-          <div className="mt-5 flex justify-between">
-
+          <div className="mt-5 grid grid-cols-5 gap-2 sm:gap-3">
             {SIGNAL_TYPES.map((type) => (
-
               <button
                 key={type.id}
+                type="button"
                 onClick={() => setSignalType(type.id)}
                 className="flex flex-col items-center gap-2"
               >
-
                 <div
-                  className={`flex h-14 w-14 items-center justify-center rounded-xl border
-            ${signalType === type.id
-                      ? "bg-[#EEF0F8] border-[#E5E7EB]"
-                      : "border-[#ECECEC]"
-                    }`}
+                  className={`flex h-11 w-11 items-center justify-center rounded-xl border text-ink sm:h-14 sm:w-14 ${
+                    signalType === type.id
+                      ? "border-brand/20 bg-tint"
+                      : "border-brand/10"
+                  }`}
                 >
                   {type.icon}
                 </div>
-
-                <span className="text-xs font-medium text-[#3C3C58]">
+                <span className="text-center text-[10px] font-medium leading-tight text-ink sm:text-xs">
                   {type.label}
                 </span>
-
               </button>
-
             ))}
-
           </div>
 
           {/* Message */}
-          <h3 className="mt-8 text-sm font-semibold text-[#1A1A3F]">
-            Choose a message
-          </h3>
+          <h3 className="mt-8 text-sm font-semibold text-ink">Choose a message</h3>
 
-          <div className="mt-4 space-y-3">
-
+          <div className="mt-4 flex flex-col gap-3">
             {MESSAGES.map((option) => (
-
               <label
                 key={option}
-                className={`flex cursor-pointer items-center rounded-xl border px-4 py-4
-          ${message === option
-                    ? "border-[#3B4DDB]"
-                    : "border-[#ECECEC]"
-                  }`}
+                className={`flex cursor-pointer items-center rounded-xl border px-4 py-4 ${
+                  message === option ? "border-brand" : "border-brand/10"
+                }`}
               >
-
                 <input
                   type="radio"
                   checked={message === option}
                   onChange={() => setMessage(option)}
-                  className="mr-4"
+                  className="mr-4 shrink-0"
                 />
-
-                <span className="text-sm font-medium text-[#2B2B45]">
-                  {option}
-                </span>
-
+                <span className="text-sm font-medium text-ink">{option}</span>
               </label>
-
             ))}
-
           </div>
 
           {/* Reaction */}
-          <h3 className="mt-8 text-sm font-semibold text-[#1A1A3F]">
+          <h3 className="mt-8 text-sm font-semibold text-ink">
             Add a reaction (optional)
           </h3>
 
-          <div className="mt-4 flex gap-3">
-
+          <div className="mt-4 flex flex-wrap gap-3">
             {REACTIONS.map((emoji) => (
-
               <button
                 key={emoji}
-                onClick={() =>
-                  setReaction((r) => (r === emoji ? null : emoji))
-                }
-                className={`flex h-12 w-12 items-center justify-center rounded-lg border
-          ${reaction === emoji
-                    ? "border-[#3B4DDB] bg-[#EEF0F8]"
-                    : "border-[#ECECEC]"
-                  }`}
+                type="button"
+                onClick={() => setReaction((r) => (r === emoji ? null : emoji))}
+                className={`flex h-12 w-12 items-center justify-center rounded-lg border text-xl ${
+                  reaction === emoji ? "border-brand bg-tint" : "border-brand/10"
+                }`}
               >
                 {emoji}
               </button>
-
             ))}
-
           </div>
 
           {/* Button */}
           <Button
             variant="primary"
-            className="mt-10 h-14 w-full rounded-xl bg-[#FF7A59] text-white hover:bg-[#ff6c46]"
+            className="mt-10 h-14 w-full rounded-xl text-base font-bold"
             onClick={handleSend}
           >
             Send Encouragement
           </Button>
-
         </div>
-
       </div>
 
       <PartnerMatchModal

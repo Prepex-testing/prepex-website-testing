@@ -83,34 +83,71 @@ const INSIGHTS = [
 export default function EffortStatsPage() {
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-        <StatCard className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tint-strong text-ink">
-            <ClockIcon />
-          </span>
-          <div>
-            <p className="text-lg font-extrabold text-ink">19.5</p>
-            <p className="text-xs text-muted">Focus hours this week</p>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+        {/* Card 1 */}
+        <StatCard className="min-h-[126px]">
+          <div className="flex items-center gap-5">
+
+            <div className="flex h-16 w-[60px] shrink-0 items-center justify-center rounded-[14px] bg-[#E1DFFF66] dark:bg-tint">
+              <ClockIcon  />
+            </div>
+
+            <div>
+              <h3 className="text-[28px] font-bold leading-none text-ink">
+                19.5
+              </h3>
+
+              <p className="mt-2 text-sm font-semibold text-muted">
+                Focus hours this week
+              </p>
+            </div>
+
           </div>
         </StatCard>
-        <StatCard className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cta/10 text-cta">
-            <FlameIcon />
-          </span>
-          <div>
-            <p className="text-lg font-extrabold text-ink">14 Day Streak</p>
-            <p className="text-xs text-muted">Keep going</p>
+
+        {/* Card 2 */}
+        <StatCard className="min-h-[126px]">
+          <div className="flex items-center gap-5">
+
+            <div className="flex h-16 w-[60px] shrink-0 items-center justify-center rounded-[14px] bg-[#FFF3F0] dark:bg-tint">
+              <FlameIcon />
+            </div>
+
+            <div>
+              <h3 className="text-[28px] font-bold leading-none text-ink">
+                14 Day Streak
+              </h3>
+
+              <p className="mt-2 text-sm font-semibold text-muted">
+                Keep going
+              </p>
+            </div>
+
           </div>
         </StatCard>
-        <StatCard className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tint-strong text-ink">
-            <CalendarIcon />
-          </span>
-          <div>
-            <p className="text-lg font-extrabold text-ink">6/7</p>
-            <p className="text-xs text-muted">Days active this week</p>
+
+        {/* Card 3 */}
+        <StatCard className="min-h-[126px]">
+          <div className="flex items-center gap-5">
+
+            <div className="flex h-16 w-[60px] shrink-0 items-center justify-center rounded-[14px] bg-[#E1DFFF66] dark:bg-tint">
+              <CalendarIcon />
+            </div>
+
+            <div>
+              <h3 className="text-[28px] font-bold leading-none text-ink">
+                6/7
+              </h3>
+
+              <p className="mt-2 text-sm font-semibold text-muted">
+                Days active this week
+              </p>
+            </div>
+
           </div>
         </StatCard>
+
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
@@ -150,13 +187,12 @@ export default function EffortStatsPage() {
               {WEEK_BARS.map((bar) => (
                 <div key={bar.day} className="flex flex-1 flex-col items-center gap-1.5">
                   <span
-                    className={`text-[10px] font-bold ${
-                      bar.state === "today"
+                    className={`text-[10px] font-bold ${bar.state === "today"
                         ? "text-cta"
                         : bar.state === "recovery"
                           ? "text-chart-recovery"
                           : "text-transparent"
-                    }`}
+                      }`}
                   >
                     {bar.state === "today" ? "Today" : bar.state === "recovery" ? "Recovery" : "-"}
                   </span>
