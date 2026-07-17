@@ -5,6 +5,7 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { useState } from "react";
 import Link from "next/link";
 import { Chip } from "@/components/ui/Chip";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   BellIcon,
   FileIcon,
@@ -121,7 +122,7 @@ function MistakeRow({ entry }: { entry: MistakeEntry }) {
         ) : (
           <Link
             href="/home/mistake-notebook/entry"
-            className="inline-flex h-9 w-[138px] items-center justify-center gap-2 rounded-lg border border-brand px-4 text-[14px] font-semibold text-ink transition-colors hover:bg-brand hover:text-white"
+            className="inline-flex h-9 w-[138px] items-center justify-center gap-2 rounded-lg border border-brand px-4 text-[14px] font-semibold text-ink transition-colors hover:bg-[#FF7A59] hover:text-white"
           >
             Start Practice
           </Link>
@@ -143,6 +144,8 @@ function MistakeRow({ entry }: { entry: MistakeEntry }) {
 export default function MistakeNotebookPage() {
   const [subjectFilter, setSubjectFilter] = useState("All");
   const [typeFilter, setTypeFilter] = useState("All");
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -176,7 +179,7 @@ export default function MistakeNotebookPage() {
 
             <span className="text-muted">•</span>
 
-            <span className="font-bold text-cta underline underline-offset-2">
+            <span className="font-bold text-[#F59E0B] underline decoration-[#FED7AA] decoration-[2px] underline-offset-2">
               12 due for review today
             </span>
           </div>
@@ -210,7 +213,9 @@ export default function MistakeNotebookPage() {
                   key={item}
                   onClick={() => setSubjectFilter(item)}
                   className={`h-[34px] rounded-full border px-4 text-[12px] font-medium transition-all ${subjectFilter === item
-                      ? "border-brand bg-brand text-white"
+                    ? "border-brand bg-brand text-white"
+                    : isDark
+                      ? "border-muted text-white bg-transparent hover:bg-tint"
                       : "border-brand text-ink bg-transparent hover:bg-tint"
                     }`}
                 >
@@ -230,7 +235,9 @@ export default function MistakeNotebookPage() {
                   key={item}
                   onClick={() => setTypeFilter(item)}
                   className={`h-[34px] rounded-full border px-4 text-[12px] font-medium transition-all ${typeFilter === item
-                      ? "border-brand bg-brand text-white"
+                    ? "border-brand bg-brand text-white"
+                    : isDark
+                      ? "border-muted text-white bg-transparent hover:bg-tint"
                       : "border-brand text-ink bg-transparent hover:bg-tint"
                     }`}
                 >
@@ -243,34 +250,37 @@ export default function MistakeNotebookPage() {
       </div>
 
       <div className="rounded-2xl border border-brand/10 bg-surface p-6">
-  <div className="flex flex-wrap items-center justify-between gap-3">
-    <p className="flex items-center gap-2 text-[12px] font-extrabold uppercase leading-4 tracking-[1.2px] text-cta">
-      <ClockIcon/>
-      Due Today <span className="text-muted normal-case">(12)</span>
-    </p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="flex items-center gap-2 text-[12px] font-extrabold uppercase leading-4 tracking-[1.2px] text-[#F59E0B]">
+            <ClockIcon />
+            Due Today <span className="text-muted normal-case">(12)</span>
+          </p>
 
-    <div className="flex items-center gap-3">
-      <span className="text-[12px] font-bold leading-4 text-muted">Sort by</span>
-      <button
-        type="button"
-        className="flex h-[34px] items-center gap-3 rounded-xl border border-brand/15 px-4 text-[12px] font-bold leading-4 text-ink"
-      >
-        Due soon
-        <ChevronDownIcon className="h-4 w-4" />
-      </button>
-    </div>
-  </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[12px] font-bold leading-4 text-muted">Sort by</span>
+            <button
+              type="button"
+              className="flex h-[34px] items-center gap-3 rounded-xl border border-brand/15 px-4 text-[12px] font-bold leading-4 text-ink"
+            >
+              Due soon
+              <ChevronDownIcon className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
 
-  <div className="mt-4 flex flex-col gap-4">
-    {DUE_TODAY.map((entry) => (
-      <MistakeRow key={entry.id} entry={entry} />
-    ))}
-  </div>
+        <div className="mt-4 flex flex-col gap-4">
+          {DUE_TODAY.map((entry) => (
+            <MistakeRow key={entry.id} entry={entry} />
+          ))}
+        </div>
 
-  <button type="button" className="mt-3 w-full text-center text-sm font-semibold text-cta">
-    8 more due for review today
-  </button>
-</div>
+        <button
+          type="button"
+          className="mt-3 w-full text-center text-sm font-semibold text-[#F59E0B] underline decoration-[#FED7AA]"
+        >
+          8 more due for review today
+        </button>
+      </div>
 
       <div className="rounded-2xl border border-brand/10 bg-surface p-5">
         <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted">

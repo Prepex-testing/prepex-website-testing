@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   ArrowLeftIcon,
   BellIcon,
@@ -65,13 +68,18 @@ const APRIL_ENTRIES: HistoryEntry[] = [
 ];
 
 function HistoryCard({ entry }: { entry: HistoryEntry }) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   return (
     <div className="rounded-2xl border border-brand/10 bg-surface p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         {/* LEFT SIDE */}
         <div className="flex w-full max-w-[672px] flex-col gap-1">
           {/* Badge */}
-          <span className="inline-flex w-fit items-center rounded-full bg-tint px-2 py-1 text-[9px] font-extrabold uppercase leading-[13.5px] tracking-[0.45px] text-ink">
+          <span
+            className={`inline-flex w-fit items-center rounded-full px-2 py-1 text-[9px] font-extrabold uppercase leading-[13.5px] tracking-[0.45px] ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+          >
             {entry.badge}
           </span>
 
@@ -92,9 +100,11 @@ function HistoryCard({ entry }: { entry: HistoryEntry }) {
             <span>{entry.progressLabel}</span>
             <span className="text-ink">{entry.progressValue}</span>
           </div>
-          <div className="h-[6px] w-full max-w-[320px] rounded-full bg-tint-strong">
+          <div
+            className={`h-[6px] w-full max-w-[320px] rounded-full ${isDark ? "bg-white/15" : "bg-tint-strong"}`}
+          >
             <div
-              className="h-full rounded-full bg-brand"
+              className={`h-full rounded-full ${isDark ? "bg-white" : "bg-brand"}`}
               style={{ width: `${entry.progressPercent}%` }}
             />
           </div>
@@ -109,7 +119,7 @@ function HistoryCard({ entry }: { entry: HistoryEntry }) {
 
           <Link
             href="/home/journal"
-            className="inline-flex h-12 w-[160px] items-center justify-center gap-3 rounded-lg border border-brand px-8 py-4 text-[16px] font-bold text-ink transition-colors hover:bg-tint-strong"
+            className={`inline-flex h-12 w-[160px] items-center justify-center gap-3 rounded-lg border px-8 py-4 text-[16px] font-bold text-ink transition-colors hover:bg-[#FF7A59] hover:text-white ${isDark ? "border-white" : "border-brand"}`}
           >
             View Card
           </Link>
@@ -120,6 +130,9 @@ function HistoryCard({ entry }: { entry: HistoryEntry }) {
 }
 
 export default function WinJournalHistoryPage() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -157,7 +170,9 @@ export default function WinJournalHistoryPage() {
           <div className="flex w-full max-w-[568px] flex-col gap-4">
             {/* Top Labels */}
             <div className="flex flex-wrap items-center gap-3">
-              <span className="rounded-full bg-tint px-3 py-1 text-[10px] font-bold uppercase text-ink">
+              <span
+                className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+              >
                 NEW ACHIEVEMENT
               </span>
 
@@ -185,7 +200,7 @@ export default function WinJournalHistoryPage() {
             <Button
               href="/home/journal"
               variant="secondary"
-              className="h-[55px] w-full sm:w-[236px] rounded-xl px-8 text-[18px] font-bold"
+              className={`h-[55px] w-full sm:w-[236px] rounded-xl px-8 text-[18px] font-bold hover:bg-[#FF7A59]! hover:text-white! ${isDark ? "" : "text-[#1A1A4E]!"}`}
             >
               View Full Card
             </Button>
@@ -194,14 +209,20 @@ export default function WinJournalHistoryPage() {
       </div>
 
       <div className="flex flex-col gap-3">
-        <p className="text-xs font-bold uppercase tracking-wide text-muted">May 2026</p>
+        <p
+          className={`text-xs font-bold uppercase tracking-wide ${isDark ? "text-white" : "text-muted"}`}
+        >
+          May 2026
+        </p>
         {MAY_ENTRIES.map((entry) => (
           <HistoryCard key={entry.id} entry={entry} />
         ))}
       </div>
 
       <div className="flex flex-col gap-3">
-        <p className="text-xs font-bold uppercase tracking-wide text-muted">
+        <p
+          className={`text-xs font-bold uppercase tracking-wide ${isDark ? "text-white" : "text-muted"}`}
+        >
           April 2026
         </p>
         {APRIL_ENTRIES.map((entry) => (

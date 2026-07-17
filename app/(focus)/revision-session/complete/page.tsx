@@ -11,6 +11,7 @@ import {
   TrendingUpIcon,
   ChevronDownIcon,
 } from "@/components/ui/icons";
+import { useTheme } from "@/components/theme/ThemeProvider";
 
 type Difficulty = "Low" | "Medium" | "High";
 
@@ -24,6 +25,8 @@ const STATS = [
 
 export default function RevisionCompletePage() {
   const [difficulty, setDifficulty] = useState<Difficulty>("Medium");
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   return (
     <div className="mx-auto flex w-full max-w-[1083px] flex-col gap-4 p-4 sm:gap-6 sm:p-6 lg:p-8">
@@ -51,7 +54,9 @@ export default function RevisionCompletePage() {
       <div className="w-full max-w-[1083px] rounded-2xl border border-brand/10 bg-surface px-5 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10">
         {/* Success header */}
         <div className="flex w-full flex-col items-center gap-2 text-center sm:gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-success-bg text-success sm:h-12 sm:w-12">
+          <span
+            className={`flex h-11 w-11 items-center justify-center rounded-full text-success sm:h-12 sm:w-12 ${isDark ? "bg-white" : "bg-success-bg"}`}
+          >
             <CheckIcon />
           </span>
 
@@ -69,7 +74,7 @@ export default function RevisionCompletePage() {
           {STATS.map((stat) => (
             <div
               key={stat.label}
-              className="flex flex-col items-center rounded-2xl border border-brand/10 bg-tint-strong p-4 text-center first:col-span-2 sm:p-6 sm:first:col-span-1 lg:h-[194px] lg:justify-center lg:p-8"
+              className="flex flex-col items-center rounded-2xl border border-brand/10  p-4 text-center first:col-span-2 sm:p-6 sm:first:col-span-1 lg:h-[194px] lg:justify-center lg:p-8"
             >
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-tint text-ink sm:h-10 sm:w-10">
                 {stat.icon}
@@ -87,7 +92,9 @@ export default function RevisionCompletePage() {
         </div>
 
         {/* Difficulty rating */}
-        <div className="mt-6 w-full rounded-2xl border-2 border-dashed border-brand/15 bg-tint-strong/40 p-5 sm:mt-10 sm:rounded-3xl sm:p-6 lg:mt-12 lg:p-8">
+        <div
+          className={`mt-6 w-full rounded-2xl border-2 border-dashed p-5 sm:mt-10 sm:rounded-3xl sm:p-6 lg:mt-12 lg:p-8 ${isDark ? "border-white/20" : "border-brand/15"}`}
+        >
           <div className="flex flex-col items-center gap-1 text-center">
             <h3 className="text-base font-bold leading-6 text-ink sm:text-lg lg:text-[20px] lg:leading-7">
               How was this session?
@@ -108,11 +115,12 @@ export default function RevisionCompletePage() {
                   type="button"
                   onClick={() => setDifficulty(option)}
                   aria-pressed={selected}
-                  className={`flex h-16 items-center justify-center rounded-xl border-2 p-2 transition-all sm:h-20 sm:rounded-2xl sm:p-4 lg:h-[104px] ${
-                    selected
-                      ? "border-brand bg-brand text-white"
-                      : "border-brand/15 bg-surface text-ink hover:border-brand/30"
-                  }`}
+                  className={`flex h-16 items-center justify-center rounded-xl border-2 p-2 transition-all sm:h-20 sm:rounded-2xl sm:p-4 lg:h-[104px] ${selected
+                      ? "border-brand bg-surface text-ink"
+                      : isDark
+                        ? "border-white/20 bg-surface text-ink hover:border-white/40"
+                        : "border-brand/15 bg-surface text-ink hover:border-brand/30"
+                    }`}
                 >
                   <span className="text-sm font-bold leading-none sm:text-lg lg:text-[22px]">
                     {option}
@@ -155,7 +163,7 @@ export default function RevisionCompletePage() {
           {/* Next revision */}
           <button
             type="button"
-            className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-tint px-4 py-4 text-left transition-colors hover:bg-tint-strong sm:px-6 sm:py-6"
+            className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-4 text-left transition-colors hover:bg-tint-strong sm:px-6 sm:py-6 ${isDark ? "bg-transparent" : "bg-tint"}`}
           >
             <div className="flex min-w-0 items-center gap-3 sm:gap-4">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface text-ink shadow-sm sm:h-12 sm:w-12">

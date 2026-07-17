@@ -6,6 +6,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { RecoveryModeModal } from "@/components/home/RecoveryModeModal";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   ArrowLeftIcon,
   BellIcon,
@@ -80,6 +81,8 @@ const OTHER_BACKLOG: OtherBacklogItem[] = [
 
 export default function BacklogPage() {
   const [isRecoveryOpen, setRecoveryOpen] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -112,6 +115,7 @@ export default function BacklogPage() {
             suffix=""
             label="Tasks"
             size={72}
+            progressColor="#4C1D95"
           />
 
           <span className="mt-3 inline-flex h-[23px] items-center justify-center rounded-full bg-[#4C1D95] px-3 text-[10px] font-bold uppercase tracking-[0.8px] text-white shadow-[0px_1px_2px_0px_#0000000D]">
@@ -212,7 +216,9 @@ export default function BacklogPage() {
             Priority
           </h2>
 
-          <span className="text-[14px] font-normal leading-[21px] text-muted">
+          <span
+            className={`text-[14px] font-normal leading-[21px] ${isDark ? "text-ink" : "text-muted"}`}
+          >
             (high-impact first)
           </span>
         </div>
@@ -249,7 +255,9 @@ export default function BacklogPage() {
                   {item.overdueDays} days overdue
                 </span>
 
-                <span className="flex items-center gap-1 text-[12px] font-semibold tracking-[0.24px] text-muted">
+                <span
+                  className={`flex items-center gap-1 text-[12px] font-semibold tracking-[0.24px] ${isDark ? "text-white" : "text-muted"}`}
+                >
                   <TargetIcon />
                   weight {item.weight}
                 </span>
@@ -258,7 +266,7 @@ export default function BacklogPage() {
               {/* Progress */}
               <div className="mt-4 h-2 w-full max-w-[482px] rounded-full bg-tint-strong">
                 <div
-                  className="h-2 rounded-full bg-brand"
+                  className={`h-2 rounded-full ${isDark ? "bg-white" : "bg-brand"}`}
                   style={{
                     width: `${item.weight * 100}%`,
                   }}
@@ -270,21 +278,23 @@ export default function BacklogPage() {
             <div className="mt-6 flex items-center gap-2 lg:mt-0 lg:ml-8">
               <button
                 type="button"
-                className="flex h-[44px] w-32 items-center justify-center rounded-lg bg-cta text-[16px] font-semibold text-white transition hover:bg-cta/90"
+                className={`flex h-[44px] w-32 items-center justify-center rounded-lg text-[16px] font-semibold transition hover:bg-[#FF7A59] hover:text-white ${isDark ? "border border-white bg-transparent text-white" : "bg-cta text-white"
+                  }`}
               >
                 Add to plan
               </button>
 
               <button
                 type="button"
-                className="flex h-[44px] w-20 items-center justify-center rounded-lg border border-brand/15 bg-surface text-[16px] font-medium text-body-text transition hover:bg-tint-strong"
+                className={`flex h-[44px] w-20 items-center justify-center rounded-lg border bg-surface text-[16px] font-medium text-body-text transition hover:bg-tint-strong ${isDark ? "border-white" : "border-brand/15"
+                  }`}
               >
                 Hold
               </button>
 
               <button
                 type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-muted hover:bg-tint-strong"
+                className={`flex h-10 w-10 items-center justify-center rounded-lg hover:bg-tint-strong ${isDark ? "text-white" : "text-muted"}`}
               >
                 <span className="rotate-90">
                   <MoreIcon />
@@ -323,7 +333,7 @@ export default function BacklogPage() {
 
                 {/* Content */}
                 <div>
-                  <span className="inline-flex rounded-md bg-tint-strong px-2 py-[2px] text-[10px] font-medium text-ink">
+                  <span className="inline-flex rounded-sm bg-tint-strong px-2 py-[2px] text-[10px] font-medium text-ink">
                     {SUBJECT_LABELS[item.subject]}
                   </span>
 
@@ -341,7 +351,7 @@ export default function BacklogPage() {
               <button
                 type="button"
                 aria-label={`More options for ${item.title}`}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-tint-strong"
+                className={`flex h-8 w-8 items-center justify-center rounded-lg hover:bg-tint-strong ${isDark ? "text-white" : "text-muted"}`}
               >
                 <span className="rotate-90">
                   <MoreIcon />

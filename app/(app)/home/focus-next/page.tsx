@@ -100,16 +100,20 @@ export default function FocusNextPage() {
                   Accuracy
                 </span>
                 <span
-                  className={`mt-1 text-xs font-semibold ${
-                    item.deltaDirection === "up" ? "text-success" : "text-warning"
-                  }`}
+                  className={`mt-1 text-xs font-semibold ${item.deltaDirection === "up" ? "text-success" : "text-warning"
+                    }`}
                 >
                   {item.deltaDirection === "up" ? "↑" : "↓"} {item.deltaDirection === "up" ? "+" : "-"}
                   {item.deltaValue}% this week
                 </span>
               </div>
 
-              <Button href="/practice" variant={item.highlight ? "primary" : "secondary"} size="sm">
+              <Button
+                href="/practice"
+                variant="secondary"
+                size="sm"
+                className="bg-surface text-ink border border-brand/15 hover:!bg-[#FF7A59] hover:!text-white hover:border-[#FF7A59]"
+              >
                 Start Practice
               </Button>
             </div>

@@ -9,6 +9,7 @@ import {
   FileIcon,
   PlayIcon,
 } from "@/components/ui/icons";
+import { useTheme } from "@/components/theme/ThemeProvider";
 
 const QUESTIONS = [
   "What is Newton's First Law of Motion?",
@@ -34,6 +35,8 @@ export default function RevisionSessionPage() {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [recalled, setRecalled] = useState(false);
   const [seconds, setSeconds] = useState(0);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   useEffect(() => {
     const timer = setInterval(() => setSeconds((value) => value + 1), 1000);
@@ -51,7 +54,7 @@ export default function RevisionSessionPage() {
       <div className="flex items-center justify-between gap-2">
         <Link
           href="/home/revision"
-          className="flex w-fit shrink-0 items-center gap-1 text-sm font-bold text-ink"
+          className={`flex w-fit shrink-0 items-center gap-1 text-sm font-bold ${isDark ? "text-muted" : "text-ink"}`}
         >
           <ArrowLeftIcon />
           Exit Session
@@ -68,7 +71,9 @@ export default function RevisionSessionPage() {
           Newton&apos;s Laws
         </h1>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-          <span className="rounded-full bg-tint px-2.5 py-1 text-[10px] font-extrabold uppercase leading-[15px] text-ink">
+          <span
+            className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase leading-[15px] ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+          >
             Physics
           </span>
           <span className="text-[14px] font-medium leading-5 text-muted">
@@ -89,14 +94,15 @@ export default function RevisionSessionPage() {
           {QUESTIONS.map((_, index) => (
             <span
               key={index}
-              className={`h-3 w-3 rounded-full transition-colors ${
-                index <= questionIndex ? "bg-ink" : "bg-ink/10"
-              }`}
+              className={`h-3 w-3 rounded-full transition-colors ${index <= questionIndex ? "bg-ink" : "bg-ink/10"
+                }`}
             />
           ))}
         </div>
         <div className="flex items-center gap-4 rounded-2xl border border-brand/10 bg-surface px-5 py-4 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
+          <span
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+          >
             <ClockIcon />
           </span>
           <div className="flex flex-col items-start">
@@ -121,9 +127,9 @@ export default function RevisionSessionPage() {
         <button
           type="button"
           onClick={() => setRecalled(true)}
-          className={`mt-4 inline-flex h-[60px] items-center justify-center gap-2 rounded-xl border-2 border-brand px-6 text-base font-bold leading-6 text-brand transition-colors ${
-            recalled ? "bg-brand/5" : "hover:bg-brand/5"
-          }`}
+          className={`mt-4 inline-flex h-[60px] items-center justify-center gap-2 rounded-xl border-2 px-6 text-base font-bold leading-6 transition-colors ${isDark ? "border-white text-white" : "border-brand text-brand"
+            } ${recalled ? "bg-brand/5" : "hover:bg-brand/5"
+            }`}
         >
           <CheckIcon />
           I&apos;ve recalled this answer
@@ -175,22 +181,29 @@ export default function RevisionSessionPage() {
           {REFERENCES.map((ref) => (
             <div
               key={ref.label}
-              className="flex flex-col gap-4 rounded-2xl border border-brand/10 bg-surface p-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]"
+              className="flex flex-col rounded-2xl border border-brand/10 bg-surface p-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-tint text-ink">
-                {ref.icon}
-              </span>
-              <div>
-                <p className="text-sm font-bold leading-5 text-ink">
-                  {ref.label}
-                </p>
-                <p className="text-[11px] leading-5 text-muted">
-                  {ref.meta}
-                </p>
+              {/* Top Row */}
+              <div className="flex items-center gap-4">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
+                  {ref.icon}
+                </span>
+
+                <div className="min-w-0">
+                  <p className="text-sm font-bold leading-5 text-ink">
+                    {ref.label}
+                  </p>
+                  <p className="text-[11px] leading-5 text-muted">
+                    {ref.meta}
+                  </p>
+                </div>
               </div>
+
+              {/* Button */}
               <button
                 type="button"
-                className="flex h-[38px] w-full items-center justify-center rounded-lg border border-brand/15 text-sm font-semibold text-ink transition-colors hover:bg-tint-strong"
+                className={`mt-4 flex h-[38px] w-full items-center justify-center rounded-lg border text-sm font-semibold text-ink transition-colors hover:bg-tint-strong ${isDark ? "border-white" : "border-brand/15"
+                  }`}
               >
                 Open ↗
               </button>

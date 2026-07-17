@@ -1,6 +1,7 @@
 "use client";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { useTheme } from "@/components/theme/ThemeProvider";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -72,6 +73,8 @@ const DUE_TODAY = [
 export default function RevisionPage() {
   const [filter, setFilter] = useState("All");
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -93,7 +96,7 @@ export default function RevisionPage() {
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${isDark ? "text-white" : "text-muted"} hover:bg-tint-strong`}
           >
             <BellIcon />
           </button>
@@ -108,7 +111,9 @@ export default function RevisionPage() {
             className="flex min-h-[106px] items-center gap-4 rounded-xl border border-brand/10 bg-surface p-6 shadow-sm transition-colors"
           >
             {/* Icon */}
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-tint text-brand [&>svg]:h-6 [&>svg]:w-6">
+            <div
+              className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-tint [&>svg]:h-6 [&>svg]:w-6 ${isDark ? "text-white" : "text-brand"}`}
+            >
               {card.icon}
             </div>
 
@@ -138,8 +143,12 @@ export default function RevisionPage() {
                 type="button"
                 onClick={() => setFilter(item)}
                 className={`flex h-[42px] items-center justify-center rounded-full border px-5 text-[14px] font-semibold leading-5 transition-all duration-200 ${active
-                  ? "border-brand bg-brand text-white shadow-sm"
-                  : "border-brand/20 bg-surface text-muted hover:border-brand hover:text-ink dark:border-slate-600 dark:hover:border-slate-500"
+                    ? isDark
+                      ? "border-white bg-white text-[#1A1A4E]"
+                      : "border-brand bg-brand text-white"
+                    : isDark
+                      ? "border-white/30 bg-transparent text-white hover:border-white"
+                      : "border-brand/20 bg-surface text-muted hover:border-brand hover:text-ink"
                   }`}
               >
                 {item}
@@ -149,22 +158,28 @@ export default function RevisionPage() {
         </div>
 
         {/* Sort Button */}
-        <button
-          type="button"
-          className="flex h-[38px] min-w-[182px] items-center justify-between rounded-lg border border-brand/20 bg-surface px-4 text-[14px] font-medium text-muted transition-all duration-200 hover:border-brand hover:text-ink dark:border-slate-600 dark:hover:border-slate-500"
-        >
-          <span>Sort by: Due Date</span>
+    <button
+  type="button"
+  className={`flex h-[38px] min-w-[182px] items-center justify-between rounded-lg border px-4 text-[14px] font-medium transition-all duration-200 ${
+    isDark
+      ? "border-white bg-white text-[#1A1A4E] hover:bg-gray-100"
+      : "border-brand/20 bg-surface text-muted hover:border-brand hover:text-ink"
+  }`}
+>
+  <span>Sort by: Due Date</span>
 
-          <span className="flex items-center justify-center">
-            <ChevronDownIcon />
-          </span>
-        </button>
+  <span className="flex items-center justify-center">
+    <ChevronDownIcon />
+  </span>
+</button>
       </div>
 
       <div className="rounded-xl border border-brand/10 bg-surface p-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-muted">
+          <p
+            className={`text-[12px] font-bold uppercase tracking-[0.08em] ${isDark ? "text-white" : "text-muted"}`}
+          >
             Due Today <span className="font-medium">• 5 Topics</span>
           </p>
 
@@ -187,7 +202,9 @@ export default function RevisionPage() {
               <div className="flex min-w-0 flex-1 items-center gap-4">
                 {/* Subject Icon */}
                 <div className="flex h-12 w-12 min-w-[48px] items-center justify-center rounded-xl bg-tint">
-                  <span className="font-['Plus_Jakarta_Sans'] text-[18px] font-bold leading-6 text-brand">
+                  <span
+                    className={`font-['Plus_Jakarta_Sans'] text-[18px] font-bold leading-6 ${isDark ? "text-white" : "text-brand"}`}
+                  >
                     {topic.subjectLabel}
                   </span>
                 </div>
@@ -195,7 +212,7 @@ export default function RevisionPage() {
                 {/* Content */}
                 <div className="min-w-0 flex-1">
                   <span
-                    className={`inline-flex rounded-sm px-2 py-1 text-[10px] font-bold uppercase ${DIFFICULTY_STYLES[topic.difficulty]}`}
+                    className={`inline-flex rounded-sm px-2 py-1 text-[10px] font-bold uppercase ${isDark ? "bg-white/10 text-white" : DIFFICULTY_STYLES[topic.difficulty]}`}
                   >
                     {topic.difficulty}
                   </span>
@@ -213,7 +230,8 @@ export default function RevisionPage() {
               {/* Right */}
               <Link
                 href="/revision-session"
-                className="ml-6 inline-flex h-[38px] min-w-[132px] items-center justify-center rounded-lg border border-brand bg-surface px-4 text-[12px] font-semibold text-brand transition-all hover:bg-brand hover:text-white"
+                className={`ml-6 inline-flex h-[38px] min-w-[132px] items-center justify-center rounded-lg border bg-surface px-4 text-[12px] font-semibold transition-all hover:bg-[#FF7A59] hover:text-white ${isDark ? "border-white text-white" : "border-brand text-brand"
+                  }`}
               >
                 Start Revision
               </Link>
@@ -228,7 +246,7 @@ export default function RevisionPage() {
           onClick={() => setAddTaskOpen(true)}
           className="h-[60px]! w-[323px]! rounded-[12px] px-8 py-4 font-['Plus_Jakarta_Sans'] text-[18px] font-bold leading-7 transition-all duration-300 ease-out"
         >
-          <PlusIcon/>
+          <PlusIcon />
           Add Task
         </Button>
       </div>

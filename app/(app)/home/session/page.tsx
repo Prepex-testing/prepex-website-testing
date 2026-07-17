@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { CrossAppSessionModal } from "@/components/home/CrossAppSessionModal";
 import { SessionCompleteModal } from "@/components/home/SessionCompleteModal";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   ArrowLeftIcon,
   BellIcon,
@@ -42,6 +43,8 @@ export default function FocusSessionPage() {
   const [checklist, setChecklist] = useState(INITIAL_CHECKLIST);
   const [isCrossAppOpen, setCrossAppOpen] = useState(false);
   const [isCompleteOpen, setCompleteOpen] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   useEffect(() => {
     if (isPaused) return;
@@ -87,31 +90,31 @@ export default function FocusSessionPage() {
             2.4px tracking, 32px extrabold title, 14px subtitle at 80% opacity.
             Scaled down below sm: so it doesn't overwhelm a phone screen. */}
         <div className="mx-auto flex max-w-[984px] flex-col items-center gap-2 text-center">
-          <p className="flex items-center justify-center gap-2 text-lg font-semibold uppercase tracking-[1.5px] text-[#333333] sm:text-2xl sm:leading-[31.2px] sm:tracking-[2.4px]">
+          <p className="flex items-center justify-center gap-2 text-lg font-semibold uppercase tracking-[1.5px] text-body-text sm:text-2xl sm:leading-[31.2px] sm:tracking-[2.4px]">
             <ClockIcon  />
             Focus Session
           </p>
 
           <div className="flex flex-col items-center gap-1">
-            <p className="text-2xl font-extrabold leading-none text-[#1A1A4E] sm:text-[32px]">
+            <p className="text-2xl font-extrabold leading-none text-ink sm:text-[32px]">
               Electrochemistry
             </p>
-            <p className="text-sm font-semibold leading-none text-[#464650]/80">
+            <p className={`text-sm font-semibold leading-none ${isDark ? "text-white/70" : "text-[#464650]/80"}`}>
               Physical Chemistry
             </p>
           </div>
         </div>
 
-        <div className="mt-4 rounded-2xl bg-[#F3F4F5]/50 px-4 py-8 text-center sm:px-6">
+        <div className={`mt-4 rounded-2xl px-4 py-8 text-center sm:px-6 ${isDark ? "bg-tint" : "bg-[#F3F4F5]/50"}`}>
           <p
-            className="font-extrabold leading-none tracking-[-2px] text-[#1A1A4E] sm:tracking-[-3px] lg:text-[84px] lg:leading-[84px] lg:tracking-[-4.2px]"
+            className="font-extrabold leading-none tracking-[-2px] text-ink sm:tracking-[-3px] lg:text-[84px] lg:leading-[84px] lg:tracking-[-4.2px]"
             style={{ textShadow: "0px 0px 20px #2D2E6E1A" }}
           >
             <span className="text-5xl sm:text-7xl lg:text-[84px]">
               {formatTime(elapsed)}
             </span>
             <span
-              className="ml-2 align-middle text-xl tracking-[-1px] text-[#464650]/30 sm:text-3xl lg:text-[40px] lg:leading-[40px] lg:tracking-[-4.2px]"
+              className={`ml-2 align-middle text-xl tracking-[-1px] sm:text-3xl lg:text-[40px] lg:leading-[40px] lg:tracking-[-4.2px] ${isDark ? "text-white/30" : "text-[#464650]/30"}`}
               style={{ textShadow: "0px 0px 20px #2D2E6E1A" }}
             >
               /{formatTime(TARGET_SECONDS)}
@@ -125,22 +128,24 @@ export default function FocusSessionPage() {
                 className={`h-4 w-4 rounded-full ${
                   task.done
                     ? "bg-[#10B981] shadow-[0_0_8.6px_0_#FD786358]"
-                    : "bg-brand/10"
+                    : isDark
+                      ? "bg-white/20"
+                      : "bg-brand/10"
                 }`}
               />
             ))}
           </div>
 
-          <p className="mt-3 text-xs font-semibold uppercase leading-[14.4px] tracking-[0.6px] text-[#666666]">
+          <p className="mt-3 text-xs font-semibold uppercase leading-[14.4px] tracking-[0.6px] text-muted">
             {completedCount} of {checklist.length} completed
           </p>
         </div>
 
         <div className="mt-4 flex items-center justify-between gap-2 px-2">
-          <p className="text-xs font-semibold uppercase leading-[14.4px] tracking-[1.2px] text-[#333333]">
+          <p className="text-xs font-semibold uppercase leading-[14.4px] tracking-[1.2px] text-body-text">
             Task Checklist
           </p>
-          <p className="text-xs font-semibold uppercase leading-[14.4px] tracking-[1.2px] text-[#333333]">
+          <p className="text-xs font-semibold uppercase leading-[14.4px] tracking-[1.2px] text-body-text">
             {percent}% Done
           </p>
         </div>
@@ -152,19 +157,25 @@ export default function FocusSessionPage() {
               type="button"
               onClick={() => toggleTask(task.id)}
               aria-pressed={task.done}
-              className={`flex items-center gap-4 rounded-xl border border-[#C7C5D1]/30 bg-white p-4 text-left transition-opacity ${
+              className={`flex items-center gap-4 rounded-xl border p-4 text-left transition-opacity ${
                 task.done ? "opacity-70" : "opacity-100"
-              }`}
+              } ${isDark ? "border-white/10 bg-tint" : "border-[#C7C5D1]/30 bg-white"}`}
             >
               <span
                 className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-[4px] ${
-                  task.done ? "bg-[#E7F9F3] text-[#10B981]" : "border border-[#C7C5D1]"
+                  task.done
+                    ? isDark
+                      ? "border border-white bg-white text-[#10B981]"
+                      : "bg-[#E7F9F3] text-[#10B981]"
+                    : isDark
+                      ? "border border-white bg-white"
+                      : "border border-[#C7C5D1]"
                 }`}
               >
                 {task.done && <CheckIcon  />}
               </span>
               <span
-                className={`text-sm font-medium leading-[21px] text-[#333333] ${
+                className={`text-sm font-medium leading-[21px] text-body-text ${
                   task.done ? "line-through" : ""
                 }`}
               >
@@ -186,7 +197,7 @@ export default function FocusSessionPage() {
             </Button>
             <Button
               variant="secondary"
-              className="h-14 w-full gap-2 rounded-xl border-2 text-base font-bold sm:w-[261px] sm:text-lg"
+              className={`h-14 w-full gap-2 rounded-xl border-2 text-base font-bold sm:w-[261px] sm:text-lg ${isDark ? "border-white/30!" : ""}`}
             >
               <FileIcon />
               Resources
@@ -196,7 +207,7 @@ export default function FocusSessionPage() {
           <button
             type="button"
             onClick={() => setCrossAppOpen(true)}
-            className="flex items-center justify-center gap-2 border-b border-[#EEF0F8] pb-6 text-center text-base font-bold text-[#1A1A4E] sm:text-lg"
+            className="flex items-center justify-center gap-2 border-b border-tint-strong pb-6 text-center text-base font-bold text-ink sm:text-lg"
           >
             Start Cross App Session →
           </button>
@@ -205,7 +216,7 @@ export default function FocusSessionPage() {
             <button
               type="button"
               onClick={() => setCompleteOpen(true)}
-              className="text-base font-bold text-[#666666] underline sm:text-lg"
+              className="text-base font-bold text-muted underline sm:text-lg"
             >
               Complete session
             </button>

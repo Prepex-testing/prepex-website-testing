@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   ArrowLeftIcon,
   BellIcon,
@@ -67,6 +70,9 @@ const FOCUS_ACTIONS = [
 ];
 
 export default function FocusTopicPage() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Page header */}
@@ -93,15 +99,20 @@ export default function FocusTopicPage() {
       {/* Main card */}
       <div className="overflow-hidden rounded-2xl border border-brand/10 bg-surface">
         {/* Top: title + tags + score circle */}
-        <div className="flex flex-wrap items-start justify-between gap-6 p-8">
-          <div className="min-w-0 flex flex-col gap-2">
-            <p className="text-[18px] font-bold leading-none text-ink">
+        <div className="flex items-center justify-between gap-6 p-8">
+          {/* Left */}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[18px] font-bold leading-none text-ink">
               Coord Geo · Common Tangents
             </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-tint-strong px-3 py-1 text-[12px] font-bold leading-4 text-ink">
+
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span
+                className={`rounded-full px-3 py-1 text-[12px] font-bold leading-4 ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint-strong text-ink"}`}
+              >
                 Coordinate Geometry
               </span>
+
               <span className="flex items-center gap-1 rounded-full bg-cta/10 px-3 py-1 text-[12px] font-bold uppercase leading-4 tracking-[1.5px] text-cta">
                 <span className="h-1.5 w-1.5 rounded-full bg-cta" />
                 High Priority
@@ -109,9 +120,16 @@ export default function FocusTopicPage() {
             </div>
           </div>
 
-          <div className="flex shrink-0 flex-col items-center gap-2">
-            <CircularProgress percent={78} label="Score" suffix="" size={88} />
-            <p className="text-[11px] font-bold uppercase tracking-wide text-muted">
+          {/* Right */}
+          <div className="flex shrink-0 flex-col items-center">
+            <CircularProgress
+              percent={78}
+              label="Score"
+              suffix=""
+              size={88}
+            />
+
+            <p className="mt-2 text-[11px] font-bold uppercase tracking-wide text-muted whitespace-nowrap">
               Strong Signal
             </p>
           </div>

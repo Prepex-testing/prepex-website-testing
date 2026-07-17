@@ -31,6 +31,8 @@ import {
   ClockIcon,
   InfoIcon,
   PencilIcon,
+  CheckCircleIcon,
+  ArrowRightIcon,
 } from "@/components/ui/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
 
@@ -285,22 +287,27 @@ export default function HomePage() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_475px]">
         <div className="flex min-w-0 flex-col gap-6">
           {isFriday && (
-            <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-              <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="rounded-[24px] border border-brand/10 bg-surface p-6 shadow-[0px_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0px_2px_8px_rgba(0,0,0,0.2)]">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-base font-bold text-ink">Friday Win Journal</p>
-                  <p className="text-xs text-muted">Weekly reflection & insights</p>
+                  <p className="text-xl font-bold leading-7 text-ink">Weekly Win Journal</p>
+                  <p className="text-xs font-medium text-muted">
+                    Weekly progress reflection & insights
+                  </p>
                 </div>
-                <span className="shrink-0 rounded-full bg-tint-strong px-3 py-1 text-[10px] font-semibold text-ink">
-                  5% Ahead of Timeline
+                <span className="flex shrink-0 items-center gap-2 rounded-full bg-tint-strong px-3 py-1.5 text-xs font-bold text-ink">
+                  <CheckCircleIcon />
+                  3% Ahead of Timeline
                 </span>
               </div>
 
-              <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+              <div className="mt-4 grid grid-cols-3 gap-6 divide-x divide-brand/10 text-center">
                 {JOURNAL_STATS.map((stat) => (
-                  <div key={stat.label}>
-                    <p className="text-2xl font-extrabold text-ink">{stat.value}</p>
-                    <p className="text-[10px] uppercase tracking-wide text-muted">
+                  <div key={stat.label} className="flex flex-col items-center gap-2">
+                    <p className="text-3xl font-extrabold leading-none text-ink">
+                      {stat.value}
+                    </p>
+                    <p className="text-[10px] font-bold uppercase tracking-[1px] text-muted">
                       {stat.label}
                     </p>
                   </div>
@@ -310,11 +317,14 @@ export default function HomePage() {
               <div className="mt-4 flex items-center justify-between border-t border-brand/10 pt-3">
                 <Link
                   href="/home/journal"
-                  className="text-sm font-semibold text-ink underline"
+                  className="text-sm font-bold text-ink"
                 >
                   Explore Full Weekly Summary
                 </Link>
-                <span className="text-xs text-muted">Click to view details</span>
+                <span className="flex items-center gap-1 text-[10px] font-medium text-ink">
+                  Click to view details
+                  <ArrowRightIcon />
+                </span>
               </div>
             </div>
           )}

@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   BellIcon,
   ClockIcon,
@@ -89,6 +92,9 @@ const LEADERBOARD: LeaderboardEntry[] = [
 ];
 
 export default function LeaderboardPage() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Page header */}
@@ -116,16 +122,20 @@ export default function LeaderboardPage() {
       <div className="flex w-full flex-col gap-4">
         <button
           type="button"
-          className="flex h-11 w-fit items-center justify-center rounded-full bg-brand px-8 text-base font-semibold text-white"
+          className={`flex h-11 w-fit items-center justify-center rounded-full px-8 text-base font-semibold ${isDark ? "bg-white text-[#1A1A4E]" : "bg-brand text-white"}`}
         >
           Global
         </button>
 
         <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
-          <span className="text-sm font-semibold leading-6 text-muted sm:text-base">
+          <span
+            className={`text-sm font-semibold leading-6 sm:text-base ${isDark ? "text-white" : "text-muted"}`}
+          >
             Exam: JEE
           </span>
-          <span className="text-sm font-semibold leading-6 text-muted sm:text-base">
+          <span
+            className={`text-sm font-semibold leading-6 sm:text-base ${isDark ? "text-white" : "text-muted"}`}
+          >
             City: Indore
           </span>
         </div>
@@ -146,7 +156,9 @@ export default function LeaderboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] border-collapse text-left">
               <thead>
-                <tr className="bg-tint-strong text-[10px] font-medium uppercase tracking-[0.6px] text-muted">
+                <tr
+                  className={`text-[10px] font-medium uppercase tracking-[0.6px] text-muted ${isDark ? "bg-[#A0A0B0]" : "bg-tint-strong"}`}
+                >
                   <th className="py-3 pl-4 sm:pl-6">Rank</th>
                   <th className="py-3 pl-8">User</th>
                   <th className="py-3 pl-8">Streak</th>
@@ -168,7 +180,9 @@ export default function LeaderboardPage() {
                     </td>
                     <td className="py-4 pl-8">
                       <div className="flex items-center gap-3">
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6.67px] bg-tint text-sm font-bold text-ink">
+                        <span
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[6.67px] text-sm font-bold ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+                        >
                           {entry.initial}
                         </span>
                         <div>
@@ -274,7 +288,9 @@ export default function LeaderboardPage() {
         {/* You panel — stretches to match left card height via grid's default align-items: stretch */}
         <div className="flex flex-col gap-6 rounded-[24px] border border-brand/10 bg-surface p-8 shadow-[0px_4px_20px_0px_#1A1F360D]">
           <div className="flex items-center gap-4">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand text-base font-bold text-white">
+            <span
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-base font-bold ${isDark ? "bg-white text-[#1A1A4E]" : "bg-brand text-white"}`}
+            >
               R
             </span>
             <div>
@@ -294,7 +310,9 @@ export default function LeaderboardPage() {
             </div>
           </div>
 
-          <div className="mt-auto rounded-xl bg-tint-strong px-4 pb-2 pt-[7px] text-center">
+          <div
+            className={`mt-auto rounded-xl px-4 pb-2 pt-[7px] text-center ${isDark ? "bg-[#A0A0B0]" : "bg-tint-strong"}`}
+          >
             <p className="text-2xl font-extrabold text-ink">1184</p>
             <p className="text-[10px] uppercase tracking-wide text-muted">Total Score</p>
           </div>
@@ -313,7 +331,9 @@ export default function LeaderboardPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
+            <span
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+            >
               <TrendingUpIcon />
             </span>
             <div>
@@ -331,7 +351,9 @@ export default function LeaderboardPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
+            <span
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+            >
               <ChartBarIcon />
             </span>
             <div>
@@ -348,7 +370,9 @@ export default function LeaderboardPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-warning-bg text-warning">
+            <span
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-warning ${isDark ? "bg-white" : "bg-warning-bg"}`}
+            >
               <TrophyIcon />
             </span>
             <div>
