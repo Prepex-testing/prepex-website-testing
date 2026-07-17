@@ -157,7 +157,7 @@ export default function LeaderboardPage() {
             <table className="w-full min-w-[720px] border-collapse text-left">
               <thead>
                 <tr
-                  className={`text-[10px] font-medium uppercase tracking-[0.6px] text-muted ${isDark ? "bg-[#A0A0B0]" : "bg-tint-strong"}`}
+                  className={`text-[10px] font-medium uppercase tracking-[0.6px] ${isDark ? "bg-[#4B4B70] text-ink" : "bg-tint-strong text-muted"}`}
                 >
                   <th className="py-3 pl-4 sm:pl-6">Rank</th>
                   <th className="py-3 pl-8">User</th>
@@ -299,19 +299,20 @@ export default function LeaderboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 pt-2 text-center">
-            <div>
+          <div className="flex items-center justify-center gap-4 border-b border-brand/10 pt-2 pb-6 text-center">
+            <div className="flex-1">
               <p className="text-[32px] font-extrabold leading-none text-ink">12</p>
               <p className="mt-2 text-[10px] uppercase tracking-wide text-muted">Rank</p>
             </div>
-            <div>
+            <div className="h-10 w-px shrink-0 bg-brand/10" />
+            <div className="flex-1">
               <p className="text-[32px] font-extrabold leading-none text-ink">48d</p>
               <p className="mt-2 text-[10px] uppercase tracking-wide text-muted">Streak</p>
             </div>
           </div>
 
           <div
-            className={`mt-auto rounded-xl px-4 pb-2 pt-[7px] text-center ${isDark ? "bg-[#A0A0B0]" : "bg-tint-strong"}`}
+            className={`rounded-xl px-4 pb-2 pt-[7px] text-center ${isDark ? "bg-[#4B4B70]" : "bg-tint-strong"}`}
           >
             <p className="text-2xl font-extrabold text-ink">1184</p>
             <p className="text-[10px] uppercase tracking-wide text-muted">Total Score</p>
