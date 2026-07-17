@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   BellIcon,
   FlameIcon,
@@ -25,6 +26,7 @@ import {
   JournalIcon,
   NoStudyIcon,
   CheckInIcon,
+  ChartBarIcon,
 } from "@/components/ui/icons";
 
 const FILTERS = [
@@ -54,7 +56,7 @@ const FILTERS = [
   },
 ];
 
-type DayType = "complete" | "mock" | "recovery" | "journal" | "no-study";
+type DayType = "complete" | "mock" | "recovery" | "journal" | "no-study" | "analysis";
 
 const DAY_TYPE_ICON: Record<DayType, ReactNode> = {
   complete: <CheckIcon />,
@@ -62,6 +64,7 @@ const DAY_TYPE_ICON: Record<DayType, ReactNode> = {
   recovery: <RefreshIcon />,
   journal: <BookIcon />,
   "no-study": <MinusIcon />,
+  analysis: <ChartBarIcon />,
 };
 
 // Visual treatment per day type — soft pastel tints matching the Figma cell states
@@ -72,6 +75,7 @@ const DAY_TYPE_STYLES: Record<DayType, { bg: string; text: string; icon: string 
   recovery: { bg: "bg-surface", text: "text-ink", icon: "text-brand" },
   journal: { bg: "bg-surface", text: "text-ink", icon: "text-brand" },
   "no-study": { bg: "bg-surface", text: "text-muted", icon: "text-cta" },
+  analysis: { bg: "bg-surface", text: "text-ink", icon: "text-brand" },
 };
 
 const DAY_TYPE_PATTERN: (DayType | null)[] = [
@@ -83,6 +87,18 @@ const DAY_TYPE_PATTERN: (DayType | null)[] = [
   null,
   "journal",
 ];
+
+// Marks scored on mock-test days — keyed by date-of-month.
+const MOCK_MARKS: Record<number, number> = {
+  2: 182,
+  9: 195,
+  16: 168,
+  23: 201,
+  30: 175,
+};
+
+// Dates that get a one-off "Mock Analysis" review day instead of the weekly pattern.
+const ANALYSIS_DATES = new Set([25]);
 
 function dayTypeForDate(date: number): DayType | null {
   return DAY_TYPE_PATTERN[date % DAY_TYPE_PATTERN.length];
@@ -106,7 +122,11 @@ function buildMonthCalendar(year: number, monthIndex: number, todayDate: number)
     cells.push({
       date,
       inMonth: true,
-      type: date <= todayDate ? dayTypeForDate(date) : null,
+      type: ANALYSIS_DATES.has(date)
+        ? "analysis"
+        : date <= todayDate
+          ? dayTypeForDate(date)
+          : null,
       isToday: date === todayDate,
     });
   }
@@ -138,6 +158,8 @@ const PLAN_SUMMARY_TASKS = [
 export default function PlanPage() {
   const [filter, setFilter] = useState("All");
   const calendarRows = useMemo(() => buildMonthCalendar(2026, 4, TODAY_DATE), []);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   return (
     <div className="w-full flex flex-col gap-6 px-4 py-6">
@@ -164,13 +186,14 @@ export default function PlanPage() {
           <div className="flex flex-col gap-3">
             {/* Calendar header card — 737 x 107 */}
             <div className="w-full rounded-2xl bg-surface p-6 shadow-sm">
-              <div className="flex h-14.25 w-full items-center justify-between gap-6">
+              <div className="flex w-full flex-col flex-wrap gap-3 sm:flex-row sm:items-center sm:justify-between">
                 {/* Left Content */}
                 <div className="flex flex-col justify-between">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
                     <h2
                       className="
-                        text-[28px]
+                        text-2xl
+                        sm:text-[28px]
                         font-bold
                         leading-none
                         tracking-normal
@@ -217,7 +240,7 @@ export default function PlanPage() {
 
             <div className="w-full rounded-2xl bg-surface p-6 shadow-sm">
               {/* ================= Stats ================= */}
-              <div className="flex h-7 w-full flex-wrap items-center gap-6">
+              <div className="flex w-full flex-wrap items-center gap-x-6 gap-y-2">
                 <div className="flex items-center gap-2">
                   <span className="text-cta">
                     <FlameIcon />
@@ -256,6 +279,7 @@ export default function PlanPage() {
                     key={item.label}
                     selected={filter === item.label}
                     onClick={() => setFilter(item.label)}
+                    className={isDark && filter !== item.label ? "text-white!" : ""}
                   >
                     <span className="flex items-center gap-2">
                       {item.icon}
@@ -265,97 +289,112 @@ export default function PlanPage() {
                 ))}
               </div>
               {/* ================= Calendar ================= */}
-              <div className="mt-6">
-                {/* Week Names */}
-                <div className="mb-3 grid grid-cols-7 gap-3 text-center">
-                  {WEEKDAYS.map((day) => (
-                    <span
-                      key={day}
-                      className="text-[11px] font-semibold uppercase tracking-wide text-muted"
-                    >
-                      {day}
-                    </span>
-                  ))}
-                </div>
+              <div className="mt-6 overflow-x-auto pb-1">
+                <div className="min-w-[500px]">
+                  {/* Week Names */}
+                  <div className="mb-3 grid grid-cols-7 gap-3 text-center">
+                    {WEEKDAYS.map((day) => (
+                      <span
+                        key={day}
+                        className="text-[11px] font-semibold uppercase tracking-wide text-muted"
+                      >
+                        {day}
+                      </span>
+                    ))}
+                  </div>
 
-                {/* Calendar Grid */}
-                <div className="grid grid-cols-7 gap-3">
-                  {calendarRows.map((row, rowIndex) =>
-                    row.map((cell, cellIndex) => {
-                      const key = `${rowIndex}-${cellIndex}`;
-                      const style = cell.type
-                        ? DAY_TYPE_STYLES[cell.type]
-                        : null;
+                  {/* Calendar Grid */}
+                  <div className="grid grid-cols-7 gap-3">
+                    {calendarRows.map((row, rowIndex) =>
+                      row.map((cell, cellIndex) => {
+                        const key = `${rowIndex}-${cellIndex}`;
+                        const style = cell.type
+                          ? DAY_TYPE_STYLES[cell.type]
+                          : null;
+                        const marks =
+                          cell.type === "mock" ? MOCK_MARKS[cell.date] : undefined;
 
-                      const cellContent = (
-                        <div
-                          className={`
+                        const cellContent = (
+                          <div
+                            className={`
                             flex
-                            h-18.5
+                            min-h-18.5
                             w-full
                             flex-col
                             items-center
+                            gap-0.5
                             rounded-xl
                             border
                             px-3
-                            pt-[17.5px]
-                            pb-9.5
+                            py-3
                             transition-all
 
                             ${cell.isToday
-                              ? "border-brand bg-tint-strong ring-1 ring-brand"
-                              : cell.inMonth
-                                ? `border-brand/10 ${style?.bg ?? "bg-surface"} hover:border-brand/30`
-                                : "border-transparent bg-transparent"
-                            }
+                                ? "border-brand bg-tint-strong ring-1 ring-brand"
+                                : cell.inMonth
+                                  ? `border-brand/10 ${style?.bg ?? "bg-surface"} hover:border-brand/30`
+                                  : "border-transparent bg-transparent"
+                              }
                           `}
-                        >
-                          <span
-                            className={`
+                          >
+                            <span
+                              className={`
                               text-xs
                               font-semibold
                               leading-none
                               ${cell.inMonth
-                                ? style?.text ?? "text-ink"
-                                : "text-muted/30"
-                              }
+                                  ? style?.text ?? "text-ink"
+                                  : "text-muted/30"
+                                }
                             `}
-                          >
-                            {cell.date}
-                          </span>
+                            >
+                              {cell.date}
+                            </span>
 
-                          <div className="mt-1 flex items-center justify-center">
                             {cell.type && (
-                              <span
-                                className={`text-[11px] ${style?.icon ?? "text-ink"}`}
-                              >
-                                {DAY_TYPE_ICON[cell.type]}
-                              </span>
+                              <div className="mt-1 flex flex-col items-center gap-0.5">
+                                <span
+                                  className={`text-[11px] ${style?.icon ?? "text-ink"}`}
+                                >
+                                  {DAY_TYPE_ICON[cell.type]}
+                                </span>
+
+                                {marks !== undefined && (
+                                  <>
+                                    <span className="text-sm font-extrabold leading-none text-ink">
+                                      {marks}
+                                    </span>
+                                    <span className="text-[9px] font-medium uppercase leading-none tracking-wide text-muted">
+                                      Marks
+                                    </span>
+                                  </>
+                                )}
+                              </div>
                             )}
                           </div>
-                        </div>
-                      );
+                        );
 
-                      if (!cell.inMonth) {
-                        return <div key={key}>{cellContent}</div>;
-                      }
+                        if (!cell.inMonth) {
+                          return <div key={key}>{cellContent}</div>;
+                        }
 
-                      const href =
-                        cell.date <= TODAY_DATE
-                          ? "/plan/day-plan"
-                          : "/plan/plan-day";
+                        const href =
+                          cell.date <= TODAY_DATE
+                            ? "/plan/day-plan"
+                            : "/plan/plan-day";
 
-                      return (
-                        <Link
-                          key={key}
-                          href={href}
-                          className="block"
-                        >
-                          {cellContent}
-                        </Link>
-                      );
-                    })
-                  )}
+                        return (
+                          <Link
+                            key={key}
+                            href={href}
+                            className="block"
+                          >
+                            {cellContent}
+                          </Link>
+                        );
+                      })
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -363,8 +402,10 @@ export default function PlanPage() {
             {/* Tip footer — 737 x 54, radius 12px, border 1px, padding 16px, gap 12px */}
             <div className="w-full rounded-xl border border-brand/10 bg-surface p-4">
               <p className="text-[14px] leading-5">
-                <span className="font-bold text-[#475569]">Tip:</span>{" "}
-                <span className="font-normal text-[#475569]">
+                <span className={`font-bold ${isDark ? "text-white/70" : "text-[#475569]"}`}>
+                  Tip:
+                </span>{" "}
+                <span className={`font-normal ${isDark ? "text-white/70" : "text-[#475569]"}`}>
                   Click on any day to see details and your plan summary.
                 </span>
               </p>
@@ -373,10 +414,10 @@ export default function PlanPage() {
 
           {/* Right sidebar */}
           <div className="w-full lg:w-[320px]">
-            <div className="flex h-195 w-full flex-col overflow-hidden rounded-2xl bg-surface shadow-sm">
+            <div className="flex w-full flex-col overflow-hidden rounded-2xl bg-surface shadow-sm lg:min-h-195">
               {/* ================= Header ================= */}
-              <div className="h-29.75 border-b border-brand/10 p-6">
-                <div className="flex h-full flex-col justify-between">
+              <div className="border-b border-brand/10 p-6">
+                <div className="flex flex-col justify-between">
                   <div>
                     <h2
                       className="
@@ -384,7 +425,7 @@ export default function PlanPage() {
     font-bold
     leading-7
     tracking-normal
-    text-[#1A1A4E]
+    text-ink
   "
                     >
                       May 15, 2026
@@ -410,12 +451,14 @@ export default function PlanPage() {
                     <div className="flex items-center gap-3">
                       <ClockIcon />
 
-                      <span className="text-[14px] font-medium leading-5 text-[#475569]">
+                      <span
+                        className={`text-[14px] font-medium leading-5 ${isDark ? "text-white/70" : "text-[#475569]"}`}
+                      >
                         Study Time
                       </span>
                     </div>
 
-                    <span className="text-[14px] font-bold leading-5 text-[#1A1A4E]">
+                    <span className="text-[14px] font-bold leading-5 text-ink">
                       4h 32m
                     </span>
                   </div>
@@ -425,12 +468,14 @@ export default function PlanPage() {
                     <div className="flex items-center gap-3">
                       <CompleteIcon />
 
-                      <span className="text-[14px] font-medium leading-5 text-[#475569]">
+                      <span
+                        className={`text-[14px] font-medium leading-5 ${isDark ? "text-white/70" : "text-[#475569]"}`}
+                      >
                         Tasks Completed
                       </span>
                     </div>
 
-                    <span className="text-[14px] font-bold leading-5 text-[#1A1A4E]">
+                    <span className="text-[14px] font-bold leading-5 text-ink">
                       5 / 5
                     </span>
                   </div>
@@ -440,7 +485,9 @@ export default function PlanPage() {
                     <div className="flex items-center gap-3">
                       <CheckInIcon />
 
-                      <span className="text-[14px] font-medium leading-5 text-[#475569]">
+                      <span
+                        className={`text-[14px] font-medium leading-5 ${isDark ? "text-white/70" : "text-[#475569]"}`}
+                      >
                         Check-in
                       </span>
                     </div>
@@ -455,12 +502,14 @@ export default function PlanPage() {
                     <div className="flex items-center gap-3">
                       <BookIcon />
 
-                      <span className="text-[14px] font-medium leading-5 text-[#475569]">
+                      <span
+                        className={`text-[14px] font-medium leading-5 ${isDark ? "text-white/70" : "text-[#475569]"}`}
+                      >
                         Win Journal
                       </span>
                     </div>
 
-                    <span className="text-[14px] font-bold leading-5 text-[#1A1A4E]">
+                    <span className="text-[14px] font-bold leading-5 text-ink">
                       Added
                     </span>
                   </div>
@@ -470,7 +519,7 @@ export default function PlanPage() {
               {/* ================= Plan Summary ================= */}
 
               <div className="flex-1 px-6 py-6">
-                <h3 className="mb-6 text-[14px] font-bold leading-5 text-[#1A1A4E]">
+                <h3 className="mb-6 text-[14px] font-bold leading-5 text-ink">
                   Plan Summary
                 </h3>
 
@@ -485,12 +534,12 @@ export default function PlanPage() {
                           <CheckIcon />
                         </span>
 
-                        <span className="text-[13px] font-medium leading-5 text-[#475569]">
+                        <span className={`text-[13px] font-medium leading-5 ${isDark ? "text-white/70" : "text-[#475569]"}`}>
                           {task.title}
                         </span>
                       </div>
 
-                      <span className="text-[13px] font-medium leading-5 text-[#475569]">
+                      <span className={`text-[13px] font-medium leading-5 ${isDark ? "text-white/70" : "text-[#475569]"}`}>
                         {task.duration}
                       </span>
                     </div>

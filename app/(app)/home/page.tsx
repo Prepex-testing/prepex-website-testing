@@ -94,18 +94,18 @@ const JOURNAL_STATS = [
 ];
 
 const QUICK_ACCESS = [
-  { href: "/practice/sessions", label: "Practice", subtitle: "Solve Questions", icon: <TargetIcon /> },
+  { href: "/practice/sessions", label: "Practice", subtitle: "Solve Questions", icon: <PencilIcon /> },
+   {
+    href: "/home/mock-analysis",
+    label: "Mock Test Analysis",
+    subtitle: "Analyze & Improve",
+    icon: <ChartBarIcon />,
+  },
   {
     href: "/home/journal",
     label: "Weekly Win Journal",
     subtitle: "Reflect & celebrate wins",
     icon: <PencilIcon />,
-  },
-  {
-    href: "/home/mock-analysis",
-    label: "Mock Test Analysis",
-    subtitle: "Analyze & Improve",
-    icon: <ChartBarIcon />,
   },
   { href: "/home/mistake-notebook", label: "Mistake Notebook", icon: <BookIcon /> },
   {

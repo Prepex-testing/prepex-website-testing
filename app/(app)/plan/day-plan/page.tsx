@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { ArrowLeftIcon, BellIcon, BoltIcon, ClockIcon, CheckIcon, BoltIcons, BatteryIcon } from "@/components/ui/icons";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { useTheme } from "@/components/theme/ThemeProvider";
 
 const FOCUS_BREAKDOWN = [
   { subject: "Physics", value: "45m", total: "60m" },
@@ -20,6 +23,9 @@ const TASK_LOG = [
 const ENERGY_TREND = [30, 55, 40, 65, 45, 60, 25];
 
 export default function DayPlanPage() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -42,7 +48,7 @@ export default function DayPlanPage() {
         </div>
       </div>
 
-      <div className="flex h-[30px] w-full flex-wrap items-center gap-4">
+      <div className="flex w-full flex-wrap items-center gap-3 gap-y-2">
         {/* Date */}
         <h2 className="font-['Plus_Jakarta_Sans'] text-[18px] font-bold leading-[23px] text-ink">
           Wednesday, May 14, 2026
@@ -69,24 +75,28 @@ export default function DayPlanPage() {
         </button>
 
         {/* Recovery Badge */}
-        <span className="rounded-full bg-tint px-3 py-1 font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase tracking-[0.6px] text-ink">
+        <span
+          className={`rounded-full px-3 py-1 font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase tracking-[0.6px] ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+        >
           RECOVERY DAY
         </span>
       </div>
 
       <div className="flex items-center gap-4 rounded-2xl border border-brand/10 bg-surface p-6">
         {/* Icon */}
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-tint-strong">
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${isDark ? "bg-white" : "bg-tint-strong"}`}
+        >
           <div className="flex h-6 w-6 items-center justify-center">
-            <BoltIcons className="h-4.5 w-4 text-ink" />
+            <BoltIcons className={`h-4.5 w-4 ${isDark ? "text-[#1A1A4E]" : "text-ink"}`} />
           </div>
         </div>
 
         {/* Text */}
-        <div className="w-160">
+        <div className="min-w-0 flex-1">
           <p className="text-[18px] font-medium leading-[29.25px] tracking-normal text-ink">
             Plan was lighter today. Energy was heavy,
-            <br />
+            <br className="hidden sm:block" />
             so recovery activated automatically.
           </p>
         </div>
@@ -100,6 +110,7 @@ export default function DayPlanPage() {
               displayValue="3/4"
               suffix=""
               size={132}
+              progressColor="#28B485"
             />
           </div>
 
@@ -117,7 +128,9 @@ export default function DayPlanPage() {
         <div className="flex h-[247px] w-full flex-col rounded-2xl border border-brand/10 bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
           {/* Top Section */}
           <div className="flex flex-col items-center">
-            <p className="font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase tracking-[1.2px] leading-4 text-muted">
+            <p
+              className={`font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase tracking-[1.2px] leading-4 ${isDark ? "text-white" : "text-muted"}`}
+            >
               FOCUS TIME
             </p>
 
@@ -150,7 +163,7 @@ export default function DayPlanPage() {
                 key={item.subject}
                 className="flex items-center justify-between"
               >
-                <span className="text-[12px] leading-4 text-muted">
+                <span className={`text-[12px] leading-4 ${isDark ? "text-white" : "text-muted"}`}>
                   {item.subject}
                 </span>
 
@@ -165,7 +178,9 @@ export default function DayPlanPage() {
         {/* ===================== DAILY ENERGY ===================== */}
 
         <div className="flex h-[247px] w-full flex-col items-center rounded-2xl border border-brand/10 bg-surface px-5 pt-5 pb-7 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-          <p className="font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase tracking-[1.2px] leading-4 text-muted">
+          <p
+            className={`font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase tracking-[1.2px] leading-4 ${isDark ? "text-white" : "text-muted"}`}
+          >
             DAILY ENERGY
           </p>
 
@@ -256,7 +271,9 @@ export default function DayPlanPage() {
       </div>
 
       <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-        <p className="text-xs font-bold uppercase tracking-wide text-muted">
+        <p
+          className={`text-xs font-bold uppercase tracking-wide ${isDark ? "text-white" : "text-muted"}`}
+        >
           Streak Status
         </p>
         <p className="mt-1 text-lg font-bold text-ink">Maintained</p>

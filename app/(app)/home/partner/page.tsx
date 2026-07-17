@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { RadioOption } from "@/components/ui/RadioOption";
 import { PartnerMatchModal } from "@/components/home/PartnerMatchModal";
 import { GoalSettingModal } from "@/components/home/GoalSettingModal";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   ArrowLeftIcon,
   BellIcon,
@@ -106,6 +107,8 @@ export default function PartnerPage() {
   const [signalType, setSignalType] = useState("encourage");
   const [message, setMessage] = useState(MESSAGES[0]);
   const [reaction, setReaction] = useState<string | null>(null);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   const handleSend = () => {
     const typeLabel = SIGNAL_TYPES.find((t) => t.id === signalType)?.label ?? "Encourage";
@@ -149,7 +152,9 @@ export default function PartnerPage() {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
               {/* Avatar */}
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-brand/10 bg-tint text-2xl font-extrabold text-ink">
+              <div
+                className={`flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-brand/10 text-2xl font-extrabold ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+              >
                 PS
               </div>
 
@@ -184,7 +189,7 @@ export default function PartnerPage() {
               >
                 {/* Icon */}
                 <div
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${stat.iconBg}`}
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${isDark ? "bg-tint text-ink" : stat.iconBg}`}
                 >
                   {stat.icon}
                 </div>
@@ -229,7 +234,7 @@ export default function PartnerPage() {
             <Button
               variant="primary"
               onClick={() => setGoalOpen(true)}
-              className="h-12 rounded-xl px-8 text-base font-bold"
+              className="h-12 rounded-xl border border-brand bg-transparent! px-8 text-base font-bold text-ink! hover:bg-cta! hover:text-white!"
             >
               Set Weekly Goal
             </Button>
@@ -246,9 +251,9 @@ export default function PartnerPage() {
           <p className="text-sm font-bold text-ink">Shared Focus This Week</p>
           <p className="mt-2 text-3xl font-extrabold text-ink">19.5 hrs</p>
           <div className="mt-2 h-1.5 rounded-full bg-tint-strong">
-            <div className="h-1.5 w-[78%] rounded-full bg-brand" />
+            <div className={`h-1.5 w-[78%] rounded-full ${isDark ? "bg-white" : "bg-brand"}`} />
           </div>
-          <p className="mt-2 text-xs text-muted">
+          <p className="mt-2 text-xs text-ink">
             You&apos;re 2.5 hrs above your shared weekly target
           </p>
         </div>
@@ -258,26 +263,35 @@ export default function PartnerPage() {
           <div className="mt-3 flex flex-col gap-3">
             <div>
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-ink">Focus Today</span>
-                <span className="text-muted">68%</span>
+                <span className={`font-semibold ${isDark ? "text-white" : "text-[#64748B]"}`}>
+                  Focus Today
+                </span>
+                <span className={isDark ? "text-white" : "text-muted"}>68%</span>
               </div>
               <div className="mt-1 h-1.5 rounded-full bg-tint-strong">
-                <div className="h-1.5 w-[68%] rounded-full bg-brand" />
+                <div className={`h-1.5 w-[68%] rounded-full ${isDark ? "bg-white" : "bg-brand"}`} />
               </div>
             </div>
             <div>
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-ink">Weekly Consistency</span>
-                <span className="text-muted">86%</span>
+                <span className={`font-semibold ${isDark ? "text-white" : "text-[#64748B]"}`}>
+                  Weekly Consistency
+                </span>
+                <span className={isDark ? "text-white" : "text-muted"}>86%</span>
               </div>
               <div className="mt-1 h-1.5 rounded-full bg-tint-strong">
-                <div className="h-1.5 w-[86%] rounded-full bg-brand" />
+                <div className={`h-1.5 w-[86%] rounded-full ${isDark ? "bg-white" : "bg-brand"}`} />
               </div>
             </div>
-            <p className="flex items-center gap-1 text-xs text-muted">
-              <span className="h-1.5 w-1.5 rounded-full bg-success" />
-              Last Active · 32 mins ago
-            </p>
+            <div
+              className={`flex items-center justify-between text-xs ${isDark ? "text-white" : "text-[#64748B]"}`}
+            >
+              <span>Last Active</span>
+              <span className="flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                32 mins ago
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -342,11 +356,9 @@ export default function PartnerPage() {
                 className="flex flex-col items-center gap-2"
               >
                 <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl border text-ink sm:h-14 sm:w-14 ${
-                    signalType === type.id
-                      ? "border-brand/20 bg-tint"
-                      : "border-brand/10"
-                  }`}
+                  className={`flex h-11 w-11 items-center justify-center rounded-xl border bg-tint text-ink transition-colors sm:h-14 sm:w-14 ${
+                    signalType === type.id ? "border-brand/20" : "border-brand/10"
+                  } ${isDark ? "hover:bg-white hover:text-[#1A1A4E]" : "hover:bg-tint-strong"}`}
                 >
                   {type.icon}
                 </div>

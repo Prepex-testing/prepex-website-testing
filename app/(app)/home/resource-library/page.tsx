@@ -1,7 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
-import { TimeBlockSection } from "@/components/home/TimeBlockSection";
 import {
   BellIcon,
   SearchIcon,
@@ -47,6 +49,8 @@ const PHYSICS_CHAPTERS = [
 ];
 
 export default function ResourceLibraryPage() {
+  const [physicsOpen, setPhysicsOpen] = useState(true);
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -105,127 +109,145 @@ export default function ResourceLibraryPage() {
         </div>
       </div>
 
-     <div className="flex flex-col gap-5 rounded-2xl border border-brand/10 bg-surface p-5 sm:p-6">
-  {/* Header */}
-  <div className="flex flex-col gap-1">
-    <p className="text-[20px] sm:text-[22px] font-bold leading-tight text-ink">
-      Top This Week
-    </p>
-    <p className="text-[14px] sm:text-[16px] font-semibold text-muted">
-      Curated for this week
-    </p>
-  </div>
-
-  {/* Resource rows */}
-  <div className="flex flex-col gap-4">
-    {FEATURED.map((item) => (
-      <div
-        key={item.id}
-        className="flex flex-col gap-5 rounded-2xl border border-brand/10 p-4 lg:flex-row lg:items-center lg:justify-between"
-      >
-        {/* Left */}
-        <div className="flex min-w-0 flex-1 items-start gap-4">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
-            {item.icon}
-          </span>
-
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[18px] sm:text-[20px] font-semibold leading-7 text-ink">
-              {item.title}
-            </p>
-
-            <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[13px] sm:text-[14px] text-muted">
-              {item.meta}
-              {item.rating && (
-                <>
-                  <span>•</span>
-                  <StarIcon />
-                  {item.rating}
-                </>
-              )}
-            </p>
-          </div>
+      <div className="flex flex-col gap-5">
+        {/* Header */}
+        <div className="flex flex-col gap-1">
+          <p className="text-[20px] sm:text-[22px] font-bold leading-tight text-ink">
+            Top This Week
+          </p>
+          <p className="text-[14px] sm:text-[16px] font-semibold text-muted">
+            Curated for this week
+          </p>
         </div>
 
-        {/* Right */}
-        <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
-          <button
-            type="button"
-            className="inline-flex h-[42px] w-full sm:w-auto items-center justify-center rounded-lg bg-cta px-6 text-[14px] font-medium text-white transition-opacity hover:opacity-90"
-          >
-            Open
-          </button>
+        {/* Resource rows */}
+        <div className="flex flex-col gap-4">
+          {FEATURED.map((item) => (
+            <div
+              key={item.id}
+              className="flex flex-col gap-5 rounded-2xl border border-brand/10 bg-surface p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between"
+            >
+              {/* Left */}
+              <div className="flex min-w-0 flex-1 items-start gap-4">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
+                  {item.icon}
+                </span>
 
-          <button
-            type="button"
-            className="inline-flex h-[42px] w-full sm:w-auto items-center justify-center gap-2 rounded-lg border border-brand px-6 text-[14px] font-medium text-ink transition-colors hover:bg-tint"
-          >
-            Track as study
-            <ArrowRightIcon className="h-4 w-4 shrink-0" />
-          </button>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[18px] sm:text-[20px] font-semibold leading-7 text-ink">
+                    {item.title}
+                  </p>
+
+                  <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[13px] sm:text-[14px] text-muted">
+                    {item.meta}
+                    {item.rating && (
+                      <>
+                        <span>•</span>
+                        <StarIcon />
+                        {item.rating}
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              {/* Right */}
+              <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
+                <button
+                  type="button"
+                  className="inline-flex h-[42px] w-full sm:w-auto items-center justify-center rounded-lg border border-brand px-6 text-[14px] font-medium text-ink transition-colors hover:bg-[#FF7A59] hover:text-white hover:border-[#FF7A59]"
+                >
+                  Open
+                </button>
+
+                <button
+                  type="button"
+                  className="inline-flex h-[42px] w-full sm:w-auto items-center justify-center gap-2 rounded-lg border border-brand px-6 text-[14px] font-medium text-ink transition-colors hover:bg-[#FF7A59] hover:text-white hover:border-[#FF7A59]"
+                >
+                  Track as study
+                  <ArrowRightIcon className="h-4 w-4 shrink-0" />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
+
+        {/* Footer */}
+        <button
+          type="button"
+          className="text-center text-sm font-semibold text-ink underline underline-offset-2"
+        >
+          View 24 more resources
+        </button>
       </div>
-    ))}
-  </div>
 
-  {/* Footer */}
-  <button
-    type="button"
-    className="text-center text-sm font-semibold text-ink underline underline-offset-2"
-  >
-    View 24 more resources
-  </button>
-</div>
+      <div className="flex w-full flex-col gap-4">
+        <button
+          type="button"
+          onClick={() => setPhysicsOpen((value) => !value)}
+          aria-expanded={physicsOpen}
+          className="flex w-full items-center gap-3 text-left"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
+            <BookIcon />
+          </span>
+          <span className="text-[20px] font-bold leading-7 text-ink">Physics</span>
+          <span className="text-[14px] font-medium leading-5 text-muted">18 chapters</span>
+          <ChevronDownIcon
+            className={`h-5 w-5 shrink-0 text-muted transition-transform ${physicsOpen ? "" : "-rotate-90"
+              }`}
+          />
+        </button>
+        {physicsOpen && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {PHYSICS_CHAPTERS.map((chapter) => (
+              <div
+                key={chapter.id}
+                className="flex flex-col gap-3 rounded-2xl border border-brand/5 bg-surface p-6 shadow-sm transition-colors hover:border-brand/20"
+              >
+                {/* Title row */}
+                <Link
+                  href="/home/resource-library/chapter"
+                  className="flex items-start justify-between gap-2"
+                >
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-[18px] font-bold leading-8 text-ink">
+                      {chapter.title}
+                    </h3>
 
-      <TimeBlockSection icon={<BookIcon />} title="Physics" meta="18 chapters">
-  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-    {PHYSICS_CHAPTERS.map((chapter) => (
-     <div
-  key={chapter.id}
-  className="flex flex-col gap-3 rounded-2xl border border-brand/5 bg-surface p-6 shadow-sm transition-colors hover:border-brand/20"
->
-  {/* Title row */}
-  <Link
-    href="/home/resource-library/chapter"
-    className="flex items-start justify-between gap-2"
-  >
-    <div className="min-w-0 flex-1">
-  <h3 className="truncate text-[18px] font-bold leading-8 text-ink">
-    {chapter.title}
-  </h3>
+                    <p className="mt-1 text-[14px] font-medium leading-5 text-muted">
+                      {chapter.chapter}
+                    </p>
+                  </div>
+                  <ChevronDownIcon className="mt-1 h-4 w-4 shrink-0 -rotate-90 text-muted" />
+                </Link>
 
-  <p className="mt-1 text-[14px] font-medium leading-5 text-muted">
-    {chapter.chapter}
-  </p>
-</div>
-    <ChevronDownIcon className="mt-1 h-4 w-4 shrink-0 -rotate-90 text-muted" />
-  </Link>
+                {/* Tags + bookmark, same row, bookmark pinned right */}
+                <div className="flex items-end justify-between gap-4">
+                  <div className="flex flex-wrap gap-2 max-w-[calc(100%-40px)]">
+                    {TAGS.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full bg-tint-strong px-4 py-2 text-[12px] font-semibold text-ink"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
 
-  {/* Tags + bookmark, same row, bookmark pinned right */}
-  <div className="flex items-end justify-between gap-4">
-  <div className="flex flex-wrap gap-2 max-w-[calc(100%-40px)]">
-    {TAGS.map((tag) => (
-      <span
-        key={tag}
-        className="rounded-full bg-tint-strong px-4 py-2 text-[12px] font-semibold text-ink"
-      >
-        {tag}
-      </span>
-    ))}
-  </div>
-
-  <button
-    type="button"
-    aria-label={`Bookmark ${chapter.title}`}
-    className="flex h-8 w-8 shrink-0 items-center justify-center text-muted hover:text-ink"
-  >
-    <BookmarkIcon />
-  </button>
-</div>
-</div>
-    ))}
-  </div>
-</TimeBlockSection>
+                  <button
+                    type="button"
+                    aria-label={`Bookmark ${chapter.title}`}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center text-muted hover:text-ink"
+                  >
+                    <BookmarkIcon />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

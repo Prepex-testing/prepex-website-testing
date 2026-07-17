@@ -9,6 +9,7 @@ import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { BellIcon, MinusIcon, StarIcon, PinIcon, PlusIcon } from "@/components/ui/icons";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { useTheme } from "@/components/theme/ThemeProvider";
 
 const NO_STUDY_REASONS = ["Festival", "Family", "Health", "School exam", "Personal"];
 
@@ -25,6 +26,8 @@ export default function PlanDayPage() {
   const [marking, setMarking] = useState<Marking>(null);
   const [mockName, setMockName] = useState("");
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -47,8 +50,11 @@ export default function PlanDayPage() {
       <p className="text-lg font-bold text-ink">May 23, 2026 (Fri)</p>
 
       {/* Status banner — rounded-lg (8px), 24px padding, 4px accent bar,
-          18px bold copy, per spec */}
-      <div className="overflow-hidden rounded-lg border-l-4 border-brand bg-surface p-6 shadow-sm">
+          18px bold copy, per spec. Accent bar is a positioned inner element
+          (not border-l) so it stays clipped to the rounded corner instead
+          of squaring off past it. */}
+      <div className="relative overflow-hidden rounded-lg bg-surface py-6 pl-8 pr-6 shadow-sm">
+        <span className="absolute inset-y-0 left-0 w-1 bg-brand" />
         <p className="text-lg font-bold text-ink">
           Currently: AI will generate your plan for this day
         </p>
@@ -61,10 +67,16 @@ export default function PlanDayPage() {
         {/* No-Study Day */}
         <div
           className={`rounded-2xl border-2 bg-surface p-8 ${
-            marking?.type === "no-study" ? "border-brand" : "border-brand/10"
+            marking?.type === "no-study"
+              ? isDark
+                ? "border-white"
+                : "border-brand"
+              : "border-brand/10"
           }`}
         >
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-tint text-ink">
+          <span
+            className={`flex h-12 w-12 items-center justify-center rounded-full ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+          >
             <MinusIcon />
           </span>
           <p className="mt-3 text-xl font-semibold leading-7 text-ink">No-Study Day</p>
@@ -77,21 +89,27 @@ export default function PlanDayPage() {
             Reason:
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
-            {NO_STUDY_REASONS.map((reason) => (
-              <Chip
-                key={reason}
-                selected={marking?.type === "no-study" && marking.reason === reason}
-                onClick={() => setMarking({ type: "no-study", reason })}
-              >
-                {reason}
-              </Chip>
-            ))}
+            {NO_STUDY_REASONS.map((reason) => {
+              const selected = marking?.type === "no-study" && marking.reason === reason;
+              return (
+                <Chip
+                  key={reason}
+                  selected={selected}
+                  onClick={() => setMarking({ type: "no-study", reason })}
+                  className={isDark && !selected ? "text-white!" : ""}
+                >
+                  {reason}
+                </Chip>
+              );
+            })}
           </div>
         </div>
 
         {/* Mock Day */}
         <div className="rounded-2xl border border-brand/10 bg-surface p-8">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-tint text-ink">
+          <span
+            className={`flex h-12 w-12 items-center justify-center rounded-full ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+          >
             <StarIcon />
           </span>
           <p className="mt-3 text-xl font-semibold leading-7 text-ink">Mock Day</p>
@@ -115,6 +133,7 @@ export default function PlanDayPage() {
               variant="secondary"
               size="sm"
               onClick={() => setMarking({ type: "mock", name: mockName || "Mock Test" })}
+              className={isDark ? "" : "border-[#1A1A4E]!"}
             >
               Confirm Mock
             </Button>
@@ -123,7 +142,9 @@ export default function PlanDayPage() {
 
         {/* Custom day */}
         <div className="rounded-2xl border border-brand/10 bg-surface p-8">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-tint text-ink">
+          <span
+            className={`flex h-12 w-12 items-center justify-center rounded-full ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+          >
             <PinIcon />
           </span>
           <p className="mt-3 text-xl font-semibold leading-7 text-ink">Custom day</p>
@@ -134,7 +155,8 @@ export default function PlanDayPage() {
           <button
             type="button"
             onClick={() => setAddTaskOpen(true)}
-            className="mt-4 flex w-full items-center justify-center gap-1 rounded-xl border border-dashed border-brand/25 py-2.5 text-sm font-semibold text-ink hover:bg-tint-strong"
+            className={`mt-4 flex w-full items-center justify-center gap-1 rounded-xl border border-dashed py-2.5 text-sm font-semibold text-ink hover:bg-tint-strong ${isDark ? "border-white" : "border-brand/25"
+              }`}
           >
             <PlusIcon />
             Add Anchor Task

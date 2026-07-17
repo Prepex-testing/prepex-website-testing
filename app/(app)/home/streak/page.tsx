@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   ArrowLeftIcon,
   BellIcon,
@@ -126,6 +129,9 @@ const EFFORT_METRICS = [
 ];
 
 export default function StreakPage() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Top bar */}
@@ -150,11 +156,15 @@ export default function StreakPage() {
       </div>
 
       {/* Tagline: 380x40, gap-8, 40x40 gradient icon + 332x35 heading */}
-      <div className="flex min-w-0 flex-wrap items-center gap-2 w-full max-w-[380px] min-h-[40px]">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-b from-[#FFB22F] to-[#F0C73E] text-white [&>svg]:h-5 [&>svg]:w-5">
-          <StarIcon />
+      <div className="flex w-full items-center gap-2">
+        <span
+          className="shrink-0 text-[28px] leading-none"
+          aria-hidden="true"
+        >
+          ⭐
         </span>
-        <p className="min-w-0 w-full sm:max-w-[332px] min-h-[35px] text-[28px] font-bold leading-[100%] tracking-normal text-ink">
+
+        <p className="whitespace-nowrap text-[28px] font-bold leading-none text-ink">
           7 days. Real consistency
         </p>
       </div>
@@ -261,21 +271,20 @@ export default function StreakPage() {
                         className="flex h-[48px] flex-col items-center justify-center gap-0.5 rounded-lg py-1"
                       >
                         <span
-                          className={`flex h-6 w-6 items-center justify-center rounded-full text-[14px] font-bold leading-[20px] text-center ${
-                            cell.isToday
+                          className={`flex h-6 w-6 items-center justify-center rounded-full text-[14px] font-bold leading-[20px] text-center ${cell.isToday
                               ? "bg-brand text-white"
                               : cell.status === "outside" || cell.status === "upcoming"
                                 ? "text-muted/50"
                                 : "text-ink"
-                          }`}
+                            }`}
                         >
                           {cell.date}
                         </span>
                         {cell.status === "completed" && !cell.isToday && (
-                          <CheckIcon  />
+                          <CheckIcon />
                         )}
                         {cell.status === "freeze" && (
-                          <ShieldIcon  />
+                          <ShieldIcon />
                         )}
                         {cell.status === "missed" && (
                           <span className="text-muted/60">
@@ -341,7 +350,7 @@ export default function StreakPage() {
                   </div>
                   <div className="h-1.5 rounded-full bg-tint-strong">
                     <div
-                      className="h-1.5 rounded-full bg-brand"
+                      className={`h-1.5 rounded-full ${isDark ? "bg-white" : "bg-brand"}`}
                       style={{ width: `${(metric.value / metric.total) * 100}%` }}
                     />
                   </div>
