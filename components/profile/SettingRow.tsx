@@ -13,22 +13,42 @@ export function SettingRow({
   title,
   subtitle,
   right,
-  iconClassName = "bg-tint-strong text-ink",
+  iconClassName = "bg-tint text-ink",
 }: SettingRowProps) {
   return (
-    <div className="flex items-center gap-3 py-3">
-      {icon && (
-        <span
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconClassName}`}
-        >
-          {icon}
-        </span>
-      )}
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-ink">{title}</p>
-        {subtitle && <p className="mt-0.5 text-xs text-muted">{subtitle}</p>}
+    <div className="flex min-h-[104px] items-center justify-between rounded-xl border border-brand/10 bg-surface px-6 py-6 shadow-sm">
+
+      {/* Left */}
+      <div className="flex min-w-0 items-center gap-4">
+
+        {icon && (
+          <div
+            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${iconClassName}`}
+          >
+            {icon}
+          </div>
+        )}
+
+        <div className="min-w-0">
+          <h3 className="text-[16px] font-bold leading-6 text-ink">
+            {title}
+          </h3>
+
+          {subtitle && (
+            <p className="mt-1 text-[14px] leading-5 text-muted">
+              {subtitle}
+            </p>
+          )}
+        </div>
+
       </div>
-      {right}
+
+      {/* Right */}
+      {right && (
+        <div className="ml-6 shrink-0">
+          {right}
+        </div>
+      )}
     </div>
   );
 }

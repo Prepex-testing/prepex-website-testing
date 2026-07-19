@@ -1411,3 +1411,94 @@ export function LightningIcon() {
     </svg>
   );
 }
+export function CameraIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M2 5.5A1.5 1.5 0 0 1 3.5 4h1.17a1.5 1.5 0 0 0 1.23-.64l.4-.57A1.5 1.5 0 0 1 7.53 2.2h.94a1.5 1.5 0 0 1 1.23.64l.4.57a1.5 1.5 0 0 0 1.23.64h1.17A1.5 1.5 0 0 1 14 5.5v6A1.5 1.5 0 0 1 12.5 13h-9A1.5 1.5 0 0 1 2 11.5v-6Z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+      <circle cx="8" cy="8.2" r="2.3" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  );
+}
+
+export function SmileIcon({
+  className = "h-5 w-5",
+}: {
+  className?: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="10" r="1" fill="currentColor" stroke="none" />
+      <path d="M8 14C9 16 11 17 12 17C13 17 15 16 16 14" />
+    </svg>
+  );
+}
+
+export function EditIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M4 20H8L18.5 9.5C18.8978 9.10218 19.1214 8.56261 19.1214 8C19.1214 7.43739 18.8978 6.89782 18.5 6.5C18.1022 6.10218 17.5626 5.87868 17 5.87868C16.4374 5.87868 15.8978 6.10218 15.5 6.5L5 17V20H4Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      <path
+        d="M14 8L17 11"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function BookOpenIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M3 6.5C3 5.67 3.67 5 4.5 5H10C11.1 5 12 5.9 12 7V19C12 17.9 11.1 17 10 17H4.5C3.67 17 3 17.67 3 18.5V6.5Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M21 6.5C21 5.67 20.33 5 19.5 5H14C12.9 5 12 5.9 12 7V19C12 17.9 12.9 17 14 17H19.5C20.33 17 21 17.67 21 18.5V6.5Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

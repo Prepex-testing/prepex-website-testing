@@ -37,6 +37,7 @@ export default function QuestionAnalysisPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
+      {/* Page header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-h1 text-ink">Question Analysis</h1>
         <div className="flex items-center gap-4">
@@ -52,57 +53,66 @@ export default function QuestionAnalysisPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-brand/10 bg-surface p-5">
+      {/* Question Context card */}
+      <div className="rounded-2xl border border-brand/10 bg-surface p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs font-bold uppercase tracking-wide text-muted">
             Question Context
           </p>
-          <span className="rounded-full bg-tint px-2 py-0.5 text-[10px] font-bold uppercase text-ink">
+          <span className="rounded-full bg-ink px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
             Level: Advanced
           </span>
         </div>
 
-        <p className="mt-3 text-sm text-body-text">
-          Find the length of the common internal tangent to the circles x² + y² - 2x - 4y + 4
+        <p className="mt-4 text-sm leading-relaxed text-body-text">
+          Find the length of the common internal tangent to the circles x² + y² − 2x − 4y + 4
           = 0 and x² + y² + 10x + 2y + 22 = 0.
         </p>
 
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {OPTIONS.map((option) => {
-            const isCorrect = option.key === CORRECT_KEY;
             const isSelected = option.key === SELECTED_KEY;
             return (
               <div
                 key={option.key}
-                className={`rounded-xl border p-3 ${
-                  isSelected
-                    ? "border-cta bg-cta/10"
-                    : isCorrect
-                      ? "border-brand bg-tint-strong"
-                      : "border-brand/10"
+                className={`rounded-xl border p-4 ${
+                  isSelected ? "border-cta bg-cta/5" : "border-brand/10"
                 }`}
               >
-                <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
                     Option {option.key}
                     {isSelected && (
                       <span className="ml-1 normal-case text-cta">(Selected)</span>
                     )}
                   </p>
-                  {isSelected && <XIcon />}
+                  {isSelected && (
+                    <span className="flex items-center gap-1 text-[10px] font-semibold text-cta">
+                      Your answer
+                      <XIcon />
+                    </span>
+                  )}
                 </div>
-                <p className="mt-1 text-sm font-semibold text-ink">{option.value}</p>
-                {isSelected && (
-                  <p className="mt-1 text-[10px] font-semibold text-cta">Your answer</p>
-                )}
+                <p className="mt-1.5 text-sm font-semibold text-ink">
+                  {option.value.startsWith("√") ? (
+                    <>
+                      <span className="mr-0.5">√</span>
+                      {option.value.slice(1)}
+                    </>
+                  ) : (
+                    option.value
+                  )}
+                </p>
               </div>
             );
           })}
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-brand/10 pt-4">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-cta">Your Answer</p>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-cta">
+              Your Answer
+            </p>
             <p className="flex items-center gap-1 text-sm font-bold text-cta">
               Option {SELECTED_KEY}
               <XIcon />
@@ -116,41 +126,53 @@ export default function QuestionAnalysisPage() {
           </div>
         </div>
 
-        <p className="mt-3 flex items-center gap-1 text-xs text-muted">
+        <p className="mt-4 flex items-center gap-1.5 text-xs text-muted">
           <ClockIcon />
           Time Taken: 2:14
         </p>
       </div>
 
-      <div className="rounded-2xl border border-brand/10 bg-surface p-5">
+      {/* Tag This Mistake card */}
+      <div className="rounded-2xl border border-brand/10 bg-surface p-6">
         <p className="text-xs font-bold uppercase tracking-wide text-muted">
           Tag This Mistake
         </p>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {MISTAKE_TAGS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setTag(item.id)}
-              aria-pressed={tag === item.id}
-              className={`flex flex-col items-center gap-2 rounded-xl border p-3 text-center transition-colors ${
-                tag === item.id
-                  ? "border-brand bg-tint-strong"
-                  : "border-brand/10 hover:bg-tint-strong/50"
-              }`}
-            >
-              <span className="text-ink">{item.icon}</span>
-              <span className="text-xs font-semibold text-ink">{item.label}</span>
-            </button>
-          ))}
+          {MISTAKE_TAGS.map((item) => {
+            const isSelected = tag === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setTag(item.id)}
+                aria-pressed={isSelected}
+                className={`flex flex-col items-center gap-2 rounded-xl border p-4 text-center transition-colors ${
+                  isSelected
+                    ? "border-ink bg-white text-ink"
+                    : "border-brand/10 bg-tint text-muted hover:bg-tint-strong"
+                }`}
+              >
+                <span className={isSelected ? "text-ink" : "text-muted"}>
+                  {item.icon}
+                </span>
+                <span className="text-xs font-semibold">{item.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
+      {/* Actions */}
       <div className="flex flex-wrap items-center gap-3">
-        <Button variant="secondary" size="sm">
+        <Button variant="secondary" size="sm" className="rounded-full">
           Add Personal Note
         </Button>
-        <Button variant="secondary" size="sm" onClick={() => setComplete(true)}>
+        <Button
+          variant="secondary"
+          size="sm"
+          className="rounded-full"
+          onClick={() => setComplete(true)}
+        >
           {isComplete ? (
             <>
               <CheckIcon />
@@ -160,7 +182,7 @@ export default function QuestionAnalysisPage() {
             "Mark Complete"
           )}
         </Button>
-        <Button variant="primary" size="sm">
+        <Button variant="primary" size="sm" className="rounded-full px-6">
           View Full Solution
         </Button>
       </div>
