@@ -23,7 +23,7 @@ export function StatCard({
 }: StatCardProps) {
   return (
     <div
-      className={`rounded-lg border border-brand/10 bg-surface ${padding} shadow-[0px_1px_2px_0px_rgba(26,26,78,0.06)] ${className}`}
+      className={`rounded-2xl border border-brand/10 bg-surface ${padding} shadow-[0px_1px_2px_0px_#00000008,0px_1px_3px_0px_#0000000D] ${className}`}
     >
       {(title || right || icon) && (
         <div className="flex items-start justify-between gap-3">

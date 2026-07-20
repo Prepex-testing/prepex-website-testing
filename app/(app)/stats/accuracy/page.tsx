@@ -1,8 +1,21 @@
-import { ClockIcon, StarIcon } from "@/components/ui/icons";
+import {
+  AlertCircleIcon,
+  BoltIcons,
+  ClockIcon,
+  ClockIconss,
+  CloudMoonIcon,
+  CloudSunIcon,
+  DiceIcon,
+  LightbulbIcon,
+  MoonIcon,
+  StarIcon,
+  SunIcon,
+} from "@/components/ui/icons";
 import { StatCard } from "@/components/stats/StatCard";
 import { MeterRow } from "@/components/stats/MeterRow";
 import { RankedList } from "@/components/stats/RankedList";
 import { CircularProgress } from "@/components/ui/CircularProgress";
+import { ChapterRankedList } from "@/components/stats/ChapterRankedList";
 
 const SUBJECTS = [
   { label: "Physics", short: "P", percent: 72, fraction: "71/99" },
@@ -10,54 +23,114 @@ const SUBJECTS = [
   { label: "Chemistry", short: "C", percent: 41, fraction: "40/98" },
 ];
 
-const MOCK_TREND = [150, 162, 158, 170, 175];
+const MOCK_TREND = [174, 180, 183, 209, 245];
 const MOCK_MAX = 300;
 
 const MISTAKE_PATTERNS = [
   {
-    id: "silly-errors",
-    rank: 1,
+    id: "silly",
     title: "Silly Errors",
-    subtitle: "Careless calculation errors",
+    subtitle: "Careless calculation & reading",
     value: "18",
+    icon: <AlertCircleIcon className="h-5 w-5" />,
   },
   {
     id: "conceptual",
-    rank: 2,
     title: "Conceptual",
-    subtitle: "Knowledge gaps",
+    subtitle: "Knowledge gaps in basics",
     value: "24",
+    icon: <LightbulbIcon className="h-5 w-5" />,
   },
   {
-    id: "time-pressure",
-    rank: 3,
+    id: "time",
     title: "Time Pressure",
-    subtitle: "Incomplete attempts due to time",
+    subtitle: "Incomplete attempts at end",
     value: "12",
+    icon: <ClockIconss className="h-5 w-5" />,
   },
   {
-    id: "wild-guesses",
-    rank: 4,
+    id: "guess",
     title: "Wild Guesses",
-    subtitle: "Random guessing patterns",
-    value: "6",
+    subtitle: "Incorrect logical deductions",
+    value: "8",
+    icon: <DiceIcon className="h-5 w-5" />,
   },
 ];
 
 const WEAKEST_CHAPTERS = [
-  { id: "current-electricity", rank: 1, title: "Current Electricity", value: "42%" },
-  { id: "electrochemistry", rank: 2, title: "Electrochemistry", value: "45%" },
-  { id: "ray-optics", rank: 3, title: "Ray Optics", value: "48%" },
-  { id: "binomial-theorem", rank: 4, title: "Binomial Theorem", value: "50%" },
-  { id: "rotation", rank: 5, title: "Rotation", value: "51%" },
+  {
+    id: "1",
+    rank: 1,
+    title: "Current Electricity",
+    value: "42%",
+    percent: 42,
+  },
+  {
+    id: "2",
+    rank: 2,
+    title: "Electrochemistry",
+    value: "45%",
+    percent: 45,
+  },
+  {
+    id: "3",
+    rank: 3,
+    title: "Ray Optics",
+    value: "48%",
+    percent: 48,
+  },
+  {
+    id: "4",
+    rank: 4,
+    title: "Binomial Theorem",
+    value: "50%",
+    percent: 50,
+  },
+  {
+    id: "5",
+    rank: 5,
+    title: "Rotation",
+    value: "51%",
+    percent: 51,
+  },
 ];
 
 const STRONGEST_CHAPTERS = [
-  { id: "modern-physics", rank: 1, title: "Modern Physics", value: "89%" },
-  { id: "mole-concept", rank: 2, title: "Mole Concept", value: "88%" },
-  { id: "kinematics", rank: 3, title: "Kinematics", value: "84%" },
-  { id: "semiconductors", rank: 4, title: "Semiconductors", value: "82%" },
-  { id: "thermochemistry", rank: 5, title: "Thermochemistry", value: "81%" },
+  {
+    id: "1",
+    rank: 1,
+    title: "Modern Physics",
+    value: "89%",
+    percent: 89,
+  },
+  {
+    id: "2",
+    rank: 2,
+    title: "Mole Concept",
+    value: "84%",
+    percent: 84,
+  },
+  {
+    id: "3",
+    rank: 3,
+    title: "Kinematics",
+    value: "84%",
+    percent: 84,
+  },
+  {
+    id: "4",
+    rank: 4,
+    title: "Semiconductors",
+    value: "82%",
+    percent: 82,
+  },
+  {
+    id: "5",
+    rank: 5,
+    title: "Thermochemistry",
+    value: "81%",
+    percent: 81,
+  },
 ];
 
 const DIFFICULTY_ACCURACY = [
@@ -73,10 +146,10 @@ const TIME_PER_QUESTION = [
 ];
 
 const ACCURACY_BY_TIME = [
-  { label: "Morning", percent: 78 },
-  { label: "Afternoon", percent: 69 },
-  { label: "Evening", percent: 73 },
-  { label: "Night", percent: 62 },
+  { label: "Morning", percent: 78, icon: <SunIcon /> },
+  { label: "Afternoon", percent: 69, icon: <CloudSunIcon /> },
+  { label: "Evening", percent: 73, icon: <CloudMoonIcon /> },
+  { label: "Night", percent: 62, icon: <MoonIcon /> },
 ];
 
 export default function AccuracyStatsPage() {
@@ -85,17 +158,24 @@ export default function AccuracyStatsPage() {
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
         <StatCard title="Overall Accuracy">
           <div className="flex flex-col items-center gap-4">
-            <CircularProgress percent={68} label="Accuracy" size={120} />
-            <div className="flex w-full items-center justify-around">
-              <div className="text-center">
-                <p className="text-[10px] uppercase tracking-wide text-muted">
-                  Attempted
-                </p>
-                <p className="text-sm font-bold text-ink">142 Qns</p>
-              </div>
-              <div className="text-center">
-                <p className="text-[10px] uppercase tracking-wide text-muted">Correct</p>
-                <p className="text-sm font-bold text-ink">96 Qns</p>
+            <CircularProgress
+              percent={68}
+              label="Accuracy"
+              size={120}
+              progressGradient={{ from: "var(--score-ring-from)", to: "var(--score-ring-to)" }}
+            />
+            <div className="w-full border-t border-brand/10 pt-4">
+              <div className="flex items-center justify-around">
+                <div className="text-center">
+                  <p className="text-[10px] uppercase tracking-wide text-muted">
+                    Attempted
+                  </p>
+                  <p className="text-sm font-bold text-ink">142 Qns</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-[10px] uppercase tracking-wide text-muted">Correct</p>
+                  <p className="text-sm font-bold text-ink">96 Qns</p>
+                </div>
               </div>
             </div>
             <p className="flex items-center gap-1 text-xs text-muted">
@@ -108,28 +188,41 @@ export default function AccuracyStatsPage() {
         <StatCard
           title="Accuracy by Subject"
           right={
-            <span className="shrink-0 text-xs font-semibold text-cta">Detailed view →</span>
+            <span className="shrink-0 text-xs font-semibold text-link">Detailed view →</span>
           }
         >
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-5">
             {SUBJECTS.map((subject) => (
-              <div key={subject.label}>
-                <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand text-[10px] font-bold text-white">
-                    {subject.short}
-                  </span>
-                  <span className="flex-1 text-xs font-semibold text-body-text">
-                    {subject.label}
-                  </span>
-                  <span className="text-xs font-bold text-ink">{subject.percent}%</span>
+              <div key={subject.label} className="flex items-center gap-3">
+                {/* Subject Initial */}
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand/20 text-sm font-bold text-white">
+                  {subject.short}
                 </div>
-                <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-tint">
-                  <div
-                    className="h-full rounded-full bg-brand"
-                    style={{ width: `${subject.percent}%` }}
-                  />
+
+                {/* Subject Name + Progress */}
+                <div className="flex-1">
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-body-text">
+                      {subject.label}
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-ink">
+                        {subject.percent}%
+                      </span>
+                      <span className="text-xs text-muted">
+                        {subject.fraction}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-tint">
+                    <div
+                      className="h-full rounded-full bg-toggle-on"
+                      style={{ width: `${subject.percent}%` }}
+                    />
+                  </div>
                 </div>
-                <p className="mt-1 text-[10px] text-muted">{subject.fraction}</p>
               </div>
             ))}
           </div>
@@ -137,106 +230,204 @@ export default function AccuracyStatsPage() {
 
         <StatCard
           title="Mock Trend (JEE Main)"
-          subtitle="Last 5 tests"
+          subtitle="Last 5 mocks performance analysis"
           right={
-            <span className="shrink-0 text-xs font-semibold text-cta">Detailed view →</span>
+            <span className="shrink-0 text-xs font-semibold text-link">
+              Detailed view →
+            </span>
           }
         >
-          <svg viewBox="0 0 220 120" className="h-32 w-full" aria-hidden="true">
-            <polyline
-              fill="none"
-              stroke="var(--brand)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              points={MOCK_TREND.map(
-                (value, index) =>
-                  `${(index / (MOCK_TREND.length - 1)) * 210 + 5},${
-                    110 - (value / MOCK_MAX) * 100
-                  }`,
-              ).join(" ")}
-            />
-            <polygon
-              fill="var(--brand)"
-              opacity="0.08"
-              points={`5,110 ${MOCK_TREND.map(
-                (value, index) =>
-                  `${(index / (MOCK_TREND.length - 1)) * 210 + 5},${
-                    110 - (value / MOCK_MAX) * 100
-                  }`,
-              ).join(" ")} 215,110`}
-            />
-            <circle
-              cx="215"
-              cy={110 - (MOCK_TREND[MOCK_TREND.length - 1] / MOCK_MAX) * 100}
-              r="4"
-              fill="var(--cta)"
-              stroke="white"
-              strokeWidth="2"
-            />
-          </svg>
-          <p className="text-right text-xs font-bold text-ink">
-            {MOCK_TREND[MOCK_TREND.length - 1]} marks
-          </p>
+          {(() => {
+            const chartWidth = 250;
+            const chartHeight = 160;
+
+            const left = 34;
+            const bottom = 125;
+            const top = 25;
+            const right = 18;
+
+            const usableWidth = chartWidth - left - right;
+            const usableHeight = bottom - top;
+
+            const points = MOCK_TREND.map((value, index) => {
+              const x =
+                left +
+                (index / (MOCK_TREND.length - 1)) * usableWidth;
+
+              const y =
+                bottom -
+                (value / MOCK_MAX) * usableHeight;
+
+              return { x, y, value };
+            });
+
+            const line = points.reduce((path, point, i) => {
+              if (i === 0) {
+                return `M ${point.x} ${point.y}`;
+              }
+
+              const prev = points[i - 1];
+              const cx = (prev.x + point.x) / 2;
+
+              return `${path}
+        C ${cx} ${prev.y},
+          ${cx} ${point.y},
+          ${point.x} ${point.y}`;
+            }, "");
+
+            return (
+              <>
+                <svg
+                  viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+                  className="h- w-full"
+                >
+                  <defs>
+                    <linearGradient
+                      id="mockTrendFill"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="#5A47FF"
+                        stopOpacity="0.30"
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="#5A47FF"
+                        stopOpacity="0"
+                      />
+                    </linearGradient>
+                  </defs>
+
+                  {[300, 225, 150, 75, 0].map((tick) => {
+                    const y =
+                      bottom -
+                      (tick / MOCK_MAX) * usableHeight;
+
+                    return (
+                      <text
+                        key={tick}
+                        x="2"
+                        y={y + 4}
+                        fontSize="9"
+                        fill="#8186A6"
+                      >
+                        {tick}
+                      </text>
+                    );
+                  })}
+
+                  <path
+                    d={`${line} L ${points.at(-1)!.x} ${bottom}
+                L ${points[0].x} ${bottom} Z`}
+                    fill="url(#mockTrendFill)"
+                  />
+
+                  <path
+                    d={line}
+                    fill="none"
+                    stroke="#5B4BFF"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  />
+
+                  {points.map((point, index) => (
+                    <g key={index}>
+                      <circle
+                        cx={point.x}
+                        cy={point.y}
+                        r="3.5"
+                        fill="#1A1A4E"
+                        stroke="white"
+                        strokeWidth="1.8"
+                      />
+
+                      <text
+                        x={point.x}
+                        y={point.y - 10}
+                        textAnchor="middle"
+                        fontSize="10"
+                        fill="white"
+                        fontWeight="700"
+                      >
+                        {point.value}
+                      </text>
+                    </g>
+                  ))}
+                </svg>
+
+
+              </>
+            );
+          })()}
         </StatCard>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <StatCard title="Mistake Patterns (Recoverable Marks)" right={<span className="shrink-0 text-xs font-semibold text-cta">Detailed view →</span>}>
-          <RankedList
-            items={MISTAKE_PATTERNS.map((item) => ({
-              id: item.id,
-              rank: item.rank,
-              title: item.title,
-              subtitle: item.subtitle,
-              value: item.value,
-            }))}
-          />
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[48%_52%]">
+        {/* Left */}
+        <StatCard
+          className="min-h-[489px] p-6"
+          title="Mistake Patterns (Recoverable Marks)"
+          right={
+            <span className="text-xs font-semibold text-white">
+              Detailed view →
+            </span>
+          }
+        >
+          <RankedList items={MISTAKE_PATTERNS} />
         </StatCard>
 
-        <StatCard title="Accuracy by Chapter" right={<span className="shrink-0 text-xs font-semibold text-cta">View all →</span>}>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div>
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-muted">
-                Top 5 Weakest
-              </p>
-              <RankedList
-                items={WEAKEST_CHAPTERS}
-                rankClassName="bg-danger-bg text-danger"
-              />
-            </div>
-            <div>
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-muted">
-                Top 5 Strongest
-              </p>
-              <RankedList
-                items={STRONGEST_CHAPTERS.map((item) => ({
-                  ...item,
-                  valueClassName: "text-success",
-                }))}
-                rankClassName="bg-success-bg text-success"
-              />
-            </div>
+        {/* Right */}
+        <StatCard
+          className="min-h-[489px] p-6"
+          title="Accuracy by Chapter"
+          right={
+            <span className="text-xs font-semibold text-cta">
+              View all →
+            </span>
+          }
+        >
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+            <ChapterRankedList
+              title="TOP 5 WEAKEST"
+              titleColor="#F59E0B"
+              rankBg="bg-[#3A2C18] text-[#F59E0B]"
+              valueColor="#FAF7F2"
+              items={WEAKEST_CHAPTERS}
+            />
+
+            <ChapterRankedList
+              title="TOP 5 STRONGEST"
+              titleColor="#22C55E"
+              rankBg="bg-[#153C31] text-[#22C55E]"
+              valueColor="#FAF7F2"
+              items={STRONGEST_CHAPTERS}
+            />
           </div>
         </StatCard>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Difficulty Accuracy">
-          <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-[176fr_111fr_111fr_111fr]">
+        <StatCard title="Difficulty Accuracy" padding="p-5">
+          <div className="flex flex-col gap-5">
             {DIFFICULTY_ACCURACY.map((row) => (
               <MeterRow
                 key={row.label}
                 label={row.label}
                 value={`${row.percent}%`}
                 percent={row.percent}
+                trackClassName="bg-muted/25"
+                trackHeightClassName="h-1.5"
               />
             ))}
           </div>
         </StatCard>
 
-        <StatCard title="Time Per Question">
-          <div className="flex flex-col gap-3">
+        <StatCard title="Time Per Question" padding="p-5">
+          <div className="flex flex-col gap-4">
             {TIME_PER_QUESTION.map((row) => (
               <div key={row.label} className="flex items-center justify-between text-xs">
                 <span className="flex items-center gap-1.5 font-semibold text-body-text">
@@ -249,33 +440,42 @@ export default function AccuracyStatsPage() {
           </div>
         </StatCard>
 
-        <StatCard title="Accuracy by Time of Day">
-          <div className="flex flex-col gap-3">
+        <StatCard title="Accuracy by Time of Day" padding="p-5">
+          <div className="flex items-start justify-between gap-2">
             {ACCURACY_BY_TIME.map((row) => (
-              <MeterRow
-                key={row.label}
-                label={row.label}
-                value={`${row.percent}%`}
-                percent={row.percent}
-              />
+              <div key={row.label} className="flex flex-col items-center gap-0.75">
+                <span className="text-muted">{row.icon}</span>
+                <span className="text-center text-[8px] font-bold leading-3 text-muted">
+                  {row.label}
+                </span>
+                <span className="text-xs font-bold text-ink">{row.percent}%</span>
+              </div>
             ))}
           </div>
-          <p className="mt-3 text-[10px] text-muted">
-            Insight: Your accuracy dips 12% after 9pm.
-          </p>
+          <div className="mt-3 flex items-start gap-2 rounded-lg bg-tint px-2 py-2">
+            <LightbulbIcon className="mt-0.5 h-3 w-3 shrink-0 text-cta" />
+            <p className="text-[9px] font-medium leading-[13.5px] text-body-text">
+              Insight: You&apos;re 12% more accurate before noon.
+            </p>
+          </div>
         </StatCard>
 
-        <StatCard>
-          <p className="text-center text-2xl font-extrabold text-ink">
-            175 <span className="text-muted">± 8</span>
-          </p>
-          <p className="text-center text-xs font-semibold text-muted">Marks</p>
-          <p className="mt-2 text-center text-[10px] text-muted">
-            Based on your last 5 tests and current performance trend
-          </p>
-          <div className="mt-3 flex items-center justify-center gap-1 rounded-full bg-tint-strong px-3 py-1.5 text-[10px] font-bold text-ink">
-            <StarIcon />
-            70% Confidence
+        <StatCard title="Predicted Next Mock" padding="p-6">
+          <div className="flex flex-col items-center">
+            <p className="text-center text-[32px] font-extrabold leading-none text-ink">
+              175 <span className="text-muted">± 8</span>
+            </p>
+            <p className="mt-2 text-center text-sm font-bold text-muted">Marks</p>
+            <div className="mt-3 flex items-center justify-center gap-1 rounded-full bg-tint-strong px-3 py-1.5 text-[10px] font-bold text-ink">
+              <StarIcon />
+              90% Confidence
+            </div>
+          </div>
+          <div className="mt-4 flex items-start gap-2 rounded-xl border border-brand/10 bg-tint px-3 py-3">
+            <BoltIcons className="mt-0.5 h-4.5 w-4 shrink-0 text-cta" />
+            <p className="text-[9px] leading-[11.25px] text-body-text">
+              Based on your last 5 mocks and current performance trend.
+            </p>
           </div>
         </StatCard>
       </div>

@@ -1502,3 +1502,77 @@ export function BookOpenIcon() {
     </svg>
   );
 }
+
+export function LightbulbIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M9 18h6" />
+      <path d="M10 22h4" />
+      <path d="M12 2a7 7 0 0 0-4 12.7c.7.6 1 1.3 1 2.3h6c0-1 .3-1.7 1-2.3A7 7 0 0 0 12 2Z" />
+    </svg>
+  );
+}
+export function ClockIconss(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <circle cx="12" cy="13" r="8" />
+      <path d="M12 9v4l3 2" />
+      <path d="M9 2h6" />
+      <path d="M12 2v3" />
+    </svg>
+  );
+}
+export function DiceIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <circle cx="9" cy="9" r="1" fill="currentColor" />
+      <circle cx="15" cy="9" r="1" fill="currentColor" />
+      <circle cx="9" cy="15" r="1" fill="currentColor" />
+      <circle cx="15" cy="15" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function AlertCircleIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v6" />
+      <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}

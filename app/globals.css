@@ -36,6 +36,8 @@
   --question-dot-inactive: #D1D5DB;
 
   --toggle-on: var(--brand);
+  --score-ring-from: #1a1a4e;
+  --score-ring-to: #4c1d95;
 }
 
 [data-theme="dark"] {
@@ -74,6 +76,8 @@
   --question-dot-inactive: rgba(250, 247, 242, 0.25);
 
   --toggle-on: #ffffff;
+  --score-ring-from: #ffffff;
+  --score-ring-to: #ffffff;
 }
 
 @theme inline {

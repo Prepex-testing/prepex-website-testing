@@ -16,10 +16,10 @@ import { SubjectDonut } from "@/components/stats/SubjectDonut";
 type BarState = "past" | "today" | "recovery" | "future";
 
 const BAR_COLORS: Record<BarState, string> = {
-  past: "bg-brand",
-  today: "bg-cta",
-  recovery: "bg-chart-recovery",
-  future: "bg-brand/15",
+  past: "bg-ink",
+  today: "bg-[#FF7F5C]",
+  recovery: "bg-[#FB923C]",
+  future: "bg-ink/15",
 };
 
 const WEEK_BARS: { day: string; hours: number; state: BarState }[] = [
@@ -67,9 +67,9 @@ const TIME_OF_DAY = [
 ];
 
 const SUBJECT_SPLIT = [
-  { label: "Physics", value: 38, color: "var(--chart-1)" },
-  { label: "Chemistry", value: 28, color: "var(--chart-2)" },
-  { label: "Maths", value: 34, color: "var(--chart-3)" },
+  { label: "Physics", value: 38, color: "var(--ink)" },
+  { label: "Chemistry", value: 28, color: "#4C1D95" },
+  { label: "Maths", value: 34, color: "var(--ink)" },
 ];
 
 const INSIGHTS = [
@@ -151,33 +151,33 @@ export default function EffortStatsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-        <StatCard className="sm:col-span-2">
+        <StatCard className="sm:col-span-2" padding="py-3 px-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-sm font-bold text-ink">This Week</p>
-              <div className="mt-1.5 flex items-center gap-3 text-[10px] text-muted">
+              <p className="text-base leading-6 font-bold text-ink">This Week</p>
+              <div className="mt-1.5 flex items-center gap-4 text-[10px] leading-3.75 font-bold tracking-[0.5px] text-ink uppercase">
                 <span className="flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-brand" /> Focus Time
+                  <span className="h-2.5 w-2.5 rounded-full bg-ink" /> Focus Time
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-cta" /> Today
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#FF7F5C]" /> Today
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-chart-recovery" /> Recovery
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#FB923C]" /> Recovery
                 </span>
               </div>
             </div>
             <button
               type="button"
-              className="flex items-center gap-1 rounded-full border border-brand/10 px-3 py-1.5 text-xs font-semibold text-ink"
+              className="flex items-center gap-1 rounded-lg border border-brand/10 py-1 pr-8 pl-2 text-xs font-bold text-ink"
             >
               Weekly View
               <ChevronDownIcon className="h-3.5 w-3.5" />
             </button>
           </div>
 
-          <div className="mt-5 flex items-stretch gap-3 pl-8">
-            <div className="flex h-36 flex-col justify-between text-[10px] text-muted">
+          <div className="mt-5 flex items-stretch gap-3 py-4 pr-4 pl-10.75">
+            <div className="flex h-27.5 flex-col justify-between text-[10px] text-muted">
               <span>6h</span>
               <span>4h</span>
               <span>2h</span>
@@ -188,17 +188,17 @@ export default function EffortStatsPage() {
                 <div key={bar.day} className="flex flex-1 flex-col items-center gap-1.5">
                   <span
                     className={`text-[10px] font-bold ${bar.state === "today"
-                        ? "text-cta"
+                        ? "text-[#FF7F5C]"
                         : bar.state === "recovery"
-                          ? "text-chart-recovery"
+                          ? "text-[#FB923C]"
                           : "text-transparent"
                       }`}
                   >
                     {bar.state === "today" ? "Today" : bar.state === "recovery" ? "Recovery" : "-"}
                   </span>
-                  <div className="flex h-36 w-full items-end justify-center">
+                  <div className="flex h-27.5 w-full items-end justify-center">
                     <div
-                      className={`w-6 rounded-t-md ${BAR_COLORS[bar.state]}`}
+                      className={`w-10 rounded-t-lg ${BAR_COLORS[bar.state]}`}
                       style={{ height: `${(bar.hours / MAX_HOURS) * 100}%` }}
                     />
                   </div>
@@ -211,13 +211,13 @@ export default function EffortStatsPage() {
         </StatCard>
 
         <StatCard>
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-2">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-tint-strong text-ink">
+          <div className="flex items-start justify-between pb-6">
+            <div className="flex items-center gap-3">
+              <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-tint-strong text-ink">
                 <ChartBarIcon />
               </span>
               <div>
-                <p className="text-sm font-bold text-ink">Weekly Performance</p>
+                <p className="text-base leading-6 font-bold text-ink">Weekly Performance</p>
                 <p className="text-[10px] uppercase tracking-wide text-muted">
                   Summary Statistics
                 </p>
@@ -231,17 +231,34 @@ export default function EffortStatsPage() {
             </div>
           </div>
 
-          <div className="mt-5 flex flex-col gap-4">
-            <MeterRow label="Tasks Done" value="27/32" percent={84} />
-            <MeterRow label="Plans Honored" value="6/7" percent={86} />
-            <MeterRow label="Recovery Days" value="1/1" percent={100} />
+          <div className="flex flex-col gap-6 pb-3">
+            <MeterRow
+              label="Tasks Done"
+              value="27/32"
+              percent={84}
+              trackClassName="bg-ink/25"
+            />
+            <MeterRow
+              label="Plans Honored"
+              value="6/7"
+              percent={86}
+              barClassName="bg-[#4C1D95]"
+              trackClassName="bg-ink/25"
+            />
+            <MeterRow
+              label="Recovery Days"
+              value="1/1"
+              percent={100}
+              barClassName="bg-ink"
+              trackClassName="bg-ink/25"
+            />
           </div>
         </StatCard>
       </div>
 
       <StatCard>
         <div className="flex items-center gap-1.5">
-          <p className="text-sm font-bold text-ink">12 Week Study Consistency</p>
+          <p className="text-base leading-6 font-bold text-ink">12 Week Study Consistency</p>
           <span className="text-muted">
             <ChevronDownIcon className="h-3.5 w-3.5 rotate-[315deg]" />
           </span>
@@ -317,9 +334,9 @@ export default function EffortStatsPage() {
           <div className="flex h-36 items-end justify-between gap-4">
             {TIME_OF_DAY.map((slot) => (
               <div key={slot.label} className="flex flex-1 flex-col items-center gap-1.5">
-                <div className="flex h-28 w-full items-end justify-center">
+                <div className="flex h-[101.5px] w-full items-end justify-center">
                   <div
-                    className={`w-8 rounded-t-md ${slot.peak ? "bg-cta" : "bg-brand"}`}
+                    className={`w-6.25 rounded-t-lg ${slot.peak ? "bg-cta" : "bg-brand"}`}
                     style={{ height: `${(slot.hours / 6.5) * 100}%` }}
                   />
                 </div>
