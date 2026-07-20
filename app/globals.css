@@ -34,6 +34,8 @@
 
   --question-dot-active: #1E1B4B;
   --question-dot-inactive: #D1D5DB;
+
+  --toggle-on: var(--brand);
 }
 
 [data-theme="dark"] {
@@ -70,6 +72,8 @@
 
   --question-dot-active: #FAF7F2;
   --question-dot-inactive: rgba(250, 247, 242, 0.25);
+
+  --toggle-on: #ffffff;
 }
 
 @theme inline {
@@ -99,6 +103,7 @@
   --color-subject-text: var(--subject-text);
   --color-icon-chip-bg: var(--icon-chip-bg);
   --color-plan-avatar-bg: var(--plan-avatar-bg);
+  --color-toggle-on: var(--toggle-on);
 
   --font-sans: var(--font-jakarta);
 

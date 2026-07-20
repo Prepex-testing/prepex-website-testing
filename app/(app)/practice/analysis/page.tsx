@@ -1,5 +1,6 @@
 "use client";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { UserMenu } from "@/components/layout/UserMenu";
 
 import { useState } from "react";
@@ -32,6 +33,7 @@ const MISTAKE_TAGS = [
 ];
 
 export default function QuestionAnalysisPage() {
+  const { resolvedTheme } = useTheme();
   const [tag, setTag] = useState("conceptual-gap");
   const [isComplete, setComplete] = useState(false);
 
@@ -59,7 +61,14 @@ export default function QuestionAnalysisPage() {
           <p className="text-xs font-bold uppercase tracking-wide text-muted">
             Question Context
           </p>
-          <span className="rounded-full bg-ink px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+          <span
+            className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide"
+            style={
+              resolvedTheme === "dark"
+                ? { background: "#FAF7F2", color: "#111145" }
+                : { background: "#EEF0F8", color: "#1A1A4E" }
+            }
+          >
             Level: Advanced
           </span>
         </div>
@@ -76,18 +85,18 @@ export default function QuestionAnalysisPage() {
               <div
                 key={option.key}
                 className={`rounded-xl border p-4 ${
-                  isSelected ? "border-cta bg-cta/5" : "border-brand/10"
+                  isSelected ? "border-[1.5px] border-[#F59E0B] bg-cta/5" : "border-brand/10"
                 }`}
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
                     Option {option.key}
                     {isSelected && (
-                      <span className="ml-1 normal-case text-cta">(Selected)</span>
+                      <span className="ml-1 normal-case text-[#F59E0B]">(Selected)</span>
                     )}
                   </p>
                   {isSelected && (
-                    <span className="flex items-center gap-1 text-[10px] font-semibold text-cta">
+                    <span className="flex items-center gap-1 text-[10px] font-semibold text-[#F59E0B]">
                       Your answer
                       <XIcon />
                     </span>
@@ -110,10 +119,10 @@ export default function QuestionAnalysisPage() {
 
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-brand/10 pt-4">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-cta">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-[#F59E0B]">
               Your Answer
             </p>
-            <p className="flex items-center gap-1 text-sm font-bold text-cta">
+            <p className="flex items-center gap-1 text-sm font-bold text-[#F59E0B]">
               Option {SELECTED_KEY}
               <XIcon />
             </p>
@@ -133,11 +142,11 @@ export default function QuestionAnalysisPage() {
       </div>
 
       {/* Tag This Mistake card */}
-      <div className="rounded-2xl border border-brand/10 bg-surface p-6">
-        <p className="text-xs font-bold uppercase tracking-wide text-muted">
+      <div className="rounded-2xl border border-ink/8 bg-surface p-6">
+        <p className="text-[14px] font-bold uppercase leading-5 tracking-[1.4px] text-ink">
           Tag This Mistake
         </p>
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-4">
           {MISTAKE_TAGS.map((item) => {
             const isSelected = tag === item.id;
             return (
@@ -146,16 +155,18 @@ export default function QuestionAnalysisPage() {
                 type="button"
                 onClick={() => setTag(item.id)}
                 aria-pressed={isSelected}
-                className={`flex flex-col items-center gap-2 rounded-xl border p-4 text-center transition-colors ${
+                className={`flex min-h-33.5 flex-col items-center gap-3 rounded-2xl border px-9 pt-5 pb-9 text-center transition-colors ${
                   isSelected
-                    ? "border-ink bg-white text-ink"
+                    ? "border-[#1A1A4E] bg-white text-[#1A1A4E]"
                     : "border-brand/10 bg-tint text-muted hover:bg-tint-strong"
                 }`}
               >
-                <span className={isSelected ? "text-ink" : "text-muted"}>
+                <span
+                  className={`[&>svg]:h-12 [&>svg]:w-12 ${isSelected ? "text-[#1A1A4E]" : "text-muted"}`}
+                >
                   {item.icon}
                 </span>
-                <span className="text-xs font-semibold">{item.label}</span>
+                <span className="text-[12px] font-bold leading-4">{item.label}</span>
               </button>
             );
           })}
@@ -163,14 +174,18 @@ export default function QuestionAnalysisPage() {
       </div>
 
       {/* Actions */}
-      <div className="flex flex-wrap items-center gap-3">
-        <Button variant="secondary" size="sm" className="rounded-full">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <Button
+          variant="secondary"
+          size="sm"
+          className="h-13.5 w-full rounded-full border-ink text-[18px] font-bold text-ink hover:bg-[#FF7A59]!"
+        >
           Add Personal Note
         </Button>
         <Button
           variant="secondary"
           size="sm"
-          className="rounded-full"
+          className="h-13.5 w-full rounded-full border-ink text-[18px] font-bold text-ink hover:bg-[#FF7A59]!"
           onClick={() => setComplete(true)}
         >
           {isComplete ? (
@@ -182,7 +197,11 @@ export default function QuestionAnalysisPage() {
             "Mark Complete"
           )}
         </Button>
-        <Button variant="primary" size="sm" className="rounded-full px-6">
+        <Button
+          variant="secondary"
+          size="sm"
+          className="h-13.5 w-full rounded-full border-ink text-[18px] font-bold text-ink hover:bg-[#FF7A59]!"
+        >
           View Full Solution
         </Button>
       </div>

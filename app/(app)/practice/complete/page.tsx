@@ -1,5 +1,6 @@
 "use client";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { UserMenu } from "@/components/layout/UserMenu";
 
 import { Suspense } from "react";
@@ -48,6 +49,7 @@ export default function PracticeCompletePage() {
 }
 
 function PracticeCompleteContent() {
+  const { resolvedTheme } = useTheme();
   const searchParams = useSearchParams();
   const correct = Number(searchParams.get("correct") ?? 7);
   const total = Number(searchParams.get("total") ?? 12);
@@ -79,11 +81,15 @@ function PracticeCompleteContent() {
           {/* Score */}
           <div className="flex items-center justify-center pl-4">
             <CircularProgress
-              percent={percent}
+              percent={Math.max(percent, 2)}
               displayValue={`${correct}/${total}`}
               suffix=""
               label="SCORE"
               size={168}
+              progressColor={resolvedTheme === "dark" ? "#ffffff" : undefined}
+              progressGradient={
+                resolvedTheme === "dark" ? undefined : { from: "#1A1A4E", to: "#4C1D95" }
+              }
             />
           </div>
 
@@ -123,15 +129,15 @@ function PracticeCompleteContent() {
         </div>
       </div>
 
-    <div className="mx-auto w-full max-w-[1046px]">
-  <div className="grid grid-cols-1 gap-10 xl:grid-cols-[minmax(0,684px)_322px]">
+    <div className="w-full">
+  <div className="grid grid-cols-1 gap-10 xl:grid-cols-[minmax(0,1fr)_322px]">
 
     {/* LEFT COLUMN */}
     <div className="flex min-w-0 flex-col gap-6">
 
       {/* PERFORMANCE BREAKDOWN */}
       <div className="flex h-[72px] items-center rounded-2xl border border-brand/10 bg-surface px-6">
-        <p className="text-[14px] font-bold uppercase tracking-[1.4px] leading-5 text-body-text">
+        <p className="text-[14px] font-bold uppercase tracking-[1.4px] leading-5 text-ink">
           PERFORMANCE BREAKDOWN
         </p>
       </div>
@@ -172,7 +178,7 @@ function PracticeCompleteContent() {
 
               <div className="mt-3 h-2 rounded-full bg-tint-strong">
                 <div
-                  className="h-2 rounded-full bg-brand"
+                  className="h-2 rounded-full bg-toggle-on"
                   style={{ width: `${skillPercent}%` }}
                 />
               </div>
@@ -197,11 +203,17 @@ function PracticeCompleteContent() {
     <div className="flex min-w-0 flex-col gap-6">
 
       {/* Recovery */}
-      <div className="min-h-[291px] rounded-2xl border-l-4 border-cta bg-surface p-6 shadow-sm">
-        <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[1.2px] text-cta">
-          <BoltIcon />
-          Recovery Detected
-        </p>
+      <div className="relative min-h-72.75 overflow-hidden rounded-2xl border border-brand/10 bg-surface p-6 shadow-sm">
+        <span className="absolute inset-y-0 left-0 w-1 rounded-l-2xl bg-[#F59E0B]" />
+
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-ink/8 text-ink">
+            <BoltIcon />
+          </span>
+          <p className="text-[10px] font-bold uppercase tracking-[1.2px] text-[#F59E0B]">
+            Recovery Detected
+          </p>
+        </div>
 
         <div className="mt-5">
           <h3 className="text-[18px] font-bold leading-7 text-ink">

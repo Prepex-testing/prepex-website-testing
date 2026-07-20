@@ -34,11 +34,11 @@ export default function AccountSettingsPage() {
       <div className="overflow-hidden rounded-2xl border border-brand/10 bg-surface shadow-sm">
 
         {/* Header */}
-        <div className="flex h-[89px] items-center justify-between border-b border-brand/10 px-6">
+        <div className="flex min-h-22.25 items-center justify-between border-b border-brand/10 px-6 py-5">
 
           <div className="flex items-center gap-4">
 
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint">
               <UserIcon />
             </div>
 
@@ -57,7 +57,7 @@ export default function AccountSettingsPage() {
         </div>
 
         {/* Email Row */}
-        <div className="flex h-[89px] items-center border-b border-brand/10 px-6">
+        <div className="flex flex-col gap-4 border-b border-brand/10 px-6 py-5 sm:min-h-22.25 sm:flex-row sm:items-center sm:justify-between sm:py-0">
 
           {/* Left */}
           <div className="flex flex-1 items-center gap-4">
@@ -66,12 +66,12 @@ export default function AccountSettingsPage() {
               <MailIcon />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <p className="text-[12px] leading-4 text-muted">
                 Email Address
               </p>
 
-              <p className="mt-1 text-[14px] font-bold leading-5 text-ink">
+              <p className="mt-1 truncate text-[14px] font-bold leading-5 text-ink">
                 rohan@example.com
               </p>
             </div>
@@ -82,7 +82,7 @@ export default function AccountSettingsPage() {
           <div className="shrink-0">
             <Button
               variant="secondary"
-              className="!h-[38px] !w-[156px] shrink-0 whitespace-nowrap rounded-lg border border-brand/20 px-4 text-[14px] font-semibold"
+              className="!h-[38px] w-full shrink-0 whitespace-nowrap rounded-lg border border-brand/20 px-4 text-[14px] font-semibold sm:w-39"
             >
               Change Email
             </Button>
@@ -91,7 +91,7 @@ export default function AccountSettingsPage() {
         </div>
 
         {/* Password Row */}
-        <div className="flex h-[89px] items-center px-6">
+        <div className="flex flex-col gap-4 px-6 py-5 sm:min-h-22.25 sm:flex-row sm:items-center sm:justify-between sm:py-0">
 
           {/* Left */}
           <div className="flex flex-1 items-center gap-4">
@@ -100,7 +100,7 @@ export default function AccountSettingsPage() {
               <LockIcon />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <p className="text-[12px] leading-4 text-muted">
                 Password
               </p>
@@ -116,7 +116,7 @@ export default function AccountSettingsPage() {
           <div className="shrink-0">
             <Button
               variant="secondary"
-              className="!h-[38px] !w-[156px] shrink-0 whitespace-nowrap rounded-lg border border-brand/20 px-4 text-[14px] font-semibold"
+              className="!h-[38px] w-full shrink-0 whitespace-nowrap rounded-lg border border-brand/20 px-4 text-[14px] font-semibold sm:w-39"
             >
               Change Password
             </Button>
@@ -129,9 +129,9 @@ export default function AccountSettingsPage() {
  <div className="overflow-hidden rounded-2xl border border-brand/10 bg-surface shadow-sm">
 
   {/* Header */}
-  <div className="flex h-[89px] items-center border-b border-brand/10 px-6">
+  <div className="flex min-h-22.25 items-center border-b border-brand/10 px-6 py-5">
     <div className="flex items-center gap-4">
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint">
         <LinkIcon />
       </div>
 
@@ -148,10 +148,10 @@ export default function AccountSettingsPage() {
   </div>
 
   {/* Google Row */}
-  <div className="flex h-[89px] items-center justify-between border-b border-brand/10 px-6">
+  <div className="flex flex-col gap-4 border-b border-brand/10 px-6 py-5 sm:min-h-22.25 sm:flex-row sm:items-center sm:justify-between sm:py-0">
 
     <div className="flex items-center gap-4">
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-brand/10">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-brand/10">
         <GoogleIcon />
       </div>
 
@@ -166,7 +166,7 @@ export default function AccountSettingsPage() {
       </div>
     </div>
 
-    <div className="flex shrink-0 items-center gap-4">
+    <div className="flex flex-wrap shrink-0 items-center gap-4">
 
       <span className="flex h-[22px] w-[98px] items-center justify-center rounded-md border border-[#D1FAE5] bg-[#ECFDF5] text-[10px] font-bold text-[#065F46]">
         Connected
@@ -185,10 +185,10 @@ export default function AccountSettingsPage() {
   </div>
 
   {/* Apple Row */}
-  <div className="flex h-[89px] items-center justify-between px-6">
+  <div className="flex flex-col gap-4 px-6 py-5 sm:min-h-22.25 sm:flex-row sm:items-center sm:justify-between sm:py-0">
 
     <div className="flex items-center gap-4">
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-brand/10">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-brand/10">
         <AppleIcon className="h-5 w-5" />
       </div>
 
@@ -203,7 +203,7 @@ export default function AccountSettingsPage() {
       </div>
     </div>
 
-    <div className="flex shrink-0 items-center gap-4">
+    <div className="flex flex-wrap shrink-0 items-center gap-4">
 
       <span className="flex h-[22px] w-[118px] items-center justify-center rounded-md border border-brand/10 bg-tint text-[10px] font-bold text-muted">
         Not Connected
@@ -264,11 +264,11 @@ export default function AccountSettingsPage() {
      <div className="overflow-hidden rounded-2xl border border-brand/10 bg-surface shadow-sm">
 
   {/* Header */}
-  <div className="flex h-[89px] items-center border-b border-brand/10 px-6">
+  <div className="flex min-h-22.25 items-center border-b border-brand/10 px-6 py-5">
 
     <div className="flex items-center gap-4">
 
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFFBEB] text-[#F59E0B]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#FFFBEB] text-[#F59E0B]">
         <TrashIcon />
       </div>
 
@@ -289,7 +289,7 @@ export default function AccountSettingsPage() {
   <div className="p-6">
 
     {/* Warning Box */}
-    <div className="flex h-[72px] items-start gap-4 rounded-xl border border-[#F59E0B]/20 bg-[#F59E0B]/10 p-4">
+    <div className="flex min-h-18 items-start gap-4 rounded-xl border border-[#F59E0B]/20 bg-[#F59E0B]/10 p-4">
 
       <div className="flex h-6 w-6 shrink-0 items-center justify-center text-[#F59E0B]">
         <InfoIcon />
@@ -309,7 +309,7 @@ export default function AccountSettingsPage() {
     </div>
 
     {/* Bottom Row */}
-    <div className="mt-6 flex items-end justify-between">
+    <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 
       {/* Left Content */}
       <div className="space-y-2">
@@ -329,10 +329,10 @@ export default function AccountSettingsPage() {
       </div>
 
       {/* Fixed Button */}
-      <div className="h-[46px] w-[173px] shrink-0">
+      <div className="h-[46px] w-full shrink-0 sm:w-43.25">
         <Button
           variant="secondary"
-          className="h-full w-full rounded-lg border border-[#F59E0B] px-8 text-[14px] font-bold text-[#F59E0B]"
+          className="h-full w-full rounded-lg border border-[#F59E0B]! px-8 text-[14px] font-bold text-[#F59E0B]! hover:bg-[#FF7A59]!"
         >
           Delete Account
         </Button>

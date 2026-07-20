@@ -105,7 +105,7 @@ export default function HelpAndSupportPage() {
           h-[38px]
           w-full
           rounded-lg
-          border border-white/25
+          border border-brand
           bg-transparent
           px-4
           text-[14px]
@@ -170,7 +170,7 @@ export default function HelpAndSupportPage() {
         </div>
 
         {/* Right */}
-        <div className="rounded-xl border border-brand/10 bg-surface p-8 shadow-sm">
+        <div className="rounded-xl border border-brand/10 bg-tint p-8 shadow-sm">
 
           {/* Header */}
           <div className="flex items-start gap-4">

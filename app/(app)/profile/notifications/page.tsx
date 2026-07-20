@@ -294,9 +294,11 @@ export default function NotificationSettingsPage() {
                 <div
                   className="
               relative h-6 w-11 rounded-full
+              border border-brand/15
               bg-tint
               transition-colors
-              peer-checked:bg-brand
+              peer-checked:border-transparent
+              peer-checked:bg-toggle-on
 
               after:absolute
               after:left-[2px]
@@ -306,6 +308,7 @@ export default function NotificationSettingsPage() {
               after:rounded-full
               after:bg-white
               after:transition-transform
+              peer-checked:after:bg-surface
               peer-checked:after:translate-x-5
             "
                 />

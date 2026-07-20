@@ -212,8 +212,8 @@ export default function ProfilePage() {
           </div>
 
           {/* RIGHT SECTION */}
-          <div className="flex flex-1 justify-center lg:justify-end">
-            <div className="grid w-full max-w-[585px] grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8">
+          <div className="flex flex-1 justify-center lg:justify-start lg:pl-10">
+            <div className="grid w-full max-w-160 grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-12">
 
               {DETAILS.map((detail) => (
                 <div
