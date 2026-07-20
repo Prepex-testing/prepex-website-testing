@@ -27,7 +27,7 @@ export function RankedList({ items }: RankedListProps) {
             justify-between
             rounded-xl
             border
-            border-white/10
+            border-brand/10
             bg-transparent
             px-3
             py-3
@@ -43,20 +43,20 @@ export function RankedList({ items }: RankedListProps) {
                 items-center
                 justify-center
                 rounded-[10px]
-                bg-white/5
-                text-white
+                bg-tint
+                text-ink
               "
             >
               {item.icon}
             </div>
 
             <div>
-              <h4 className="text-sm font-bold text-white">
+              <h4 className="text-sm font-bold text-ink">
                 {item.title}
               </h4>
 
               {item.subtitle && (
-                <p className="mt-0.5 text-[10px] leading-[15px] text-[#9CA3AF]">
+                <p className="mt-0.5 text-[10px] leading-[15px] text-muted">
                   {item.subtitle}
                 </p>
               )}
@@ -68,18 +68,18 @@ export function RankedList({ items }: RankedListProps) {
             <div className="text-right">
               <p
                 className={`text-base font-bold ${
-                  item.valueClassName ?? "text-[#F59E0B]"
+                  item.valueClassName ?? "text-warning"
                 }`}
               >
                 {item.value}
               </p>
 
-              <p className="text-[10px] text-[#9CA3AF]">
+              <p className="text-[10px] text-muted">
                 Marks recoverable
               </p>
             </div>
 
-            <ChevronRightIcon className="h-4 w-4 text-white/60" />
+            <ChevronRightIcon className="h-4 w-4 text-muted" />
           </div>
         </div>
       ))}

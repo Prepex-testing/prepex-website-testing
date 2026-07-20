@@ -155,7 +155,7 @@ const ACCURACY_BY_TIME = [
 export default function AccuracyStatsPage() {
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard title="Overall Accuracy">
           <div className="flex flex-col items-center gap-4">
             <CircularProgress
@@ -410,7 +410,7 @@ export default function AccuracyStatsPage() {
         </StatCard>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-[176fr_111fr_111fr_111fr]">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[176fr_111fr_111fr_111fr]">
         <StatCard title="Difficulty Accuracy" padding="p-5">
           <div className="flex flex-col gap-5">
             {DIFFICULTY_ACCURACY.map((row) => (
@@ -434,7 +434,7 @@ export default function AccuracyStatsPage() {
                   <ClockIcon />
                   {row.label}
                 </span>
-                <span className="font-bold text-ink">{row.time}</span>
+                <span className="whitespace-nowrap font-bold text-ink">{row.time}</span>
               </div>
             ))}
           </div>
