@@ -38,7 +38,7 @@ export function StatCard({
                 <p className="text-sm font-bold text-ink">{title}</p>
               )}
               {subtitle && (
-                <p className="mt-1 text-xs font-bold uppercase tracking-[0.5px] text-muted">
+                <p className="mt-1 text-xs font-bold tracking-[0.5px] text-muted">
                   {subtitle}
                 </p>
               )}

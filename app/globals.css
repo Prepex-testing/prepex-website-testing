@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/*
+ * Theme is toggled via [data-theme] on <html> (see ThemeProvider), not the
+ * OS-level prefers-color-scheme media query Tailwind's `dark:` defaults to.
+ * Repoint the variant so `dark:` classes follow the in-app toggle.
+ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
   --background: #faf7f2;
   --surface: #ffffff;
@@ -38,6 +45,11 @@
   --toggle-on: var(--brand);
   --score-ring-from: #1a1a4e;
   --score-ring-to: #4c1d95;
+
+  --sub: #A0A0B0;
+
+  /* icon for color */
+  --button-border: #333333;
 }
 
 [data-theme="dark"] {
@@ -78,6 +90,11 @@
   --toggle-on: #ffffff;
   --score-ring-from: #ffffff;
   --score-ring-to: #ffffff;
+
+  --sub:#242453;
+
+  /* icon for color */
+  --button-border: #FAF7F2;
 }
 
 @theme inline {
@@ -124,6 +141,9 @@
 
   --color-question-dot-active: var(--question-dot-active);
   --color-question-dot-inactive: var(--question-dot-inactive);
+
+    /* icon for color */
+  --color-button-border: var(--button-border);
 }
 
 html {

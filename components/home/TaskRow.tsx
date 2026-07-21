@@ -86,7 +86,7 @@ export function TaskRow({
 
               <span
                 className={`
-                  rounded-full
+                  rounded-sm
                   border
                   px-2
                   py-0.5

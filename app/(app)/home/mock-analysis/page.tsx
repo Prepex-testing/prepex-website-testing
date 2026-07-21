@@ -5,17 +5,18 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
+import { CalendarIcon, ClockIcon, TargetIcon, ChartBarIcons, TrophyIcons, TrendingUpIcon, UploadIcon } from "@/assets/icons";
 import {
   BellIcon,
   RefreshIcon,
-  TargetIcon,
-  ChartBarIcon,
-  TrophyIcon,
-  TrendingUpIcon,
-  UploadIcon,
+  // TargetIcon,
+  // ChartBarIcon,
+  // TrophyIcon,
+  // TrendingUpIcon,
+  // UploadIcon,
   MoreIcon,
-  CalendarIcon,
-  ClockIcon,
+  // CalendarIcon,
+  // ClockIcon,
   ChevronRightIcon,
 } from "@/components/ui/icons";
 
@@ -25,28 +26,24 @@ const STAT_CARDS = [
     value: "14",
     caption: "+2 this week",
     icon: <TargetIcon />,
-    iconClass: "bg-cta/10 text-cta",
   },
   {
     label: "Avg Score",
     value: "168/300",
     caption: "Top 24% percentile",
-    icon: <ChartBarIcon />,
-    iconClass: "bg-tint text-ink",
+    icon: <ChartBarIcons />,
   },
   {
     label: "Best Score",
     value: "212/300",
     caption: "Allen GT 9",
-    icon: <TrophyIcon />,
-    iconClass: "bg-info-bg text-info",
+    icon: <TrophyIcons />,
   },
   {
     label: "Score Trend",
     value: "+12",
     caption: "vs last mock",
     icon: <TrendingUpIcon />,
-    iconClass: "bg-brand/10 text-ink",
   },
 ];
 
@@ -115,10 +112,7 @@ export default function MockAnalysisPage() {
             key={card.label}
             className="flex items-start gap-4 rounded-2xl border border-brand/10 bg-surface p-4 shadow-sm dark:shadow-[0_1px_4px_rgba(0,0,0,0.16)]"
           >
-            <span
-              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${card.iconClass} [&>svg]:h-6 [&>svg]:w-6`}
-              style={iconBgStyle}
-            >
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink [&>svg]:h-6 [&>svg]:w-6 dark:bg-[#FAF7F2]/8">
               {card.icon}
             </span>
             <div className="min-w-0">
@@ -140,7 +134,7 @@ export default function MockAnalysisPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span
-              className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint p-2 text-ink [&>svg]:h-6 [&>svg]:w-6"
+              className="flex h-10 w-10 items-center justify-center rounded-lg bg-icon-chip-bg p-2 text-ink [&>svg]:h-6 [&>svg]:w-6 dark:bg-[#FAF7F2]/8"
               style={iconBgStyle}
             >
               <CalendarIcon />
@@ -160,9 +154,9 @@ export default function MockAnalysisPage() {
           </button>
         </div>
 
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch">
-          <div className="flex min-w-0 flex-1 flex-col items-start gap-4 rounded-xl border border-brand/10 bg-surface p-4 sm:flex-row sm:items-center sm:p-5">
-            <div className="flex w-full shrink-0 flex-col items-center justify-center rounded-lg border border-brand/10 bg-surface px-4 py-3 text-center sm:w-[112px] sm:py-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch ">
+          <div className="flex min-w-0 flex-1 flex-col items-start gap-4 rounded-xl border border-brand/10 bg-surface p-4 dark:bg-tint sm:flex-row sm:items-center sm:p-5">
+            <div className="flex w-full shrink-0 flex-col items-center justify-center rounded-lg bg-surface px-4 py-3 text-center dark:bg-tint sm:w-[112px] sm:py-4">
               <span className="text-[32px] font-bold leading-8 text-ink sm:text-[36px]">
                 24
               </span>
@@ -194,10 +188,7 @@ export default function MockAnalysisPage() {
           </div>
 
           <div className="flex w-full items-center gap-4 rounded-xl border border-brand/10 bg-tint p-4 sm:p-5 lg:w-[320px] lg:flex-shrink-0">
-            <div
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface shadow-sm sm:h-13 sm:w-13"
-              style={iconBgStyle}
-            >
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface shadow-sm dark:bg-tint sm:h-13 sm:w-13">
               <span className="text-ink [&>svg]:h-5 [&>svg]:w-5">
                 <ClockIcon />
               </span>
@@ -370,7 +361,7 @@ export default function MockAnalysisPage() {
       <section className="flex flex-col gap-4 rounded-[20px] border border-brand/10 bg-surface px-4 py-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.18)] sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8 lg:py-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8">
           <div
-            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-brand/20 bg-surface text-ink"
+            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-brand/20 bg-icon-chip-bg text-ink dark:border-[#C7D2FE] dark:bg-[#FAF7F2]/8 [&>svg]:h-6 [&>svg]:w-6"
             style={iconBgStyle}
           >
             <UploadIcon />

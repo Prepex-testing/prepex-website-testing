@@ -24,6 +24,7 @@ export function TimeBlockSection({
   return (
     // width: fill (w-full, default block behavior) · height: hug (h-auto, default)
     // gap: 16px between header and task rows → gap-4
+    //use this if not need bg color <div className="flex w-full flex-col gap-4">
     <div className="flex w-full flex-col gap-4 rounded-2xl border border-brand/10 bg-surface p-5">
       <button
         type="button"

@@ -14,20 +14,20 @@ import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { CheckInModal, MOODS } from "@/components/check-in/CheckInModal";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { FlameIcon, BackIcon, BookIcon, BriefcaseIcon, ChartBarIcon, LayersIcon, QuickIcon, RadarIcon, RevisionIcon, TrophyIcon, UserIcon } from "@/assets/icons";
 import {
   BellIcon,
   SparkleIcon,
-  FlameIcon,
   RefreshIcon,
   PlusIcon,
   TargetIcon,
-  ChartBarIcon,
-  BookIcon,
-  LayersIcon,
-  RadarIcon,
-  UserIcon,
-  TrophyIcon,
-  BriefcaseIcon,
+  // ChartBarIcon,
+  // BookIcon,
+  // LayersIcon,
+  // RadarIcon,
+  // UserIcon,
+  // TrophyIcon,
+  // BriefcaseIcon,
   ClockIcon,
   InfoIcon,
   PencilIcon,
@@ -95,30 +95,30 @@ const JOURNAL_STATS = [
 
 const QUICK_ACCESS = [
   { href: "/practice/sessions", label: "Practice", subtitle: "Solve Questions", icon: <PencilIcon /> },
-   {
+  {
     href: "/home/mock-analysis",
     label: "Mock Test Analysis",
     subtitle: "Analyze & Improve",
-    icon: <ChartBarIcon />,
+    icon: <ChartBarIcon className="h-5 w-5" />,
   },
-  {
+   { href: "/home/mistake-notebook", label: "Mistake Notebook", icon: <BookIcon className="h-5 w-5" /> },
+    {
+    href: "/home/focus-topic",
+    label: "This Week's Focus Topic",
+    icon: <LayersIcon className="h-5 w-5" />,
+  },
+  { href: "/home/focus-next", label: "Where to focus next", icon: <RadarIcon className="h-5 w-5" /> },
+  { href: "/home/partner", label: "Partner", icon: <UserIcon className="h-5 w-5" /> },
+  { href: "/home/leaderboard", label: "Leader Board", icon: <TrophyIcon className="h-5 w-5" /> },
+  { href: "/home/resource-library", label: "Resource Library", icon: <BriefcaseIcon className="h-5 w-5" /> },
+  { href: "/home/revision", label: "Revision", icon: <RevisionIcon className="h-5 w-5" /> },
+  { label: "Quick Focus", icon: <QuickIcon className="h-5 w-5" />, isModal: true },
+   {
     href: "/home/journal",
     label: "Weekly Win Journal",
     subtitle: "Reflect & celebrate wins",
     icon: <PencilIcon />,
   },
-  { href: "/home/mistake-notebook", label: "Mistake Notebook", icon: <BookIcon /> },
-  {
-    href: "/home/focus-topic",
-    label: "This Week's Focus Topic",
-    icon: <LayersIcon />,
-  },
-  { href: "/home/focus-next", label: "Where to focus next", icon: <RadarIcon /> },
-  { href: "/home/partner", label: "Partner", icon: <UserIcon /> },
-  { href: "/home/leaderboard", label: "Leader Board", icon: <TrophyIcon /> },
-  { href: "/home/resource-library", label: "Resource Library", icon: <BriefcaseIcon /> },
-  { href: "/home/revision", label: "Revision", icon: <RefreshIcon /> },
-  { label: "Quick Focus", icon: <ClockIcon />, isModal: true },
 ];
 
 type ConsistencyStatus = "completed" | "partial" | "missed";
@@ -237,24 +237,30 @@ export default function HomePage() {
 
         <Link
           href="/home/streak"
-          className="rounded-2xl border border-brand/10 bg-surface p-6 hover:border-brand/30"
+          className="block rounded-2xl border border-brand/10 bg-surface p-6 transition-colors hover:border-brand/30"
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between">
+            {/* Left Content */}
+            <div className="flex items-center gap-4">
+              {/* Icon */}
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-cta/10 text-cta">
+                <FlameIcon className="h-[30px] w-[26.67px]" />
+              </div>
 
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-cta/10 text-cta">
-              <FlameIcon />
+              {/* Text */}
+              <div>
+                <h3 className="text-2xl font-bold leading-none text-ink">
+                  14 Day Streak
+                </h3>
+
+                <p className="mt-2 text-sm text-muted">
+                  Keep going.
+                </p>
+              </div>
             </div>
 
-            <div>
-              <h3 className="text-2xl font-bold leading-none text-ink">
-                14 Day Streak
-              </h3>
-
-              <p className="mt-2 text-sm text-muted">
-                Keep going.
-              </p>
-            </div>
-
+            {/* Right Arrow */}
+            <BackIcon className="h-[12px] w-[7.4px] text-muted" />
           </div>
         </Link>
 
@@ -346,7 +352,7 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => setRegenerateOpen(true)}
-                  className="flex h-9 items-center gap-2 rounded-lg border border-brand/10 bg-surface px-3 text-xs font-medium text-ink transition-colors hover:bg-tint"
+                  className="flex h-9 items-center gap-2 rounded-lg border border-button-border bg-surface px-3 text-xs font-medium text-ink transition-colors hover:bg-tint"
                 >
                   <RefreshIcon />
                   <span>Regenerate Plan</span>
@@ -521,7 +527,16 @@ export default function HomePage() {
             <p className="text-xs text-muted">Thermodynamics • Pending for 3 days</p>
           </div>
         </div>
-        <Button href="/home/backlog" variant="secondary" size="sm" className="shrink-0">
+        <Button
+          href="/home/backlog"
+          variant="secondary"
+          size="sm"
+          className={`shrink-0 ${
+            isDark
+              ? "border-transparent! bg-white! text-[#1B245A]! hover:bg-white/90!"
+              : ""
+          }`}
+        >
           Review Now
         </Button>
       </div>

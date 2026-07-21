@@ -35,7 +35,7 @@ export function PrecisionRankedList({ items }: Props) {
                         </p>
 
                         <div className="mt-1 flex items-center gap-2">
-                            <span className="rounded-md bg-blue-500/15 px-2 py-[2px] text-[9px] font-bold uppercase text-blue-400">
+                            <span className="rounded-sm bg-blue-500/15 px-2 py-[2px] text-[9px] font-bold uppercase text-link">
                                 {item.subject}
                             </span>
 

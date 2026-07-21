@@ -82,7 +82,7 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
             {task.timeRange}
           </span>
           <span
-            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${DIFFICULTY_STYLES[task.difficulty]}`}
+            className={`rounded-sm px-2 py-0.5 text-[10px] font-semibold ${DIFFICULTY_STYLES[task.difficulty]}`}
           >
             {DIFFICULTY_LABELS[task.difficulty]}
           </span>

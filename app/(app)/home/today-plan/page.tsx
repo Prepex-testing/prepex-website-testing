@@ -14,26 +14,26 @@ import type { PlanTask } from "@/components/home/PlanTaskRow";
 import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
+import { CheckIcon, ClockIcon, ListIcon, CalendarIcon } from "@/assets/icons";
 import {
   ArrowLeftIcon,
   BellIcon,
-  CheckIcon,
-  ClockIcon,
-  ListIcon,
-  CalendarIcon,
+  // CheckIcon,
+  // ClockIcon,
+  // ListIcon,
+  // CalendarIcon,
   CloudSunIcon,
   SunIcon,
   CloudMoonIcon,
   PlusIcon,
   RefreshIcon,
-  FlameIcon,
 } from "@/components/ui/icons";
 
 const STAT_TILES = [
-  { label: "Completed", value: "2h 15m", icon: <CheckIcon /> },
-  { label: "Remaining", value: "4h 15m", icon: <ClockIcon /> },
-  { label: "Tasks Done", value: "3 / 7", icon: <ListIcon /> },
-  { label: "Planned Study", value: "6h 30m", icon: <CalendarIcon /> },
+  { label: "Completed", value: "2h 15m", icon: <CheckIcon className="h-4 w-4" /> },
+  { label: "Remaining", value: "4h 15m", icon: <ClockIcon className="h-4 w-4" /> },
+  { label: "Tasks Done", value: "3 / 7", icon: <ListIcon className="h-4 w-4" /> },
+  { label: "Planned Study", value: "6h 30m", icon: <CalendarIcon className="h-4 w-4" /> },
 ];
 
 const MORNING_TASKS: PlanTask[] = [
@@ -131,7 +131,14 @@ export default function TodayPlanPage() {
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className={`
+              flex h-11 w-11 items-center justify-center rounded-full
+              transition-colors
+              ${isDark
+                ? "bg-slate-800 text-white hover:bg-slate-700"
+                : "bg-white text-[#1B245A] hover:bg-tint-strong"
+              }
+            `}
           >
             <BellIcon />
           </button>
@@ -175,7 +182,7 @@ export default function TodayPlanPage() {
                   {tile.label}
                 </p>
 
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-icon-chip-bg text-[#1A1A4E]">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-icon-chip-bg p-1.5 text-ink dark:bg-[#FAF7F2]/8">
                   {tile.icon}
                 </span>
               </div>

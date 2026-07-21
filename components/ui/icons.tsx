@@ -260,16 +260,47 @@ export function GraduationCapIcon() {
   );
 }
 
-export function RefreshIcon() {
+export function RefreshIcon({
+  className = "h-4 w-4",
+}: {
+  className?: string;
+}) {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
       <path
-        d="M13.5 8A5.5 5.5 0 0 1 3.2 10.5M2.5 8A5.5 5.5 0 0 1 12.8 5.5"
+        d="M20 11A8 8 0 0 0 6.34 5.34L4 7.67"
         stroke="currentColor"
-        strokeWidth="1.4"
+        strokeWidth="2"
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
-      <path d="M13.5 4.8V8h-3.2M2.5 11.2V8h3.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M4 4V8H8"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M4 13A8 8 0 0 0 17.66 18.66L20 16.33"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M20 20V16H16"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

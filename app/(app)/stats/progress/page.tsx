@@ -308,16 +308,8 @@ export default function ProgressStatsPage() {
         </StatCard>
 
         {/* ================= RIGHT CARD ================= */}
-        <StatCard
-          className="
-    h-[404px]
-    rounded-2xl
-    border border-white/10
-    bg-[#111145]
-    px-6
-    pt-[23px]
-    pb-6
-  "
+        <StatCard className="h-[404px] rounded-2xl border border-white/10 bg-[#111145] px-6 pt-[23px] pb-6
+"
         >
           {/* Header */}
           <div className="h-[39px]">
