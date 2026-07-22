@@ -10,25 +10,25 @@ import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   ArrowLeftIcon,
   BellIcon,
-  AlertTriangleIcon,
-  ClockIcon,
-  BoltIcon,
-  CalendarIcon,
-  ListIcon,
+  // AlertTriangleIcon,
+  // ClockIcon,
+  // BoltIcon,
+  // CalendarIcon,
+  // ListIcon,
   MoreIcon,
-  GlobeIcon,
-  FlaskIcon,
-  CalculatorIcon,
-  TargetIcon,
+  // GlobeIcon,
+  // FlaskIcon,
+  // CalculatorIcon,
+  // TargetIcon,
   ChevronDownIcon,
 } from "@/components/ui/icons";
 
 type Subject = "physics" | "chemistry" | "maths";
-
+import { LineIcon,ClockIcon,BoltIcon ,CrossIcon,BoxIcon,MenuIcon,ChemistryIcon,MathIcon,PhysicsIcon} from "@/assets/icons";
 const SUBJECT_ICONS: Record<Subject, React.ReactNode> = {
-  physics: <GlobeIcon />,
-  chemistry: <FlaskIcon />,
-  maths: <CalculatorIcon />,
+  physics: <PhysicsIcon />,
+  chemistry: <ChemistryIcon />,
+  maths: <MathIcon />,
 };
 
 const SUBJECT_LABELS: Record<Subject, string> = {
@@ -125,8 +125,8 @@ export default function BacklogPage() {
 
         {/* Total Backlog */}
         <div className="flex h-[142px] items-center rounded-2xl border border-brand/10 bg-surface p-6">
-          <span className="mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-warning-bg text-warning">
-            <AlertTriangleIcon />
+          <span className="mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg  bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+            <LineIcon />
           </span>
 
           <div>
@@ -142,7 +142,7 @@ export default function BacklogPage() {
 
         {/* Time Span */}
         <div className="flex h-[142px] items-center rounded-2xl border border-brand/10 bg-surface p-6">
-          <span className="mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
+          <span className="mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
             <ClockIcon />
           </span>
 
@@ -174,7 +174,7 @@ export default function BacklogPage() {
       <div className="flex flex-col gap-4 rounded-2xl border border-brand/10 bg-surface p-6 backdrop-blur-[12px] lg:h-[98px] lg:flex-row lg:items-center lg:justify-between">
         {/* Left */}
         <div className="flex items-center gap-4">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-brand/20 bg-tint text-ink">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
             <BoltIcon />
           </span>
 
@@ -251,14 +251,14 @@ export default function BacklogPage() {
               {/* Meta */}
               <div className="mt-2 flex flex-wrap items-center gap-4">
                 <span className="flex items-center gap-1 text-[12px] font-semibold tracking-[0.24px] text-warning">
-                  <CalendarIcon />
+                  <CrossIcon />
                   {item.overdueDays} days overdue
                 </span>
 
                 <span
                   className={`flex items-center gap-1 text-[12px] font-semibold tracking-[0.24px] ${isDark ? "text-white" : "text-muted"}`}
                 >
-                  <TargetIcon />
+                  <BoxIcon />
                   weight {item.weight}
                 </span>
               </div>
@@ -309,7 +309,7 @@ export default function BacklogPage() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <span className="text-muted">
-            <ListIcon/>
+            <MenuIcon/>
           </span>
 
           <h2 className="text-[20px] font-semibold uppercase leading-7 tracking-[-0.5px] text-ink">
@@ -327,7 +327,7 @@ export default function BacklogPage() {
               {/* Left */}
               <div className="flex items-center gap-4">
                 {/* Subject Icon */}
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
                   {SUBJECT_ICONS[item.subject]}
                 </span>
 
