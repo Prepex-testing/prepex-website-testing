@@ -1,61 +1,113 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { OptionCard } from "@/components/ui/OptionCard";
-import {
-  // GlobeIcon,
-  // FlaskIcon,
-  // CalculatorIcon,
-  // AtomIcon,
-} from "@/components/ui/icons";
-import {GlobeIcon,FlaskIcon,CalculatorIcon,AtomIcon,} from "@/assets/icons";
-const SUBJECTS = [
-  { id: "physics", label: "Physics", icon: <GlobeIcon /> },
-  { id: "chemistry", label: "Chemistry", icon: <FlaskIcon /> },
-  { id: "maths", label: "Maths", icon: <CalculatorIcon /> },
-  { id: "biology", label: "Biology", icon: <AtomIcon /> },
-];
+import { ArrowLeftIcon } from "@/components/ui/icons";
+import { GlobeIcon, FlaskIcon, CalculatorIcon, AtomIcon, LayersIcon } from "@/assets/icons";
+import { getSubjects } from "@/lib/api/dashboard";
+import { selectSubjects } from "@/lib/api/onboarding";
+import { ApiError } from "@/lib/api/http";
+import type { Subject } from "@/lib/api/dashboard";
+
+const SUBJECT_ICONS: Record<string, ReactNode> = {
+  PHY: <GlobeIcon />,
+  CHEM: <FlaskIcon />,
+  MATH: <CalculatorIcon />,
+  BIO: <AtomIcon />,
+};
+const DEFAULT_ICON = <LayersIcon />;
 
 export default function SelectSubjectPage() {
-  const [selected, setSelected] = useState<string[]>(["physics", "maths"]);
+  const router = useRouter();
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [selected, setSelected] = useState<number[]>([]);
+  const [isLoading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setSubmitting] = useState(false);
 
-  const toggle = (id: string) => {
+  useEffect(() => {
+    getSubjects()
+      .then(({ data }) => setSubjects(data))
+      .catch(() => setError("Couldn't load subjects. Please refresh and try again."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const toggle = (id: number) => {
     setSelected((current) =>
-      current.includes(id)
-        ? current.filter((subjectId) => subjectId !== id)
-        : [...current, id],
+      current.includes(id) ? current.filter((subjectId) => subjectId !== id) : [...current, id],
     );
+  };
+
+  const handleContinue = async () => {
+    if (selected.length === 0) {
+      setError("Select at least one subject.");
+      return;
+    }
+    setError(null);
+    setSubmitting(true);
+    try {
+      await selectSubjects({ subjectIds: selected });
+      router.push("/onboarding/tell-us-about-you");
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
+      );
+      setSubmitting(false);
+    }
   };
 
   return (
     <AuthCard>
-      <h1 className="text-h1 text-ink">Select your CUET subjects</h1>
+      <Link
+        href="/onboarding/preparing-for"
+        aria-label="Go back"
+        className="w-fit text-ink"
+      >
+        <ArrowLeftIcon />
+      </Link>
+
+      <h1 className="mt-2 text-h1 text-ink">Select your subjects</h1>
       <p className="mt-1 text-sm text-muted">
         Choose your exam subjects to get a personalized study roadmap and
         progress tracking.
       </p>
 
+      {error && (
+        <p
+          role="alert"
+          className="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-xs font-medium text-danger"
+        >
+          {error}
+        </p>
+      )}
+
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {SUBJECTS.map((subject) => (
-          <OptionCard
-            key={subject.id}
-            compact
-            icon={subject.icon}
-            title={subject.label}
-            selected={selected.includes(subject.id)}
-            onClick={() => toggle(subject.id)}
-          />
-        ))}
+        {isLoading && <p className="text-sm text-muted">Loading subjects...</p>}
+        {!isLoading &&
+          subjects.map((subject) => (
+            <OptionCard
+              key={subject.id}
+              compact
+              icon={SUBJECT_ICONS[subject.code] ?? DEFAULT_ICON}
+              title={subject.name}
+              selected={selected.includes(subject.id)}
+              onClick={() => toggle(subject.id)}
+            />
+          ))}
       </div>
 
       <Button
-        href="/onboarding/tell-us-about-you"
         variant="primary"
-        className="mt-6"
+        className="mt-6 disabled:cursor-not-allowed disabled:opacity-60"
+        onClick={handleContinue}
+        disabled={isSubmitting}
       >
-        Continue
+        {isSubmitting ? "Saving..." : "Continue"}
       </Button>
     </AuthCard>
   );

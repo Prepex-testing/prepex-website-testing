@@ -1,7 +1,12 @@
+"use client";
+
 import { Button } from "@/components/ui/Button";
 import { CheckIcon } from "@/components/ui/icons";
+import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 
 export default function WelcomeToPrepexPage() {
+  const name = useStoredFullName();
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
       <div className="w-full max-w-200 rounded-4xl bg-surface px-16 py-16 text-center shadow-modal">
@@ -15,11 +20,11 @@ export default function WelcomeToPrepexPage() {
           {/* Welcome */}
           <div className="mt-6">
             <h2 className="text-4xl font-bold text-ink">
-              Welcome to Prepex, Rohan
+              Welcome to Prepex{name ? `, ${name}` : ""}
             </h2>
 
             <p className="mt-2 text-lg leading-7 text-muted">
-              You're all set
+              You&apos;re all set
             </p>
           </div>
 
@@ -30,7 +35,7 @@ export default function WelcomeToPrepexPage() {
             </h1>
 
             <p className="mx-auto mt-4 max-w-2xl pb-3 text-xl leading-8 text-muted">
-              We've prepared a personalized plan to help you stay consistent
+              We&apos;ve prepared a personalized plan to help you stay consistent
               and achieve your goals.
             </p>
           </div>

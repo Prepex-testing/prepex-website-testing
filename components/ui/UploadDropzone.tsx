@@ -1,8 +1,17 @@
 import { useId } from "react";
+import type { ChangeEvent } from "react";
 import { PlusIcon } from "@/components/ui/icons";
 
-export function UploadDropzone() {
+type UploadDropzoneProps = {
+  onFileSelect?: (file: File | null) => void;
+};
+
+export function UploadDropzone({ onFileSelect }: UploadDropzoneProps) {
   const inputId = useId();
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onFileSelect?.(event.target.files?.[0] ?? null);
+  };
 
   return (
     <label
@@ -22,6 +31,7 @@ export function UploadDropzone() {
         id={inputId}
         type="file"
         accept="image/jpeg,image/png,image/heic"
+        onChange={handleChange}
         className="sr-only"
       />
     </label>
