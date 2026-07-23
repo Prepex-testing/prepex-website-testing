@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { CalendarIcon, ClockIcon, BookIcon, BriefcaseIcon } from "@/components/ui/icons";
-
 const REDIRECT_DELAY_MS = 3000;
 
 const PROFILE_SUMMARY = [

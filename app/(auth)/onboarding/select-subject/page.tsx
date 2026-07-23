@@ -5,12 +5,12 @@ import { AuthCard } from "@/components/layout/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { OptionCard } from "@/components/ui/OptionCard";
 import {
-  GlobeIcon,
-  FlaskIcon,
-  CalculatorIcon,
-  AtomIcon,
+  // GlobeIcon,
+  // FlaskIcon,
+  // CalculatorIcon,
+  // AtomIcon,
 } from "@/components/ui/icons";
-
+import {GlobeIcon,FlaskIcon,CalculatorIcon,AtomIcon,} from "@/assets/icons";
 const SUBJECTS = [
   { id: "physics", label: "Physics", icon: <GlobeIcon /> },
   { id: "chemistry", label: "Chemistry", icon: <FlaskIcon /> },

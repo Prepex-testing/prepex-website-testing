@@ -7,8 +7,8 @@ import { DateInput } from "@/components/ui/DateInput";
 import { Input } from "@/components/ui/Input";
 import { OptionCard } from "@/components/ui/OptionCard";
 import { StepProgress } from "@/components/ui/StepProgress";
-import { GraduationCapIcon, RefreshIcon, MoreIcon } from "@/components/ui/icons";
-
+// import { GraduationCapIcon, RefreshIcon, MoreIcon } from "@/components/ui/icons";
+import {GraduationCapIcon,StarIcons,LayersIcon} from "@/assets/icons";
 const CLASSES = [
   {
     id: "class-11",
@@ -26,15 +26,15 @@ const CLASSES = [
     id: "dropper-1",
     title: "Dropper (1st year)",
     subtitle: "For IIT Aspirants",
-    icon: <RefreshIcon />,
+    icon: <StarIcons />,
   },
   {
     id: "dropper-2",
     title: "Dropper (2nd year)",
     subtitle: "For IIT Aspirants",
-    icon: <RefreshIcon />,
+    icon: <LayersIcon />,
   },
-  { id: "other", title: "Other", icon: <MoreIcon /> },
+  { id: "other", title: "Other", icon: <StarIcons /> },
 ];
 
 export default function TellUsAboutYouPage() {

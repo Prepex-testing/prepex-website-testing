@@ -8,43 +8,44 @@ import { Button } from "@/components/ui/Button";
 import { OptionCard } from "@/components/ui/OptionCard";
 import { StepProgress } from "@/components/ui/StepProgress";
 import {
-  TargetIcon,
-  RadarIcon,
-  BriefcaseIcon,
-  LayersIcon,
-  BookIcon,
+  // TargetIcon,
+  // RadarIcon,
+  // BriefcaseIcon,
+  // LayersIcon,
+  // BookIcon,
 } from "@/components/ui/icons";
+import {LayersIcon,BookIcon,RadarIcons,BriefcaseIcons,CuteIcon} from "@/assets/icons";
 
 const GOALS = [
   {
     id: "jee-main-advanced",
     title: "JEE Main + Advanced",
     subtitle: "NITs, IIITs & GFTIs",
-    icon: <TargetIcon />,
+    icon: <LayersIcon />,
   },
   {
     id: "jee-main",
     title: "JEE Main",
     subtitle: "NITs, IIITs & GFTIs",
-    icon: <RadarIcon />,
+    icon: <RadarIcons />,
   },
   {
     id: "neet",
     title: "NEET",
     subtitle: "Medical Entrance Exam",
-    icon: <BriefcaseIcon />,
+    icon: <BriefcaseIcons />,
   },
   {
     id: "jee-cuet",
     title: "JEE + CUET",
     subtitle: "Combined entrance track",
-    icon: <LayersIcon />,
+    icon: <CuteIcon />,
   },
   {
     id: "cuet",
     title: "CUET",
     subtitle: "Central University Entrance Test",
-    icon: <LayersIcon />,
+    icon: <CuteIcon />,
   },
   { id: "boards", title: "Boards", subtitle: "Class 12 Boards", icon: <BookIcon /> },
 ];

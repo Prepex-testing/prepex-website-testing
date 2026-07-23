@@ -55,6 +55,20 @@ export { default as LeftIconcon } from "./LeftIconcon.svg";
 export { default as Location } from "./Location.svg";
 export { default as CheckIcons } from "./CheckIcons.svg";
 
+export { default as RadarIcons } from "./RadarIcons.svg";
+export { default as BriefcaseIcons } from "./BriefcaseIcons.svg";
+export { default as CuteIcon } from "./CuteIcon.svg";
+export { default as GlobeIcon } from "./GlobeIcon.svg";
+export { default as FlaskIcon } from "./FlaskIcon.svg";
+export { default as CalculatorIcon } from "./CalculatorIcon.svg";
+export { default as AtomIcon } from "./AtomIcon.svg";
+export { default as GraduationCapIcon } from "./GraduationCapIcon.svg";
+export { default as StarIcons } from "./StarIcons.svg";
+export { default as CloudSunIcon } from "./CloudSunIcon.svg";
+export { default as SunIcon } from "./SunIcon.svg";
+
+
+
 
 
 
