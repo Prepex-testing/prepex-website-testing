@@ -1,17 +1,20 @@
+"use client";
+
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   BellIcon,
-  ClockIcon,
+  // ClockIcon,
   FlameIcon,
-  TrendingUpIcon,
-  ChartBarIcon,
-  TrophyIcon,
+  // TrendingUpIcon,
+  // ChartBarIcon,
+  // TrophyIcon,
   ChevronDownIcon,
   ArrowLeftIcon,
 } from "@/components/ui/icons";
-
+import { ClockIcon,TrophyIcons,UserIcon,TrendingUpIcon} from "@/assets/icons";
 const MEDALS: Record<number, string> = {
   1: "🥇",
   2: "🥈",
@@ -89,8 +92,12 @@ const LEADERBOARD: LeaderboardEntry[] = [
 ];
 
 export default function LeaderboardPage() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
+      {/* Page header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Link href="/home" aria-label="Back to Home" className="text-ink">
@@ -111,18 +118,34 @@ export default function LeaderboardPage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="w-fit rounded-full bg-brand px-4 py-1.5 text-sm font-semibold text-white">
+      {/* Filters */}
+      <div className="flex w-full flex-col gap-4">
+        <button
+          type="button"
+          className={`flex h-11 w-fit items-center justify-center rounded-full px-8 text-base font-semibold ${isDark ? "bg-white text-[#1A1A4E]" : "bg-brand text-white"}`}
+        >
           Global
-        </span>
-        <p className="text-xs text-muted">
-          Exam: JEE <span className="mx-2">·</span> City: Indore
-        </p>
+        </button>
+
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+          <span
+            className={`text-sm font-semibold leading-6 sm:text-base ${isDark ? "text-white" : "text-muted"}`}
+          >
+            Exam: JEE
+          </span>
+          <span
+            className={`text-sm font-semibold leading-6 sm:text-base ${isDark ? "text-white" : "text-muted"}`}
+          >
+            City: Indore
+          </span>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_260px]">
-        <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
+      {/* Leaderboard + You panel */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px] lg:gap-8">
+        {/* Leaderboard table card */}
+        <div className="overflow-hidden rounded-2xl border border-brand/10 bg-surface shadow-[0px_1px_2px_0px_#0000000D]">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-brand/10 px-4 py-4 text-xs text-muted sm:px-6">
             <span className="flex items-center gap-1">
               <ClockIcon />
               Last updated: 6:00 AM today
@@ -130,52 +153,74 @@ export default function LeaderboardPage() {
             <span>Showing top 50 students</span>
           </div>
 
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-140 border-collapse text-left text-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] border-collapse text-left">
               <thead>
-                <tr className="border-b border-brand/10 text-[10px] uppercase tracking-wide text-muted">
-                  <th className="pb-2 font-semibold">Rank</th>
-                  <th className="pb-2 font-semibold">User</th>
-                  <th className="pb-2 font-semibold">Streak</th>
-                  <th className="pb-2 font-semibold">Focus (hrs)</th>
-                  <th className="pb-2 font-semibold">Score</th>
+                <tr
+                  className={`text-[10px] font-medium uppercase tracking-[0.6px] ${isDark ? "bg-[#4B4B70] text-ink" : "bg-tint-strong text-muted"}`}
+                >
+                  <th className="py-3 pl-4 sm:pl-6">Rank</th>
+                  <th className="py-3 pl-8">User</th>
+                  <th className="py-3 pl-8">Streak</th>
+                  <th className="py-3 pl-8">Focus (hrs)</th>
+                  <th className="py-3 pl-8 pr-4 sm:pr-6">Score</th>
                 </tr>
               </thead>
               <tbody>
                 {LEADERBOARD.map((entry) => (
                   <tr key={entry.rank} className="border-b border-brand/5 last:border-0">
-                    <td className="py-3 text-lg">
-                      {MEDALS[entry.rank] ?? (
-                        <span className="text-sm font-semibold text-muted">
-                          {entry.rank}
-                        </span>
-                      )}
+                    <td className="py-4 pl-4 sm:pl-6">
+                      <div className="flex h-8 w-8 items-center justify-center">
+                        {MEDALS[entry.rank] ? (
+                          <span className="text-3xl leading-none">
+                            {MEDALS[entry.rank]}
+                          </span>
+                        ) : (
+                          <span className="text-sm font-semibold leading-none text-muted">
+                            {entry.rank}
+                          </span>
+                        )}
+                      </div>
                     </td>
-                    <td className="py-3">
+                    <td className="py-4 pl-8">
                       <div className="flex items-center gap-3">
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-tint text-sm font-bold text-ink">
+                        <span
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[6.67px] text-sm font-bold ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+                        >
                           {entry.initial}
                         </span>
                         <div>
-                          <p className="font-semibold text-ink">{entry.name}</p>
-                          <p className="text-xs text-muted">{entry.tag}</p>
+                          <p className="text-base font-bold leading-6 text-ink">
+                            {entry.name}
+                          </p>
+                          <p className="text-[10px] leading-[15px] text-muted">
+                            {entry.tag}
+                          </p>
                         </div>
                       </div>
                     </td>
-                    <td className="py-3">
+                    <td className="py-4 pl-8">
                       {entry.highlightStreak ? (
-                        <span className="flex items-center gap-1 font-semibold text-cta">
+                        <span className="flex items-center gap-1 text-base font-semibold text-cta">
                           <FlameIcon />
                           {entry.streak}d
                         </span>
                       ) : (
-                        <span className="text-muted">{entry.streak}d</span>
+                        <span className="text-base font-semibold text-cta">
+                          {entry.streak}d
+                        </span>
                       )}
                     </td>
-                    <td className="py-3 text-muted">{entry.focusHours}</td>
-                    <td className="py-3">
-                      <p className="font-bold text-ink">{entry.score}</p>
-                      <p className="text-[10px] text-muted">{entry.breakdown}</p>
+                    <td className="py-4 pl-8 text-base font-medium text-body-text">
+                      {entry.focusHours}
+                    </td>
+                    <td className="py-4 pl-8 pr-4 sm:pr-6">
+                      <p className="text-base font-bold leading-6 text-ink">
+                        {entry.score}
+                      </p>
+                      <p className="text-[10px] leading-[15px] text-muted">
+                        {entry.breakdown}
+                      </p>
                     </td>
                   </tr>
                 ))}
@@ -183,111 +228,161 @@ export default function LeaderboardPage() {
             </table>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs text-muted sm:justify-between">
-            <span className="flex items-center gap-1">
-              Rows per page: 20
-              <ChevronDownIcon className="h-3 w-3" />
-            </span>
-            <div className="flex items-center gap-1">
-              <button type="button" className="px-1 disabled:opacity-30" disabled>
+          {/* Pagination footer — was a fixed h-[65px] single row, now wraps on small screens */}
+          <div className="flex flex-col items-center gap-3 border-t border-brand/10 px-4 py-4 text-xs sm:flex-row sm:justify-between sm:px-6">
+            {/* Rows per page */}
+            <div className="flex items-center gap-2 text-muted">
+              <span>Rows per page:</span>
+              <button
+                type="button"
+                className="flex h-8 items-center gap-1 rounded-md border border-brand/15 px-2 text-muted"
+              >
+                20
+                <ChevronDownIcon className="h-3 w-3" />
+              </button>
+            </div>
+
+            {/* Pagination controls */}
+            <div className="order-first flex flex-wrap items-center justify-center gap-1 sm:order-none">
+              <button
+                type="button"
+                disabled
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted disabled:opacity-40"
+              >
                 ‹
               </button>
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand text-white">
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-cta text-sm font-semibold text-white"
+              >
                 1
-              </span>
-              <span className="px-1">2</span>
-              <span className="px-1">3</span>
-              <span className="px-1">…</span>
-              <span className="px-1">5</span>
-              <button type="button" className="px-1">
+              </button>
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium text-ink hover:bg-tint-strong"
+              >
+                2
+              </button>
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium text-ink hover:bg-tint-strong"
+              >
+                3
+              </button>
+              <span className="px-1 text-muted">…</span>
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium text-ink hover:bg-tint-strong"
+              >
+                5
+              </button>
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted"
+              >
                 ›
               </button>
             </div>
-            <span>Showing 1-10 of 50 students</span>
+
+            {/* Showing count */}
+            <div className="text-muted">Showing 1-10 of 50 students</div>
           </div>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">
-                R
-              </span>
-              <div>
-                <p className="text-sm font-bold text-ink">You</p>
-                <p className="text-xs text-muted">JEE 2027 Aspirant</p>
-              </div>
+        {/* You panel — stretches to match left card height via grid's default align-items: stretch */}
+        <div className="flex flex-col gap-6 rounded-[24px] border border-brand/10 bg-surface p-8 shadow-[0px_4px_20px_0px_#1A1F360D]">
+          <div className="flex items-center gap-4">
+            <span
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-base font-bold ${isDark ? "bg-white text-[#1A1A4E]" : "bg-brand text-white"}`}
+            >
+              R
+            </span>
+            <div>
+              <p className="text-lg font-semibold leading-none text-ink">You</p>
+              <p className="mt-1 text-xs text-muted">JEE 2027 Aspirant</p>
             </div>
+          </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-3 text-center">
-              <div>
-                <p className="text-2xl font-extrabold text-ink">12</p>
-                <p className="text-[10px] uppercase tracking-wide text-muted">
-                  Rank
-                </p>
-              </div>
-              <div>
-                <p className="text-2xl font-extrabold text-ink">48d</p>
-                <p className="text-[10px] uppercase tracking-wide text-muted">
-                  Streak
-                </p>
-              </div>
+          <div className="flex items-center justify-center gap-4 border-b border-brand/10 pt-2 pb-6 text-center">
+            <div className="flex-1">
+              <p className="text-[32px] font-extrabold leading-none text-ink">12</p>
+              <p className="mt-2 text-[10px] uppercase tracking-wide text-muted">Rank</p>
             </div>
+            <div className="h-10 w-px shrink-0 bg-brand/10" />
+            <div className="flex-1">
+              <p className="text-[32px] font-extrabold leading-none text-ink">48d</p>
+              <p className="mt-2 text-[10px] uppercase tracking-wide text-muted">Streak</p>
+            </div>
+          </div>
 
-            <div className="mt-3 rounded-xl bg-tint-strong p-4 text-center">
-              <p className="text-2xl font-extrabold text-ink">1184</p>
-              <p className="text-[10px] uppercase tracking-wide text-muted">
-                Total Score
-              </p>
-            </div>
+          <div
+            className={`rounded-xl px-4 pb-2 pt-[7px] text-center ${isDark ? "bg-[#4B4B70]" : "bg-tint-strong"}`}
+          >
+            <p className="text-2xl font-extrabold text-ink">1184</p>
+            <p className="text-[10px] uppercase tracking-wide text-muted">Total Score</p>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-brand/10 bg-surface p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-muted">Rank Velocity</p>
-            <span className="rounded-full bg-success-bg px-2 py-0.5 text-[10px] font-semibold text-success">
+      {/* Insight tiles */}
+      <div className="grid w-full grid-cols-1 gap-4 pt-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+        {/* Rank Velocity */}
+        <div className="flex min-h-[137px] flex-col justify-between gap-4 rounded-2xl border border-brand/10 bg-surface p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-bold leading-4 text-muted">Rank Velocity</p>
+            <span className="rounded bg-success-bg px-2 py-1 text-[10px] font-bold leading-none text-success">
               +12%
             </span>
           </div>
-          <div className="mt-2 flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-tint text-ink">
+
+          <div className="flex items-center gap-4">
+            <span
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+            >
               <TrendingUpIcon />
             </span>
-            <p className="text-xl font-extrabold text-ink">+2</p>
-          </div>
-          <p className="text-xs text-muted">Positions</p>
-        </div>
-
-        <div className="rounded-2xl border border-brand/10 bg-surface p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-muted">Percentile</p>
-            <span className="rounded-full bg-cta/10 px-2 py-0.5 text-[10px] font-semibold text-cta">
-              Top 5%
-            </span>
-          </div>
-          <div className="mt-2 flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-tint text-ink">
-              <ChartBarIcon />
-            </span>
-            <p className="text-xl font-extrabold text-ink">95.42</p>
+            <div>
+              <p className="text-2xl font-bold leading-8 text-ink">+2</p>
+              <p className="text-xs font-medium text-muted">Positions</p>
+            </div>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-brand/10 bg-surface p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-muted">Current Tier</p>
-            <span className="rounded-full bg-info-bg px-2 py-0.5 text-[10px] font-semibold text-info">
-              Gold Tier
-            </span>
+        {/* Percentile */}
+        <div className="flex min-h-[137px] flex-col justify-between gap-4 rounded-2xl border border-brand/10 bg-surface p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-bold leading-4 text-muted">Percentile</p>
+            <span className="text-[10px] font-semibold uppercase text-muted">TOP 5%</span>
           </div>
-          <div className="mt-2 flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-info-bg text-info">
-              <TrophyIcon />
+
+          <div className="flex items-center gap-4">
+            <span
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+            >
+              <UserIcon />
             </span>
-            <p className="text-xl font-extrabold text-ink">Gold</p>
+            <div>
+              <p className="text-2xl font-bold leading-8 text-ink">95.42</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Current Tier */}
+        <div className="flex min-h-[137px] flex-col justify-between gap-4 rounded-2xl border border-brand/10 bg-surface p-5 sm:p-6 sm:col-span-2 lg:col-span-1">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-bold leading-4 text-muted">Current Tier</p>
+            <span className="text-[10px] font-medium text-muted">Gold Tier</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <span
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-warning ${isDark ? "bg-white" : "bg-warning-bg"}`}
+            >
+              <TrophyIcons />
+            </span>
+            <div>
+              <p className="text-[20px] font-bold leading-8 text-ink">Gold</p>
+            </div>
           </div>
         </div>
       </div>

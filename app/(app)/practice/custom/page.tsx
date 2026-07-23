@@ -34,6 +34,14 @@ const QUESTION_TYPES = ["Single correct", "Multiple correct", "Integer", "Assert
 
 const SOURCES = ["Curated questions", "JEE Main PYQs", "JEE Advanced PYQs"];
 
+/* ============================================================
+   CHANGED: entire CheckboxRow component restyled to match Figma
+   - checkbox: h-4 w-4 (16px) -> h-[18px] w-[18px]
+   - checkbox: rounded -> rounded-[4px]  (square corners per spec)
+   - row: added h-6 (24px fixed height per "inside row size")
+   - label: text-sm text-body-text -> text-[14px] font-medium
+     leading-[21px] + var(--text-primary)
+   ============================================================ */
 function CheckboxRow({
   label,
   checked,
@@ -44,12 +52,20 @@ function CheckboxRow({
   onChange: () => void;
 }) {
   return (
-    <label className="flex w-fit cursor-pointer items-center gap-2">
+    <label className="flex h-6 w-fit cursor-pointer items-center gap-2"> {/* CHANGED: added h-6 */}
       <input type="checkbox" checked={checked} onChange={onChange} className="peer sr-only" />
-      <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded border-2 border-brand/25 text-white peer-checked:border-brand peer-checked:bg-brand">
-        {checked && <CheckIcon />}
+      <span
+        className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[4px] border-2 border-brand/25 peer-checked:border-brand peer-checked:bg-brand"
+      /* CHANGED: h-4 w-4 -> h-[18px] w-[18px], rounded -> rounded-[4px] */
+      >
+        {checked && <CheckIcon />} {/* CHANGED: sized icon */}
       </span>
-      <span className="text-sm text-body-text">{label}</span>
+      <span
+        className="text-[14px] font-medium leading-[21px]" /* CHANGED: was text-sm text-body-text */
+        style={{ color: "var(--text-primary, #FAF7F2)" }} /* CHANGED: color now via CSS var */
+      >
+        {label}
+      </span>
     </label>
   );
 }
@@ -87,32 +103,31 @@ export default function CustomPracticeBuilderPage() {
       </div>
 
       <div className="rounded-2xl border border-brand/10 bg-surface p-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Select label="Subject" options={SUBJECT_OPTIONS} defaultValue="mathematics" />
           <Select label="Chapter" options={CHAPTER_OPTIONS} defaultValue="coordinate-geometry" />
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Select label="Topic" options={TOPIC_OPTIONS} defaultValue="circle" />
           <Input label="Sub-topic (optional)" name="subTopic" placeholder="Tangents (optional)" />
         </div>
 
-        <div className="mt-6 border-t border-brand/10 pt-5">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">
+        <div className="mt-6 border-t border-brand/10 pt-6">
+          <p className="text-[12px] font-semibold uppercase tracking-[0.6px] text-muted">
             Difficulty
           </p>
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-3">
             {DIFFICULTIES.map((level) => (
               <button
                 key={level}
                 type="button"
                 onClick={() => setDifficulty(level)}
                 aria-pressed={difficulty === level}
-                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
-                  difficulty === level
-                    ? "border-brand bg-brand text-white"
-                    : "border-brand/15 text-body-text hover:bg-tint-strong"
-                }`}
+                className={`flex h-[39px] w-[105px] items-center justify-center rounded-full border text-[14px] font-semibold transition-all duration-200 ${difficulty === level
+                  ? "border-white bg-white text-[#111145]"
+                  : "border-[#8B8998] bg-transparent text-[#FAF7F2] hover:bg-white hover:text-[#111145]"
+                  }`}
               >
                 {level}
               </button>
@@ -120,25 +135,52 @@ export default function CustomPracticeBuilderPage() {
           </div>
         </div>
 
-        <div className="mt-5">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">
+        <div className="mt-6 w-full">
+          <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.6px] text-muted">
             Question Type
           </p>
-          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {QUESTION_TYPES.map((type) => (
-              <CheckboxRow
-                key={type}
-                label={type}
-                checked={questionTypes.includes(type)}
-                onChange={() => toggle(questionTypes, setQuestionTypes, type)}
-              />
-            ))}
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+            {QUESTION_TYPES.map((type) => {
+              const checked = questionTypes.includes(type);
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => toggle(questionTypes, setQuestionTypes, type)}
+                  className={`flex h-[55px] w-full items-center justify-between rounded-xl border px-[15px] ${checked ? "border-white bg-white/10" : "border-white bg-transparent"
+                    }`}
+                >
+                  <span className="text-[14px] font-medium text-ink">{type}</span>
+                  <div
+                    className={`flex h-[22px] w-[22px] items-center justify-center rounded-[4px] border ${checked ? "border-white bg-white" : "border-[#8B8998] bg-transparent"
+                      }`}
+                  >
+                    {checked && (
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none">
+                        <path
+                          d="M5 10L8.5 13.5L15 7"
+                          stroke="#111145"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <div className="mt-5">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">Source</p>
-          <div className="mt-2 flex flex-col gap-2">
+        <div className="mt-6 border-t border-brand/10 pt-6"> {/* CHANGED */}
+          <p
+            className="text-[12px] font-semibold uppercase tracking-[0.6px]" /* CHANGED */
+            style={{ color: "var(--text-secondary, #8B8998)" }} /* CHANGED */
+          >
+            Source
+          </p>
+          <div className="mt-3 flex flex-col gap-2"> {/* CHANGED: mt-2 -> mt-3 */}
             {SOURCES.map((source) => (
               <CheckboxRow
                 key={source}
@@ -150,50 +192,107 @@ export default function CustomPracticeBuilderPage() {
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <Stepper
-            label="Number of Questions"
-            value={questionCount}
-            unit=""
-            min={5}
-            max={50}
-            onChange={setQuestionCount}
-          />
+        <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-2">
 
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-muted">
-              Time Limit
-            </p>
-            <div className="mt-2 flex items-center gap-4">
-              <label className="flex cursor-pointer items-center gap-2 text-sm text-body-text">
-                <input
-                  type="radio"
-                  name="time-limit"
-                  checked={timeLimit === "60"}
-                  onChange={() => setTimeLimit("60")}
-                  className="h-4 w-4 accent-primary"
-                />
-                60 min
-              </label>
-              <label className="flex cursor-pointer items-center gap-2 text-sm text-body-text">
-                <input
-                  type="radio"
-                  name="time-limit"
-                  checked={timeLimit === "none"}
-                  onChange={() => setTimeLimit("none")}
-                  className="h-4 w-4 accent-primary"
-                />
-                No limit
-              </label>
-            </div>
-          </div>
+  {/* Number of Questions */}
+  <div className="w-full max-w-[248px]">
+
+    <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.6px] text-muted">
+      Number of Questions
+    </p>
+
+    <Stepper
+      value={questionCount}
+      min={5}
+      max={50}
+      onChange={setQuestionCount}
+    />
+
+  </div>
+
+  {/* Time Limit */}
+  <div className="w-full max-w-[248px]">
+
+    <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.6px] text-muted">
+      Time Limit
+    </p>
+
+    <div className="flex items-center gap-4">
+
+      <label
+        className="flex cursor-pointer items-center gap-3"
+        onClick={() => setTimeLimit("60")}
+      >
+        <div
+          className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border ${
+            timeLimit === "60"
+              ? "border-white bg-white"
+              : "border-[#8B8998]"
+          }`}
+        >
+          {timeLimit === "60" && (
+            <div className="h-[10px] w-[10px] rounded-full bg-[#111145]" />
+          )}
         </div>
 
-        <div className="mt-6 flex justify-end">
-          <Button variant="primary" size="sm" onClick={() => router.push("/practice")}>
-            Start Custom Practice
-          </Button>
+        <span className="text-[14px] text-muted">
+          60 min
+        </span>
+      </label>
+
+      <label
+        className="flex cursor-pointer items-center gap-3"
+        onClick={() => setTimeLimit("none")}
+      >
+        <div
+          className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border ${
+            timeLimit === "none"
+              ? "border-white bg-white"
+              : "border-[#8B8998]"
+          }`}
+        >
+          {timeLimit === "none" && (
+            <div className="h-[10px] w-[10px] rounded-full bg-[#111145]" />
+          )}
         </div>
+
+        <span className="text-[14px] text-muted">
+          No limit
+        </span>
+      </label>
+
+    </div>
+
+  </div>
+
+</div>
+      </div>
+      <div className="mt-6 flex w-full justify-end">
+        <Button
+          variant="primary"
+          onClick={() => router.push("/practice")}
+          className="
+      !flex
+      !h-[60px]
+      !w-[309px]
+      !min-w-[309px]
+      !items-center
+      !justify-center
+      !rounded-2xl
+      !px-12
+      !py-4
+      text-center
+      !text-[20px]
+      !font-semibold
+      !leading-7
+      whitespace-nowrap
+      transition-all
+      hover:bg-[#FF7A59]
+      hover:shadow-[0px_4px_20px_0px_#00000008]
+    "
+        >
+          Start Custom Practice
+        </Button>
       </div>
     </div>
   );

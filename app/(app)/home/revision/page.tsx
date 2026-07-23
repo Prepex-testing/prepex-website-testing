@@ -1,24 +1,26 @@
 "use client";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { useTheme } from "@/components/theme/ThemeProvider";
 
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { AddRevisionTaskModal } from "@/components/home/AddRevisionTaskModal";
+import {Container} from "@/assets/icons";
 import {
   ArrowLeftIcon,
   BellIcon,
-  RefreshIcon,
   ClockIcon,
   CheckCircleIcon,
   ChevronDownIcon,
   PlusIcon,
+  CalendarIcon,
 } from "@/components/ui/icons";
 
 const STAT_CARDS = [
-  { label: "Due Today", value: "5", icon: <RefreshIcon /> },
+  { label: "Due Today", value: "5", icon: <Container /> },
   { label: "Upcoming", value: "23", icon: <ClockIcon /> },
   { label: "Mastered", value: "47", icon: <CheckCircleIcon /> },
 ];
@@ -28,9 +30,9 @@ const FILTERS = ["All", "Physics", "Chemistry", "Maths", "Biology"];
 type Difficulty = "hard" | "medium" | "easy";
 
 const DIFFICULTY_STYLES: Record<Difficulty, string> = {
-  hard: "bg-danger-bg text-danger",
-  medium: "bg-warning/10 text-warning",
-  easy: "bg-success-bg text-success",
+  hard: "bg-[#EEF0F8] text-[#4B5563]",
+  medium: "bg-[#EEF0F8] text-[#4B5563]",
+  easy: "bg-[#EEF0F8] text-[#4B5563]",
 };
 
 const DUE_TODAY = [
@@ -71,6 +73,8 @@ const DUE_TODAY = [
 export default function RevisionPage() {
   const [filter, setFilter] = useState("All");
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -92,7 +96,7 @@ export default function RevisionPage() {
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${isDark ? "text-white" : "text-muted"} hover:bg-tint-strong`}
           >
             <BellIcon />
           </button>
@@ -100,71 +104,127 @@ export default function RevisionPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {STAT_CARDS.map((card) => (
           <div
             key={card.label}
-            className="flex items-center gap-3 rounded-2xl border border-brand/10 bg-surface p-4"
+            className="flex min-h-[106px] items-center gap-4 rounded-xl border border-brand/10 bg-surface p-6 shadow-sm transition-colors"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-tint text-ink">
+            {/* Icon */}
+            <div
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink [&>svg]:h-6 [&>svg]:w-6 dark:bg-[#FAF7F2]/8"
+            >
               {card.icon}
-            </span>
-            <div>
-              <p className="text-xl font-extrabold text-ink">{card.value}</p>
-              <p className="text-xs text-muted">{card.label}</p>
+            </div>
+
+            {/* Content */}
+            <div className="min-w-0">
+              <h3 className="font-['Plus_Jakarta_Sans'] text-[30px] font-bold leading-[36px] text-ink">
+                {card.value}
+              </h3>
+
+              <p className="mt-1 font-['Plus_Jakarta_Sans'] text-sm font-medium leading-5 text-muted">
+                {card.label}
+              </p>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap gap-2">
-          {FILTERS.map((item) => (
-            <Chip key={item} selected={filter === item} onClick={() => setFilter(item)}>
-              {item}
-            </Chip>
-          ))}
+      <div className="flex flex-wrap items-center justify-between gap-4 pt-6">
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-4">
+          {FILTERS.map((item) => {
+            const active = filter === item;
+
+            return (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setFilter(item)}
+                className={`flex h-[42px] items-center justify-center rounded-full border px-5 text-[14px] font-semibold leading-5 transition-all duration-200 ${active
+                    ? isDark
+                      ? "border-white bg-white text-[#1A1A4E]"
+                      : "border-brand bg-brand text-white"
+                    : isDark
+                      ? "border-white/30 bg-transparent text-white hover:border-white"
+                      : "border-brand/20 bg-surface text-muted hover:border-brand hover:text-ink"
+                  }`}
+              >
+                {item}
+              </button>
+            );
+          })}
         </div>
-        <button
-          type="button"
-          className="flex shrink-0 items-center gap-1 text-xs font-semibold text-muted"
-        >
-          Sort by: Due Date
-          <ChevronDownIcon />
-        </button>
+
+        {/* Sort Button */}
+    <button
+  type="button"
+  className={`flex h-[38px] min-w-[182px] items-center justify-between rounded-lg border px-4 text-[14px] font-medium transition-all duration-200 ${
+    isDark
+      ? "border-white bg-white text-[#1A1A4E] hover:bg-gray-100"
+      : "border-brand/20 bg-surface text-muted hover:border-brand hover:text-ink"
+  }`}
+>
+  <span>Sort by: Due Date</span>
+
+  <span className="flex items-center justify-center">
+    <ChevronDownIcon />
+  </span>
+</button>
       </div>
 
-      <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">
-            Due Today <span className="font-normal">• 5 Topics</span>
+      <div className="rounded-xl border border-brand/10 bg-surface p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <p
+            className={`text-[12px] font-bold uppercase tracking-[0.08em] ${isDark ? "text-white" : "text-muted"}`}
+          >
+            Due Today <span className="font-medium">• 5 Topics</span>
           </p>
-          <button type="button" className="text-xs font-semibold text-ink underline">
-            View all
-          </button>
         </div>
 
-        <div className="mt-4 flex flex-col gap-3">
+        {/* Topic List */}
+        <div className="mt-6 flex flex-col gap-4">
           {DUE_TODAY.map((topic) => (
             <div
               key={topic.id}
-              className="flex flex-wrap items-center gap-3 rounded-xl border border-brand/10 p-3"
+              className="flex min-h-[112px] items-center justify-between rounded-xl border border-brand/10 bg-surface px-4 py-6 shadow-sm transition-colors"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
-                {topic.subjectLabel}
-              </span>
-              <div className="min-w-0 flex-1">
-                <span
-                  className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${DIFFICULTY_STYLES[topic.difficulty]}`}
-                >
-                  {topic.difficulty}
-                </span>
-                <p className="text-sm font-bold text-ink">{topic.title}</p>
-                <p className="text-xs text-muted">{topic.meta}</p>
+              {/* Left */}
+              <div className="flex min-w-0 flex-1 items-center gap-4">
+                {/* Subject Icon */}
+                <div className="flex h-12 w-12 min-w-[48px] items-center justify-center rounded-xl bg-tint">
+                  <span
+                    className={`font-['Plus_Jakarta_Sans'] text-[18px] font-bold leading-6 ${isDark ? "text-white" : "text-brand"}`}
+                  >
+                    {topic.subjectLabel}
+                  </span>
+                </div>
+
+                {/* Content */}
+                <div className="min-w-0 flex-1">
+                  <span
+                    className={`inline-flex rounded-sm px-2 py-1 text-[10px] font-bold uppercase ${isDark ? "bg-white/10 text-white" : DIFFICULTY_STYLES[topic.difficulty]}`}
+                  >
+                    {topic.difficulty}
+                  </span>
+
+                  <h3 className="mt-2 truncate font-['Plus_Jakarta_Sans'] text-[16px] font-bold leading-6 text-ink">
+                    {topic.title}
+                  </h3>
+
+                  <p className="mt-1 text-[13px] font-medium text-muted">
+                    {topic.meta}
+                  </p>
+                </div>
               </div>
+
+              {/* Right */}
               <Link
                 href="/revision-session"
-                className="inline-flex h-9 w-full shrink-0 items-center justify-center rounded-lg border border-brand/15 bg-surface px-4 text-sm font-semibold text-body-text transition-colors hover:border-cta hover:bg-cta hover:text-white sm:w-auto"
+                className={`ml-6 inline-flex h-[38px] min-w-[132px] items-center justify-center rounded-lg border bg-surface px-4 text-[12px] font-semibold transition-all hover:bg-[#FF7A59] hover:text-white ${isDark ? "border-white text-white" : "border-brand text-brand"
+                  }`}
               >
                 Start Revision
               </Link>
@@ -173,22 +233,12 @@ export default function RevisionPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-success-bg px-5 py-3">
-        <p className="flex items-center gap-2 text-sm font-semibold text-success">
-          <CheckCircleIcon />
-          Mastered Topics <span className="font-normal">• 47</span>
-        </p>
-        <button
-          type="button"
-          className="flex items-center gap-1 text-xs font-semibold text-success"
-        >
-          View Mastered
-          <ChevronDownIcon className="h-3 w-3 -rotate-90" />
-        </button>
-      </div>
-
       <div className="flex justify-center">
-        <Button variant="primary" size="sm" onClick={() => setAddTaskOpen(true)}>
+        <Button
+          variant="primary"
+          onClick={() => setAddTaskOpen(true)}
+          className="h-[60px]! w-[323px]! rounded-[12px] px-8 py-4 font-['Plus_Jakarta_Sans'] text-[18px] font-bold leading-7 transition-all duration-300 ease-out"
+        >
           <PlusIcon />
           Add Task
         </Button>

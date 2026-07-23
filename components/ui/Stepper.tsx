@@ -1,9 +1,8 @@
 import { MinusIcon, PlusIcon } from "@/components/ui/icons";
 
 type StepperProps = {
-  label: string;
+  label?: string;
   value: number;
-  unit?: string;
   min?: number;
   max?: number;
   disabled?: boolean;
@@ -13,45 +12,75 @@ type StepperProps = {
 export function Stepper({
   label,
   value,
-  unit = "Hours",
   min = 1,
-  max = 16,
+  max = 100,
   disabled = false,
   onChange,
 }: StepperProps) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-xs font-semibold text-ink">{label}</span>
+    <div className="flex w-full max-w-[248px] flex-col gap-1.5">
+      {label ? (
+        <span className="text-xs font-semibold text-muted">{label}</span>
+      ) : null}
       <div
-        className={`flex items-center justify-between rounded-xl border px-2 py-1.5 ${
-          disabled
-            ? "border-brand/10 bg-tint-strong/60 opacity-60"
-            : "border-brand/15 bg-surface"
-        }`}
+        className={`
+          flex
+          h-[78px]
+          w-full
+          items-center
+          justify-between
+          rounded-[15px]
+          border
+          border-white/10
+          bg-[#13133D]
+          px-[22px]
+        `}
       >
+        {/* Minus */}
         <button
           type="button"
-          aria-label={`Decrease ${label.toLowerCase()}`}
-          onClick={() => onChange(Math.max(min, value - 1))}
           disabled={disabled || value <= min}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-brand/15 text-ink disabled:opacity-40"
+          onClick={() => onChange(Math.max(min, value - 1))}
+          className="
+            flex
+            h-[34px]
+            w-[34px]
+            items-center
+            justify-center
+            rounded-lg
+            border
+            border-[#242453]
+            text-white
+            disabled:opacity-40
+          "
         >
-          <MinusIcon />
+          <MinusIcon/>
         </button>
-        <span className="flex items-baseline gap-1">
-          <span className="text-lg font-bold text-ink">{value}</span>
-          <span className="text-[10px] font-medium uppercase text-muted">
-            {unit}
-          </span>
+
+        {/* Number */}
+        <span className="text-[26px] font-bold leading-none text-[#FAF7F2]">
+          {value}
         </span>
+
+        {/* Plus */}
         <button
           type="button"
-          aria-label={`Increase ${label.toLowerCase()}`}
-          onClick={() => onChange(Math.min(max, value + 1))}
           disabled={disabled || value >= max}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-brand/15 text-ink disabled:opacity-40"
+          onClick={() => onChange(Math.min(max, value + 1))}
+          className="
+            flex
+            h-[34px]
+            w-[34px]
+            items-center
+            justify-center
+            rounded-lg
+            border
+            border-[#242453]
+            text-white
+            disabled:opacity-40
+          "
         >
-          <PlusIcon />
+          <PlusIcon  />
         </button>
       </div>
     </div>

@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Stepper } from "@/components/ui/Stepper";
 import { StepProgress } from "@/components/ui/StepProgress";
-import { CloudSunIcon, SunIcon, CloudMoonIcon, MoonIcon } from "@/components/ui/icons";
-
+// import { CloudSunIcon, SunIcon, CloudMoonIcon, MoonIcon } from "@/components/ui/icons";
+import {CloudSunIcon,SunIcon} from "@/assets/icons";
 type SlotId = "morning" | "midday" | "evening" | "night";
 
 type TimeSlot = {
@@ -21,8 +21,8 @@ type TimeSlot = {
 const TIME_SLOTS: TimeSlot[] = [
   { id: "morning", label: "Morning", range: "5 AM - 11 AM", icon: <CloudSunIcon /> },
   { id: "midday", label: "Midday", range: "11 AM - 4 PM", icon: <SunIcon /> },
-  { id: "evening", label: "Evening", range: "4 PM - 9 PM", icon: <CloudMoonIcon /> },
-  { id: "night", label: "Night", range: "9 PM - 4 AM", icon: <MoonIcon /> },
+  { id: "evening", label: "Evening", range: "4 PM - 9 PM", icon: <SunIcon /> },
+  { id: "night", label: "Night", range: "9 PM - 4 AM", icon: <CloudSunIcon /> },
 ];
 
 function deriveStyle(selected: SlotId[]): string {
@@ -99,7 +99,7 @@ export default function TimeSelectionPage() {
         <p className="text-xs text-muted">Pick all that apply</p>
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {TIME_SLOTS.map((slot) => {
           const selected = selectedSlots.includes(slot.id);
           return (
@@ -114,7 +114,9 @@ export default function TimeSelectionPage() {
                   : "border-brand/15 bg-surface text-ink"
               }`}
             >
-              {slot.icon}
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+                {slot.icon}
+              </span>
               <span className="text-xs font-semibold">{slot.label}</span>
               <span className={`text-[10px] ${selected ? "text-white/80" : "text-muted"}`}>
                 {slot.range}

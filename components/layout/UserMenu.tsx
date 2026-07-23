@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UserIcon, LogoutIcon } from "@/components/ui/icons";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { useTheme } from "../theme/ThemeProvider";
 
 type UserMenuProps = {
   name?: string;
@@ -30,6 +31,9 @@ export function UserMenu({ name = "Rohan", initial = "R" }: UserMenuProps) {
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, [isOpen]);
 
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   return (
     <div ref={containerRef} className="relative shrink-0">
       <button
@@ -37,7 +41,14 @@ export function UserMenu({ name = "Rohan", initial = "R" }: UserMenuProps) {
         onClick={() => setOpen((value) => !value)}
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 hover:bg-tint-strong"
+        className={`
+  flex items-center gap-2 rounded-full py-1 pl-1 pr-2
+  transition-colors
+  ${isDark
+            ? "bg-slate-800 hover:bg-slate-700"
+            : "bg-white hover:bg-tint-strong shadow-sm"
+          }
+`}
       >
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">
           {initial}

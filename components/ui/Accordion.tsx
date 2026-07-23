@@ -30,7 +30,7 @@ export function Accordion({
         className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
       >
         <span className="flex items-center gap-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-brand bg-white text-sm font-bold text-brand">
             {avatarLabel}
           </span>
           <span>
@@ -43,9 +43,8 @@ export function Accordion({
           </span>
         </span>
         <ChevronDownIcon
-          className={`h-4 w-4 shrink-0 text-muted transition-transform ${
-            open ? "rotate-180" : ""
-          }`}
+          className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? "rotate-180" : ""
+            }`}
         />
       </button>
 

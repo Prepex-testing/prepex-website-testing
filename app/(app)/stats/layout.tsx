@@ -12,37 +12,61 @@ const TABS = [
   { href: "/stats/progress", label: "Progress" },
 ];
 
-export default function StatsLayout({ children }: { children: React.ReactNode }) {
+export default function StatsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
-  const activeTab = TABS.find((tab) => pathname?.startsWith(tab.href)) ?? TABS[0];
+
+  const activeTab =
+    TABS.find((tab) => pathname?.startsWith(tab.href)) ?? TABS[0];
 
   return (
-    <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-h1 text-ink">{activeTab.label}</h1>
+
         <div className="flex items-center gap-4">
           <ThemeToggle />
+
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-muted transition hover:bg-tint"
           >
             <BellIcon />
           </button>
+
           <UserMenu />
         </div>
       </div>
 
-      <div className="inline-flex w-fit items-center gap-1 rounded-full bg-tint-strong p-1">
+      {/* Tabs */}
+      <div className="inline-flex h-[41px] w-full max-w-[299px] items-center gap-1 rounded-[8px] bg-[#1A1A4E] p-1">
         {TABS.map((tab) => {
           const active = tab.href === activeTab.href;
+
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
-                active ? "bg-brand text-white" : "text-ink/70 hover:text-ink"
-              }`}
+              className={`
+                flex h-[33px] flex-1 items-center justify-center
+                rounded-[6px]
+                px-5
+                text-[14px]
+                leading-[21px]
+                transition-all
+                duration-300
+                ease-out
+                ${
+                  active
+                    ? "bg-[#FAF7F2] font-bold text-[#1A1A4E]"
+                    : "font-medium text-[#FAF7F2] hover:bg-white/10"
+                }
+              `}
             >
               {tab.label}
             </Link>

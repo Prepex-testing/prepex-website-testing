@@ -2,156 +2,204 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
 import {
   ArrowLeftIcon,
-  CalendarIcon,
+  // CalendarIcon,
   CheckIcon,
-  ClockIcon,
-  TargetIcon,
-  TrendingUpIcon,
-  StarIcon,
+  // ClockIcon,
+  // TargetIcon,
+  // TrendingUpIcon,
   ChevronDownIcon,
 } from "@/components/ui/icons";
+import { useTheme } from "@/components/theme/ThemeProvider";
+import { TargetIcon, TrendingUpIcon,CalendarIcon,ClockIcon,LayersIcon} from "@/assets/icons";
+type Difficulty = "Low" | "Medium" | "High";
 
-type Difficulty = "Easy" | "Medium" | "Hard";
+const DIFFICULTIES: Difficulty[] = ["Low", "Medium", "High"];
 
-const DIFFICULTIES: Difficulty[] = ["Easy", "Medium", "Hard"];
+const STATS = [
+  { icon: <ClockIcon />, value: "24:53", label: "Focus time" },
+  { icon: <LayersIcon />, value: "5 / 5", label: "Recall prompts" },
+  { icon: <TrendingUpIcon />, value: "Good", label: "Performance" },
+];
 
 export default function RevisionCompletePage() {
-  const [difficulty, setDifficulty] = useState<Difficulty>("Easy");
+  const [difficulty, setDifficulty] = useState<Difficulty>("Medium");
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6 p-4 sm:p-6 lg:p-8">
-      <div className="flex items-center justify-between gap-2">
+    <div className="mx-auto flex w-full max-w-[1083px] flex-col gap-4 p-4 sm:gap-6 sm:p-6 lg:p-8">
+      {/* Header */}
+      <div className="flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <Link
           href="/home/revision"
-          className="flex w-fit shrink-0 items-center gap-1 text-sm font-semibold text-ink"
+          className="flex shrink-0 items-center gap-1 text-sm font-semibold leading-5 text-ink"
         >
           <ArrowLeftIcon />
           Exit Session
         </Link>
-        <p className="flex-1 truncate text-center text-xs font-bold uppercase tracking-wide text-muted">
+
+        <p className="order-3 w-full text-center text-xs font-extrabold uppercase leading-5 tracking-[2.8px] text-ink sm:order-none sm:w-auto sm:flex-1 sm:text-sm sm:tracking-[2.8px]">
           Last Revision
         </p>
-        <span className="hidden shrink-0 items-center justify-end gap-1 text-xs text-muted sm:flex">
+
+        <span className="hidden shrink-0 items-center gap-2 text-xs font-medium leading-4 text-muted sm:flex">
           <CalendarIcon />
           14 May 2024, 10:30 AM
         </span>
       </div>
 
-      <div className="rounded-2xl border border-brand/10 bg-surface p-5 sm:p-8">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-success-bg text-success">
+      {/* Card */}
+      <div className="w-full max-w-[1083px] rounded-2xl border border-brand/10 bg-surface px-5 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10">
+        {/* Success header */}
+        <div className="flex w-full flex-col items-center gap-2 text-center sm:gap-3">
+          <span
+            className={`flex h-11 w-11 items-center justify-center rounded-full text-success sm:h-12 sm:w-12 ${isDark ? "bg-white" : "bg-success-bg"}`}
+          >
             <CheckIcon />
           </span>
-          <h1 className="text-h1 text-ink">Great job, Rohan</h1>
-          <p className="text-sm text-muted">
+
+          <h1 className="text-xl font-bold text-ink sm:text-2xl lg:text-h1">
+            Great job, Rohan
+          </h1>
+
+          <p className="text-sm leading-5 text-muted">
             You&apos;ve completed this revision session.
           </p>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-xl border border-brand/10 p-3 text-center">
-            <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-tint text-ink">
-              <ClockIcon />
-            </span>
-            <p className="mt-2 text-sm font-extrabold text-ink">24:53</p>
-            <p className="text-[11px] text-muted">Focus time</p>
+        {/* Stat tiles */}
+        <div className="mt-6 grid w-full grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:gap-6">
+          {STATS.map((stat) => (
+            <div
+              key={stat.label}
+              className="flex flex-col items-center rounded-2xl border border-brand/10  p-4 text-center first:col-span-2 sm:p-6 sm:first:col-span-1 lg:h-[194px] lg:justify-center lg:p-8"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8 sm:h-10 sm:w-10">
+                {stat.icon}
+              </span>
+
+              <p className="pt-3 text-2xl font-extrabold leading-tight text-ink sm:pt-4 sm:text-3xl lg:text-[36px] lg:leading-[52px]">
+                {stat.value}
+              </p>
+
+              <p className="mt-1 text-center text-xs font-medium leading-5 text-muted sm:mt-2 sm:text-sm">
+                {stat.label}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Difficulty rating */}
+        <div
+          className={`mt-6 w-full rounded-2xl border-2 border-dashed p-5 sm:mt-10 sm:rounded-3xl sm:p-6 lg:mt-12 lg:p-8 ${isDark ? "border-white/20" : "border-brand/15"}`}
+        >
+          <div className="flex flex-col items-center gap-1 text-center">
+            <h3 className="text-base font-bold leading-6 text-ink sm:text-lg lg:text-[20px] lg:leading-7">
+              How was this session?
+            </h3>
+
+            <p className="text-xs font-medium leading-5 text-muted sm:text-sm">
+              Select the difficulty level to help us optimize your next revision
+            </p>
           </div>
-          <div className="rounded-xl border border-brand/10 p-3 text-center">
-            <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-tint text-ink">
-              <TargetIcon />
-            </span>
-            <p className="mt-2 text-sm font-extrabold text-ink">5 / 5</p>
-            <p className="text-[11px] text-muted">Recall prompts</p>
-          </div>
-          <div className="rounded-xl border border-brand/10 p-3 text-center">
-            <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-tint text-ink">
-              <TrendingUpIcon />
-            </span>
-            <p className="mt-2 text-sm font-extrabold text-ink">Good</p>
-            <p className="text-[11px] text-muted">Performance</p>
-          </div>
-          <div className="rounded-xl border border-brand/10 p-3 text-center">
-            <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-tint text-ink">
-              <StarIcon />
-            </span>
-            <div className="mt-2 flex justify-center gap-1">
-              {DIFFICULTIES.map((option) => (
+
+          <div className="mt-4 grid w-full grid-cols-3 gap-2 sm:mt-6 sm:gap-4">
+            {DIFFICULTIES.map((option) => {
+              const selected = difficulty === option;
+
+              return (
                 <button
                   key={option}
                   type="button"
                   onClick={() => setDifficulty(option)}
-                  aria-pressed={difficulty === option}
-                  className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                    difficulty === option
-                      ? "bg-brand text-white"
-                      : "text-muted hover:bg-tint-strong"
-                  }`}
+                  aria-pressed={selected}
+                  className={`flex h-16 items-center justify-center rounded-xl border-2 p-2 transition-all sm:h-20 sm:rounded-2xl sm:p-4 lg:h-[104px] ${selected
+                      ? "border-brand bg-surface text-ink"
+                      : isDark
+                        ? "border-white/20 bg-surface text-ink hover:border-white/40"
+                        : "border-brand/15 bg-surface text-ink hover:border-brand/30"
+                    }`}
                 >
-                  {option}
+                  <span className="text-sm font-bold leading-none sm:text-lg lg:text-[22px]">
+                    {option}
+                  </span>
                 </button>
-              ))}
-            </div>
-            <p className="text-[11px] text-muted">Difficulty rating</p>
+              );
+            })}
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-2">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">
+        {/* Topics revised */}
+        <div className="mt-6 flex w-full flex-col gap-4 sm:mt-10 sm:gap-6">
+          <p className="text-xs font-extrabold uppercase tracking-[1.6px] text-muted">
             Topics Revised
           </p>
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-brand/10 p-3">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
+
+          {/* Topic card */}
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-brand/10 bg-surface px-4 py-4 sm:px-6 sm:py-6">
+            <div className="flex min-w-0 items-center gap-4 sm:gap-6">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tint text-base font-bold leading-7 text-ink sm:h-14 sm:w-14 sm:text-[20px]">
                 P
               </span>
+
               <div className="min-w-0">
-                <p className="text-sm font-bold text-ink">Newton&apos;s Laws</p>
-                <p className="text-xs text-muted">
-                  Physics • Concept Video • NCERT Chapter
+                <p className="truncate text-base font-extrabold leading-7 text-ink sm:text-[18px]">
+                  Newton&apos;s Laws
+                </p>
+
+                <p className="mt-1 text-sm font-medium leading-5 text-muted">
+                  Physics&nbsp;•&nbsp;Concept Video&nbsp;•&nbsp;NCERT Chapter
                 </p>
               </div>
             </div>
-            <span className="text-xs text-muted">Day 7 → Day 14</span>
+
+            <span className="shrink-0 text-sm font-bold leading-5 text-muted">
+              Day 7 → Day 14
+            </span>
           </div>
+
+          {/* Next revision */}
+          <button
+            type="button"
+            className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-4 text-left transition-colors hover:bg-tint-strong sm:px-6 sm:py-6 ${isDark ? "bg-transparent" : "bg-tint"}`}
+          >
+            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink shadow-sm dark:bg-[#FAF7F2]/8 sm:h-12 sm:w-12">
+                <CalendarIcon />
+              </span>
+
+              <div className="min-w-0">
+                <p className="text-sm font-bold leading-5 text-ink">
+                  Next revision scheduled
+                </p>
+
+                <p className="mt-1 text-sm font-medium leading-5 text-muted">
+                  Tuesday, 21 May 2024&nbsp;•&nbsp;in 7 days
+                </p>
+              </div>
+            </div>
+
+            <ChevronDownIcon className="h-5 w-5 shrink-0 -rotate-90 text-ink sm:h-6 sm:w-6" />
+          </button>
         </div>
 
-        <button
-          type="button"
-          className="mt-4 flex w-full items-center justify-between gap-3 rounded-xl bg-tint-strong p-3 text-left"
-        >
-          <span className="flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink">
-              <CalendarIcon />
-            </span>
-            <span>
-              <span className="block text-sm font-semibold text-ink">
-                Next revision scheduled
-              </span>
-              <span className="block text-xs text-muted">
-                Tuesday, 21 May 2024 • in 7 days
-              </span>
-            </span>
-          </span>
-          <ChevronDownIcon className="h-4 w-4 -rotate-90 text-muted" />
-        </button>
+        {/* Actions */}
+        <div className="mt-6 grid w-full grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-[2fr_3fr] lg:gap-8">
+          <Link
+            href="/revision-session"
+            className="flex h-14 items-center justify-center rounded-2xl border-2 border-brand bg-surface text-sm font-semibold leading-6 text-ink transition-colors hover:bg-tint-strong sm:text-base lg:h-[60px]"
+          >
+            Review another topic
+          </Link>
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-          <div className="flex-1">
-            <Link
-              href="/revision-session"
-              className="flex h-14 w-full items-center justify-center rounded-lg border border-brand/15 bg-surface text-base font-semibold text-body-text hover:bg-tint-strong"
-            >
-              Review another topic
-            </Link>
-          </div>
-          <div className="flex-1">
-            <Button href="/home/revision" variant="primary">
-              Back to Revision Dashboard
-            </Button>
-          </div>
+          <Link
+            href="/home/revision"
+            className="flex h-14 items-center justify-center rounded-2xl bg-cta text-sm font-semibold leading-6 text-white transition hover:bg-cta/90 sm:text-base lg:h-[60px]"
+          >
+            Back to Revision Dashboard
+          </Link>
         </div>
       </div>
     </div>

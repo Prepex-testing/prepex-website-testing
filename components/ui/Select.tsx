@@ -12,6 +12,7 @@ type SelectProps = {
   required?: boolean;
   placeholder?: string;
   options: SelectOption[];
+  labelClassName?: string;
 } & SelectHTMLAttributes<HTMLSelectElement>;
 
 export function Select({
@@ -20,22 +21,28 @@ export function Select({
   placeholder,
   options,
   id,
-  defaultValue = "",
+  value,
+  defaultValue,
+  labelClassName = "text-[14px] font-semibold leading-[20px] text-ink",
   ...props
 }: SelectProps) {
   const generatedId = useId();
   const selectId = id ?? generatedId;
+  const uncontrolledProps = value === undefined ? { defaultValue: defaultValue ?? "" } : { value };
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={selectId} className="text-sm font-semibold text-ink">
+      <label
+        htmlFor={selectId}
+        className={labelClassName}
+      >
         {label}
         {required && <span className="text-cta"> *</span>}
       </label>
       <div className="relative">
         <select
           id={selectId}
-          defaultValue={defaultValue}
+          {...uncontrolledProps}
           className="w-full appearance-none rounded-xl border border-brand/15 bg-surface px-4 py-3 pr-9 text-sm text-body-text outline-none focus:border-focus-ring"
           {...props}
         >

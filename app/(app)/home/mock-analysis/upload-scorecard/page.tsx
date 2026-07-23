@@ -3,6 +3,8 @@
 import { useId, useState } from "react";
 import Link from "next/link";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { DateInput } from "@/components/ui/DateInput";
@@ -71,17 +73,11 @@ export default function UploadScorecardPage() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <button
-            type="button"
-            aria-label="Refresh"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
-          >
-            <RefreshIcon />
-          </button>
+          <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-muted hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
@@ -89,30 +85,31 @@ export default function UploadScorecardPage() {
         </div>
       </div>
 
-      <div
-        role="tablist"
-        aria-label="Upload method"
-        className="inline-flex w-fit flex-wrap rounded-full bg-tint-strong p-1"
-      >
-        {TABS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            role="tab"
-            aria-selected={tab === item.id}
-            onClick={() => setTab(item.id)}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-              tab === item.id
-                ? "bg-brand text-white"
-                : "text-muted hover:text-ink"
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
-
       <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+        {/* Tabs */}
+        <div
+          role="tablist"
+          aria-label="Upload method"
+          className="mb-6 flex h-[41px] w-full rounded-[8px] bg-[#1A1A4E] p-1 sm:w-fit"
+        >
+          {TABS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              role="tab"
+              aria-selected={tab === item.id}
+              onClick={() => setTab(item.id)}
+              className={`flex h-[33px] flex-1 items-center justify-center whitespace-nowrap rounded-[6px] px-2 text-[12px] font-semibold leading-[21px] transition-colors sm:flex-none sm:px-5 sm:text-[14px] ${tab === item.id
+                ? "bg-[#FAF7F2] text-[#1A1A4E]"
+                : "bg-transparent text-white hover:bg-white/10"
+                }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Form */}
         {tab === "manual" && <ManualForm />}
         {tab === "upload-image" && <UploadImageForm />}
         {tab === "quick-log" && <QuickLogForm />}
@@ -132,7 +129,9 @@ function ManualForm() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Select label="Source" placeholder="Select Source" options={SOURCE_OPTIONS} />
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold text-ink">Total Marks</label>
+          <label className="text-[14px] font-semibold leading-[20px] text-ink">
+            Total Marks
+          </label>
           <div className="mt-1 flex gap-2">
             <input className={FIELD_CLASSES} placeholder="Enter score" aria-label="Score" />
             <input className={FIELD_CLASSES} placeholder="Total marks" aria-label="Total marks" />
@@ -165,18 +164,18 @@ function ManualForm() {
         </div>
         <button
           type="button"
-          className="flex shrink-0 items-center gap-1 text-xs font-semibold text-ink"
+          className="flex h-[34px] w-[186px] shrink-0 items-center justify-center gap-2 rounded-[8px] border border-brand bg-surface px-4 py-2 font-['Plus_Jakarta_Sans'] text-[12px] font-bold leading-4 text-brand transition-colors"
         >
-          <PlusIcon />
-          Add Topic Breakdown
+          <span className="flex h-4 w-4 items-center justify-center">
+            <PlusIcon />
+          </span>
+
+          <span>Add Topic Breakdown</span>
         </button>
       </div>
 
       <div className="flex flex-col items-center gap-2 pt-2">
         <Button variant="primary">Save &amp; Analyze Later</Button>
-        <button type="button" className="text-sm font-semibold text-ink underline">
-          Generate Basic Analysis
-        </button>
       </div>
     </div>
   );
@@ -196,9 +195,15 @@ function UploadImageForm() {
         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-tint text-ink">
           <UploadIcon />
         </span>
+
         <p className="text-sm font-semibold text-ink">
           Drag &amp; drop your screenshot here
         </p>
+
+        <p className="text-xs font-medium text-muted">
+          or
+        </p>
+
         <span className="flex h-9 items-center justify-center rounded-lg border border-brand/15 bg-surface px-4 text-sm font-semibold text-body-text hover:bg-tint-strong">
           Browse Files
         </span>
@@ -236,62 +241,141 @@ function UploadImageForm() {
 }
 
 function QuickLogForm() {
-  return (
-    <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Input label="Mock Name" name="quickMockName" placeholder="e.g. Allen GT 14" />
-        <Select label="Source" placeholder="Select source" options={SOURCE_OPTIONS} />
-      </div>
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <DateInput label="Date" name="quickDate" />
-        <div className="grid grid-cols-2 gap-2">
-          <Input label="Score" name="quickScore" placeholder="Enter score" />
+  return (
+    <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+      <div className="flex flex-col gap-8">
+        {/* Header */}
+        <div>
+          <h2 className="font-['Plus_Jakarta_Sans'] text-[20px] font-bold leading-7 text-ink">
+            Quickly log your mock score
+          </h2>
+
+          <p className="mt-1 font-['Inter'] text-[16px] font-normal leading-6 text-muted">
+            Save now and analyze in detail later.
+          </p>
+        </div>
+
+        {/* Row 1 */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <Input
+            label="Mock Name"
+            name="quickMockName"
+            placeholder="e.g. Allen GT 14"
+          />
+
           <Select
-            label="Total Marks"
-            placeholder="Select total marks"
-            options={TOTAL_MARKS_OPTIONS}
+            label="Source"
+            placeholder="Select source"
+            options={SOURCE_OPTIONS}
           />
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold text-ink">Time Taken</label>
-          <div className="mt-1 flex gap-2">
-            <input className={FIELD_CLASSES} placeholder="0h" aria-label="Time taken hours" />
-            <input className={FIELD_CLASSES} placeholder="0m" aria-label="Time taken minutes" />
+        {/* Row 2 */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-[1fr_2fr]">
+          <DateInput
+            label="Date"
+            name="quickDate"
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              type="number"
+              label="Score"
+              name="quickScore"
+              placeholder="Enter score"
+            />
+
+            <Select
+              label="Total Marks"
+              placeholder="Select total marks"
+              options={TOTAL_MARKS_OPTIONS}
+            />
           </div>
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold text-ink">Test Duration</label>
-          <div className="mt-1 flex gap-2">
-            <input className={FIELD_CLASSES} placeholder="0h" aria-label="Test duration hours" />
-            <input className={FIELD_CLASSES} placeholder="0m" aria-label="Test duration minutes" />
+
+        {/* Row 3 */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div>
+            <label className="mb-2 block text-[14px] font-semibold text-ink">
+              Time Taken
+            </label>
+
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                className={FIELD_CLASSES}
+                placeholder="hh"
+                aria-label="Time taken hours"
+              />
+
+              <input
+                className={FIELD_CLASSES}
+                placeholder="mm"
+                aria-label="Time taken minutes"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-[14px] font-semibold text-ink">
+              Test Duration <span className="text-muted">(optional)</span>
+            </label>
+
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                className={FIELD_CLASSES}
+                placeholder="hh"
+                aria-label="Duration hours"
+              />
+
+              <input
+                className={FIELD_CLASSES}
+                placeholder="mm"
+                aria-label="Duration minutes"
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="quick-log-notes" className="text-sm font-semibold text-ink">
-          Notes <span className="font-normal text-muted">(optional)</span>
-        </label>
-        <textarea
-          id="quick-log-notes"
-          rows={3}
-          maxLength={500}
-          placeholder="Add any quick notes about how the mock went..."
-          className="mt-1 w-full resize-none rounded-xl border border-brand/15 bg-surface px-4 py-3 text-sm text-body-text outline-none placeholder:text-muted/70 focus:border-focus-ring"
-        />
-        <p className="self-end text-xs text-muted">0/500</p>
-      </div>
+        {/* Notes */}
+        <div>
+          <label
+            htmlFor="quick-log-notes"
+            className="mb-2 block text-[14px] font-semibold text-ink"
+          >
+            Notes <span className="text-muted">(optional)</span>
+          </label>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-        <div className="flex-1">
-          <Button variant="secondary">Save &amp; Analyze Now</Button>
+          <textarea
+            id="quick-log-notes"
+            rows={5}
+            maxLength={200}
+            placeholder="Add any quick notes about this mock..."
+            className="w-full resize-none rounded-xl border border-brand/15 bg-surface px-4 py-3 text-sm text-body-text outline-none placeholder:text-muted/70 focus:border-focus-ring"
+          />
+
+          <p className="mt-2 text-right text-xs text-muted">
+            0 / 200
+          </p>
         </div>
-        <div className="flex-1">
-          <Button variant="primary">Save</Button>
+
+        {/* Buttons */}
+        <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Button
+            variant="secondary"
+            style={isDark ? { borderColor: "#FAF7F2" } : undefined}
+          >
+            Save &amp; Analyze Now
+          </Button>
+
+          <Button
+            variant="primary"
+            className={isDark ? "border border-[#FAF7F2]" : undefined}
+          >
+            Save
+          </Button>
         </div>
       </div>
     </div>

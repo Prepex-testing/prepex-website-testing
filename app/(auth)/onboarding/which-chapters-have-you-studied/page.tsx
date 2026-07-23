@@ -170,41 +170,45 @@ export default function WhichChaptersHaveYouStudiedPage() {
         </p>
       </div>
 
-      <div className="mt-6 rounded-xl bg-tint-strong p-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-sm font-bold text-ink">
-              {String(markedCount).padStart(2, "0")}/{TOTAL_CHAPTERS} Chapters Marked
-            </p>
-            {partialCount > 0 && (
-              <p className="text-xs text-muted">
-                {partialCount} chapter{partialCount > 1 ? "s" : ""} marked as partial
-              </p>
-            )}
+      <div className="mt-6 rounded-xl border border-brand/10 bg-surface p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="whitespace-nowrap rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-white sm:px-4 sm:text-sm">
+              {markedCount - partialCount} chapter
+              {markedCount - partialCount !== 1 ? "s" : ""} marked as complete
+            </span>
+
+            <span className="whitespace-nowrap rounded-lg border border-brand bg-white px-3 py-2 text-xs font-semibold text-brand sm:px-4 sm:text-sm">
+              {partialCount} chapter
+              {partialCount !== 1 ? "s" : ""} marked as partial
+            </span>
           </div>
-          <div className="flex shrink-0 items-center gap-3">
+
+          <div className="flex shrink-0 items-center gap-4">
             <button
               type="button"
               onClick={markAll}
-              className="flex items-center gap-1 text-xs font-semibold text-ink"
+              className="flex items-center gap-1.5 whitespace-nowrap text-sm text-ink"
             >
               <CheckCircleIcon />
               Mark all
             </button>
+
             <button
               type="button"
               onClick={clearAll}
-              className="flex items-center gap-1 text-xs font-semibold text-muted"
+              className="flex items-center gap-1.5 whitespace-nowrap text-sm text-ink"
             >
               <XIcon />
               Clear
             </button>
           </div>
         </div>
-        <p className="mt-2 text-xs text-muted">
-          Marked chapters skip new learning and go to revision rotation. Unmarked
-          chapters will be taught as new. Tap once to set a chapter as Partially
-          Selected; tap again to mark it Done.
+
+        <p className="mt-4 text-sm text-muted">
+          Marked chapters skip new learning and go to revision rotation.
+          Unmarked chapters will be taught as new. Tap once to set a
+          chapter as Partially Selected; tap again to mark it Done.
         </p>
       </div>
 

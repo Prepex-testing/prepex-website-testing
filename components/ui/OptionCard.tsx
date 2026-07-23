@@ -33,7 +33,7 @@ export function OptionCard({
       } ${className}`}
     >
       <span className="flex items-center gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
           {icon}
         </span>
         <span>

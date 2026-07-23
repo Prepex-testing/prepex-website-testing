@@ -1,30 +1,34 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
-import { TimeBlockSection } from "@/components/home/TimeBlockSection";
 import {
   BellIcon,
   SearchIcon,
-  PlayIcon,
-  FileIcon,
+  // PlayIcon,
+  // FileIcon,
   StarIcon,
   BookIcon,
   ChevronDownIcon,
+  ArrowRightIcon,
+  BookmarkIcon,
 } from "@/components/ui/icons";
-
+import {Containers,TargetIcon} from "@/assets/icons";
 const BROWSE_FILTERS = ["Subject", "Chapter", "Type"];
 
 const FEATURED = [
   {
     id: "newtons-laws-foundation",
-    icon: <PlayIcon />,
+    icon: <Containers />,
     title: "Newton's Laws Foundation",
     meta: "PW · 28 min",
     rating: "4.8 · 247 reviews",
   },
   {
     id: "coord-geo-cengage",
-    icon: <FileIcon />,
+    icon: <TargetIcon />,
     title: "Coordinate Geometry - Cengage Ch24",
     meta: "PDF · 45 pages",
   },
@@ -45,6 +49,8 @@ const PHYSICS_CHAPTERS = [
 ];
 
 export default function ResourceLibraryPage() {
+  const [physicsOpen, setPhysicsOpen] = useState(true);
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -67,117 +73,181 @@ export default function ResourceLibraryPage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-2xl border border-brand/10 bg-surface p-5">
-        <div className="flex items-center gap-2 rounded-xl border border-brand/10 px-4 py-3">
-          <span className="text-muted">
+
+      <div className="flex flex-col gap-6 rounded-2xl bg-surface px-5 py-6 shadow-[0px_4px_20px_0px_#00000008] sm:px-8">
+        {/* Search bar */}
+        <div className="relative">
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted">
             <SearchIcon />
           </span>
           <input
             type="text"
             placeholder="Search resources, topics, or formulas..."
             autoComplete="off"
-            className="flex-1 bg-transparent text-sm text-body-text outline-none placeholder:text-muted/70"
+            className="h-[57px] w-full rounded-xl border border-tint-strong bg-tint-strong pl-12 pr-4 text-[16px] font-medium text-body-text outline-none placeholder:text-muted focus:border-brand/30"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-wide text-muted">
+        {/* Filters row */}
+        <div className="flex flex-col gap-3 border-t border-brand/10 pt-6 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
+          <span className="text-[12px] font-semibold uppercase tracking-[0.6px] text-muted">
             Browse by
           </span>
-          {BROWSE_FILTERS.map((label) => (
-            <button
-              key={label}
-              type="button"
-              className="flex items-center gap-1 rounded-full border border-brand/15 bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-tint-strong"
-            >
-              {label}
-              <ChevronDownIcon className="h-3 w-3" />
-            </button>
-          ))}
+
+          <div className="flex flex-wrap items-center gap-3">
+            {BROWSE_FILTERS.map((label) => (
+              <button
+                key={label}
+                type="button"
+                className="relative flex h-[39px] min-w-[146px] items-center justify-between rounded-lg border border-tint-strong bg-tint-strong py-2 pl-4 pr-3 text-[14px] font-medium text-ink hover:border-brand/20"
+              >
+                {label}
+                <ChevronDownIcon className="h-4 w-4 text-muted" />
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-        <p className="text-sm font-bold text-ink">Top This Week</p>
-        <p className="text-xs text-muted">Curated for this week</p>
+      <div className="flex flex-col gap-5">
+        {/* Header */}
+        <div className="flex flex-col gap-1">
+          <p className="text-[20px] sm:text-[22px] font-bold leading-tight text-ink">
+            Top This Week
+          </p>
+          <p className="text-[14px] sm:text-[16px] font-semibold text-muted">
+            Curated for this week
+          </p>
+        </div>
 
-        <div className="mt-4 flex flex-col gap-3">
+        {/* Resource rows */}
+        <div className="flex flex-col gap-4">
           {FEATURED.map((item) => (
             <div
               key={item.id}
-              className="flex flex-wrap items-center gap-3 rounded-xl border border-brand/10 p-3"
+              className="flex flex-col gap-5 rounded-2xl border border-brand/10 bg-surface p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
-                {item.icon}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-ink">{item.title}</p>
-                <p className="flex items-center gap-1 text-xs text-muted">
-                  {item.meta}
-                  {item.rating && (
-                    <>
-                      <span>·</span>
-                      <StarIcon />
-                      {item.rating}
-                    </>
-                  )}
-                </p>
+              {/* Left */}
+              <div className="flex min-w-0 flex-1 items-start gap-4">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+                  {item.icon}
+                </span>
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[18px] sm:text-[20px] font-semibold leading-7 text-ink">
+                    {item.title}
+                  </p>
+
+                  <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[13px] sm:text-[14px] text-muted">
+                    {item.meta}
+                    {item.rating && (
+                      <>
+                        <span>•</span>
+                        <StarIcon />
+                        {item.rating}
+                      </>
+                    )}
+                  </p>
+                </div>
               </div>
-              <div className="flex w-full shrink-0 items-center gap-2 pl-12 sm:w-auto sm:pl-0">
+
+              {/* Right */}
+              <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
                 <button
                   type="button"
-                  className="inline-flex h-9 items-center justify-center rounded-lg border border-brand/15 bg-surface px-4 text-sm font-semibold text-body-text transition-colors hover:border-cta hover:bg-cta hover:text-white"
+                  className="inline-flex h-[42px] w-full sm:w-auto items-center justify-center rounded-lg border border-brand px-6 text-[14px] font-medium text-ink transition-colors hover:bg-[#FF7A59] hover:text-white hover:border-[#FF7A59]"
                 >
                   Open
                 </button>
+
                 <button
                   type="button"
-                  className="inline-flex h-9 items-center justify-center rounded-lg border border-brand/15 bg-surface px-4 text-sm font-semibold text-body-text transition-colors hover:border-cta hover:bg-cta hover:text-white"
+                  className="inline-flex h-[42px] w-full sm:w-auto items-center justify-center gap-2 rounded-lg border border-brand px-6 text-[14px] font-medium text-ink transition-colors hover:bg-[#FF7A59] hover:text-white hover:border-[#FF7A59]"
                 >
-                  Track as study →
+                  Track as study
+                  <ArrowRightIcon className="h-4 w-4 shrink-0" />
                 </button>
               </div>
             </div>
           ))}
         </div>
 
+        {/* Footer */}
         <button
           type="button"
-          className="mt-3 w-full text-center text-sm font-semibold text-ink underline"
+          className="text-center text-sm font-semibold text-ink underline underline-offset-2"
         >
           View 24 more resources
         </button>
       </div>
 
-      <TimeBlockSection icon={<BookIcon />} title="Physics" meta="18 chapters">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {PHYSICS_CHAPTERS.map((chapter) => (
-            <Link
-              key={chapter.id}
-              href="/home/resource-library/chapter"
-              className="flex flex-col gap-2 rounded-2xl border border-brand/10 bg-surface p-4 hover:border-brand/30"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="text-sm font-bold text-ink">{chapter.title}</p>
-                  <p className="text-xs text-muted">{chapter.chapter}</p>
-                </div>
-                <ChevronDownIcon className="h-4 w-4 shrink-0 -rotate-90 text-muted" />
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {TAGS.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full bg-tint-strong px-2 py-0.5 text-[10px] font-semibold text-ink"
+      <div className="flex w-full flex-col gap-4">
+        <button
+          type="button"
+          onClick={() => setPhysicsOpen((value) => !value)}
+          aria-expanded={physicsOpen}
+          className="flex w-full items-center gap-3 text-left"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
+            <BookIcon />
+          </span>
+          <span className="text-[20px] font-bold leading-7 text-ink">Physics</span>
+          <span className="text-[14px] font-medium leading-5 text-muted">18 chapters</span>
+          <ChevronDownIcon
+            className={`h-5 w-5 shrink-0 text-muted transition-transform ${physicsOpen ? "" : "-rotate-90"
+              }`}
+          />
+        </button>
+        {physicsOpen && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {PHYSICS_CHAPTERS.map((chapter) => (
+              <div
+                key={chapter.id}
+                className="flex flex-col gap-3 rounded-2xl border border-brand/5 bg-surface p-6 shadow-sm transition-colors hover:border-brand/20"
+              >
+                {/* Title row */}
+                <Link
+                  href="/home/resource-library/chapter"
+                  className="flex items-start justify-between gap-2"
+                >
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-[18px] font-bold leading-8 text-ink">
+                      {chapter.title}
+                    </h3>
+
+                    <p className="mt-1 text-[14px] font-medium leading-5 text-muted">
+                      {chapter.chapter}
+                    </p>
+                  </div>
+                  <ChevronDownIcon className="mt-1 h-4 w-4 shrink-0 -rotate-90 text-muted" />
+                </Link>
+
+                {/* Tags + bookmark, same row, bookmark pinned right */}
+                <div className="flex items-end justify-between gap-4">
+                  <div className="flex flex-wrap gap-2 max-w-[calc(100%-40px)]">
+                    {TAGS.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full bg-tint-strong px-4 py-2 text-[12px] font-semibold text-ink"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    aria-label={`Bookmark ${chapter.title}`}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center text-muted hover:text-ink"
                   >
-                    {tag}
-                  </span>
-                ))}
+                    <BookmarkIcon />
+                  </button>
+                </div>
               </div>
-            </Link>
-          ))}
-        </div>
-      </TimeBlockSection>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

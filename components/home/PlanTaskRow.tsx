@@ -42,31 +42,39 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
   const isStartPractice = task.actionLabel.toLowerCase().includes("practice");
 
   return (
-    <div className="flex flex-wrap items-start gap-3 rounded-xl border border-brand/10 bg-surface p-3">
-      <span className="mt-1.5 shrink-0 cursor-grab text-muted" aria-hidden="true">
-        <GripVerticalIcon />
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-brand/10 bg-surface p-4 sm:gap-4">
+      {/* Drag handle — 18x18 per spec */}
+      <span className="shrink-0 cursor-grab text-muted" aria-hidden="true">
+        <GripVerticalIcon  />
       </span>
 
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
+      {/* Avatar — 56x56, rounded-lg (8px), #EEF2FF fill, 24px bold #1A1A4E */}
+      <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-plan-avatar-bg text-2xl font-bold leading-8 text-subject-text">
         {task.subjectLabel}
       </span>
 
+      {/* Content column */}
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-wide text-muted">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-bold uppercase leading-[15px] tracking-[1px] text-muted">
             {task.subjectName}
           </span>
           <span
-            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${TYPE_STYLES[task.type]}`}
+            className={`rounded-full px-2 py-0.5 text-[10px] font-bold leading-[15px] ${TYPE_STYLES[task.type]}`}
           >
             {TYPE_LABELS[task.type]}
           </span>
         </div>
-        <p className="text-sm font-bold text-ink">{task.title}</p>
-        <p className="text-xs text-muted">{task.meta}</p>
-        <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-muted">
+
+        <p className="mt-0.5 text-base font-bold leading-6 text-ink">
+          {task.title}
+        </p>
+
+        <p className="text-xs font-normal leading-4 text-[#9CA3AF]">{task.meta}</p>
+
+        <div className="mt-1 flex flex-wrap items-center gap-3 text-xs font-medium leading-4 text-[#6B7280]">
           <span className="flex items-center gap-1">
-            <ClockIcon />
+            <ClockIcon  />
             {task.duration}
           </span>
           <span className="flex items-center gap-1">
@@ -74,37 +82,48 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
             {task.timeRange}
           </span>
           <span
-            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${DIFFICULTY_STYLES[task.difficulty]}`}
+            className={`rounded-sm px-2 py-0.5 text-[10px] font-semibold ${DIFFICULTY_STYLES[task.difficulty]}`}
           >
             {DIFFICULTY_LABELS[task.difficulty]}
           </span>
         </div>
       </div>
 
-      <div className="flex w-full shrink-0 items-center gap-2 pl-19 sm:w-auto sm:pl-0">
+      {/* Actions — 16px gap between button and checkbox/menu group */}
+      <div className="flex w-full shrink-0 items-center gap-4 sm:w-auto">
         <Button
           variant="task"
           size="sm"
-          href={task.actionLabel === "Start Session" ? "/home/session" : undefined}
+          className="h-[38px] rounded-lg border border-[#1A1A4E] px-5 py-2 text-sm font-bold leading-5 text-[#1A1A4E]"
+          href={
+            task.actionLabel === "Start Session"
+              ? "/home/session"
+              : task.actionLabel === "Start Revision"
+                ? "/revision-session"
+                : undefined
+          }
           onClick={isStartPractice ? onStartPractice : undefined}
         >
           {task.actionLabel}
         </Button>
-        <input
-          type="checkbox"
-          checked={done}
-          onChange={() => setDone((value) => !value)}
-          aria-label={`Mark "${task.title}" complete`}
-          className="h-4 w-4 rounded border-brand/25"
-        />
-        <TaskEditMenu
-          task={{
-            title: task.title,
-            subjectName: task.subjectName,
-            type: task.type,
-            duration: task.duration,
-          }}
-        />
+
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={done}
+            onChange={() => setDone((value) => !value)}
+            aria-label={`Mark "${task.title}" complete`}
+            className="h-5 w-5 rounded border-brand/25"
+          />
+          <TaskEditMenu
+            task={{
+              title: task.title,
+              subjectName: task.subjectName,
+              type: task.type,
+              duration: task.duration,
+            }}
+          />
+        </div>
       </div>
     </div>
   );

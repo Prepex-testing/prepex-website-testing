@@ -3,47 +3,84 @@ import { ChevronRightIcon } from "@/components/ui/icons";
 
 export type RankedItem = {
   id: string;
-  rank: number;
   title: string;
   subtitle?: string;
   value?: string;
   valueClassName?: string;
-  badge?: ReactNode;
+  icon: ReactNode;
 };
 
 type RankedListProps = {
   items: RankedItem[];
-  rankClassName?: string;
 };
 
-export function RankedList({
-  items,
-  rankClassName = "bg-tint-strong text-ink",
-}: RankedListProps) {
+export function RankedList({ items }: RankedListProps) {
   return (
-    <div className="flex flex-col divide-y divide-brand/5">
+    <div className="flex flex-col gap-4">
       {items.map((item) => (
-        <div key={item.id} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
-          <span
-            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${rankClassName}`}
-          >
-            {item.rank}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-semibold text-ink">{item.title}</p>
-            {item.subtitle && (
-              <p className="truncate text-[10px] text-muted">{item.subtitle}</p>
-            )}
-          </div>
-          {item.badge}
-          {item.value && (
-            <span
-              className={`shrink-0 text-xs font-bold ${item.valueClassName ?? "text-cta"}`}
+        <div
+          key={item.id}
+          className="
+            flex
+            h-[76px]
+            items-center
+            justify-between
+            rounded-xl
+            border
+            border-brand/10
+            bg-transparent
+            px-3
+            py-3
+          "
+        >
+          {/* Left */}
+          <div className="flex items-center gap-4">
+            <div
+              className="
+                flex
+                h-12
+                w-12
+                items-center
+                justify-center
+                rounded-[10px]
+                bg-tint
+                text-ink
+              "
             >
-              {item.value}
-            </span>
-          )}
-          <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-muted" />
+              {item.icon}
+            </div>
+
+            <div>
+              <h4 className="text-sm font-bold text-ink">
+                {item.title}
+              </h4>
+
+              {item.subtitle && (
+                <p className="mt-0.5 text-[10px] leading-[15px] text-muted">
+                  {item.subtitle}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Right */}
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p
+                className={`text-base font-bold ${
+                  item.valueClassName ?? "text-warning"
+                }`}
+              >
+                {item.value}
+              </p>
+
+              <p className="text-[10px] text-muted">
+                Marks recoverable
+              </p>
+            </div>
+
+            <ChevronRightIcon className="h-4 w-4 text-muted" />
+          </div>
         </div>
       ))}
     </div>

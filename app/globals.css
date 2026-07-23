@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/*
+ * Theme is toggled via [data-theme] on <html> (see ThemeProvider), not the
+ * OS-level prefers-color-scheme media query Tailwind's `dark:` defaults to.
+ * Repoint the variant so `dark:` classes follow the in-app toggle.
+ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
   --background: #faf7f2;
   --surface: #ffffff;
@@ -24,17 +31,34 @@
   --chart-recovery: #fdba74;
   --focus-ring: rgb(255 122 89 / 0.5);
 
+  --subject-bg: #eef0f8;
+  --subject-text: #1a1a4e;
+  --icon-chip-bg: #eef0f8;
+  --plan-avatar-bg: #eef2ff;
+
   --shadow-hover: 0 2px 8px rgb(26 26 78 / 0.08);
   --shadow-modal: 0 8px 24px rgb(26 26 78 / 0.12);
+
+  --question-dot-active: #1E1B4B;
+  --question-dot-inactive: #D1D5DB;
+
+  --toggle-on: var(--brand);
+  --score-ring-from: #1a1a4e;
+  --score-ring-to: #4c1d95;
+
+  --sub: #A0A0B0;
+
+  /* icon for color */
+  --button-border: #333333;
 }
 
 [data-theme="dark"] {
-  --background: #14143a;
-  --surface: #1e1e4d;
-  --ink: #f5f6fb;
+  --background: #0D0D2B;
+  --surface: #111145;
+  --ink: #faf7f2;
   --brand: #6d6dc4;
   --body-text: #e4e5f1;
-  --muted: #9a9cc4;
+  --muted: #8b8998;
   --cta: #ff8a6b;
   --tint: #23234f;
   --tint-strong: #2b2b63;
@@ -52,8 +76,25 @@
   --chart-recovery: #fdba74;
   --focus-ring: rgb(255 138 107 / 0.6);
 
+  --subject-bg: #1a1a4e;
+  --subject-text: #faf7f2;
+  --icon-chip-bg: #ffffff;
+  --plan-avatar-bg: #1a1a4e;
+
   --shadow-hover: 0 2px 8px rgb(0 0 0 / 0.35);
   --shadow-modal: 0 8px 24px rgb(0 0 0 / 0.5);
+
+  --question-dot-active: #FAF7F2;
+  --question-dot-inactive: rgba(250, 247, 242, 0.25);
+
+  --toggle-on: #ffffff;
+  --score-ring-from: #ffffff;
+  --score-ring-to: #ffffff;
+
+  --sub:#242453;
+
+  /* icon for color */
+  --button-border: #FAF7F2;
 }
 
 @theme inline {
@@ -79,6 +120,11 @@
   --color-chart-3: var(--chart-3);
   --color-chart-recovery: var(--chart-recovery);
   --color-focus-ring: var(--focus-ring);
+  --color-subject-bg: var(--subject-bg);
+  --color-subject-text: var(--subject-text);
+  --color-icon-chip-bg: var(--icon-chip-bg);
+  --color-plan-avatar-bg: var(--plan-avatar-bg);
+  --color-toggle-on: var(--toggle-on);
 
   --font-sans: var(--font-jakarta);
 
@@ -92,6 +138,12 @@
   --shadow-hover: var(--shadow-hover);
   --shadow-modal: var(--shadow-modal);
   --radius-md: 16px;
+
+  --color-question-dot-active: var(--question-dot-active);
+  --color-question-dot-inactive: var(--question-dot-inactive);
+
+    /* icon for color */
+  --color-button-border: var(--button-border);
 }
 
 html {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { BellIcon, ArrowLeftIcon, ClockIcon, BookmarkIcon } from "@/components/ui/icons";
@@ -185,105 +185,178 @@ export default function PracticeModePage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+      <div className="flex h-8 w-full items-center justify-between">
+        {/* Left Section */}
+        <div className="flex h-7 items-center gap-3">
+          {/* Back Button */}
           <button
             type="button"
             aria-label="Previous question"
             onClick={() => setCurrentIndex((value) => Math.max(0, value - 1))}
             disabled={currentIndex === 0}
-            className="text-ink disabled:opacity-30"
+            className="flex h-8 w-8 items-center justify-center rounded-full p-1 text-ink disabled:opacity-30"
           >
             <ArrowLeftIcon />
           </button>
-          <p className="text-base font-bold text-ink">
-            Question {currentIndex + 1} of {QUESTIONS.length}
-          </p>
-          <span className="rounded-full bg-tint px-2 py-0.5 text-[10px] font-bold uppercase text-ink">
-            {question.difficulty}
-          </span>
+
+          {/* Question + Difficulty */}
+          <div className="flex h-7 items-center gap-3">
+            <p className="text-[20px] font-bold leading-7 text-ink whitespace-nowrap">
+              Question {currentIndex + 1} of {QUESTIONS.length}
+            </p>
+
+            <span className="flex h-4 items-center rounded-sm bg-tint px-2 text-[12px] font-semibold uppercase tracking-[0.6px] leading-4 text-ink">
+              {question.difficulty}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-4 text-sm">
-          <span className="flex items-center gap-1 text-muted">
+
+        {/* Right Section */}
+        <div className="flex h-7 items-center gap-8">
+          {/* Timer */}
+          <div className="flex items-center gap-2">
             <ClockIcon />
-            {formatTime(elapsed)} elapsed
-          </span>
+
+            <span className="text-[18px] font-semibold leading-7 text-ink whitespace-nowrap">
+              {formatTime(elapsed)} elapsed
+            </span>
+          </div>
+
+          {/* End Session */}
           <button
             type="button"
             onClick={() => finishSession(answers)}
-            className="text-xs font-semibold uppercase tracking-wide text-muted"
+            className="text-[14px] font-bold uppercase leading-5 tracking-[1.4px] text-muted whitespace-nowrap"
           >
             End Session
           </button>
         </div>
       </div>
 
-      <div className="flex gap-1.5">
-        {QUESTIONS.map((_, index) => (
-          <span
-            key={index}
-            className={`h-1.5 flex-1 rounded-full ${
-              index === currentIndex
-                ? "bg-cta"
-                : answers[index] !== null
-                  ? "bg-brand"
-                  : "bg-brand/10"
-            }`}
-          />
+      <div className="flex h-2 w-[261px] items-center gap-[15px]">
+        {QUESTIONS.map((_, index) => {
+          const isActive = index === currentIndex;
+          const isAnswered = answers[index] !== null;
+
+          return (
+            <span
+              key={index}
+              className={`h-2 w-2 rounded-full transition-colors duration-200 ${isActive || isAnswered
+                ? "bg-question-dot-active"
+                : "bg-question-dot-inactive"
+                }`}
+            />
+          );
+        })}
+      </div>
+
+      <div className="flex h-8 w-full items-center gap-4">
+        {question.breadcrumb.split(" > ").map((item, index) => (
+          <React.Fragment key={`${item}-${index}`}>
+            {index === 0 ? (
+              <span
+                className="flex h-8 items-center rounded-lg px-4 text-[14px] font-semibold leading-5
+                     bg-subject-bg text-subject-text"
+              >
+                {item}
+              </span>
+            ) : (
+              <>
+                <span className="h-[6px] w-[6px] rounded-full bg-muted" />
+
+                <span className="text-[14px] font-semibold leading-5 text-ink">
+                  {item}
+                </span>
+              </>
+            )}
+          </React.Fragment>
         ))}
       </div>
 
-      <p className="text-xs text-muted">{question.breadcrumb}</p>
-
       <h2 className="text-h2 text-ink">{question.text}</h2>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-2">
         {question.options.map((option, index) => {
           const optionLetter = String.fromCharCode(65 + index);
           const isSelected = selectedOption === index;
+
           return (
             <button
               key={option}
               type="button"
               onClick={() => handleSelect(index)}
               aria-pressed={isSelected}
-              className={`flex items-center gap-3 rounded-xl border p-4 text-left transition-colors ${
-                isSelected ? "border-brand bg-tint-strong" : "border-brand/10 bg-surface"
-              }`}
+              className={`flex min-h-[98px] w-full items-center rounded-xl border p-6 text-left transition-all duration-200 ${isSelected
+                ? "border-brand bg-tint-strong"
+                : "border-brand/20 bg-transparent"
+                }`}
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-tint text-sm font-bold text-ink">
-                {optionLetter}
+              {/* Option Letter */}
+              <div
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${isSelected
+                  ? "bg-brand text-background"
+                  : "bg-tint text-ink"
+                  }`}
+              >
+                <span className="text-[18px] font-bold leading-7">
+                  {optionLetter}
+                </span>
+              </div>
+
+              {/* Formula */}
+              <span
+                className="ml-6 text-[24px] font-medium italic leading-8 text-ink"
+                style={{ fontFamily: "Liberation Serif, serif" }}
+              >
+                {option}
               </span>
-              <span className="text-sm text-body-text">{option}</span>
             </button>
           );
         })}
       </div>
 
-      <div className="flex flex-col gap-3 rounded-2xl border border-brand/10 bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-4">
+      <div className="flex h-[120px] w-full items-center justify-between rounded-2xl border border-brand/10 bg-surface px-10 py-8">
+
+        <div className="flex items-center gap-12">
+
           <button
             type="button"
             onClick={handleToggleMark}
             aria-pressed={marked[currentIndex]}
-            className={`flex items-center gap-1 text-sm font-semibold ${
-              marked[currentIndex] ? "text-ink" : "text-muted"
-            }`}
+            className={`flex h-8 items-center gap-3 transition-colors ${marked[currentIndex] ? "text-ink" : "text-muted"
+              }`}
           >
-            <BookmarkIcon filled={marked[currentIndex]} />
-            Mark for review
+            <BookmarkIcon
+              filled={marked[currentIndex]}
+            />
+
+            <span className="text-[16px] font-bold leading-6">
+              Mark for review
+            </span>
           </button>
+
+          {/* Skip Question */}
           <button
             type="button"
             onClick={goToNext}
-            className="flex items-center gap-1 text-sm font-semibold text-muted"
+            className="flex h-8 items-center gap-3 text-muted transition-colors hover:text-ink"
           >
-            » Skip Question
+            <span className="text-xl font-semibold">»</span>
+
+            <span className="text-[16px] font-bold leading-6">
+              Skip Question
+            </span>
           </button>
         </div>
-        <Button variant="primary" size="sm" onClick={goToNext}>
+
+        {/* Submit */}
+        <button
+          type="button"
+          onClick={goToNext}
+          className="flex h-14 w-[200px] items-center justify-center rounded-xl bg-cta text-[18px] font-bold leading-7 text-white transition-opacity hover:opacity-90"
+        >
           Submit
-        </Button>
+        </button>
       </div>
     </div>
   );

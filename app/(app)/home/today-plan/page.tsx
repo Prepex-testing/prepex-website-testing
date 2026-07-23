@@ -7,32 +7,33 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { TimeBlockSection } from "@/components/home/TimeBlockSection";
 import { PlanTaskRow } from "@/components/home/PlanTaskRow";
 import type { PlanTask } from "@/components/home/PlanTaskRow";
 import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
+import { CheckIcon, ClockIcon, ListIcon, CalendarIcon } from "@/assets/icons";
 import {
   ArrowLeftIcon,
   BellIcon,
-  CheckIcon,
-  ClockIcon,
-  ListIcon,
-  CalendarIcon,
+  // CheckIcon,
+  // ClockIcon,
+  // ListIcon,
+  // CalendarIcon,
   CloudSunIcon,
   SunIcon,
   CloudMoonIcon,
   PlusIcon,
   RefreshIcon,
-  FlameIcon,
 } from "@/components/ui/icons";
 
 const STAT_TILES = [
-  { label: "Completed", value: "2h 15m", icon: <CheckIcon /> },
-  { label: "Remaining", value: "4h 15m", icon: <ClockIcon /> },
-  { label: "Tasks Done", value: "3 / 7", icon: <ListIcon /> },
-  { label: "Planned Study", value: "6h 30m", icon: <CalendarIcon /> },
+  { label: "Completed", value: "2h 15m", icon: <CheckIcon className="h-4 w-4" /> },
+  { label: "Remaining", value: "4h 15m", icon: <ClockIcon className="h-4 w-4" /> },
+  { label: "Tasks Done", value: "3 / 7", icon: <ListIcon className="h-4 w-4" /> },
+  { label: "Planned Study", value: "6h 30m", icon: <CalendarIcon className="h-4 w-4" /> },
 ];
 
 const MORNING_TASKS: PlanTask[] = [
@@ -110,6 +111,9 @@ export default function TodayPlanPage() {
   const [isPracticeModalOpen, setPracticeModalOpen] = useState(false);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
 
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -123,18 +127,18 @@ export default function TodayPlanPage() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-4">
-          <Link
-            href="/home/streak"
-            className="flex items-center gap-1.5 rounded-full border border-brand/15 bg-surface px-3 py-1.5 text-xs font-semibold text-cta hover:bg-tint-strong"
-          >
-            <FlameIcon />
-            14 Day Streak
-          </Link>
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className={`
+              flex h-11 w-11 items-center justify-center rounded-full
+              transition-colors
+              ${isDark
+                ? "bg-slate-800 text-white hover:bg-slate-700"
+                : "bg-white text-[#1B245A] hover:bg-tint-strong"
+              }
+            `}
           >
             <BellIcon />
           </button>
@@ -142,32 +146,57 @@ export default function TodayPlanPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-[280px_1fr]">
-        <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-brand/10 bg-surface p-5 text-center">
-          <CircularProgress percent={35} label="Overall" size={100} />
-          <p className="mt-1 text-sm font-bold text-ink">Daily Goal Progress</p>
-          <span className="flex items-center gap-1 rounded-full bg-success-bg px-2 py-0.5 text-[10px] font-semibold text-success">
-            <span className="h-1.5 w-1.5 rounded-full bg-success" />
-            On Track
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr]">
+        {/* Progress Card */}
+        <div className="flex min-h-[220px] flex-col items-center justify-center rounded-2xl border border-brand/10 bg-surface p-6 text-center shadow-[0px_1px_2px_0px_#1A1A4E0F]">
+          <CircularProgress
+            percent={35}
+            label="Overall"
+            size={110}
+            progressColor={isDark ? "#FAF7F2" : undefined}
+            progressGradient={
+              isDark ? undefined : { from: "#1A1A4E", to: "#4C1D95" }
+            }
+          />
+
+          <p className="mt-6 text-xl font-semibold text-ink">
+            Daily Goal Progress
+          </p>
+
+          <span className="mt-3 inline-flex items-center gap-1 rounded-full border border-[#DCFCE7] bg-white px-3 py-1 text-[10px] font-bold uppercase leading-[15px] text-[#16A34A] dark:border-[#166534] dark:bg-white dark:text-[#16A34A]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" />
+            ON TRACK
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        {/* Stats */}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           {STAT_TILES.map((tile) => (
-            <div key={tile.label} className="rounded-2xl border border-brand/10 bg-surface p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">
+            <div
+              key={tile.label}
+              className="flex min-h-[102px] flex-col justify-between rounded-2xl border border-brand/10 bg-surface p-6 shadow-[0px_1px_2px_0px_#1A1A4E0F]"
+            >
+              <div className="flex items-start justify-between">
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
                   {tile.label}
                 </p>
-                <span className="text-ink">{tile.icon}</span>
+
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-icon-chip-bg p-1.5 text-ink dark:bg-[#FAF7F2]/8">
+                  {tile.icon}
+                </span>
               </div>
-              <p className="mt-1 text-lg font-extrabold text-ink">{tile.value}</p>
+
+              <p className="mt-5 text-[32px] font-extrabold leading-none text-ink">
+                {tile.value}
+              </p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex flex-col gap-6 rounded-2xl border border-brand/10 bg-surface p-5">
+
+      <div className="flex flex-col gap-6">
         <TimeBlockSection icon={<CloudSunIcon />} title="Morning" meta="2 Tasks • 1h 45m">
           <div className="flex flex-col gap-3">
             {MORNING_TASKS.map((task) => (
@@ -175,7 +204,6 @@ export default function TodayPlanPage() {
             ))}
           </div>
         </TimeBlockSection>
-
         <TimeBlockSection icon={<SunIcon />} title="Afternoon" meta="1 Task • 1h 15m">
           <div className="flex flex-col gap-3">
             {AFTERNOON_TASKS.map((task) => (
@@ -183,7 +211,6 @@ export default function TodayPlanPage() {
             ))}
           </div>
         </TimeBlockSection>
-
         <TimeBlockSection icon={<CloudMoonIcon />} title="Evening" meta="2 Tasks • 2h 00m">
           <div className="flex flex-col gap-3">
             {EVENING_TASKS.map((task) => (
@@ -193,17 +220,32 @@ export default function TodayPlanPage() {
         </TimeBlockSection>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-        <Button variant="secondary" size="sm" onClick={() => setAddTaskOpen(true)}>
-          <PlusIcon />
-          Add Custom Task
-        </Button>
-        <Button variant="primary" size="sm" onClick={() => setRegenerateOpen(true)}>
-          <RefreshIcon />
-          Regenerate Today&apos;s Plan
-        </Button>
-      </div>
 
+      <div className="py-6">
+        <div className="grid grid-cols-1 gap-7 lg:grid-cols-[7fr_8fr]">
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setAddTaskOpen(true)}
+            className="h-[50px] w-full text-[14px] font-bold"
+          >
+            <PlusIcon />
+            Add Custom Task
+          </Button>
+
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setRegenerateOpen(true)}
+            className="h-[50px] w-full text-[14px] font-bold"
+          >
+            <RefreshIcon />
+            Regenerate Today&apos;s Plan
+          </Button>
+
+        </div>
+      </div>
       <RegeneratePlanModal
         open={isRegenerateOpen}
         onClose={() => setRegenerateOpen(false)}
