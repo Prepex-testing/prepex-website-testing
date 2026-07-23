@@ -7,19 +7,19 @@ import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   ArrowLeftIcon,
   BellIcon,
-  StarIcon,
-  FlameIcon,
-  ShieldIcon,
-  BoltIcon,
+  // StarIcon,
+  // FlameIcon,
+  // ShieldIcon,
+  // BoltIcon,
   ChevronDownIcon,
   CheckIcon,
   XIcon,
-  ClockIcon,
-  TargetIcon,
+  // ClockIcon,
+  // TargetIcon,
   CheckCircleIcon,
   RefreshIcon,
 } from "@/components/ui/icons";
-
+import { FlameIcon,ClockIcon,StarIcon,ShieldIcon,BoltIcon,QuickIcon} from "@/assets/icons";
 /**
  * Sizing / spacing / typography below is mapped 1:1 to the provided Figma spec.
  * Colors intentionally stay on the existing semantic design tokens
@@ -123,9 +123,9 @@ const CALENDAR_LEGEND = [
 
 const EFFORT_METRICS = [
   { icon: <ClockIcon />, label: "Study Time", value: 40, total: 60 },
-  { icon: <TargetIcon />, label: "Practice", value: 25, total: 30 },
+  { icon: <BoltIcon />, label: "Practice", value: 25, total: 30 },
   { icon: <CheckCircleIcon />, label: "Accuracy", value: 8, total: 10 },
-  { icon: <RefreshIcon />, label: "Revision", value: 5, total: 10 },
+  { icon: <QuickIcon />, label: "Revision", value: 5, total: 10 },
 ];
 
 export default function StreakPage() {

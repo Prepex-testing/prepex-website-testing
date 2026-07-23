@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeftIcon, FileIcon, ChartBarIcon, BookmarkIcon } from "@/components/ui/icons";
-
+import {TargetIcon,ComputerIcon} from "@/assets/icons";
 type Resource = {
   id: string;
   title: string;
@@ -99,7 +99,7 @@ export default function ResourceChapterPage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
-            <FileIcon />
+            <TargetIcon />
           </span>
 
           <div className="flex items-center gap-3">
@@ -126,7 +126,7 @@ export default function ResourceChapterPage() {
               {/* Left */}
               <div className="flex min-w-0 items-center gap-4">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
-                  <FileIcon />
+                  <TargetIcon />
                 </span>
 
                 <div className="min-w-0">
@@ -164,8 +164,8 @@ export default function ResourceChapterPage() {
       <div className="rounded-2xl border border-brand/10 bg-surface p-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
-            <ChartBarIcon />
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+            <ComputerIcon />
           </span>
 
           <div className="flex items-center gap-3">

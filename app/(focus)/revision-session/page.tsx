@@ -7,9 +7,10 @@ import {
   ClockIcon,
   CheckIcon,
   FileIcon,
-  PlayIcon,
+  // PlayIcon,
 } from "@/components/ui/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { TargetIcon, PlayIcon, Open } from "@/assets/icons";
 
 const QUESTIONS = [
   "What is Newton's First Law of Motion?",
@@ -20,8 +21,8 @@ const QUESTIONS = [
 ];
 
 const REFERENCES = [
-  { label: "NCERT Chapter", meta: "Chapter 5", icon: <FileIcon /> },
-  { label: "Teacher Notes", meta: "Handwritten Notes", icon: <FileIcon /> },
+  { label: "NCERT Chapter", meta: "Chapter 5", icon: <TargetIcon /> },
+  { label: "Teacher Notes", meta: "Handwritten Notes", icon: <TargetIcon /> },
   { label: "Lecture Slides", meta: "PDF • 24 Slides", icon: <PlayIcon /> },
 ];
 
@@ -99,17 +100,15 @@ export default function RevisionSessionPage() {
             />
           ))}
         </div>
-        <div className="flex items-center gap-4 rounded-2xl border border-brand/10 bg-surface px-5 py-4 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
-          <span
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
-          >
+        <div className="flex items-center gap-4 rounded-2xl border border-brand/10 bg-surface px-5 py-4 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] dark:bg-ink">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#EEF0F8] text-[#1A1A4E] dark:bg-transparent dark:text-[#111145]">
             <ClockIcon />
           </span>
           <div className="flex flex-col items-start">
-            <span className="text-[32px] font-bold leading-[38px] text-ink">
+            <span className="text-[32px] font-bold leading-[38px] text-ink dark:text-[#111145]">
               {formatTime(seconds)}
             </span>
-            <span className="text-[10px] font-semibold uppercase leading-5 tracking-wide text-muted">
+            <span className="text-[10px] font-semibold uppercase leading-5 tracking-wide text-muted dark:text-[#111145]/70">
               Focus Time
             </span>
           </div>
@@ -185,7 +184,7 @@ export default function RevisionSessionPage() {
             >
               {/* Top Row */}
               <div className="flex items-center gap-4">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg  bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
                   {ref.icon}
                 </span>
 
@@ -200,12 +199,14 @@ export default function RevisionSessionPage() {
               </div>
 
               {/* Button */}
+
               <button
                 type="button"
-                className={`mt-4 flex h-[38px] w-full items-center justify-center rounded-lg border text-sm font-semibold text-ink transition-colors hover:bg-tint-strong ${isDark ? "border-white" : "border-brand/15"
+                className={`mt-4 flex h-[38px] w-full items-center justify-center gap-2 rounded-lg border text-sm font-semibold text-ink transition-colors hover:bg-tint-strong ${isDark ? "border-white" : "border-brand/15"
                   }`}
               >
-                Open ↗
+                <span>Open</span>
+                <Open className="h-4 w-4" />
               </button>
             </div>
           ))}

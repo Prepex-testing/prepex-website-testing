@@ -9,12 +9,12 @@ import {
   AlertTriangleIcon,
   CheckCircleIcon,
   CheckIcon,
-  CalendarIcon,
+  // CalendarIcon,
   RefreshIcon,
   ExternalLinkIcon,
   CircleXIcon,
 } from "@/components/ui/icons";
-
+import {CalendarIcon,Open,TargetIcon} from "@/assets/icons";
 const OPTIONS = [
   { key: "A", value: "2√11" },
   { key: "B", value: "3√5" },
@@ -81,7 +81,7 @@ export default function MistakeNotebookEntryPage() {
         {/* Header row */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="flex items-center gap-2 text-[18px] font-bold leading-7 text-ink">
-            <BookIcon />
+            <TargetIcon />
             Original Question
           </p>
           <Link
@@ -89,7 +89,7 @@ export default function MistakeNotebookEntryPage() {
             className="inline-flex h-[30px] items-center justify-center gap-1.5 rounded-lg border border-brand px-3 text-[12px] font-semibold leading-4 text-ink transition-colors hover:bg-tint"
           >
             View in Practice
-            <ExternalLinkIcon />
+            <Open />
           </Link>
         </div>
 

@@ -19,5 +19,43 @@ export { default as ChartBarIcons } from "./ChartBarIcons.svg";
 export { default as TrophyIcons } from "./TrophyIcons.svg";
 export { default as TrendingUpIcon } from "./TrendingUpIcon.svg";
 export { default as UploadIcon } from "./UploadIcon.svg";
+export { default as SparkleIcon } from "./SparkleIcon.svg";
+export { default as Container } from "./Container.svg";
+export { default as ArrowLeftIcon } from "./ArrowLeftIcon.svg";
+export { default as PlayIcon } from "./PlayIcon.svg";
+export { default as Open } from "./Open.svg";
+export { default as Check } from "./Check.svg";
+export { default as RightIcon } from "./RightIcon.svg";
+export { default as FileIcon } from "./FileIcon.svg";
+export { default as AlertTriangleIcon } from "./AlertTriangleIcon.svg";
+export { default as VectorIcon } from "./VectorIcon.svg";
+export { default as NoteIcon } from "./NoteIcon.svg";
+export { default as LoderIcon } from "./LoderIcon.svg";
+export { default as LineIcon } from "./LineIcon.svg";
+export { default as Clock } from "./Clock.svg";
+export { default as BoltIcon } from "./BoltIcon.svg";
+export { default as CrossIcon } from "./CrossIcon.svg";
+export { default as BoxIcon } from "./BoxIcon.svg";
+export { default as MenuIcon } from "./MenuIcon.svg";
+export { default as ChemistryIcon } from "./ChemistryIcon.svg";
+export { default as MathIcon } from "./MathIcon.svg";
+export { default as PhysicsIcon } from "./PhysicsIcon.svg";
+export { default as LabIcon } from "./LabIcon.svg";
+export { default as EditIcon } from "./EditIcon.svg";
+export { default as Containers } from "./Containers.svg";
+export { default as ComputerIcon } from "./ComputerIcon.svg";
+export { default as StarIcon } from "./StarIcon.svg";
+export { default as ShieldIcon } from "./ShieldIcon.svg";
+export { default as EncourageIcon } from "./EncourageIcon.svg";
+export { default as GoalIcon } from "./GoalIcon.svg";
+export { default as CheckInIcon } from "./CheckIcon.svg";
+export { default as CelebrateIcon } from "./CelebrateIcon.svg";
+export { default as PushIcon } from "./PushIcon.svg";
+export { default as LeftIconcon } from "./LeftIconcon.svg";
+export { default as Location } from "./Location.svg";
+export { default as CheckIcons } from "./CheckIcons.svg";
+
+
+
 
 

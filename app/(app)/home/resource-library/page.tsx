@@ -7,28 +7,28 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import {
   BellIcon,
   SearchIcon,
-  PlayIcon,
-  FileIcon,
+  // PlayIcon,
+  // FileIcon,
   StarIcon,
   BookIcon,
   ChevronDownIcon,
   ArrowRightIcon,
   BookmarkIcon,
 } from "@/components/ui/icons";
-
+import {Containers,TargetIcon} from "@/assets/icons";
 const BROWSE_FILTERS = ["Subject", "Chapter", "Type"];
 
 const FEATURED = [
   {
     id: "newtons-laws-foundation",
-    icon: <PlayIcon />,
+    icon: <Containers />,
     title: "Newton's Laws Foundation",
     meta: "PW · 28 min",
     rating: "4.8 · 247 reviews",
   },
   {
     id: "coord-geo-cengage",
-    icon: <FileIcon />,
+    icon: <TargetIcon />,
     title: "Coordinate Geometry - Cengage Ch24",
     meta: "PDF · 45 pages",
   },
@@ -129,7 +129,7 @@ export default function ResourceLibraryPage() {
             >
               {/* Left */}
               <div className="flex min-w-0 flex-1 items-start gap-4">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
                   {item.icon}
                 </span>
 

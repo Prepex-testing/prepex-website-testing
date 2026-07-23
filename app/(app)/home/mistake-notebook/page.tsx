@@ -8,14 +8,14 @@ import { Chip } from "@/components/ui/Chip";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   BellIcon,
-  FileIcon,
-  AlertTriangleIcon,
-  CalendarIcon,
   ChevronDownIcon,
   MoreIcon,
-  ClockIcon,
+  // FileIcon,
+  AlertTriangleIcon,
+  // CalendarIcon,
+  // ClockIcon,
 } from "@/components/ui/icons";
-
+import {ClockIcon,CalendarIcon,FileIcon} from "@/assets/icons";
 const SUBJECT_FILTERS = ["All", "Physics", "Chemistry", "Maths"];
 const TYPE_FILTERS = ["All", "Silly", "Concept", "Time", "Guess"];
 
@@ -165,7 +165,7 @@ export default function MistakeNotebookPage() {
       </div>
 
       <div className="flex items-center gap-6 rounded-2xl border border-brand/10 bg-surface p-6 min-h-[112px] w-full">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-brand/10 bg-surface shadow-sm">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-ink bg-icon-chip-bg text-ink shadow-sm dark:bg-[#FAF7F2]/8 [&>svg]:h-6 [&>svg]:w-auto">
           <FileIcon />
         </div>
 
@@ -283,7 +283,7 @@ export default function MistakeNotebookPage() {
       </div>
 
       <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide">
           <CalendarIcon />
           Upcoming <span className="font-normal">(35)</span>
         </p>

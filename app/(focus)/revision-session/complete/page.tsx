@@ -4,22 +4,22 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeftIcon,
-  CalendarIcon,
+  // CalendarIcon,
   CheckIcon,
-  ClockIcon,
-  TargetIcon,
-  TrendingUpIcon,
+  // ClockIcon,
+  // TargetIcon,
+  // TrendingUpIcon,
   ChevronDownIcon,
 } from "@/components/ui/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
-
+import { TargetIcon, TrendingUpIcon,CalendarIcon,ClockIcon,LayersIcon} from "@/assets/icons";
 type Difficulty = "Low" | "Medium" | "High";
 
 const DIFFICULTIES: Difficulty[] = ["Low", "Medium", "High"];
 
 const STATS = [
   { icon: <ClockIcon />, value: "24:53", label: "Focus time" },
-  { icon: <TargetIcon />, value: "5 / 5", label: "Recall prompts" },
+  { icon: <LayersIcon />, value: "5 / 5", label: "Recall prompts" },
   { icon: <TrendingUpIcon />, value: "Good", label: "Performance" },
 ];
 
@@ -76,7 +76,7 @@ export default function RevisionCompletePage() {
               key={stat.label}
               className="flex flex-col items-center rounded-2xl border border-brand/10  p-4 text-center first:col-span-2 sm:p-6 sm:first:col-span-1 lg:h-[194px] lg:justify-center lg:p-8"
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-tint text-ink sm:h-10 sm:w-10">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8 sm:h-10 sm:w-10">
                 {stat.icon}
               </span>
 
@@ -166,7 +166,7 @@ export default function RevisionCompletePage() {
             className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-4 text-left transition-colors hover:bg-tint-strong sm:px-6 sm:py-6 ${isDark ? "bg-transparent" : "bg-tint"}`}
           >
             <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface text-ink shadow-sm sm:h-12 sm:w-12">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink shadow-sm dark:bg-[#FAF7F2]/8 sm:h-12 sm:w-12">
                 <CalendarIcon />
               </span>
 

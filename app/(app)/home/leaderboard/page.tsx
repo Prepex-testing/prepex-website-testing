@@ -6,15 +6,15 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   BellIcon,
-  ClockIcon,
+  // ClockIcon,
   FlameIcon,
-  TrendingUpIcon,
-  ChartBarIcon,
-  TrophyIcon,
+  // TrendingUpIcon,
+  // ChartBarIcon,
+  // TrophyIcon,
   ChevronDownIcon,
   ArrowLeftIcon,
 } from "@/components/ui/icons";
-
+import { ClockIcon,TrophyIcons,UserIcon,TrendingUpIcon} from "@/assets/icons";
 const MEDALS: Record<number, string> = {
   1: "🥇",
   2: "🥈",
@@ -170,13 +170,17 @@ export default function LeaderboardPage() {
                 {LEADERBOARD.map((entry) => (
                   <tr key={entry.rank} className="border-b border-brand/5 last:border-0">
                     <td className="py-4 pl-4 sm:pl-6">
-                      {MEDALS[entry.rank] ? (
-                        <span className="text-3xl leading-none">{MEDALS[entry.rank]}</span>
-                      ) : (
-                        <span className="text-sm font-semibold text-muted">
-                          {entry.rank}
-                        </span>
-                      )}
+                      <div className="flex h-8 w-8 items-center justify-center">
+                        {MEDALS[entry.rank] ? (
+                          <span className="text-3xl leading-none">
+                            {MEDALS[entry.rank]}
+                          </span>
+                        ) : (
+                          <span className="text-sm font-semibold leading-none text-muted">
+                            {entry.rank}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-4 pl-8">
                       <div className="flex items-center gap-3">
@@ -355,7 +359,7 @@ export default function LeaderboardPage() {
             <span
               className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
             >
-              <ChartBarIcon />
+              <UserIcon />
             </span>
             <div>
               <p className="text-2xl font-bold leading-8 text-ink">95.42</p>
@@ -374,7 +378,7 @@ export default function LeaderboardPage() {
             <span
               className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-warning ${isDark ? "bg-white" : "bg-warning-bg"}`}
             >
-              <TrophyIcon />
+              <TrophyIcons />
             </span>
             <div>
               <p className="text-[20px] font-bold leading-8 text-ink">Gold</p>

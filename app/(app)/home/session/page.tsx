@@ -18,7 +18,7 @@ import {
   PauseIcon,
   PlayIcon,
 } from "@/components/ui/icons";
-
+import { LeftIconcon } from "@/assets/icons";
 const TARGET_SECONDS = 60 * 60;
 const INITIAL_ELAPSED = 24 * 60 + 53;
 
@@ -91,7 +91,7 @@ export default function FocusSessionPage() {
             Scaled down below sm: so it doesn't overwhelm a phone screen. */}
         <div className="mx-auto flex max-w-[984px] flex-col items-center gap-2 text-center">
           <p className="flex items-center justify-center gap-2 text-lg font-semibold uppercase tracking-[1.5px] text-body-text sm:text-2xl sm:leading-[31.2px] sm:tracking-[2.4px]">
-            <ClockIcon  />
+            <ClockIcon />
             Focus Session
           </p>
 
@@ -125,13 +125,12 @@ export default function FocusSessionPage() {
             {checklist.map((task) => (
               <span
                 key={task.id}
-                className={`h-4 w-4 rounded-full ${
-                  task.done
+                className={`h-4 w-4 rounded-full ${task.done
                     ? "bg-[#10B981] shadow-[0_0_8.6px_0_#FD786358]"
                     : isDark
                       ? "bg-white/20"
                       : "bg-brand/10"
-                }`}
+                  }`}
               />
             ))}
           </div>
@@ -157,27 +156,24 @@ export default function FocusSessionPage() {
               type="button"
               onClick={() => toggleTask(task.id)}
               aria-pressed={task.done}
-              className={`flex items-center gap-4 rounded-xl border p-4 text-left transition-opacity ${
-                task.done ? "opacity-70" : "opacity-100"
-              } ${isDark ? "border-white/10 bg-tint" : "border-[#C7C5D1]/30 bg-white"}`}
+              className={`flex items-center gap-4 rounded-xl border p-4 text-left transition-opacity ${task.done ? "opacity-70" : "opacity-100"
+                } ${isDark ? "border-white/10 bg-tint" : "border-[#C7C5D1]/30 bg-white"}`}
             >
               <span
-                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-[4px] ${
-                  task.done
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-[4px] ${task.done
                     ? isDark
                       ? "border border-white bg-white text-[#10B981]"
                       : "bg-[#E7F9F3] text-[#10B981]"
                     : isDark
                       ? "border border-white bg-white"
                       : "border border-[#C7C5D1]"
-                }`}
+                  }`}
               >
-                {task.done && <CheckIcon  />}
+                {task.done && <CheckIcon />}
               </span>
               <span
-                className={`text-sm font-medium leading-[21px] text-body-text ${
-                  task.done ? "line-through" : ""
-                }`}
+                className={`text-sm font-medium leading-[21px] text-body-text ${task.done ? "line-through" : ""
+                  }`}
               >
                 {task.label}
               </span>
@@ -209,7 +205,8 @@ export default function FocusSessionPage() {
             onClick={() => setCrossAppOpen(true)}
             className="flex items-center justify-center gap-2 border-b border-tint-strong pb-6 text-center text-base font-bold text-ink sm:text-lg"
           >
-            Start Cross App Session →
+            <span>Start Cross App Session</span>
+            <LeftIconcon className="h-4 w-4 shrink-0" />
           </button>
 
           <div className="text-right">

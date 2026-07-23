@@ -12,51 +12,47 @@ import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   ArrowLeftIcon,
   BellIcon,
-  FlameIcon,
+  // FlameIcon,
   CheckCircleIcon,
-  CalendarIcon,
-  ClockIcon,
-  StarIcon,
+  // CalendarIcon,
+  // ClockIcon,
+  // StarIcon,
   TargetIcon,
   AlertTriangleIcon,
   RadarIcon,
   TrophyIcon,
-  FireIcon,
+  // FireIcon,
 } from "@/components/ui/icons";
-
+import {FlameIcon, ClockIcon, EncourageIcon, GoalIcon,Location ,CheckIcons,CalendarIcon,CheckInIcon,CelebrateIcon,PushIcon} from "@/assets/icons";
 const STAT_CARDS = [
   {
     value: "27",
     label: "Day Streak",
-    icon: <FireIcon />,
-    iconBg: "bg-[#FFF7ED]",
+    icon: <FlameIcon />,
   },
   {
     value: "78%",
     label: "Completion",
-    icon: <CheckCircleIcon />,
-    iconBg: "bg-[#EEF2FF]",
+    icon: <CheckIcons />,
   },
   {
     value: "6/7",
     label: "Days Active",
     icon: <CalendarIcon />,
-    iconBg: "bg-[#EEF2FF]",
   },
   {
     value: "30",
     label: "Days left",
     icon: <ClockIcon />,
-    iconBg: "bg-[#EEF2FF]",
   },
 ];
 
 const SIGNAL_TYPES = [
-  { id: "encourage", label: "Encourage", icon: <StarIcon /> },
-  { id: "goal-share", label: "Goal Share", icon: <TargetIcon /> },
-  { id: "push-back", label: "Push Back", icon: <AlertTriangleIcon /> },
+  { id: "encourage", label: "Encourage", icon: <EncourageIcon /> },
+  { id: "goal-share", label: "Goal Share", icon: <GoalIcon /> },
+  { id: "push-back", label: "Push Back", icon: <PushIcon /> },
   { id: "check-in", label: "Check-In", icon: <RadarIcon /> },
-  { id: "celebrate", label: "Celebrate", icon: <TrophyIcon /> },
+  { id: "celebrate", label: "Celebrate", icon: <CelebrateIcon /> },
 ];
 
 const SIGNAL_TYPE_ICONS: Record<string, React.ReactNode> = Object.fromEntries(
@@ -172,8 +168,12 @@ export default function PartnerPage() {
                   Priya is active today
                 </p>
 
-                <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted">
-                  <span>📍 Maharashtra</span>
+                <p className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted">
+                  <span className="flex items-center gap-1">
+                    <Location className="h-4 w-4 shrink-0" />
+                    Maharashtra
+                  </span>
+
                   <span>JEE Main + Advanced 2027</span>
                 </p>
               </div>
@@ -188,9 +188,7 @@ export default function PartnerPage() {
                 className="flex items-center gap-4 rounded-2xl border border-brand/10 bg-surface p-6 shadow-sm transition-colors"
               >
                 {/* Icon */}
-                <div
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${isDark ? "bg-tint text-ink" : stat.iconBg}`}
-                >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
                   {stat.icon}
                 </div>
 
@@ -306,9 +304,6 @@ export default function PartnerPage() {
           {/* Header */}
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-lg font-bold text-ink">Recent Signals</h2>
-            <button type="button" className="text-sm font-semibold text-ink">
-              View all
-            </button>
           </div>
 
           {/* Signals */}
@@ -356,9 +351,8 @@ export default function PartnerPage() {
                 className="flex flex-col items-center gap-2"
               >
                 <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl border bg-tint text-ink transition-colors sm:h-14 sm:w-14 ${
-                    signalType === type.id ? "border-brand/20" : "border-brand/10"
-                  } ${isDark ? "hover:bg-white hover:text-[#1A1A4E]" : "hover:bg-tint-strong"}`}
+                  className={`flex h-11 w-11 items-center justify-center rounded-xl border bg-tint text-ink transition-colors sm:h-14 sm:w-14 ${signalType === type.id ? "border-brand/20" : "border-brand/10"
+                    } ${isDark ? "hover:bg-white hover:text-[#1A1A4E]" : "hover:bg-tint-strong"}`}
                 >
                   {type.icon}
                 </div>
@@ -376,9 +370,8 @@ export default function PartnerPage() {
             {MESSAGES.map((option) => (
               <label
                 key={option}
-                className={`flex cursor-pointer items-center rounded-xl border px-4 py-4 ${
-                  message === option ? "border-brand" : "border-brand/10"
-                }`}
+                className={`flex cursor-pointer items-center rounded-xl border px-4 py-4 ${message === option ? "border-brand" : "border-brand/10"
+                  }`}
               >
                 <input
                   type="radio"
@@ -402,9 +395,8 @@ export default function PartnerPage() {
                 key={emoji}
                 type="button"
                 onClick={() => setReaction((r) => (r === emoji ? null : emoji))}
-                className={`flex h-12 w-12 items-center justify-center rounded-lg border text-xl ${
-                  reaction === emoji ? "border-brand bg-tint" : "border-brand/10"
-                }`}
+                className={`flex h-12 w-12 items-center justify-center rounded-lg border text-xl ${reaction === emoji ? "border-brand bg-tint" : "border-brand/10"
+                  }`}
               >
                 {emoji}
               </button>

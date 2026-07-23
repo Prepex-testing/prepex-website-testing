@@ -1138,6 +1138,32 @@ export function ClockIcon() {
   );
 }
 
+export function Clock(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 18 18"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <circle
+        cx="9"
+        cy="9"
+        r="6.5"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
+      <path
+        d="M9 5.5V9L11.8 10.8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function CheckInIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">

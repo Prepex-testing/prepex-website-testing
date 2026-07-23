@@ -7,19 +7,20 @@ import { useTheme } from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { PercentileGauge } from "@/components/ui/PercentileGauge";
+import { CalendarIcon, ClockIcon, TrendingUpIcon, TargetIcon, SparkleIcon } from "@/assets/icons";
 import {
   ArrowLeftIcon,
   BellIcon,
   FileIcon,
   DownloadIcon,
-  SparkleIcon,
+  // SparkleIcon,
   BookIcon,
   AlertTriangleIcon,
-  ClockIcon,
+  // ClockIcon,
   HelpCircleIcon,
   SwapVerticalIcon,
-  CalendarIcon,
-  TrendingUpIcon,
+  // CalendarIcon,
+  // TrendingUpIcon,
 } from "@/components/ui/icons";
 import type { ReactNode } from "react";
 
@@ -142,10 +143,17 @@ export default function ViewAnalyticsPage() {
         {/* Left Section */}
         <div className="flex items-center gap-5">
           <div
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-tint"
-            style={isDark ? { backgroundColor: "var(--ink)" } : undefined}
+            className="
+    flex h-12 w-12 shrink-0 items-center justify-center
+    rounded-xl
+    bg-[#EEF0F8]
+    dark:bg-[#FAF7F2]/8
+    dark:border-[#FAF7F2]
+    text-ink
+    [&>svg]:h-6 [&>svg]:w-6
+  "
           >
-            <FileIcon />
+            <TargetIcon />
           </div>
 
           <div>
@@ -214,9 +222,8 @@ export default function ViewAnalyticsPage() {
 
           {/* Improvement */}
           <div
-            className={`mt-6 flex w-full items-center gap-4 rounded-[16px] px-5 py-3 ${
-              isDark ? "" : "bg-success-bg"
-            }`}
+            className={`mt-6 flex w-full items-center gap-4 rounded-[16px] px-5 py-3 ${isDark ? "" : "bg-success-bg"
+              }`}
           >
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-success/20">
               <span className="text-success [&>svg]:h-6 [&>svg]:w-6">
@@ -270,7 +277,7 @@ export default function ViewAnalyticsPage() {
 
       {/* AI insight */}
       <div className="flex items-start gap-4 rounded-2xl border border-brand/20 bg-surface p-6">
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint text-brand [&>svg]:h-6 [&>svg]:w-6">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-icon-chip-bg text-ink [&>svg]:h-6 [&>svg]:w-6 dark:bg-[#FAF7F2]/8">
           <SparkleIcon />
         </span>
         <div>
@@ -361,9 +368,8 @@ export default function ViewAnalyticsPage() {
           </div>
 
           <div
-            className={`rounded-2xl p-6 text-sm leading-5 text-body-text ${
-              isDark ? "bg-tint-strong" : "border border-warning bg-warning-bg"
-            }`}
+            className={`rounded-2xl p-6 text-sm leading-5 text-body-text ${isDark ? "bg-tint-strong" : "border border-warning bg-warning-bg"
+              }`}
           >
             <strong className="font-bold">
               Biggest score leak: Conceptual Gaps. Focus on these areas to recover
@@ -469,7 +475,7 @@ export default function ViewAnalyticsPage() {
         </Button>
       </div>
 
-      <div className="rounded-sm bg-tint-strong/30 py-3 text-center text-[16px] font-semibold leading-none text-ink">
+      <div className="rounded-sm bg-[#1A1A4E] py-3 text-center text-[16px] font-semibold leading-none text-white">
         Mock scores never visible to partner.
       </div>
     </div>

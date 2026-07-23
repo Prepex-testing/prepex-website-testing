@@ -6,26 +6,26 @@ import { Logo } from "@/components/ui/Logo";
 import {
   ArrowLeftIcon,
   BellIcon,
-  TrophyIcon,
-  FlameIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  BookIcon,
-  TrendingUpIcon,
+  // TrophyIcon,
+  // FlameIcon,
+  // CheckCircleIcon,
+  // ClockIcon,
+  // BookIcon,
+  // TrendingUpIcon,
   CopyIcon,
   PrinterIcon,
-  TrophyIcons,
+  // TrophyIcons,
 } from "@/components/ui/icons";
-
+import { FlameIcon,TargetIcon, TrendingUpIcon,CalendarIcon,ClockIcon,LayersIcon,Check,TrophyIcons} from "@/assets/icons";
 const STAT_TILES = [
   { icon: <FlameIcon />, text: "14 day streak · new record" },
-  { icon: <CheckCircleIcon />, text: "27 tasks completed", caption: "Efficiency: 94%" },
+  { icon: <Check />, text: "27 tasks completed", caption: "Efficiency: 94%" },
   {
     icon: <ClockIcon />,
     text: "19.5 hours focused study",
     caption: "Deep work peak: 4-7 PM",
   },
-  { icon: <BookIcon />, text: "Topics: Kinematics, Alcohols", caption: "Mastery level: High" },
+  { icon: <Check />, text: "Topics: Kinematics, Alcohols", caption: "Mastery level: High" },
 ];
 
 export default function WeeklyWinJournalPage() {
@@ -92,7 +92,7 @@ export default function WeeklyWinJournalPage() {
                 key={tile.text}
                 className="flex items-start gap-3 rounded-xl border border-[#FAF7F214] bg-white/[0.03] p-5"
               >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#13133D] p-3 text-[#FAF7F2]">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#13133D] p-3 text-[#FAF7F2] [&>svg]:h-[18.75px] [&>svg]:w-auto">
                   {tile.icon}
                 </span>
                 <div>

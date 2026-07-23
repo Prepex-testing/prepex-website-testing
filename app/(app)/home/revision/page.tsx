@@ -8,10 +8,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { AddRevisionTaskModal } from "@/components/home/AddRevisionTaskModal";
+import {Container} from "@/assets/icons";
 import {
   ArrowLeftIcon,
   BellIcon,
-  RefreshIcon,
   ClockIcon,
   CheckCircleIcon,
   ChevronDownIcon,
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/icons";
 
 const STAT_CARDS = [
-  { label: "Due Today", value: "5", icon: <CalendarIcon /> },
+  { label: "Due Today", value: "5", icon: <Container /> },
   { label: "Upcoming", value: "23", icon: <ClockIcon /> },
   { label: "Mastered", value: "47", icon: <CheckCircleIcon /> },
 ];
@@ -112,7 +112,7 @@ export default function RevisionPage() {
           >
             {/* Icon */}
             <div
-              className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-tint [&>svg]:h-6 [&>svg]:w-6 ${isDark ? "text-white" : "text-brand"}`}
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink [&>svg]:h-6 [&>svg]:w-6 dark:bg-[#FAF7F2]/8"
             >
               {card.icon}
             </div>
@@ -182,13 +182,6 @@ export default function RevisionPage() {
           >
             Due Today <span className="font-medium">• 5 Topics</span>
           </p>
-
-          <button
-            type="button"
-            className="text-[12px] font-medium text-muted transition-colors hover:text-ink"
-          >
-            View all →
-          </button>
         </div>
 
         {/* Topic List */}

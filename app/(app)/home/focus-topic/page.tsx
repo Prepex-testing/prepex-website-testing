@@ -10,16 +10,16 @@ import {
   ArrowLeftIcon,
   BellIcon,
   ListIcon,
-  FileIcon,
-  TargetIcon,
-  AlertTriangleIcon,
-  ClockIcon,
   CheckCircleIcon,
-  PlayIcon,
-  PencilIcon,
-  RefreshIcon,
+  // FileIcon,
+  TargetIcon,
+  // AlertTriangleIcon,
+  // ClockIcon,
+  // PlayIcon,
+  // PencilIcon,
+  // RefreshIcon,
 } from "@/components/ui/icons";
-
+import {ClockIcon,FileIcon,LayersIcon,AlertTriangleIcon,PlayIcon,NoteIcon,LoderIcon} from "@/assets/icons";
 type SignalLevel = "high" | "medium";
 
 // HIGH -> navy/lavender pill (matches "Coordinate Geometry" tag treatment in both screenshots)
@@ -43,7 +43,7 @@ const SIGNALS: {
       description: "0/3 correct in last mock",
     },
     {
-      icon: <TargetIcon />,
+      icon: <LayersIcon />,
       title: "Practice accuracy",
       signal: "high",
       description: "38% across 13 attempts",
@@ -65,8 +65,8 @@ const SIGNALS: {
 
 const FOCUS_ACTIONS = [
   { icon: <PlayIcon />, text: "Watch foundation lecture (Library)" },
-  { icon: <PencilIcon />, text: "Practice 10 questions targeted" },
-  { icon: <RefreshIcon />, text: "Add to revision rotation" },
+  { icon: <NoteIcon />, text: "Practice 10 questions targeted" },
+  { icon: <LoderIcon />, text: "Add to revision rotation" },
 ];
 
 export default function FocusTopicPage() {
@@ -146,7 +146,7 @@ export default function FocusTopicPage() {
             <div className="flex flex-col divide-y divide-brand/10">
               {SIGNALS.map((signal) => (
                 <div key={signal.title} className="flex items-start gap-3 py-3 first:pt-0">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tint text-ink">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
                     {signal.icon}
                   </span>
                   <div className="flex flex-col gap-0.5">
@@ -181,7 +181,7 @@ export default function FocusTopicPage() {
             <div className="flex flex-col gap-4">
               {FOCUS_ACTIONS.map((action) => (
                 <div key={action.text} className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tint text-ink">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
                     {action.icon}
                   </span>
                   <p className="text-[14px] font-semibold leading-5 text-ink">

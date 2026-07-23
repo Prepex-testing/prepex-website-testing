@@ -210,32 +210,41 @@ export default function MockAnalysisPage() {
       </section>
 
       <section className="overflow-hidden rounded-[24px] border border-brand/10 bg-surface shadow-sm dark:shadow-[0_1px_4px_rgba(0,0,0,0.16)]">
-        <div className="border-b border-brand/10 px-4 py-5 sm:px-6 lg:px-8">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-brand/10 px-4 py-5 sm:px-6 lg:px-8">
           <h2 className="text-[18px] font-extrabold leading-7 text-ink">
             Recent Mocks
           </h2>
+          <button
+            type="button"
+            className="flex items-center gap-2 text-body-lg font-semibold leading-6 text-ink"
+          >
+            View All
+            <span className="[&>svg]:h-4 [&>svg]:w-4">
+              <ChevronRightIcon />
+            </span>
+          </button>
         </div>
 
         <div className="hidden overflow-x-auto px-4 py-4 md:block sm:px-6 lg:px-8">
           <table className="w-full min-w-[720px] border-collapse">
             <thead>
-              <tr className="border-b border-brand/10">
-                <th className="py-4 pl-2 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted sm:pl-4 lg:pl-6">
+              <tr className="border-b border-brand/10 dark:bg-tint">
+                <th className="py-4 pl-2 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white sm:pl-4 lg:pl-6">
                   Mock Test
                 </th>
-                <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted">
+                <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
                   Date
                 </th>
-                <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted">
+                <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
                   Score
                 </th>
-                <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted">
+                <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
                   Accuracy
                 </th>
-                <th className="py-4 text-center text-caption font-bold uppercase tracking-[0.6px] text-muted">
+                <th className="py-4 text-center text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
                   Action
                 </th>
-                <th className="w-10"></th>
+                <th className="w-10 dark:bg-tint"></th>
               </tr>
             </thead>
 
