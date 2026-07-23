@@ -54,7 +54,6 @@ export { default as PushIcon } from "./PushIcon.svg";
 export { default as LeftIconcon } from "./LeftIconcon.svg";
 export { default as Location } from "./Location.svg";
 export { default as CheckIcons } from "./CheckIcons.svg";
-
 export { default as RadarIcons } from "./RadarIcons.svg";
 export { default as BriefcaseIcons } from "./BriefcaseIcons.svg";
 export { default as CuteIcon } from "./CuteIcon.svg";
@@ -66,6 +65,25 @@ export { default as GraduationCapIcon } from "./GraduationCapIcon.svg";
 export { default as StarIcons } from "./StarIcons.svg";
 export { default as CloudSunIcon } from "./CloudSunIcon.svg";
 export { default as SunIcon } from "./SunIcon.svg";
+export { default as MinusIcon } from "./MinusIcon.svg";
+export { default as PinIcon } from "./PinIcon.svg";
+export { default as ConceptualIcon } from "./ConceptualIcon.svg";
+export { default as TimeIcon } from "./TimeIcon.svg";
+export { default as DiceIcon } from "./DiceIcon.svg";
+export { default as UserIcons } from "./UserIcons.svg";
+export { default as EmailIcon } from "./EmailIcon.svg";
+export { default as LockIcon } from "./LockIcon.svg";
+export { default as LinkIcon } from "./LinkIcon.svg";
+export { default as TrashIcon } from "./TrashIcon.svg";
+export { default as HelpCircleIcon } from "./HelpCircleIcon.svg";
+export { default as WhatsApp } from "./WhatsApp.svg";
+export { default as MessageIcon } from "./MessageIcon.svg";
+export { default as BellIcon } from "./BellIcon.svg";
+export { default as EditIcons } from "./EditIcons.svg";
+export { default as Patners } from "./Patners.svg";
+export { default as Coaching } from "./Coaching.svg";
+export { default as CalendarIcons } from "./CalendarIcons.svg";
+export { default as Chart} from "./Chart.svg";
 
 
 

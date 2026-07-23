@@ -9,9 +9,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { FlameIcon } from "@/assets/icons";
 import {
   BellIcon,
-  FlameIcon,
+  // FlameIcon,
   CheckCircleIcon,
   StarIcon,
   ChevronDownIcon,
@@ -27,20 +28,21 @@ import {
   NoStudyIcon,
   CheckInIcon,
   ChartBarIcon,
+  ArrowLeftIcon,
 } from "@/components/ui/icons";
 
 const FILTERS = [
   {
-    label: "All",
-    icon: null,
-  },
-  {
     label: "Complete",
-    icon: <CompleteIcon />,
+    icon: <CompleteIcon className="w-4 h-4 md:w-[18px] md:h-[18px] text-success" />,
   },
   {
     label: "Mock",
-    icon: <MockIcon />,
+    icon: (
+      <StarIcon
+        className="w-4 h-4 text-[#4C1D95] dark:text-white md:w-[12px] md:h-[12px] lg:w-5 lg:h-5"
+      />
+    ),
   },
   {
     label: "Recovery",
@@ -59,16 +61,14 @@ const FILTERS = [
 type DayType = "complete" | "mock" | "recovery" | "journal" | "no-study" | "analysis";
 
 const DAY_TYPE_ICON: Record<DayType, ReactNode> = {
-  complete: <CheckIcon />,
-  mock: <StarIcon />,
+  complete: <CompleteIcon className="w-4 h-4 md:w-[18px] md:h-[18px] text-success" />,
+  mock: <StarIcon className="w-4 h-4 md:w-[12px] md:h-[12px] lg:w-5 lg:h-5" />,
   recovery: <RefreshIcon />,
-  journal: <BookIcon />,
+  journal: <JournalIcon />,
   "no-study": <MinusIcon />,
   analysis: <ChartBarIcon />,
 };
 
-// Visual treatment per day type — soft pastel tints matching the Figma cell states
-// (lighter fills than a solid color block; icon carries the saturated color, not the background)
 const DAY_TYPE_STYLES: Record<DayType, { bg: string; text: string; icon: string }> = {
   complete: { bg: "bg-success/10", text: "text-ink", icon: "text-success" },
   mock: { bg: "bg-brand/10", text: "text-ink", icon: "text-brand" },
@@ -206,18 +206,20 @@ export default function PlanPage() {
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
-                        aria-label="Previous month"
-                        className="flex h-8 w-8 items-center justify-center rounded-full transition hover:bg-tint-strong"
+                        className="flex h-[30px] w-[30px] items-center justify-center rounded-sm border border-brand/10 bg-surface text-ink"
+                        aria-label="Previous day"
                       >
-                        <ChevronDownIcon className="h-4 w-4 rotate-90 text-muted" />
+                        <ArrowLeftIcon />
                       </button>
 
                       <button
                         type="button"
-                        aria-label="Next month"
-                        className="flex h-8 w-8 items-center justify-center rounded-full transition hover:bg-tint-strong"
+                        className="flex h-[30px] w-[30px] items-center justify-center rounded-sm border border-brand/10 bg-surface text-ink"
+                        aria-label="Next day"
                       >
-                        <ChevronDownIcon className="h-4 w-4 -rotate-90 text-muted" />
+                        <span className="rotate-180">
+                          <ArrowLeftIcon />
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -243,7 +245,7 @@ export default function PlanPage() {
               <div className="flex w-full flex-wrap items-center gap-x-6 gap-y-2">
                 <div className="flex items-center gap-2">
                   <span className="text-cta">
-                    <FlameIcon />
+                    <FlameIcon className="w-4 h-4 md:w-[14px] md:h-[20px]" />
                   </span>
 
                   <span className="text-sm font-semibold text-ink">
@@ -253,7 +255,7 @@ export default function PlanPage() {
 
                 <div className="flex items-center gap-2">
                   <span className="text-success">
-                    <CheckCircleIcon />
+                    <CheckCircleIcon className="w-4 h-4 md:w-[16px] md:h-[20px]" />
                   </span>
 
                   <span className="text-sm font-semibold text-ink">
@@ -263,7 +265,7 @@ export default function PlanPage() {
 
                 <div className="flex items-center gap-2">
                   <span className="text-brand">
-                    <StarIcon />
+                    <StarIcon className="w-4 h-4 md:w-[12px] md:h-[12px] lg:w-5 lg:h-5" />
                   </span>
 
                   <span className="text-sm font-semibold text-ink">
@@ -277,8 +279,6 @@ export default function PlanPage() {
                 {FILTERS.map((item) => (
                   <Chip
                     key={item.label}
-                    selected={filter === item.label}
-                    onClick={() => setFilter(item.label)}
                     className={isDark && filter !== item.label ? "text-white!" : ""}
                   >
                     <span className="flex items-center gap-2">
@@ -317,55 +317,44 @@ export default function PlanPage() {
                         const cellContent = (
                           <div
                             className={`
-                            flex
-                            min-h-18.5
-                            w-full
-                            flex-col
-                            items-center
-                            gap-0.5
-                            rounded-xl
-                            border
-                            px-3
-                            py-3
-                            transition-all
-
-                            ${cell.isToday
+      relative min-h-[92px] w-full rounded-xl border px-3 py-3
+      ${cell.isToday
                                 ? "border-brand bg-tint-strong ring-1 ring-brand"
                                 : cell.inMonth
-                                  ? `border-brand/10 ${style?.bg ?? "bg-surface"} hover:border-brand/30`
+                                  ? `border-brand/10 ${style?.bg ?? "bg-surface"}`
                                   : "border-transparent bg-transparent"
                               }
-                          `}
+    `}
                           >
+                            {/* Date */}
                             <span
                               className={`
-                              text-xs
-                              font-semibold
-                              leading-none
-                              ${cell.inMonth
+        absolute left-3 top-3
+        text-xs font-semibold leading-none
+        ${cell.inMonth
                                   ? style?.text ?? "text-ink"
                                   : "text-muted/30"
                                 }
-                            `}
+      `}
                             >
                               {cell.date}
                             </span>
 
+                            {/* Mock / Icon Content */}
                             {cell.type && (
-                              <div className="mt-1 flex flex-col items-center gap-0.5">
-                                <span
-                                  className={`text-[11px] ${style?.icon ?? "text-ink"}`}
-                                >
+                              <div className="flex h-full flex-col items-center pt-4">
+                                <span className={`mb-1 ${style?.icon ?? "text-ink"}`}>
                                   {DAY_TYPE_ICON[cell.type]}
                                 </span>
 
                                 {marks !== undefined && (
                                   <>
-                                    <span className="text-sm font-extrabold leading-none text-ink">
+                                    <span className="text-[18px] font-extrabold leading-none text-ink">
                                       {marks}
                                     </span>
-                                    <span className="text-[9px] font-medium uppercase leading-none tracking-wide text-muted">
-                                      Marks
+
+                                    <span className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-muted">
+                                      MARKS
                                     </span>
                                   </>
                                 )}
@@ -466,7 +455,7 @@ export default function PlanPage() {
                   {/* Tasks Completed */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <CompleteIcon />
+                      <CompleteIcon className="w-4 h-4 md:w-[18px] md:h-[18px]" />
 
                       <span
                         className={`text-[14px] font-medium leading-5 ${isDark ? "text-white/70" : "text-[#475569]"}`}
@@ -530,11 +519,12 @@ export default function PlanPage() {
                       className="flex items-center justify-between"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="flex h-4 w-4 items-center justify-center rounded-full border-[1.33px] border-[#28B485] text-[#28B485]">
-                          <CheckIcon />
-                        </span>
+                        <CompleteIcon className="w-4 h-4 text-success md:w-[18px] md:h-[18px]" />
 
-                        <span className={`text-[13px] font-medium leading-5 ${isDark ? "text-white/70" : "text-[#475569]"}`}>
+                        <span
+                          className={`text-[13px] font-medium leading-5 ${isDark ? "text-white/70" : "text-[#475569]"
+                            }`}
+                        >
                           {task.title}
                         </span>
                       </div>

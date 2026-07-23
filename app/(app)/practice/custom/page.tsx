@@ -194,102 +194,82 @@ export default function CustomPracticeBuilderPage() {
 
         <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-2">
 
-  {/* Number of Questions */}
-  <div className="w-full max-w-[248px]">
+          {/* Number of Questions */}
+          <div className="w-full max-w-[248px]">
 
-    <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.6px] text-muted">
-      Number of Questions
-    </p>
+            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.6px] text-muted">
+              Number of Questions
+            </p>
 
-    <Stepper
-      value={questionCount}
-      min={5}
-      max={50}
-      onChange={setQuestionCount}
-    />
+            <Stepper
+              value={questionCount}
+              min={5}
+              max={50}
+              onChange={setQuestionCount}
+            />
 
-  </div>
+          </div>
 
-  {/* Time Limit */}
-  <div className="w-full max-w-[248px]">
+          {/* Time Limit */}
+          <div className="w-full max-w-[248px]">
 
-    <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.6px] text-muted">
-      Time Limit
-    </p>
+            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.6px] text-muted">
+              Time Limit
+            </p>
 
-    <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4">
 
-      <label
-        className="flex cursor-pointer items-center gap-3"
-        onClick={() => setTimeLimit("60")}
-      >
-        <div
-          className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border ${
-            timeLimit === "60"
-              ? "border-white bg-white"
-              : "border-[#8B8998]"
-          }`}
-        >
-          {timeLimit === "60" && (
-            <div className="h-[10px] w-[10px] rounded-full bg-[#111145]" />
-          )}
+              <label
+                className="flex cursor-pointer items-center gap-3"
+                onClick={() => setTimeLimit("60")}
+              >
+                <div
+                  className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border ${timeLimit === "60"
+                    ? "border-white bg-white"
+                    : "border-[#8B8998]"
+                    }`}
+                >
+                  {timeLimit === "60" && (
+                    <div className="h-[10px] w-[10px] rounded-full bg-[#111145]" />
+                  )}
+                </div>
+
+                <span className="text-[14px] text-muted">
+                  60 min
+                </span>
+              </label>
+
+              <label
+                className="flex cursor-pointer items-center gap-3"
+                onClick={() => setTimeLimit("none")}
+              >
+                <div
+                  className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border ${timeLimit === "none"
+                    ? "border-white bg-white"
+                    : "border-[#8B8998]"
+                    }`}
+                >
+                  {timeLimit === "none" && (
+                    <div className="h-[10px] w-[10px] rounded-full bg-[#111145]" />
+                  )}
+                </div>
+
+                <span className="text-[14px] text-muted">
+                  No limit
+                </span>
+              </label>
+
+            </div>
+
+          </div>
+
         </div>
-
-        <span className="text-[14px] text-muted">
-          60 min
-        </span>
-      </label>
-
-      <label
-        className="flex cursor-pointer items-center gap-3"
-        onClick={() => setTimeLimit("none")}
-      >
-        <div
-          className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border ${
-            timeLimit === "none"
-              ? "border-white bg-white"
-              : "border-[#8B8998]"
-          }`}
-        >
-          {timeLimit === "none" && (
-            <div className="h-[10px] w-[10px] rounded-full bg-[#111145]" />
-          )}
-        </div>
-
-        <span className="text-[14px] text-muted">
-          No limit
-        </span>
-      </label>
-
-    </div>
-
-  </div>
-
-</div>
       </div>
-      <div className="mt-6 flex w-full justify-end">
+      <div className="mt-2 flex w-full justify-end">
         <Button
           variant="primary"
           onClick={() => router.push("/practice")}
-          className="
-      !flex
-      !h-[60px]
-      !w-[309px]
-      !min-w-[309px]
-      !items-center
-      !justify-center
-      !rounded-2xl
-      !px-12
-      !py-4
-      text-center
-      !text-[20px]
-      !font-semibold
-      !leading-7
-      whitespace-nowrap
-      transition-all
-      hover:bg-[#FF7A59]
-      hover:shadow-[0px_4px_20px_0px_#00000008]
-    "
+          className="h-[60px] w-full max-w-[309px] whitespace-nowrap rounded-2xl px-6 py-4 text-[20px] font-semibold leading-7"
         >
           Start Custom Practice
         </Button>

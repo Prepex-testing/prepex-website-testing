@@ -3,21 +3,21 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
-  HelpCircleIcon,
-  ChatIcon,
-  MailIcon,
+  // HelpCircleIcon,
+  // ChatIcon,
+  // MailIcon,
   SunIcon,
   AlertTriangleIcon,
   InfoIcon,
   ChevronDownIcon,
   ChevronRightIcon,
-  ClockIcon,
+  // ClockIcon,
   BookOpenIcon,
-  ShieldIcon,
+  // ShieldIcon,
 } from "@/components/ui/icons";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
 import { SettingRow } from "@/components/profile/SettingRow";
-
+import {ClockIcon,HelpCircleIcon,WhatsApp,EmailIcon,MessageIcon,ShieldIcon} from "@/assets/icons";
 const SUPPORT_OPTIONS = [
   {
     id: "faqs",
@@ -28,14 +28,14 @@ const SUPPORT_OPTIONS = [
   },
   {
     id: "whatsapp",
-    icon: <ChatIcon />,
+    icon: <WhatsApp />,
     title: "WhatsApp Support",
     subtitle: "Chat with our support team on WhatsApp",
     action: "Open WhatsApp",
   },
   {
     id: "email",
-    icon: <MailIcon />,
+    icon: <EmailIcon />,
     title: "Email Support",
     subtitle: "Send us an email and we'll get back to you",
     action: "Send Email",
@@ -176,7 +176,7 @@ export default function HelpAndSupportPage() {
           <div className="flex items-start gap-4">
 
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-tint">
-              <ChatIcon />
+              <MessageIcon />
             </div>
 
             <div>
@@ -199,7 +199,7 @@ export default function HelpAndSupportPage() {
             >
               <div className="flex items-center gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint">
-                  <ChatIcon />
+                  <MessageIcon />
                 </div>
 
                 <div className="text-left">
@@ -222,7 +222,7 @@ export default function HelpAndSupportPage() {
             >
               <div className="flex items-center gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint">
-                  <MailIcon />
+                  <EmailIcon />
                 </div>
 
                 <div className="text-left">

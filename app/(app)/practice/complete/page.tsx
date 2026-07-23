@@ -9,13 +9,13 @@ import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import {
   BellIcon,
-  ClockIcon,
+  // ClockIcon,
   TargetIcon,
   CheckCircleIcon,
   AlertTriangleIcon,
-  BoltIcon,
+  // BoltIcon,
 } from "@/components/ui/icons";
-
+import { LayersIcon,ClockIcon, VectorIcon } from "@/assets/icons";
 type Mastery = "mastered" | "on-track" | "needs-work" | "critical";
 
 const MASTERY_STYLES: Record<
@@ -95,8 +95,8 @@ function PracticeCompleteContent() {
         <div className="flex flex-wrap items-center justify-between gap-6 rounded-2xl border border-brand/10 bg-surface p-6">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <span className="flex h-11 w-11 items-center justify-center text-cta">
-                <TargetIcon />
+              <span className="mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg  bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+                <LayersIcon />
               </span>
               <h2 className="text-[40px] font-extrabold leading-10 tracking-[-1px] text-ink whitespace-nowrap">
                 {correct} / {total} Correct
@@ -104,7 +104,7 @@ function PracticeCompleteContent() {
             </div>
 
             <div className="flex flex-col gap-3">
-              <p className="text-[20px] font-bold leading-7 text-body-text">
+              <p className="text-[20px] font-bold leading-7  text-muted">
                 Maths · Coordinate Geometry
               </p>
 
@@ -131,7 +131,7 @@ function PracticeCompleteContent() {
             <p className="text-[13px] font-bold uppercase tracking-[1.95px] text-ink">
               Performance Breakdown
             </p>
-            <span className="rounded-2xl bg-tint px-3 py-1 text-caption font-semibold uppercase text-ink">
+            <span className="rounded-2xl bg-tint px-3 py-1 text-caption font-semibold uppercase text-ink dark:bg-white dark:text-[#1A1A4E]">
               Skill Analytics
             </span>
           </div>
@@ -178,7 +178,7 @@ function PracticeCompleteContent() {
         <div className="rounded-2xl border border-brand/10 bg-surface p-6">
           <div className="flex items-center gap-2">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[rgba(245,158,11,0.1)] text-[#F59E0B]">
-              <BoltIcon />
+              <VectorIcon className="w-5 h-5" />
             </span>
             <p className="text-caption font-extrabold uppercase tracking-[1.2px] text-[#F59E0B]">
               Next Focus

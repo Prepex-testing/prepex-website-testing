@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { Chip } from "@/components/ui/Chip";
+import { Chips } from "@/components/ui/Chip";
 import { CalendarIcon, ClockIcon, CheckIcon } from "@/components/ui/icons";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
 
@@ -45,9 +45,9 @@ export default function ConnectParentPage() {
           <p className="text-sm font-semibold text-ink">Preferred language</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {LANGUAGES.map((lang) => (
-              <Chip key={lang} selected={language === lang} onClick={() => setLanguage(lang)}>
+              <Chips key={lang} selected={language === lang} onClick={() => setLanguage(lang)}>
                 {lang}
-              </Chip>
+              </Chips>
             ))}
           </div>
         </div>

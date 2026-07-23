@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { BellIcon, CalendarIcon, ClockIcon, EditIcon, FileIcon, MoonIcon, PencilIcon, RefreshIcon, SmileIcon, StarIcon, UsersIcon } from "@/components/ui/icons";
+import {  EditIcon, MoonIcon, PencilIcon, RefreshIcon, SmileIcon} from "@/components/ui/icons";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
 import { SettingRow } from "@/components/profile/SettingRow";
 import { ToggleRow } from "@/components/profile/ToggleRow";
 import { Switch } from "@/components/ui/Switch";
-
+import {ClockIcon,CalendarIcon,TargetIcon,BellIcon,EditIcons,Patners,StarIcon} from "@/assets/icons";
 const GROUPS = [
   {
     id: "critical",
@@ -41,19 +41,19 @@ const INDIVIDUAL_ITEMS = [
   },
   {
     id: "weekly-journal",
-    icon: <EditIcon />,
+    icon: <EditIcons />,
     label: "Weekly Win Journal",
     subtitle: "Your weekly summary and wins",
   },
   {
     id: "check-in",
-    icon: <SmileIcon />,
+    icon: <CalendarIcon />,
     label: "Daily Check-In",
     subtitle: "Reminder to check-in every morning",
   },
   {
     id: "partner-signals",
-    icon: <UsersIcon />,
+    icon: <Patners />,
     label: "Accountability Partner Signals",
     subtitle: "Updates and nudges from your partner",
   },
@@ -77,7 +77,7 @@ const INDIVIDUAL_ITEMS = [
   },
   {
     id: "weekly-report",
-    icon: <FileIcon />,
+    icon: <TargetIcon />,
     label: "Weekly Report",
     subtitle: "Weekly progress report for your parent",
   },

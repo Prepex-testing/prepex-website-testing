@@ -455,10 +455,23 @@ export function XIcon() {
   );
 }
 
-export function CheckCircleIcon() {
+
+
+export function CheckCircleIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-      <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.3" />
+    <svg
+      viewBox="0 0 14 14"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <circle
+        cx="7"
+        cy="7"
+        r="5.5"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
       <path
         d="M4.6 7.1l1.6 1.6L9.6 5"
         stroke="currentColor"
@@ -812,13 +825,18 @@ export function PlayIcon() {
   );
 }
 
-export function StarIcon() {
+export function StarIcon({ strokeWidth = 1.2, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
       <path
-        d="M8 1.8 9.7 5.6l4.1.5-3 2.8.8 4.1L8 11l-3.6 2 0.8-4.1-3-2.8 4.1-0.5L8 1.8Z"
+        d="M8 1.8 9.7 5.6l4.1.5-3 2.8.8 4.1L8 11l-3.6 2 .8-4.1-3-2.8 4.1-.5L8 1.8Z"
         stroke="currentColor"
-        strokeWidth="1.2"
+        strokeWidth={strokeWidth}
         strokeLinejoin="round"
       />
     </svg>
@@ -1057,10 +1075,23 @@ export function LinkIcon() {
   );
 }
 
-export function CompleteIcon() {
+
+
+export function CompleteIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.4" />
+    <svg
+      viewBox="0 0 18 18"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <circle
+        cx="9"
+        cy="9"
+        r="6.5"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
       <path
         d="M6 9.2L8.2 11.4L12.2 7.4"
         stroke="currentColor"
@@ -1088,11 +1119,18 @@ export function MockIcon() {
 
 export function RecoveryIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      fill="none"
+      aria-hidden="true"
+      className="text-[#1A1A4E] dark:text-white"
+    >
       <path
         d="M9 14.5c-2.8-1.8-5.5-4.2-5.5-7.2A3 3 0 0 1 9 5a3 3 0 0 1 5.5 2.3c0 3-2.7 5.4-5.5 7.2Z"
         stroke="currentColor"
-        strokeWidth="1.4"
+        strokeWidth="1.17"
         strokeLinejoin="round"
       />
     </svg>
@@ -1101,7 +1139,14 @@ export function RecoveryIcon() {
 
 export function JournalIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      fill="none"
+      aria-hidden="true"
+      className="text-[#1A1A4E] dark:text-white"
+    >
       <rect x="3" y="3" width="2" height="12" rx="1" fill="currentColor" />
       <rect x="8" y="6" width="2" height="9" rx="1" fill="currentColor" />
       <rect x="13" y="1.5" width="2" height="13.5" rx="1" fill="currentColor" />
@@ -1111,12 +1156,19 @@ export function JournalIcon() {
 
 export function NoStudyIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.4" />
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      fill="none"
+      aria-hidden="true"
+      className="text-[#FB923C] dark:text-white"
+    >
+      <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.17" />
       <path
         d="M5 5L13 13"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="1.17"
         strokeLinecap="round"
       />
     </svg>
