@@ -106,7 +106,7 @@ export default function TellUsAboutYouPage() {
       <StepProgress
         step={2}
         totalSteps={5}
-        backHref="/onboarding/select-subject"
+        backHref="/onboarding/preparing-for"
         showSkip
         skipHref="/onboarding/where-do-you-study"
       />

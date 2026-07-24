@@ -7,11 +7,11 @@ import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { MailIcon, LockIcon, GoogleIcon, AppleIcon } from "@/components/ui/icons";
-import { CheckInModal } from "@/components/check-in/CheckInModal";
+import { MailIcon, LockIcon, GoogleIcon } from "@/components/ui/icons";
 import { login, getGoogleAuthUrl, ApiError } from "@/lib/api/auth";
 import { saveSession } from "@/lib/auth/session";
 import { getOnboardingProgress, getOnboardingStepPath } from "@/lib/api/onboarding";
+import { getCheckInStatus } from "@/lib/api/checkin";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,8 +19,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
-  const [isCheckInOpen, setCheckInOpen] = useState(false);
-  const [loggedInName, setLoggedInName] = useState("");
 
   const handleForgotPassword = () => {
     if (!email.trim()) {
@@ -50,8 +48,14 @@ export default function LoginPage() {
         // logged-in flow rather than blocking login on it.
       }
 
-      setLoggedInName(data.user.fullName);
-      setCheckInOpen(true);
+      try {
+        const { data: checkIn } = await getCheckInStatus();
+        router.push(checkIn.exists ? "/home" : "/check-in");
+      } catch {
+        // Couldn't confirm check-in status — fall through to home rather
+        // than blocking login on it.
+        router.push("/home");
+      }
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) {
         router.push(`/email-verification?email=${encodeURIComponent(email)}`);
@@ -66,7 +70,6 @@ export default function LoginPage() {
   };
 
   return (
-    <>
     <AuthCard>
       <div className="flex flex-col items-center gap-1 text-center">
         <h1 className="text-h1 text-ink">Welcome back</h1>
@@ -128,22 +131,16 @@ export default function LoginPage() {
           <span className="h-px flex-1 bg-brand/10" />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => {
-              window.location.href = getGoogleAuthUrl();
-            }}
-          >
-            <GoogleIcon />
-            Google
-          </Button>
-          <Button type="button" variant="secondary">
-            <AppleIcon />
-            Apple
-          </Button>
-        </div>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => {
+            window.location.href = getGoogleAuthUrl();
+          }}
+        >
+          <GoogleIcon />
+          Google
+        </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-muted">
@@ -156,12 +153,5 @@ export default function LoginPage() {
         </Link>
       </p>
     </AuthCard>
-
-    <CheckInModal
-      open={isCheckInOpen}
-      onClose={() => setCheckInOpen(false)}
-      name={loggedInName}
-    />
-    </>
   );
 }

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
-import { GoogleIcon, AppleIcon, CheckIcon } from "@/components/ui/icons";
+import { GoogleIcon, CheckIcon } from "@/components/ui/icons";
 
 const PREVIEW_TASKS = [
   {
@@ -80,10 +80,6 @@ export default function WelcomePage() {
             <Button variant="secondary">
               <GoogleIcon />
               Continue with Google
-            </Button>
-            <Button variant="secondary">
-              <AppleIcon />
-              Continue with Apple
             </Button>
           </div>
 

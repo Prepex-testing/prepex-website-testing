@@ -11,7 +11,8 @@ import { QuickFocusModal } from "@/components/home/QuickFocusModal";
 import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
-import { CheckInModal, MOODS } from "@/components/check-in/CheckInModal";
+import { CheckInModal, MOODS, type Mood } from "@/components/check-in/CheckInModal";
+import { submitCheckIn, moodIdToApiValue } from "@/lib/api/checkin";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { FlameIcon, BackIcon, BookIcon, BriefcaseIcon, ChartBarIcon, LayersIcon, QuickIcon, RadarIcon, RevisionIcon, TrophyIcon, UserIcon } from "@/assets/icons";
@@ -165,6 +166,13 @@ export default function HomePage() {
     getIsFridaySnapshot,
     getIsFridayServerSnapshot,
   );
+
+  const handleMoodSave = (mood: Mood) => {
+    setEnergyMood(mood);
+    submitCheckIn({ mood: moodIdToApiValue(mood.id) }).catch(() => {
+      // Best-effort — the UI already reflects the new mood.
+    });
+  };
 
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
@@ -545,8 +553,7 @@ export default function HomePage() {
         open={isCheckInOpen}
         onClose={() => setCheckInOpen(false)}
         name="Rohan"
-        mode="update"
-        onSave={setEnergyMood}
+        onSave={handleMoodSave}
       />
       <QuickFocusModal open={isQuickFocusOpen} onClose={() => setQuickFocusOpen(false)} />
       <AddCustomTaskModal open={isAddTaskOpen} onClose={() => setAddTaskOpen(false)} />
