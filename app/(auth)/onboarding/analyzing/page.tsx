@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { CalendarIcon, ClockIcon, BookIcon, BriefcaseIcon } from "@/components/ui/icons";
-const REDIRECT_DELAY_MS = 3000;
+import { confirmOnboarding } from "@/lib/api/onboarding";
+import { useStoredFullName } from "@/lib/auth/useStoredFullName";
+
+const REDIRECT_DELAY_MS = 2000;
 
 const PROFILE_SUMMARY = [
   { icon: <CalendarIcon />, text: "JEE Main 2026 in 284 days" },
@@ -16,8 +19,13 @@ const PROFILE_SUMMARY = [
 
 export default function AnalyzingPage() {
   const router = useRouter();
+  const name = useStoredFullName();
 
   useEffect(() => {
+    confirmOnboarding().catch(() => {
+      // Best-effort — the welcome screen doesn't block on this succeeding.
+    });
+
     const timer = setTimeout(() => {
       router.push("/onboarding/welcome-to-prepex");
     }, REDIRECT_DELAY_MS);
@@ -28,7 +36,7 @@ export default function AnalyzingPage() {
   return (
     <AuthCard>
       <div className="flex flex-col items-center gap-1 text-center">
-        <h1 className="text-h2 text-ink">All set, Rohan</h1>
+        <h1 className="text-h2 text-ink">All set{name ? `, ${name}` : ""}</h1>
         <p className="text-sm text-muted">Generating your first plan...</p>
       </div>
 

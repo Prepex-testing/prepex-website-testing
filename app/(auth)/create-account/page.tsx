@@ -1,10 +1,38 @@
+"use client";
+
+import { useState } from "react";
+import type { SubmitEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { UserIcon, MailIcon, LockIcon } from "@/components/ui/icons";
+import { registerAccount, ApiError } from "@/lib/api/auth";
 
 export default function CreateAccountPage() {
+  const router = useRouter();
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      await registerAccount({ fullName, email, password });
+      router.push(`/email-verification?email=${encodeURIComponent(email)}`);
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
+      );
+      setSubmitting(false);
+    }
+  };
+
   return (
     <AuthCard>
       <div className="flex flex-col items-center gap-1 text-center">
@@ -14,7 +42,16 @@ export default function CreateAccountPage() {
         </p>
       </div>
 
-      <div className="mt-8 flex flex-col gap-5">
+      <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
+        {error && (
+          <p
+            role="alert"
+            className="rounded-lg bg-danger-bg px-3 py-2 text-xs font-medium text-danger"
+          >
+            {error}
+          </p>
+        )}
+
         <Input
           label="Full Name"
           helperText="Used in your daily plan greetings"
@@ -22,6 +59,9 @@ export default function CreateAccountPage() {
           name="fullName"
           type="text"
           placeholder="Rohan"
+          value={fullName}
+          onChange={(event) => setFullName(event.target.value)}
+          required
         />
         <Input
           label="Email Address"
@@ -30,6 +70,9 @@ export default function CreateAccountPage() {
           name="email"
           type="email"
           placeholder="Rohan@example.com"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          required
         />
         <Input
           label="Password"
@@ -38,12 +81,21 @@ export default function CreateAccountPage() {
           name="password"
           type="password"
           placeholder="At least 8 characters"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          minLength={8}
+          required
         />
 
-        <Button variant="primary" href="/email-verification">
-          Sign up
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={isSubmitting}
+          className="disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isSubmitting ? "Signing up..." : "Sign up"}
         </Button>
-      </div>
+      </form>
 
       <p className="mt-4 text-center text-xs text-muted">
         By clicking “Sign Up”, you agree to our{" "}

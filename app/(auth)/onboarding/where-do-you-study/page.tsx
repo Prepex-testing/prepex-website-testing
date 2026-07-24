@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { RadioOption } from "@/components/ui/RadioOption";
@@ -8,8 +9,16 @@ import { Select } from "@/components/ui/Select";
 import { StepProgress } from "@/components/ui/StepProgress";
 import { UploadDropzone } from "@/components/ui/UploadDropzone";
 import { CheckIcon } from "@/components/ui/icons";
+import { saveCoachingProfile } from "@/lib/api/onboarding";
+import { ApiError } from "@/lib/api/http";
 
 type CoachingStatus = "coaching" | "self-study" | "self-prep";
+
+const COACHING_TYPE_MAP: Record<CoachingStatus, "COACHING" | "SELF_PREP" | "ONLINE_SELF_PREP"> = {
+  coaching: "COACHING",
+  "self-study": "ONLINE_SELF_PREP",
+  "self-prep": "SELF_PREP",
+};
 
 const COACHING_NAME_OPTIONS = [
   { value: "aakash", label: "Aakash Institute" },
@@ -27,7 +36,34 @@ const BATCH_OPTIONS = [
 ];
 
 export default function WhereDoYouStudyPage() {
+  const router = useRouter();
   const [status, setStatus] = useState<CoachingStatus>("coaching");
+  const [coachingName, setCoachingName] = useState("");
+  const [batch, setBatch] = useState("");
+  const [hasScheduleUpload, setHasScheduleUpload] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setSubmitting] = useState(false);
+
+  const handleContinue = async () => {
+    setError(null);
+    setSubmitting(true);
+    try {
+      await saveCoachingProfile({
+        coachingType: COACHING_TYPE_MAP[status],
+        ...(status === "coaching" && {
+          coachingName: COACHING_NAME_OPTIONS.find((o) => o.value === coachingName)?.label,
+          batchName: BATCH_OPTIONS.find((o) => o.value === batch)?.label,
+        }),
+        hasScheduleUpload,
+      });
+      router.push("/onboarding/time-selection");
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
+      );
+      setSubmitting(false);
+    }
+  };
 
   return (
     <AuthCard>
@@ -46,6 +82,15 @@ export default function WhereDoYouStudyPage() {
         </p>
       </div>
 
+      {error && (
+        <p
+          role="alert"
+          className="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-xs font-medium text-danger"
+        >
+          {error}
+        </p>
+      )}
+
       <div className="mt-6 flex flex-col gap-3" role="radiogroup" aria-label="Coaching status">
         <RadioOption
           name="coachingStatus"
@@ -60,6 +105,8 @@ export default function WhereDoYouStudyPage() {
             placeholder="Select Coaching"
             options={COACHING_NAME_OPTIONS}
             name="coachingName"
+            value={coachingName}
+            onChange={(event) => setCoachingName(event.target.value)}
           />
           <Select
             label="Batch"
@@ -67,6 +114,8 @@ export default function WhereDoYouStudyPage() {
             placeholder="Select Batch"
             options={BATCH_OPTIONS}
             name="batch"
+            value={batch}
+            onChange={(event) => setBatch(event.target.value)}
           />
         </RadioOption>
 
@@ -98,7 +147,7 @@ export default function WhereDoYouStudyPage() {
         </p>
 
         <div className="mt-3">
-          <UploadDropzone />
+          <UploadDropzone onFileSelect={(file) => setHasScheduleUpload(file !== null)} />
         </div>
 
         <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-success">
@@ -107,8 +156,13 @@ export default function WhereDoYouStudyPage() {
         </p>
       </div>
 
-      <Button href="/onboarding/time-selection" variant="primary" className="mt-6">
-        Continue
+      <Button
+        variant="primary"
+        onClick={handleContinue}
+        disabled={isSubmitting}
+        className="mt-6 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {isSubmitting ? "Saving..." : "Continue"}
       </Button>
     </AuthCard>
   );

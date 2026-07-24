@@ -1,5 +1,6 @@
 import { Sidebar } from "@/components/layout/Sidebar";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { CheckInGate } from "@/components/check-in/CheckInGate";
 
 export default function AppLayout({
   children,
@@ -13,6 +14,7 @@ export default function AppLayout({
         {children}
       </div>
       <BottomNav />
+      <CheckInGate />
     </div>
   );
 }

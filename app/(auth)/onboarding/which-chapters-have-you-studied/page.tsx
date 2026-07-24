@@ -1,117 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { Accordion } from "@/components/ui/Accordion";
 import { Button } from "@/components/ui/Button";
 import { ChapterItem } from "@/components/ui/ChapterItem";
 import { StepProgress } from "@/components/ui/StepProgress";
 import { CheckCircleIcon, XIcon } from "@/components/ui/icons";
+import { getStudentChapters, saveChapterProgress } from "@/lib/api/onboarding";
+import { ApiError } from "@/lib/api/http";
+import type { SubjectChapters } from "@/lib/api/dashboard";
 
 type ChapterState = "none" | "partial" | "done";
-
-type Subject = {
-  id: string;
-  avatarLabel: string;
-  title: string;
-  chapters: string[];
-};
-
-const SUBJECTS: Subject[] = [
-  {
-    id: "physics",
-    avatarLabel: "P",
-    title: "Physics",
-    chapters: [
-      "Units & Measurements",
-      "Kinematics",
-      "Newton's Laws of Motion",
-      "Work, Energy, Power",
-      "Rotational Dynamics",
-      "Gravitation",
-      "SHM & Oscillations",
-      "Waves",
-      "Thermodynamics",
-      "Kinetic Theory",
-      "Electrostatics",
-      "Current Electricity",
-      "Magnetism",
-      "EM Induction",
-      "Ray Optics",
-      "Wave Optics",
-      "Modern Physics",
-      "Semiconductor Devices",
-    ],
-  },
-  {
-    id: "chemistry",
-    avatarLabel: "C",
-    title: "Chemistry",
-    chapters: [
-      "Mole Concept",
-      "Atomic Structure",
-      "Chemical Bonding",
-      "States of Matter",
-      "Thermodynamics",
-      "Chemical Equilibrium",
-      "Ionic Equilibrium",
-      "Redox Reactions",
-      "Electrochemistry",
-      "Chemical Kinetics",
-      "Solid State",
-      "Solutions",
-      "s-Block Elements",
-      "p-Block Elements",
-      "d & f Block Elements",
-      "Coordination Compounds",
-      "Organic Chemistry Basics",
-      "Biomolecules & Polymers",
-    ],
-  },
-  {
-    id: "maths",
-    avatarLabel: "M",
-    title: "Mathematics",
-    chapters: [
-      "Sets, Relations & Functions",
-      "Complex Numbers",
-      "Quadratic Equations",
-      "Sequences & Series",
-      "Permutations & Combinations",
-      "Binomial Theorem",
-      "Matrices & Determinants",
-      "Trigonometric Ratios",
-      "Trigonometric Equations",
-      "Straight Lines",
-      "Circles",
-      "Conic Sections",
-      "Limits & Continuity",
-      "Differentiation",
-      "Application of Derivatives",
-      "Integration",
-      "Vectors & 3D Geometry",
-      "Probability & Statistics",
-    ],
-  },
-];
-
-const TOTAL_CHAPTERS = SUBJECTS.reduce((sum, subject) => sum + subject.chapters.length, 0);
-
-function chapterKey(subjectId: string, chapter: string): string {
-  return `${subjectId}:${chapter}`;
-}
-
-function createInitialState(): Record<string, ChapterState> {
-  const state: Record<string, ChapterState> = {};
-  for (const subject of SUBJECTS) {
-    for (const chapter of subject.chapters) {
-      state[chapterKey(subject.id, chapter)] = "none";
-    }
-  }
-  state[chapterKey("physics", "Units & Measurements")] = "done";
-  state[chapterKey("physics", "Kinematics")] = "partial";
-  return state;
-}
 
 function cycleState(state: ChapterState): ChapterState {
   if (state === "none") return "partial";
@@ -120,9 +21,27 @@ function cycleState(state: ChapterState): ChapterState {
 }
 
 export default function WhichChaptersHaveYouStudiedPage() {
-  const [chapterState, setChapterState] = useState<Record<string, ChapterState>>(
-    createInitialState,
-  );
+  const router = useRouter();
+  const [subjects, setSubjects] = useState<SubjectChapters[]>([]);
+  const [chapterState, setChapterState] = useState<Record<string, ChapterState>>({});
+  const [isLoading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    getStudentChapters()
+      .then(({ data }) => {
+        const withChapters = data.filter((subject) => subject.chapters.length > 0);
+        setSubjects(withChapters);
+        const initial: Record<string, ChapterState> = {};
+        for (const subject of withChapters) {
+          for (const chapter of subject.chapters) initial[chapter.id] = "none";
+        }
+        setChapterState(initial);
+      })
+      .catch(() => setError("Couldn't load chapters. Please refresh and try again."))
+      .finally(() => setLoading(false));
+  }, []);
 
   const { markedCount, partialCount } = useMemo(() => {
     const values = Object.values(chapterState);
@@ -152,6 +71,32 @@ export default function WhichChaptersHaveYouStudiedPage() {
     });
   };
 
+  const handleContinue = async () => {
+    const chapterProgress = Object.entries(chapterState)
+      .filter(([, state]) => state !== "none")
+      .map(([chapterId, state]) => ({
+        chapterId,
+        status: (state === "done" ? "MASTERED" : "IN_REVISION") as "MASTERED" | "IN_REVISION",
+      }));
+
+    if (chapterProgress.length === 0) {
+      router.push("/onboarding/analyzing");
+      return;
+    }
+
+    setError(null);
+    setSubmitting(true);
+    try {
+      await saveChapterProgress({ chapterProgress });
+      router.push("/onboarding/analyzing");
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
+      );
+      setSubmitting(false);
+    }
+  };
+
   return (
     <AuthCard>
       <StepProgress
@@ -169,6 +114,15 @@ export default function WhichChaptersHaveYouStudiedPage() {
           counts
         </p>
       </div>
+
+      {error && (
+        <p
+          role="alert"
+          className="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-xs font-medium text-danger"
+        >
+          {error}
+        </p>
+      )}
 
       <div className="mt-6 rounded-xl border border-brand/10 bg-surface p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -213,39 +167,43 @@ export default function WhichChaptersHaveYouStudiedPage() {
       </div>
 
       <div className="mt-4 flex flex-col gap-3">
-        {SUBJECTS.map((subject, index) => {
-          const selectedCount = subject.chapters.filter(
-            (chapter) => chapterState[chapterKey(subject.id, chapter)] !== "none",
-          ).length;
+        {isLoading && <p className="text-sm text-muted">Loading chapters...</p>}
+        {!isLoading &&
+          subjects.map((subject, index) => {
+            const selectedCount = subject.chapters.filter(
+              (chapter) => chapterState[chapter.id] !== "none",
+            ).length;
 
-          return (
-            <Accordion
-              key={subject.id}
-              avatarLabel={subject.avatarLabel}
-              title={subject.title}
-              meta={`${String(selectedCount).padStart(2, "0")}/${subject.chapters.length} CHAPTERS SELECTED`}
-              defaultOpen={index === 0}
-            >
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {subject.chapters.map((chapter) => {
-                  const key = chapterKey(subject.id, chapter);
-                  return (
+            return (
+              <Accordion
+                key={subject.subjectId}
+                avatarLabel={subject.subjectName.charAt(0)}
+                title={subject.subjectName}
+                meta={`${String(selectedCount).padStart(2, "0")}/${subject.chapters.length} CHAPTERS SELECTED`}
+                defaultOpen={index === 0}
+              >
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {subject.chapters.map((chapter) => (
                     <ChapterItem
-                      key={key}
-                      title={chapter}
-                      state={chapterState[key]}
-                      onCycle={() => toggleChapter(key)}
+                      key={chapter.id}
+                      title={chapter.name}
+                      state={chapterState[chapter.id] ?? "none"}
+                      onCycle={() => toggleChapter(chapter.id)}
                     />
-                  );
-                })}
-              </div>
-            </Accordion>
-          );
-        })}
+                  ))}
+                </div>
+              </Accordion>
+            );
+          })}
       </div>
 
-      <Button href="/onboarding/analyzing" variant="primary" className="mt-6">
-        Skip &amp; Continue
+      <Button
+        variant="primary"
+        onClick={handleContinue}
+        disabled={isSubmitting}
+        className="mt-6 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {isSubmitting ? "Saving..." : "Skip & Continue"}
       </Button>
     </AuthCard>
   );

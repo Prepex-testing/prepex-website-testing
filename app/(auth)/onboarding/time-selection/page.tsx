@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -9,6 +10,9 @@ import { Stepper } from "@/components/ui/Stepper";
 import { StepProgress } from "@/components/ui/StepProgress";
 // import { CloudSunIcon, SunIcon, CloudMoonIcon, MoonIcon } from "@/components/ui/icons";
 import {CloudSunIcon,SunIcon} from "@/assets/icons";
+import { saveStudySchedule } from "@/lib/api/onboarding";
+import { ApiError } from "@/lib/api/http";
+
 type SlotId = "morning" | "midday" | "evening" | "night";
 
 type TimeSlot = {
@@ -35,10 +39,13 @@ function deriveStyle(selected: SlotId[]): string {
 }
 
 export default function TimeSelectionPage() {
+  const router = useRouter();
   const [weekdayHours, setWeekdayHours] = useState(4);
   const [weekendHours, setWeekendHours] = useState(8);
   const [sameEveryDay, setSameEveryDay] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState<SlotId[]>(["morning"]);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setSubmitting] = useState(false);
 
   const handleWeekdayChange = (value: number) => {
     setWeekdayHours(value);
@@ -57,6 +64,31 @@ export default function TimeSelectionPage() {
     setSelectedSlots((current) =>
       current.includes(id) ? current.filter((slot) => slot !== id) : [...current, id],
     );
+  };
+
+  const handleContinue = async () => {
+    if (selectedSlots.length === 0) {
+      setError("Select at least one study window.");
+      return;
+    }
+    setError(null);
+    setSubmitting(true);
+    try {
+      await saveStudySchedule({
+        weekdayHours,
+        weekendHours,
+        sameDailyTarget: sameEveryDay,
+        studyWindows: selectedSlots.map(
+          (slot) => slot.toUpperCase() as "MORNING" | "MIDDAY" | "EVENING" | "NIGHT",
+        ),
+      });
+      router.push("/onboarding/which-chapters-have-you-studied");
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
+      );
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -133,12 +165,22 @@ export default function TimeSelectionPage() {
         Your style: {deriveStyle(selectedSlots)}
       </p>
 
+      {error && (
+        <p
+          role="alert"
+          className="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-xs font-medium text-danger"
+        >
+          {error}
+        </p>
+      )}
+
       <Button
-        href="/onboarding/which-chapters-have-you-studied"
         variant="primary"
-        className="mt-6"
+        onClick={handleContinue}
+        disabled={isSubmitting}
+        className="mt-6 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        Continue
+        {isSubmitting ? "Saving..." : "Continue"}
       </Button>
     </AuthCard>
   );

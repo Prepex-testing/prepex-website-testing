@@ -1,51 +1,112 @@
 "use client";
 
 import { useState } from "react";
+import type { ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { DateInput } from "@/components/ui/DateInput";
 import { Input } from "@/components/ui/Input";
 import { OptionCard } from "@/components/ui/OptionCard";
 import { StepProgress } from "@/components/ui/StepProgress";
-// import { GraduationCapIcon, RefreshIcon, MoreIcon } from "@/components/ui/icons";
-import {GraduationCapIcon,StarIcons,LayersIcon} from "@/assets/icons";
-const CLASSES = [
+import { GraduationCapIcon, StarIcons, LayersIcon } from "@/assets/icons";
+import { saveAcademicProfile } from "@/lib/api/onboarding";
+import { ApiError } from "@/lib/api/http";
+import { useStoredFullName } from "@/lib/auth/useStoredFullName";
+
+type CurrentLevel = "CLASS_11" | "CLASS_12" | "DROPPER_1" | "DROPPER_2" | "OTHER";
+
+const CLASSES: Array<{
+  id: CurrentLevel;
+  title: string;
+  subtitle?: string;
+  icon: ReactNode;
+}> = [
   {
-    id: "class-11",
+    id: "CLASS_11",
     title: "Class 11",
     subtitle: "For IIT Aspirants",
     icon: <GraduationCapIcon />,
   },
   {
-    id: "class-12",
+    id: "CLASS_12",
     title: "Class 12",
     subtitle: "For IIT Aspirants",
     icon: <GraduationCapIcon />,
   },
   {
-    id: "dropper-1",
+    id: "DROPPER_1",
     title: "Dropper (1st year)",
     subtitle: "For IIT Aspirants",
     icon: <StarIcons />,
   },
   {
-    id: "dropper-2",
+    id: "DROPPER_2",
     title: "Dropper (2nd year)",
     subtitle: "For IIT Aspirants",
     icon: <LayersIcon />,
   },
-  { id: "other", title: "Other", icon: <StarIcons /> },
+  { id: "OTHER", title: "Other", icon: <StarIcons /> },
 ];
 
+function displayDateToIso(display: string): string | null {
+  const match = display.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!match) return null;
+  const [, day, month, year] = match;
+  return `${year}-${month}-${day}`;
+}
+
 export default function TellUsAboutYouPage() {
-  const [selectedClass, setSelectedClass] = useState("class-11");
+  const router = useRouter();
+  const storedFullName = useStoredFullName();
+  const [fullNameInput, setFullNameInput] = useState("");
+  const [fullNameTouched, setFullNameTouched] = useState(false);
+  const [city, setCity] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [examDate, setExamDate] = useState("");
+  const [selectedClass, setSelectedClass] = useState<CurrentLevel>("CLASS_11");
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setSubmitting] = useState(false);
+
+  const fullName = fullNameTouched ? fullNameInput : storedFullName;
+
+  const handleContinue = async () => {
+    const targetExamDate = displayDateToIso(examDate);
+
+    if (!fullName.trim() || !city.trim() || !phoneNumber.trim()) {
+      setError("Please fill in all fields.");
+      return;
+    }
+    if (!targetExamDate) {
+      setError("Enter a valid exam date (DD/MM/YYYY).");
+      return;
+    }
+
+    setError(null);
+    setSubmitting(true);
+    try {
+      await saveAcademicProfile({
+        fullName,
+        phoneNumber,
+        city,
+        targetExamDate,
+        currentLevel: selectedClass,
+      });
+      router.push("/onboarding/where-do-you-study");
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
+      );
+      setSubmitting(false);
+    }
+  };
 
   return (
     <AuthCard>
       <StepProgress
         step={2}
         totalSteps={5}
-        backHref="/onboarding/select-subject"
+        backHref="/onboarding/preparing-for"
         showSkip
         skipHref="/onboarding/where-do-you-study"
       />
@@ -57,6 +118,15 @@ export default function TellUsAboutYouPage() {
         </p>
       </div>
 
+      {error && (
+        <p
+          role="alert"
+          className="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-xs font-medium text-danger"
+        >
+          {error}
+        </p>
+      )}
+
       <div className="mt-6 flex flex-col gap-5">
         <Input
           label="Full Name"
@@ -64,6 +134,11 @@ export default function TellUsAboutYouPage() {
           name="fullName"
           type="text"
           placeholder="Rohan Sharma"
+          value={fullName}
+          onChange={(event) => {
+            setFullNameInput(event.target.value);
+            setFullNameTouched(true);
+          }}
         />
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -73,6 +148,8 @@ export default function TellUsAboutYouPage() {
             name="city"
             type="text"
             placeholder="Indore"
+            value={city}
+            onChange={(event) => setCity(event.target.value)}
           />
           <Input
             label="Phone Number"
@@ -80,6 +157,8 @@ export default function TellUsAboutYouPage() {
             name="phone"
             type="tel"
             placeholder="+91 9999888822"
+            value={phoneNumber}
+            onChange={(event) => setPhoneNumber(event.target.value)}
           />
         </div>
 
@@ -100,7 +179,7 @@ export default function TellUsAboutYouPage() {
                 subtitle={item.subtitle}
                 selected={selectedClass === item.id}
                 onClick={() => setSelectedClass(item.id)}
-                className={item.id === "other" ? "sm:col-span-2" : undefined}
+                className={item.id === "OTHER" ? "sm:col-span-2" : undefined}
               />
             ))}
           </div>
@@ -111,15 +190,17 @@ export default function TellUsAboutYouPage() {
           helperText="We use this to calculate your daily pace and exam countdown."
           name="examDate"
           required
+          onDateChange={setExamDate}
         />
       </div>
 
       <Button
-        href="/onboarding/where-do-you-study"
         variant="primary"
-        className="mt-6"
+        onClick={handleContinue}
+        disabled={isSubmitting}
+        className="mt-6 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        Continue
+        {isSubmitting ? "Saving..." : "Continue"}
       </Button>
     </AuthCard>
   );
