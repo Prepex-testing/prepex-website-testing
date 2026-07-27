@@ -3,8 +3,8 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
 import {
-  ArrowLeftIcon,
-  BellIcon,
+  // ArrowLeftIcon,
+  // BellIcon,
   BookIcon,
   AlertTriangleIcon,
   CheckCircleIcon,
@@ -14,7 +14,7 @@ import {
   ExternalLinkIcon,
   CircleXIcon,
 } from "@/components/ui/icons";
-import { CalendarIcon, Open, TargetIcon } from "@/assets/icons";
+import { CalendarIcon, Open, TargetIcon ,BellIcon,ArrowLeftIcon} from "@/assets/icons";
 const OPTIONS = [
   { key: "A", value: "2√11" },
   { key: "B", value: "3√5" },
@@ -48,12 +48,12 @@ export default function MistakeNotebookEntryPage() {
           </Link>
           <h1 className="text-h1 text-ink">Mistake Notebook</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>

@@ -10,15 +10,15 @@ import { CrossAppSessionModal } from "@/components/home/CrossAppSessionModal";
 import { SessionCompleteModal } from "@/components/home/SessionCompleteModal";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import {
-  ArrowLeftIcon,
-  BellIcon,
+  // ArrowLeftIcon,
+  // BellIcon,
   ClockIcon,
   CheckIcon,
   // FileIcon,
   PauseIcon,
   PlayIcon,
 } from "@/components/ui/icons";
-import { LeftIconcon ,TargetIcon} from "@/assets/icons";
+import { LeftIconcon, TargetIcon ,ArrowLeftIcon,BellIcon} from "@/assets/icons";
 const TARGET_SECONDS = 60 * 60;
 const INITIAL_ELAPSED = 24 * 60 + 53;
 
@@ -72,12 +72,12 @@ export default function FocusSessionPage() {
           </Link>
           <h1 className="text-h1 text-ink">Focus Session</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
@@ -86,7 +86,7 @@ export default function FocusSessionPage() {
       </div>
 
       <div className="w-full rounded-2xl border border-brand/10 bg-surface p-6">
-   
+
         <div className="mx-auto flex max-w-[984px] flex-col items-center gap-2 text-center">
           <p className="flex items-center justify-center gap-2 text-lg font-semibold uppercase tracking-[1.5px] text-body-text sm:text-2xl sm:leading-[31.2px] sm:tracking-[2.4px]">
             <ClockIcon />
@@ -124,10 +124,10 @@ export default function FocusSessionPage() {
               <span
                 key={task.id}
                 className={`h-4 w-4 rounded-full ${task.done
-                    ? "bg-[#10B981] shadow-[0_0_8.6px_0_#FD786358]"
-                    : isDark
-                      ? "bg-white/20"
-                      : "bg-brand/10"
+                  ? "bg-[#10B981] shadow-[0_0_8.6px_0_#FD786358]"
+                  : isDark
+                    ? "bg-white/20"
+                    : "bg-brand/10"
                   }`}
               />
             ))}
@@ -159,12 +159,12 @@ export default function FocusSessionPage() {
             >
               <span
                 className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-[4px] ${task.done
-                    ? isDark
-                      ? "border border-white bg-white text-[#10B981]"
-                      : "bg-[#E7F9F3] text-[#10B981]"
-                    : isDark
-                      ? "border border-white bg-white"
-                      : "border border-[#C7C5D1]"
+                  ? isDark
+                    ? "border border-white bg-white text-[#10B981]"
+                    : "bg-[#E7F9F3] text-[#10B981]"
+                  : isDark
+                    ? "border border-white bg-white"
+                    : "border border-[#C7C5D1]"
                   }`}
               >
                 {task.done && <CheckIcon />}

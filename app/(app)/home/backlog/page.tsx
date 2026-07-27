@@ -8,8 +8,8 @@ import { CircularProgress } from "@/components/ui/CircularProgress";
 import { RecoveryModeModal } from "@/components/home/RecoveryModeModal";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import {
-  ArrowLeftIcon,
-  BellIcon,
+  // ArrowLeftIcon,
+  // BellIcon,
   // AlertTriangleIcon,
   // ClockIcon,
   // BoltIcon,
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/icons";
 
 type Subject = "physics" | "chemistry" | "maths";
-import { LineIcon,BoltIcon ,CrossIcon,BoxIcon,MenuIcon,ChemistryIcon,MathIcon,PhysicsIcon,Clock} from "@/assets/icons";
+import { LineIcon, BoltIcon, CrossIcon, BoxIcon, MenuIcon, ChemistryIcon, MathIcon, PhysicsIcon, Clock ,BellIcon,ArrowLeftIcon} from "@/assets/icons";
 const SUBJECT_ICONS: Record<Subject, React.ReactNode> = {
   physics: <PhysicsIcon />,
   chemistry: <ChemistryIcon />,
@@ -93,12 +93,12 @@ export default function BacklogPage() {
           </Link>
           <h1 className="text-h1 text-ink">Your Backlog</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
@@ -309,7 +309,7 @@ export default function BacklogPage() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <span className="text-muted">
-            <MenuIcon/>
+            <MenuIcon />
           </span>
 
           <h2 className="text-[20px] font-semibold uppercase leading-7 tracking-[-0.5px] text-ink">

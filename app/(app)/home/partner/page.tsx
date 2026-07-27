@@ -10,8 +10,8 @@ import { PartnerMatchModal } from "@/components/home/PartnerMatchModal";
 import { GoalSettingModal } from "@/components/home/GoalSettingModal";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import {
-  ArrowLeftIcon,
-  BellIcon,
+  // ArrowLeftIcon,
+  // BellIcon,
   // FlameIcon,
   CheckCircleIcon,
   // CalendarIcon,
@@ -23,7 +23,7 @@ import {
   TrophyIcon,
   // FireIcon,
 } from "@/components/ui/icons";
-import {FlameIcon, ClockIcon, EncourageIcon, GoalIcon,Location ,CheckIcons,CalendarIcon,CheckInIcon,CelebrateIcon,PushIcon} from "@/assets/icons";
+import { FlameIcon, ClockIcon, EncourageIcon, GoalIcon, Location, CheckIcons, CalendarIcon, CheckInIcon, CelebrateIcon, PushIcon,ArrowLeftIcon ,BellIcon} from "@/assets/icons";
 const STAT_CARDS = [
   {
     value: "27",
@@ -129,12 +129,12 @@ export default function PartnerPage() {
           </Link>
           <h1 className="text-h1 text-ink">Partner</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>

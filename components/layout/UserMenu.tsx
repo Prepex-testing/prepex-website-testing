@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UserIcon, LogoutIcon } from "@/components/ui/icons";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { useTheme } from "../theme/ThemeProvider";
 
 type UserMenuProps = {
   name?: string;
@@ -31,9 +30,6 @@ export function UserMenu({ name = "Rohan", initial = "R" }: UserMenuProps) {
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, [isOpen]);
 
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-
   return (
     <div ref={containerRef} className="relative shrink-0">
       <button
@@ -41,25 +37,51 @@ export function UserMenu({ name = "Rohan", initial = "R" }: UserMenuProps) {
         onClick={() => setOpen((value) => !value)}
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        className={`
-  flex items-center gap-2 rounded-full py-1 pl-1 pr-2
-  transition-colors
-  ${isDark
-            ? "bg-slate-800 hover:bg-slate-700"
-            : "bg-white hover:bg-tint-strong shadow-sm"
-          }
-`}
+        className="
+      flex h-11 w-[109px] items-center gap-3
+      rounded-full
+      bg-icon-action-bg
+      py-[6px] pr-4 pl-[6px]
+      transition-colors
+      hover:bg-tint-strong
+    "
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">
+        {/* Avatar Circle */}
+        <span
+          className="
+        flex h-8 w-8 shrink-0
+        items-center justify-center
+        rounded-full
+        bg-brand
+        text-sm font-bold text-white
+      "
+        >
           {initial}
         </span>
-        <span className="text-sm font-semibold text-ink">{name}</span>
+
+        {/* Name */}
+        <span
+          className="
+        w-[43px]
+        text-sm font-semibold
+        leading-5
+        text-ink
+        truncate
+      "
+        >
+          {name}
+        </span>
       </button>
 
       {isOpen && (
         <div
           role="menu"
-          className="absolute right-0 top-full z-40 mt-2 w-44 overflow-hidden rounded-xl border border-brand/10 bg-surface py-1 shadow-modal"
+          className="
+        absolute right-0 top-full z-40 mt-2
+        w-44 overflow-hidden
+        rounded-xl border border-brand/10
+        bg-surface py-1 shadow-modal
+      "
         >
           <Link
             href="/profile"
@@ -70,6 +92,7 @@ export function UserMenu({ name = "Rohan", initial = "R" }: UserMenuProps) {
             <UserIcon />
             Profile
           </Link>
+
           <button
             type="button"
             role="menuitem"

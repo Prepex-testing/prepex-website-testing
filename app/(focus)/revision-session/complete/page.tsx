@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  ArrowLeftIcon,
+  // ArrowLeftIcon,
   // CalendarIcon,
   CheckIcon,
   // ClockIcon,
@@ -12,7 +12,7 @@ import {
   ChevronDownIcon,
 } from "@/components/ui/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { TargetIcon, TrendingUpIcon, CalendarIcon, ClockIcon, LayersIcon } from "@/assets/icons";
+import { TargetIcon, TrendingUpIcon, CalendarIcon, ClockIcon, LayersIcon ,ArrowLeftIcon} from "@/assets/icons";
 type Difficulty = "Low" | "Medium" | "High";
 
 const DIFFICULTIES: Difficulty[] = ["Low", "Medium", "High"];

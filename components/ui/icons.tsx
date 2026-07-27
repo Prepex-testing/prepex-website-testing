@@ -369,10 +369,21 @@ export function MinusIcon() {
   );
 }
 
-export function SunIcon() {
+export function SunIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <circle cx="9" cy="9" r="3.5" stroke="currentColor" strokeWidth="1.4" />
+    <svg
+      viewBox="0 0 18 18"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <circle
+        cx="9"
+        cy="9"
+        r="3.5"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
       <path
         d="M9 1.5v2M9 14.5v2M2.6 9h2M13.4 9h2M4.5 4.5l1.4 1.4M12.1 12.1l1.4 1.4M4.5 13.5l1.4-1.4M12.1 5.9l1.4-1.4"
         stroke="currentColor"
@@ -422,14 +433,13 @@ export function CloudMoonIcon() {
   );
 }
 
-export function MoonIcon() {
+export function MoonIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
-      width="22"
-      height="22"
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
+      {...props}
     >
       <path
         d="M15.2 3.6a8 8 0 1 0 5.2 13.7A9 9 0 0 1 15.2 3.6Z"

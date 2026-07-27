@@ -8,10 +8,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { AddRevisionTaskModal } from "@/components/home/AddRevisionTaskModal";
-import { Container } from "@/assets/icons";
+import { Container ,BellIcon,ArrowLeftIcon} from "@/assets/icons";
 import {
-  ArrowLeftIcon,
-  BellIcon,
+  // ArrowLeftIcon,
+  // BellIcon,
   ClockIcon,
   CheckCircleIcon,
   ChevronDownIcon,
@@ -96,7 +96,7 @@ export default function RevisionPage() {
           <button
             type="button"
             aria-label="Notifications"
-            className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${isDark ? "text-white" : "text-muted"} hover:bg-tint-strong`}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
@@ -256,8 +256,8 @@ export default function RevisionPage() {
                 <div className="min-w-0 flex-1">
                   <span
                     className={`inline-flex rounded-sm px-2 py-1 text-[9px] sm:text-[10px] font-bold uppercase ${isDark
-                        ? "bg-white/10 text-white"
-                        : DIFFICULTY_STYLES[topic.difficulty]
+                      ? "bg-white/10 text-white"
+                      : DIFFICULTY_STYLES[topic.difficulty]
                       }`}
                   >
                     {topic.difficulty}

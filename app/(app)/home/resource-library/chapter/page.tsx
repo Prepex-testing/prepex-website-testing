@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, FileIcon, ChartBarIcon, BookmarkIcon } from "@/components/ui/icons";
+import { FileIcon, ChartBarIcon, BookmarkIcon } from "@/components/ui/icons";
 import { TargetIcon, ComputerIcon } from "@/assets/icons";
-
+import {ArrowLeftIcon} from "@/assets/icons";
 type Resource = {
   id: string;
   title: string;
@@ -105,7 +105,7 @@ export default function ResourceChapterPage() {
       <div className="flex flex-col gap-4">
         <Link
           href="/home/resource-library"
-          className="flex w-fit items-center gap-2 text-[13px] font-semibold text-ink transition-colors hover:text-brand sm:text-sm"
+          className="flex w-fit items-center gap-2 text-[13px] font-semibold text-ink transition-colors  sm:text-sm"
         >
           <ArrowLeftIcon />
           Back to Library

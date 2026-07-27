@@ -7,10 +7,10 @@ import { useTheme } from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { PercentileGauge } from "@/components/ui/PercentileGauge";
-import { CalendarIcon, ClockIcon, TrendingUpIcon, TargetIcon, SparkleIcon } from "@/assets/icons";
+import { CalendarIcon, ClockIcon, TrendingUpIcon, TargetIcon, SparkleIcon,ArrowLeftIcon,BellIcon } from "@/assets/icons";
 import {
-  ArrowLeftIcon,
-  BellIcon,
+  // ArrowLeftIcon,
+  // BellIcon,
   FileIcon,
   DownloadIcon,
   // SparkleIcon,
@@ -125,12 +125,12 @@ export default function ViewAnalyticsPage() {
           </Link>
           <h1 className="text-h1 text-ink">View Analytics</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
@@ -369,8 +369,8 @@ export default function ViewAnalyticsPage() {
 
           <div
             className={`rounded-2xl border p-6 text-sm leading-5 text-body-text ${isDark
-                ? "border-brand/10 bg-[var(--sub)]"
-                : "border-warning bg-warning-bg"
+              ? "border-brand/10 bg-[var(--sub)]"
+              : "border-warning bg-warning-bg"
               }`}
           >
             <strong className="font-bold">

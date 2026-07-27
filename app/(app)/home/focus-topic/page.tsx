@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import {
-  ArrowLeftIcon,
-  BellIcon,
+  // ArrowLeftIcon,
+  // BellIcon,
   ListIcon,
   CheckCircleIcon,
   // FileIcon,
@@ -19,7 +19,7 @@ import {
   // PencilIcon,
   // RefreshIcon,
 } from "@/components/ui/icons";
-import { ClockIcon, FileIcon, LayersIcon, AlertTriangleIcon, PlayIcon, NoteIcon, LoderIcon } from "@/assets/icons";
+import { ClockIcon, FileIcon, LayersIcon, AlertTriangleIcon, PlayIcon, NoteIcon, LoderIcon,ArrowLeftIcon ,BellIcon} from "@/assets/icons";
 type SignalLevel = "high" | "medium";
 
 // HIGH -> navy/lavender pill (matches "Coordinate Geometry" tag treatment in both screenshots)
@@ -83,12 +83,12 @@ export default function FocusTopicPage() {
           </Link>
           <h1 className="text-h1 text-ink">This Week&apos;s Focus Topic</h1>
         </div>
-        <div className="flex items-center gap-4">
+            <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>

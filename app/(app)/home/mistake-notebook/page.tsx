@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Chip } from "@/components/ui/Chip";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import {
-  BellIcon,
+  // BellIcon,
   ChevronDownIcon,
   MoreIcon,
   // FileIcon,
@@ -15,7 +15,7 @@ import {
   // CalendarIcon,
   // ClockIcon,
 } from "@/components/ui/icons";
-import { ClockIcon, CalendarIcon, FileIcon } from "@/assets/icons";
+import { ClockIcon, CalendarIcon, FileIcon,BellIcon } from "@/assets/icons";
 const SUBJECT_FILTERS = ["All", "Physics", "Chemistry", "Maths"];
 const TYPE_FILTERS = ["All", "Silly", "Concept", "Time", "Guess"];
 
@@ -151,12 +151,12 @@ export default function MistakeNotebookPage() {
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-h1 text-ink">Mistake Notebook</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>

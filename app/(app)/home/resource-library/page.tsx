@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import {
-  BellIcon,
+  // BellIcon,
   SearchIcon,
   // PlayIcon,
   // FileIcon,
@@ -15,7 +15,7 @@ import {
   ArrowRightIcon,
   BookmarkIcon,
 } from "@/components/ui/icons";
-import { Containers, TargetIcon, StarIcon } from "@/assets/icons";
+import { Containers, TargetIcon, StarIcon,BellIcon } from "@/assets/icons";
 const BROWSE_FILTERS = ["Subject", "Chapter", "Type"];
 
 const FEATURED = [
@@ -65,7 +65,7 @@ export default function ResourceLibraryPage() {
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>

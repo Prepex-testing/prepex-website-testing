@@ -3,14 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowLeftIcon,
+  // ArrowLeftIcon,
   ClockIcon,
   CheckIcon,
   FileIcon,
   // PlayIcon,
 } from "@/components/ui/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { TargetIcon, PlayIcon, Open } from "@/assets/icons";
+import { TargetIcon, PlayIcon, Open,ArrowLeftIcon } from "@/assets/icons";
 
 const QUESTIONS = [
   "What is Newton's First Law of Motion?",

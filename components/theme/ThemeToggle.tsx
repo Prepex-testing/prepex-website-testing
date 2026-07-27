@@ -13,18 +13,15 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       aria-pressed={isDark}
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className={`
-        flex h-11 w-11 items-center justify-center rounded-full
-        transition-colors
-        ${
-          isDark
-            ? "bg-slate-800 text-white hover:bg-slate-700"
-            : "bg-white text-[#1B245A] hover:bg-tint-strong"
-        }
-        ${className}
-      `}
+      className={`flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong ${className}`}
     >
-      {isDark ? <SunIcon /> : <MoonIcon />}
+      <span className="hidden dark:block">
+        <SunIcon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6" />
+      </span>
+      <span className="dark:hidden">
+
+        <MoonIcon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6" />
+      </span>
     </button>
   );
 }

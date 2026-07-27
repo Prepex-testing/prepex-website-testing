@@ -6,14 +6,14 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   ArrowLeftIcon,
-  BellIcon,
+  // BellIcon,
   ChevronDownIcon,
   CheckIcon,
   XIcon,
   CheckCircleIcon,
   RefreshIcon,
 } from "@/components/ui/icons";
-import { FlameIcon, ClockIcon, StarIcon, ShieldIcon, BoltIcon, QuickIcon } from "@/assets/icons";
+import { FlameIcon, ClockIcon, StarIcon, ShieldIcon, BoltIcon, QuickIcon ,BellIcon} from "@/assets/icons";
 const STAT_CARDS = [
   {
     icon: <FlameIcon />,
@@ -21,7 +21,7 @@ const STAT_CARDS = [
     label: "Current Streak",
     value: "27",
     unit: "days in a row",
-    unitVariant: "caption" as const, // uppercase caption style, no separate caption line
+    unitVariant: "caption" as const,
     pb: "pb-5 sm:pb-[50px]",
   },
   {
@@ -148,12 +148,12 @@ export default function StreakPage() {
             Streak
           </h1>
         </div>
-        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-muted hover:bg-tint-strong sm:h-11 sm:w-11"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
@@ -270,13 +270,12 @@ export default function StreakPage() {
                             className="flex h-[42px] flex-col items-center justify-center gap-0.5 rounded-lg py-1 sm:h-[48px]"
                           >
                             <span
-                              className={`flex h-6 w-6 items-center justify-center rounded-full text-center text-[13px] font-bold leading-[20px] sm:text-[14px] ${
-                                cell.isToday
+                              className={`flex h-6 w-6 items-center justify-center rounded-full text-center text-[13px] font-bold leading-[20px] sm:text-[14px] ${cell.isToday
                                   ? "bg-brand text-white"
                                   : cell.status === "outside" || cell.status === "upcoming"
                                     ? "text-muted/50"
                                     : "text-ink"
-                              }`}
+                                }`}
                             >
                               {cell.date}
                             </span>

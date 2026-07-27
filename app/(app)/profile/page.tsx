@@ -221,10 +221,8 @@ export default function ProfilePage() {
                   className="flex h-10 items-center gap-4"
                 >
                   {/* Icon */}
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint">
-                    <span className="text-ink">
-                      {detail.icon}
-                    </span>
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#EEF0F8] text-[#1A1A4E]  dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]">
+                    {detail.icon}
                   </div>
 
                   {/* Text */}
@@ -366,7 +364,7 @@ export default function ProfilePage() {
               <div className="flex h-[66px] items-center justify-between rounded-xl border border-brand/10 px-3 transition-colors hover:bg-tint/30">
 
                 <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint text-ink">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg  bg-[#EEF0F8] text-[#1A1A4E]  dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]">
                     <Patners />
                   </div>
 

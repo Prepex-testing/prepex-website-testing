@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import {  EditIcon, MoonIcon, PencilIcon, RefreshIcon, SmileIcon} from "@/components/ui/icons";
+import { EditIcon, MoonIcon, PencilIcon, RefreshIcon, SmileIcon } from "@/components/ui/icons";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
 import { SettingRow } from "@/components/profile/SettingRow";
 import { ToggleRow } from "@/components/profile/ToggleRow";
 import { Switch } from "@/components/ui/Switch";
-import {ClockIcon,CalendarIcon,TargetIcon,BellIcon,EditIcons,Patners,StarIcon} from "@/assets/icons";
+import { ClockIcon, CalendarIcon, TargetIcon, BellIcon, EditIcons, Patners, StarIcon } from "@/assets/icons";
 const GROUPS = [
   {
     id: "critical",
@@ -120,7 +120,7 @@ export default function NotificationSettingsPage() {
         icon={<BellIcon />}
         title="Master Notifications"
         subtitle="Enable or disable all notifications from Prepex."
-        iconClassName="border-2 border-[#1A1A4E] bg-[#EEF0F8] text-[#1A1A4E] dark:border-[#FAF7F2] dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]"
+        iconClassName="bg-[#EEF0F8] text-[#1A1A4E] dark:border-[#FAF7F2] dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]"
         right={
           <Switch
             checked={master}
@@ -198,43 +198,48 @@ export default function NotificationSettingsPage() {
           />
 
           {/* Right */}
-          <div className="flex flex-wrap items-center gap-4 lg:shrink-0">
+          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end lg:shrink-0">
 
-            {/* From */}
-            <div className="flex flex-col">
-              <p className="mb-1 text-[10px] font-medium uppercase tracking-wide text-muted">
-                From
-              </p>
+            <div className="flex items-end gap-4">
 
-              <div className="flex h-9 w-[128px] items-center gap-2 rounded-lg border border-brand/10 bg-surface px-3">
-                <ClockIcon />
+              {/* From */}
+              <div className="flex flex-1 flex-col sm:flex-none">
+                <p className="mb-1 text-[10px] font-medium uppercase tracking-wide text-muted sm:text-[11px]">
+                  From
+                </p>
 
-                <span className="text-[14px] font-semibold leading-5 text-ink">
-                  11:00 PM
-                </span>
+                <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-brand/10 bg-surface px-3 sm:w-32">
+                  <ClockIcon className="size-4 shrink-0" />
+
+                  <span className="text-xs font-semibold leading-5 text-ink sm:text-sm">
+                    11:00 PM
+                  </span>
+                </div>
               </div>
-            </div>
 
-            <span className="mt-5 text-muted">—</span>
 
-            {/* To */}
-            <div className="flex flex-col">
-              <p className="mb-1 text-[10px] font-medium uppercase tracking-wide text-muted">
-                To
-              </p>
+              <span className="pb-2 text-muted">—</span>
 
-              <div className="flex h-9 w-[128px] items-center gap-2 rounded-lg border border-brand/10 bg-surface px-3">
-                <ClockIcon />
+              {/* To */}
+              <div className="flex flex-1 flex-col sm:flex-none">
+                <p className="mb-1 text-[10px] font-medium uppercase tracking-wide text-muted sm:text-[11px]">
+                  To
+                </p>
 
-                <span className="text-[14px] font-semibold leading-5 text-ink">
-                  06:00 AM
-                </span>
+                <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-brand/10 bg-surface px-3 sm:w-32">
+                  <ClockIcon className="size-4 shrink-0" />
+
+                  <span className="text-xs font-semibold leading-5 text-ink sm:text-sm">
+                    06:00 AM
+                  </span>
+                </div>
               </div>
+
             </div>
 
             <Button
               variant="secondary"
-              className="mt-5 h-9 px-4 text-[12px] font-semibold whitespace-nowrap"
+              className="h-9.5! w-full gap-2 rounded-lg border px-4 py-2 text-xs! font-semibold whitespace-nowrap sm:w-[168.64px] sm:text-caption"
             >
               <PencilIcon />
               Edit Quiet Hours
@@ -262,7 +267,7 @@ export default function NotificationSettingsPage() {
               {/* Left */}
               <div className="flex items-center gap-4">
 
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[#1A1A4E] bg-[#EEF0F8] text-[#1A1A4E] dark:border-[#FAF7F2] dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg  bg-[#EEF0F8] text-[#1A1A4E]  dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]">
                   {item.icon}
                 </div>
 

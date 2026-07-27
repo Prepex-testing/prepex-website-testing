@@ -5,9 +5,9 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
-import { CalendarIcon, ClockIcon, TargetIcon, ChartBarIcons, TrophyIcons, TrendingUpIcon, UploadIcon,LeftIconcon } from "@/assets/icons";
+import { CalendarIcon, ClockIcon, TargetIcon, ChartBarIcons, TrophyIcons, TrendingUpIcon, UploadIcon,LeftIconcon ,BellIcon} from "@/assets/icons";
 import {
-  BellIcon,
+  // BellIcon,
   RefreshIcon,
   // TargetIcon,
   // ChartBarIcon,
@@ -93,12 +93,12 @@ export default function MockAnalysisPage() {
         <h1 className="text-[24px] font-bold leading-8 text-ink sm:text-[28px]">
           Mock Analysis
         </h1>
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-muted transition hover:bg-tint-strong sm:h-11 sm:w-11"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>

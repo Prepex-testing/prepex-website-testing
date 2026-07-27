@@ -1,8 +1,8 @@
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
-import { BellIcon, TargetIcon } from "@/components/ui/icons";
-
+import {TargetIcon } from "@/components/ui/icons";
+import {BellIcon} from "@/assets/icons";
 type FocusItem = {
   id: string;
   subjectLabel: string;
@@ -65,12 +65,12 @@ export default function FocusNextPage() {
           <h1 className="text-h1 text-ink">Where to focus next</h1>
           <p className="text-sm text-muted">Fixing these gains you the most marks.</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
