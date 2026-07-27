@@ -102,8 +102,8 @@ const QUICK_ACCESS = [
     subtitle: "Analyze & Improve",
     icon: <ChartBarIcon className="h-5 w-5" />,
   },
-  { href: "/home/mistake-notebook", label: "Mistake Notebook", icon: <BookIcon className="h-5 w-5" /> },
-  {
+   { href: "/home/mistake-notebook", label: "Mistake Notebook", icon: <BookIcon className="h-5 w-5" /> },
+    {
     href: "/home/focus-topic",
     label: "This Week's Focus Topic",
     icon: <LayersIcon className="h-5 w-5" />,
@@ -114,7 +114,7 @@ const QUICK_ACCESS = [
   { href: "/home/resource-library", label: "Resource Library", icon: <BriefcaseIcon className="h-5 w-5" /> },
   { href: "/home/revision", label: "Revision", icon: <RevisionIcon className="h-5 w-5" /> },
   { label: "Quick Focus", icon: <QuickIcon className="h-5 w-5" />, isModal: true },
-  {
+   {
     href: "/home/journal",
     label: "Weekly Win Journal",
     subtitle: "Reflect & celebrate wins",
@@ -184,12 +184,12 @@ export default function HomePage() {
           <h1 className="text-2xl font-bold text-ink lg:text-h1">Good Morning, Rohan</h1>
           <p className="text-sm text-muted">JEE Main 2026 in 284 days</p>
         </div>
-
+        
       </div>
 
+      
 
-
-
+      
     </div>
   );
 }
