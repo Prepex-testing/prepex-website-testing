@@ -45,7 +45,7 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
     <div className="flex flex-wrap items-center gap-3 rounded-xl border border-brand/10 bg-surface p-4 sm:gap-4">
       {/* Drag handle — 18x18 per spec */}
       <span className="shrink-0 cursor-grab text-muted" aria-hidden="true">
-        <GripVerticalIcon  />
+        <GripVerticalIcon />
       </span>
 
       {/* Avatar — 56x56, rounded-lg (8px), #EEF2FF fill, 24px bold #1A1A4E */}
@@ -74,7 +74,7 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
 
         <div className="mt-1 flex flex-wrap items-center gap-3 text-xs font-medium leading-4 text-[#6B7280]">
           <span className="flex items-center gap-1">
-            <ClockIcon  />
+            <ClockIcon />
             {task.duration}
           </span>
           <span className="flex items-center gap-1">
@@ -94,7 +94,7 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
         <Button
           variant="task"
           size="sm"
-          className="h-[38px] rounded-lg border border-[#1A1A4E] px-5 py-2 text-sm font-bold leading-5 text-[#1A1A4E]"
+          className="h-[38px] rounded-lg border border-[#1A1A4E] px-3 sm:px-5 py-2 text-xs sm:text-sm font-bold leading-5 text-[#1A1A4E] whitespace-nowrap"
           href={
             task.actionLabel === "Start Session"
               ? "/home/session"
@@ -113,7 +113,7 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
             checked={done}
             onChange={() => setDone((value) => !value)}
             aria-label={`Mark "${task.title}" complete`}
-            className="h-5 w-5 rounded border-brand/25"
+            className="h-5 w-5 rounded border border-[#333333] dark:border-[#8B8998]"
           />
           <TaskEditMenu
             task={{

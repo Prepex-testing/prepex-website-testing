@@ -11,7 +11,7 @@ import {
   // ClockIcon,
   // CalendarIcon,
 } from "@/components/ui/icons";
-import { CalendarIcon,ClockIcon} from "@/assets/icons";
+import { CalendarIcon, ClockIcon } from "@/assets/icons";
 type HistoryEntry = {
   id: string;
   badge: string;
@@ -119,7 +119,8 @@ function HistoryCard({ entry }: { entry: HistoryEntry }) {
 
           <Link
             href="/home/journal"
-            className={`inline-flex h-12 w-[160px] items-center justify-center gap-3 rounded-lg border px-8 py-4 text-[16px] font-bold text-ink transition-colors hover:bg-[#FF7A59] hover:text-white ${isDark ? "border-white" : "border-brand"}`}
+            className={`inline-flex h-12 w-full max-w-[160px] sm:w-[160px] shrink items-center justify-center gap-3 rounded-lg border px-4 sm:px-8 text-[14px] sm:text-[16px] font-bold whitespace-nowrap text-ink transition-colors hover:bg-[#FF7A59] hover:text-white ${isDark ? "border-white" : "border-brand"
+              }`}
           >
             View Card
           </Link>

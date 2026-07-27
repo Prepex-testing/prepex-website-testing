@@ -112,7 +112,7 @@ export default function FocusNextPage() {
                 href="/practice"
                 variant="secondary"
                 size="sm"
-                className="bg-surface text-ink border border-brand/15 hover:!bg-[#FF7A59] hover:!text-white hover:border-[#FF7A59]"
+                className="bg-surface text-ink hover:!bg-[#FF7A59] hover:!text-white hover:!border-[#FF7A59]"
               >
                 Start Practice
               </Button>

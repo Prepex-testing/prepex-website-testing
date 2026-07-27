@@ -368,7 +368,9 @@ export default function ViewAnalyticsPage() {
           </div>
 
           <div
-            className={`rounded-2xl p-6 text-sm leading-5 text-body-text ${isDark ? "bg-tint-strong" : "border border-warning bg-warning-bg"
+            className={`rounded-2xl border p-6 text-sm leading-5 text-body-text ${isDark
+                ? "border-brand/10 bg-[var(--sub)]"
+                : "border-warning bg-warning-bg"
               }`}
           >
             <strong className="font-bold">
@@ -449,11 +451,17 @@ export default function ViewAnalyticsPage() {
               ))}
             </div>
 
-            <div className="w-full max-w-[320px] rounded-lg border border-brand/10 bg-tint-strong p-4">
+            <div
+              className={`w-full max-w-[320px] rounded-lg border p-4 ${isDark
+                ? "border-brand/10 bg-[var(--sub)]"
+                : "border-brand/10 bg-tint-strong"
+                }`}
+            >
               <p className="text-[11px] font-bold uppercase tracking-[1.1px] text-ink">
                 Strategy Note
               </p>
-              <p className="mt-2 text-link leading-5">
+
+              <p className="mt-2 leading-5 text-link">
                 Excessive time in Maths impacted Chemistry quality. Rebalance next time.
               </p>
             </div>

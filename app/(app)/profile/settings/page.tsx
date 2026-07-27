@@ -28,7 +28,7 @@ export default function AccountSettingsPage() {
 
           <div className="flex items-center gap-4">
 
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint-strong text-ink dark:bg-ink/8">
               <UserIcons />
             </div>
 
@@ -52,16 +52,16 @@ export default function AccountSettingsPage() {
           {/* Left */}
           <div className="flex flex-1 items-center gap-4">
 
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint-strong text-ink dark:bg-ink/8">
               <EmailIcon />
             </div>
 
             <div className="min-w-0">
-              <p className="text-[12px] leading-4 text-muted">
+              <p className="text-[12px] font-bold leading-6 text-ink">
                 Email Address
               </p>
 
-              <p className="mt-1 truncate text-[14px] font-bold leading-5 text-ink">
+              <p className="mt-1 truncate text-[14px] font-bold leading-5 text-muted">
                 rohan@example.com
               </p>
             </div>
@@ -76,16 +76,16 @@ export default function AccountSettingsPage() {
           {/* Left */}
           <div className="flex flex-1 items-center gap-4">
 
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint-strong text-ink dark:bg-ink/8">
               <LockIcon />
             </div>
 
             <div className="min-w-0">
-              <p className="text-[12px] leading-4 text-muted">
+              <p className="text-[12px] font-bold leading-6 text-ink">
                 Password
               </p>
 
-              <p className="mt-1 text-[14px] font-bold leading-5 text-ink">
+              <p className="mt-1 text-[14px] font-bold leading-5 text-ink text-muted">
                 ••••••••••
               </p>
             </div>
@@ -111,7 +111,7 @@ export default function AccountSettingsPage() {
         {/* Header */}
         <div className="flex min-h-22.25 items-center border-b border-brand/10 px-6 py-5">
           <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint-strong text-ink dark:bg-ink/8">
               <LinkIcon />
             </div>
 
@@ -212,7 +212,7 @@ export default function AccountSettingsPage() {
         <div className="p-6">
 
           {/* Warning Box */}
-          <div className="flex min-h-18 items-start gap-4 rounded-xl border border-[#F59E0B]/20 bg-[#F59E0B]/10 p-4">
+          <div className="flex min-h-18 items-start gap-4 rounded-xl border border-[#F59E0B]/20 p-4">
 
             <div className="flex h-6 w-6 shrink-0 items-center justify-center text-[#F59E0B]">
               <InfoIcon />

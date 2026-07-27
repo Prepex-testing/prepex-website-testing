@@ -101,8 +101,8 @@ const QUICK_ACCESS = [
     subtitle: "Analyze & Improve",
     icon: <ChartBarIcon className="h-5 w-5" />,
   },
-   { href: "/home/mistake-notebook", label: "Mistake Notebook", icon: <BookIcon className="h-5 w-5" /> },
-    {
+  { href: "/home/mistake-notebook", label: "Mistake Notebook", icon: <BookIcon className="h-5 w-5" /> },
+  {
     href: "/home/focus-topic",
     label: "This Week's Focus Topic",
     icon: <LayersIcon className="h-5 w-5" />,
@@ -113,7 +113,7 @@ const QUICK_ACCESS = [
   { href: "/home/resource-library", label: "Resource Library", icon: <BriefcaseIcon className="h-5 w-5" /> },
   { href: "/home/revision", label: "Revision", icon: <RevisionIcon className="h-5 w-5" /> },
   { label: "Quick Focus", icon: <QuickIcon className="h-5 w-5" />, isModal: true },
-   {
+  {
     href: "/home/journal",
     label: "Weekly Win Journal",
     subtitle: "Reflect & celebrate wins",
@@ -290,7 +290,7 @@ export default function HomePage() {
 
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_475px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[2fr_1fr]">
         <div className="flex min-w-0 flex-col gap-6">
           {isFriday && (
             <div className="rounded-[24px] border border-brand/10 bg-surface p-6 shadow-[0px_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0px_2px_8px_rgba(0,0,0,0.2)]">
@@ -302,7 +302,7 @@ export default function HomePage() {
                   </p>
                 </div>
                 <span className="flex shrink-0 items-center gap-2 rounded-full bg-tint-strong px-3 py-1.5 text-xs font-bold text-ink">
-                  <CheckCircleIcon />
+                  <CheckCircleIcon className="h-4 w-4 shrink-0 sm:h-[18px] sm:w-[18px] lg:h-5 lg:w-5" />
                   3% Ahead of Timeline
                 </span>
               </div>
@@ -361,7 +361,7 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => setAddTaskOpen(true)}
-                  className="flex h-9 items-center gap-2 rounded-lg border border-brand/10 bg-surface px-3 text-xs font-medium text-ink transition-colors hover:bg-tint"
+                  className="flex h-9 items-center gap-2 rounded-lg border border-button-border bg-surface px-3 text-xs font-medium text-ink transition-colors hover:bg-tint"
                 >
                   <PlusIcon />
                   <span>Add task</span>
@@ -517,25 +517,37 @@ export default function HomePage() {
 
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warning/30 bg-warning/10 px-5 py-4">
+      <div className="flex flex-col gap-4 rounded-2xl border border-warning/30 bg-warning/10 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-warning/20 text-warning">
             <InfoIcon />
           </span>
+
           <div className="min-w-0">
-            <p className="text-sm font-bold text-warning">Backlog Alert</p>
-            <p className="text-xs text-muted">Thermodynamics • Pending for 3 days</p>
+            <p className="text-sm font-bold text-warning">
+              Backlog Alert
+            </p>
+
+            <p className="text-xs text-muted">
+              Thermodynamics • Pending for 3 days
+            </p>
           </div>
         </div>
+
         <Button
           href="/home/backlog"
           variant="secondary"
           size="sm"
-          className={`shrink-0 ${
-            isDark
+          className={`
+      w-full
+      sm:w-auto
+      sm:shrink-0
+      justify-center
+      ${isDark
               ? "border-transparent! bg-white! text-[#1B245A]! hover:bg-white/90!"
               : ""
-          }`}
+            }
+    `}
         >
           Review Now
         </Button>

@@ -57,20 +57,21 @@ export function TaskRow({
           {/* Subject Icon */}
           <div
             className="
-    flex
-    h-12
-    w-12
-    shrink-0
-    items-center
-    justify-center
-    rounded-lg
-    border
-    border-[#D6E4FF]
-    bg-subject-bg
-    text-[18px]
-    font-bold
-    text-subject-text
-  "
+  flex
+  h-12
+  w-12
+  shrink-0
+  items-center
+  justify-center
+  rounded-lg
+  border
+  border-[#D6E4FF]
+  dark:border-transparent
+  bg-subject-bg
+  text-[18px]
+  font-bold
+  text-subject-text
+"
           >
             {task.subjectLabel}
           </div>
@@ -86,18 +87,21 @@ export function TaskRow({
 
               <span
                 className={`
-                  rounded-sm
-                  border
-                  px-2
-                  py-0.5
-                  text-[10px]
-                  font-semibold
-                  ${TYPE_STYLES[task.type]}
-                `}
+    rounded-sm
+    border
+    px-1.5 py-0.5
+    sm:px-2
+    text-[9px]
+    sm:text-[10px]
+    md:text-xs
+    font-semibold
+    leading-none
+    whitespace-nowrap
+    ${TYPE_STYLES[task.type]}
+  `}
               >
                 {TYPE_LABELS[task.type]}
               </span>
-
             </div>
 
             <h3 className="truncate text-lg font-bold text-ink">
@@ -163,18 +167,12 @@ export function TaskRow({
           >
             {task.actionLabel}
           </Button>
-
           <input
             type="checkbox"
             checked={done}
             onChange={() => setDone(!done)}
             aria-label={`Mark ${task.title} complete`}
-            className="
-              h-5
-              w-5
-              rounded
-              border-brand/30
-            "
+            className="h-5 w-5 appearance-none rounded border border-[#333333] dark:border-[#8B8998] bg-transparent checked:border-brand checked:bg-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
           />
 
           <TaskEditMenu

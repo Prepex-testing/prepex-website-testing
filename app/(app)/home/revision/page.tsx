@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { AddRevisionTaskModal } from "@/components/home/AddRevisionTaskModal";
-import {Container} from "@/assets/icons";
+import { Container } from "@/assets/icons";
 import {
   ArrowLeftIcon,
   BellIcon,
@@ -131,9 +131,9 @@ export default function RevisionPage() {
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 pt-6">
+      <div className="flex flex-col gap-4 pt-6 lg:flex-row lg:items-center lg:justify-between">
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4">
           {FILTERS.map((item) => {
             const active = filter === item;
 
@@ -142,14 +142,32 @@ export default function RevisionPage() {
                 key={item}
                 type="button"
                 onClick={() => setFilter(item)}
-                className={`flex h-[42px] items-center justify-center rounded-full border px-5 text-[14px] font-semibold leading-5 transition-all duration-200 ${active
+                className={`
+            flex
+            h-10
+            sm:h-[42px]
+            items-center
+            justify-center
+            rounded-full
+            border
+            px-3
+            sm:px-5
+            text-xs
+            sm:text-sm
+            font-semibold
+            leading-5
+            whitespace-nowrap
+            transition-all
+            duration-200
+            ${active
                     ? isDark
                       ? "border-white bg-white text-[#1A1A4E]"
                       : "border-brand bg-brand text-white"
                     : isDark
                       ? "border-white/30 bg-transparent text-white hover:border-white"
                       : "border-brand/20 bg-surface text-muted hover:border-brand hover:text-ink"
-                  }`}
+                  }
+          `}
               >
                 {item}
               </button>
@@ -158,45 +176,77 @@ export default function RevisionPage() {
         </div>
 
         {/* Sort Button */}
-    <button
-  type="button"
-  className={`flex h-[38px] min-w-[182px] items-center justify-between rounded-lg border px-4 text-[14px] font-medium transition-all duration-200 ${
-    isDark
-      ? "border-white bg-white text-[#1A1A4E] hover:bg-gray-100"
-      : "border-brand/20 bg-surface text-muted hover:border-brand hover:text-ink"
-  }`}
->
-  <span>Sort by: Due Date</span>
+        <button
+          type="button"
+          className={`
+      flex
+      h-10
+      sm:h-[42px]
+      w-full
+      sm:w-auto
+      sm:min-w-[182px]
+      items-center
+      justify-between
+      rounded-lg
+      border
+      px-4
+      text-xs
+      sm:text-sm
+      font-medium
+      transition-all
+      duration-200
+      ${isDark
+              ? "border-white bg-white text-[#1A1A4E] hover:bg-gray-100"
+              : "border-brand/20 bg-surface text-muted hover:border-brand hover:text-ink"
+            }
+    `}
+        >
+          <span className="truncate">Sort by: Due Date</span>
 
-  <span className="flex items-center justify-center">
-    <ChevronDownIcon />
-  </span>
-</button>
+          <span className="ml-3 flex shrink-0 items-center justify-center">
+            <ChevronDownIcon />
+          </span>
+        </button>
       </div>
 
-      <div className="rounded-xl border border-brand/10 bg-surface p-6">
+      <div className="rounded-xl border border-brand/10 bg-surface p-4 sm:p-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <p
-            className={`text-[12px] font-bold uppercase tracking-[0.08em] ${isDark ? "text-white" : "text-muted"}`}
+            className={`text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.08em] ${isDark ? "text-white" : "text-[#1A1A4E]"
+              }`}
           >
             Due Today <span className="font-medium">• 5 Topics</span>
           </p>
         </div>
 
         {/* Topic List */}
-        <div className="mt-6 flex flex-col gap-4">
+        <div className="mt-5 sm:mt-6 flex flex-col gap-4">
           {DUE_TODAY.map((topic) => (
             <div
               key={topic.id}
-              className="flex min-h-[112px] items-center justify-between rounded-xl border border-brand/10 bg-surface px-4 py-6 shadow-sm transition-colors"
+              className="
+          flex
+          flex-col
+          gap-4
+          rounded-xl
+          border
+          border-brand/10
+          bg-surface
+          p-4
+          sm:flex-row
+          sm:items-center
+          sm:justify-between
+          sm:p-5
+        "
             >
               {/* Left */}
-              <div className="flex min-w-0 flex-1 items-center gap-4">
+              <div className="flex min-w-0 flex-1 items-start sm:items-center gap-4">
                 {/* Subject Icon */}
-                <div className="flex h-12 w-12 min-w-[48px] items-center justify-center rounded-xl bg-tint">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tint">
                   <span
-                    className={`font-['Plus_Jakarta_Sans'] text-[18px] font-bold leading-6 ${isDark ? "text-white" : "text-brand"}`}
+                    className={`text-[18px] font-bold ${isDark ? "text-white" : "text-brand"
+                      }`}
                   >
                     {topic.subjectLabel}
                   </span>
@@ -205,26 +255,51 @@ export default function RevisionPage() {
                 {/* Content */}
                 <div className="min-w-0 flex-1">
                   <span
-                    className={`inline-flex rounded-sm px-2 py-1 text-[10px] font-bold uppercase ${isDark ? "bg-white/10 text-white" : DIFFICULTY_STYLES[topic.difficulty]}`}
+                    className={`inline-flex rounded-sm px-2 py-1 text-[9px] sm:text-[10px] font-bold uppercase ${isDark
+                        ? "bg-white/10 text-white"
+                        : DIFFICULTY_STYLES[topic.difficulty]
+                      }`}
                   >
                     {topic.difficulty}
                   </span>
 
-                  <h3 className="mt-2 truncate font-['Plus_Jakarta_Sans'] text-[16px] font-bold leading-6 text-ink">
+                  <h3 className="mt-2 break-words text-[15px] sm:text-[16px] font-bold leading-6 text-ink">
                     {topic.title}
                   </h3>
 
-                  <p className="mt-1 text-[13px] font-medium text-muted">
+                  <p className="mt-1 break-words text-[12px] sm:text-[13px] text-muted">
                     {topic.meta}
                   </p>
                 </div>
               </div>
 
-              {/* Right */}
+              {/* Right Button */}
               <Link
                 href="/revision-session"
-                className={`ml-6 inline-flex h-[38px] min-w-[132px] items-center justify-center rounded-lg border bg-surface px-4 text-[12px] font-semibold transition-all hover:bg-[#FF7A59] hover:text-white ${isDark ? "border-white text-white" : "border-brand text-brand"
-                  }`}
+                className={`
+            flex
+            h-[40px]
+            w-full
+            items-center
+            justify-center
+            rounded-lg
+            border
+            px-4
+            text-[12px]
+            sm:text-[13px]
+            font-semibold
+            whitespace-nowrap
+            transition-all
+            hover:bg-[#FF7A59]
+            hover:text-white
+            sm:ml-6
+            sm:w-auto
+            sm:min-w-[150px]
+            ${isDark
+                    ? "border-white text-white"
+                    : "border-brand text-brand"
+                  }
+          `}
               >
                 Start Revision
               </Link>

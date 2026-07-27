@@ -12,7 +12,7 @@ import {
   ChevronDownIcon,
 } from "@/components/ui/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { TargetIcon, TrendingUpIcon,CalendarIcon,ClockIcon,LayersIcon} from "@/assets/icons";
+import { TargetIcon, TrendingUpIcon, CalendarIcon, ClockIcon, LayersIcon } from "@/assets/icons";
 type Difficulty = "Low" | "Medium" | "High";
 
 const DIFFICULTIES: Difficulty[] = ["Low", "Medium", "High"];
@@ -116,10 +116,10 @@ export default function RevisionCompletePage() {
                   onClick={() => setDifficulty(option)}
                   aria-pressed={selected}
                   className={`flex h-16 items-center justify-center rounded-xl border-2 p-2 transition-all sm:h-20 sm:rounded-2xl sm:p-4 lg:h-[104px] ${selected
-                      ? "border-brand bg-surface text-ink"
-                      : isDark
-                        ? "border-white/20 bg-surface text-ink hover:border-white/40"
-                        : "border-brand/15 bg-surface text-ink hover:border-brand/30"
+                    ? "border-brand bg-surface text-ink"
+                    : isDark
+                      ? "border-white/20 bg-surface text-ink hover:border-white/40"
+                      : "border-brand/15 bg-surface text-ink hover:border-brand/30"
                     }`}
                 >
                   <span className="text-sm font-bold leading-none sm:text-lg lg:text-[22px]">
@@ -137,54 +137,87 @@ export default function RevisionCompletePage() {
             Topics Revised
           </p>
 
-          {/* Topic card */}
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-brand/10 bg-surface px-4 py-4 sm:px-6 sm:py-6">
-            <div className="flex min-w-0 items-center gap-4 sm:gap-6">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tint text-base font-bold leading-7 text-ink sm:h-14 sm:w-14 sm:text-[20px]">
+          {/* Topic Card */}
+          <div
+            className="
+      flex flex-col gap-4
+      rounded-2xl
+      border border-brand/10 dark:border-[#FAF7F240]
+      bg-surface
+      p-4
+      sm:flex-row
+      sm:items-center
+      sm:justify-between
+      sm:p-6
+    "
+          >
+            <div className="flex min-w-0 items-center gap-3 sm:gap-6">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tint text-base font-bold text-ink sm:h-14 sm:w-14 sm:text-[20px]">
                 P
               </span>
 
-              <div className="min-w-0">
-                <p className="truncate text-base font-extrabold leading-7 text-ink sm:text-[18px]">
+              <div className="min-w-0 flex-1">
+                <p className="break-words text-[15px] sm:text-[18px] font-extrabold leading-6 sm:leading-7 text-ink">
                   Newton&apos;s Laws
                 </p>
 
-                <p className="mt-1 text-sm font-medium leading-5 text-muted">
-                  Physics&nbsp;•&nbsp;Concept Video&nbsp;•&nbsp;NCERT Chapter
+                <p className="mt-1 break-words text-xs sm:text-sm font-medium leading-5 text-muted">
+                  Physics • Concept Video • NCERT Chapter
                 </p>
               </div>
             </div>
 
-            <span className="shrink-0 text-sm font-bold leading-5 text-muted">
+            <span className="self-start text-xs sm:self-center sm:text-sm font-bold text-muted whitespace-nowrap">
               Day 7 → Day 14
             </span>
           </div>
 
-          {/* Next revision */}
+          {/* Next Revision */}
           <button
             type="button"
-            className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-4 text-left transition-colors hover:bg-tint-strong sm:px-6 sm:py-6 ${isDark ? "bg-transparent" : "bg-tint"}`}
+            className={`
+      flex
+      flex-col
+      gap-4
+      rounded-2xl
+      border
+      border-transparent
+      dark:border-[#FAF7F240]
+      px-4
+      py-4
+      text-left
+      transition-colors
+      hover:bg-tint-strong
+      sm:flex-row
+      sm:items-center
+      sm:justify-between
+      sm:px-6
+      sm:py-6
+      ${isDark
+                ? "bg-transparent"
+                : "bg-tint"
+              }
+    `}
           >
             <div className="flex min-w-0 items-center gap-3 sm:gap-4">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink shadow-sm dark:bg-[#FAF7F2]/8 sm:h-12 sm:w-12">
                 <CalendarIcon />
               </span>
 
-              <div className="min-w-0">
-                <p className="text-sm font-bold leading-5 text-ink">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm sm:text-base font-bold text-ink">
                   Next revision scheduled
                 </p>
 
-                <p className="mt-1 text-sm font-medium leading-5 text-muted">
-                  Tuesday, 21 May 2024&nbsp;•&nbsp;in 7 days
+                <p className="mt-1 break-words text-xs sm:text-sm font-medium leading-5 text-muted">
+                  Tuesday, 21 May 2024 • in 7 days
                 </p>
               </div>
             </div>
 
-            <ChevronDownIcon className="h-5 w-5 shrink-0 -rotate-90 text-ink sm:h-6 sm:w-6" />
+            <ChevronDownIcon className="h-5 w-5 shrink-0 self-end -rotate-90 text-ink sm:self-center sm:h-6 sm:w-6" />
           </button>
         </div>
-
         {/* Actions */}
         <div className="mt-6 grid w-full grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-[2fr_3fr] lg:gap-8">
           <Link

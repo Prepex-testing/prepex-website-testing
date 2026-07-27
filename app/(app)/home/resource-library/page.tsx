@@ -9,13 +9,13 @@ import {
   SearchIcon,
   // PlayIcon,
   // FileIcon,
-  StarIcon,
+  // StarIcon,
   BookIcon,
   ChevronDownIcon,
   ArrowRightIcon,
   BookmarkIcon,
 } from "@/components/ui/icons";
-import {Containers,TargetIcon} from "@/assets/icons";
+import { Containers, TargetIcon, StarIcon } from "@/assets/icons";
 const BROWSE_FILTERS = ["Subject", "Chapter", "Type"];
 
 const FEATURED = [
@@ -89,20 +89,41 @@ export default function ResourceLibraryPage() {
         </div>
 
         {/* Filters row */}
-        <div className="flex flex-col gap-3 border-t border-brand/10 pt-6 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
-          <span className="text-[12px] font-semibold uppercase tracking-[0.6px] text-muted">
+        <div className="flex flex-col gap-3 border-t border-brand/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <span className="shrink-0 text-[12px] font-semibold uppercase tracking-[0.6px]">
             Browse by
           </span>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-1 flex-wrap gap-3">
             {BROWSE_FILTERS.map((label) => (
               <button
                 key={label}
                 type="button"
-                className="relative flex h-[39px] min-w-[146px] items-center justify-between rounded-lg border border-tint-strong bg-tint-strong py-2 pl-4 pr-3 text-[14px] font-medium text-ink hover:border-brand/20"
+                className="
+          flex
+          h-[39px]
+          w-full
+          min-w-0
+          items-center
+          justify-between
+          rounded-lg
+          border
+          border-tint-strong
+          bg-tint-strong
+          px-4
+          text-[13px]
+          sm:w-auto
+          sm:min-w-[146px]
+          sm:text-[14px]
+          font-medium
+          text-ink
+          hover:border-brand/20
+          transition-colors
+        "
               >
-                {label}
-                <ChevronDownIcon className="h-4 w-4 text-muted" />
+                <span className="truncate">{label}</span>
+
+                <ChevronDownIcon className="h-4 w-4 shrink-0 text-muted" />
               </button>
             ))}
           </div>
@@ -129,7 +150,7 @@ export default function ResourceLibraryPage() {
             >
               {/* Left */}
               <div className="flex min-w-0 flex-1 items-start gap-4">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl  bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
                   {item.icon}
                 </span>
 
@@ -140,10 +161,15 @@ export default function ResourceLibraryPage() {
 
                   <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[13px] sm:text-[14px] text-muted">
                     {item.meta}
+
                     {item.rating && (
                       <>
                         <span>•</span>
-                        <StarIcon />
+
+                        <span className="flex h-[14px] w-[14px] shrink-0 items-center justify-center sm:h-4 sm:w-4 [&>svg]:h-full [&>svg]:w-full">
+                          <StarIcon />
+                        </span>
+
                         {item.rating}
                       </>
                     )}

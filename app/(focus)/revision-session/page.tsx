@@ -108,7 +108,7 @@ export default function RevisionSessionPage() {
             <span className="text-[32px] font-bold leading-[38px] text-ink dark:text-[#111145]">
               {formatTime(seconds)}
             </span>
-            <span className="text-[10px] font-semibold uppercase leading-5 tracking-wide text-muted dark:text-[#111145]/70">
+            <span className="text-[10px] font-semibold  leading-5 tracking-wide text-muted dark:text-[#111145]/70">
               Focus Time
             </span>
           </div>
@@ -126,12 +126,18 @@ export default function RevisionSessionPage() {
         <button
           type="button"
           onClick={() => setRecalled(true)}
-          className={`mt-4 inline-flex h-[60px] items-center justify-center gap-2 rounded-xl border-2 px-6 text-base font-bold leading-6 transition-colors ${isDark ? "border-white text-white" : "border-brand text-brand"
-            } ${recalled ? "bg-brand/5" : "hover:bg-brand/5"
+          className={`mt-4 inline-flex min-h-[52px] sm:h-[60px] w-full sm:w-auto items-center justify-center gap-2 rounded-xl border-2 px-4 sm:px-6 py-3 text-sm sm:text-base font-bold leading-5 sm:leading-6 text-center transition-colors ${isDark
+            ? "border-white text-white"
+            : "border-brand text-brand"
+            } ${recalled
+              ? "bg-brand/5"
+              : "hover:bg-brand/5"
             }`}
         >
           <CheckIcon />
-          I&apos;ve recalled this answer
+          <span className="break-words">
+            I&apos;ve recalled this answer
+          </span>
         </button>
         <p className="mt-2 text-xs text-muted">
           {recalled
@@ -141,31 +147,36 @@ export default function RevisionSessionPage() {
       </div>
 
       {/* Previous / Skip / Next */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand/10 bg-surface px-4 py-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+      <div className="flex flex-col gap-3 rounded-2xl border border-brand/10 bg-surface px-4 py-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] sm:flex-row sm:items-center sm:justify-between">
+        {/* Previous */}
         <button
           type="button"
           onClick={() => goTo(questionIndex - 1)}
           disabled={questionIndex === 0}
-          className="flex items-center gap-1 text-base font-bold leading-6 text-ink disabled:opacity-30"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-lg text-sm font-bold text-ink disabled:opacity-30 sm:h-auto sm:w-auto sm:justify-start sm:text-base"
         >
           <ArrowLeftIcon />
-          Previous
+          <span>Previous</span>
         </button>
+
+        {/* Skip */}
         <button
           type="button"
           onClick={() => goTo(questionIndex + 1)}
-          className="text-base font-bold leading-6 text-muted"
+          className="h-11 w-full rounded-lg text-center text-sm font-bold text-muted sm:h-auto sm:w-auto sm:text-base"
         >
           Skip Question »
         </button>
+
+        {/* Next */}
         <button
           type="button"
           onClick={() => goTo(questionIndex + 1)}
           disabled={questionIndex === QUESTIONS.length - 1}
-          className="flex items-center gap-1 text-base font-bold leading-6 text-ink disabled:opacity-30"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-lg text-sm font-bold text-ink disabled:opacity-30 sm:h-auto sm:w-auto sm:justify-end sm:text-base"
         >
-          Next
-          <span className="inline-block rotate-180">
+          <span>Next</span>
+          <span className="rotate-180">
             <ArrowLeftIcon />
           </span>
         </button>

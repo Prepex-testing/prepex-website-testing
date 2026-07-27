@@ -19,7 +19,7 @@ import {
   // StarIcon,
   TargetIcon,
   AlertTriangleIcon,
-  RadarIcon,
+  // RadarIcon,
   TrophyIcon,
   // FireIcon,
 } from "@/components/ui/icons";
@@ -28,22 +28,22 @@ const STAT_CARDS = [
   {
     value: "27",
     label: "Day Streak",
-    icon: <FlameIcon />,
+    icon: <FlameIcon className="h-6 w-6" />,
   },
   {
     value: "78%",
     label: "Completion",
-    icon: <CheckIcons />,
+    icon: <CheckIcons className="h-6 w-6" />,
   },
   {
     value: "6/7",
     label: "Days Active",
-    icon: <CalendarIcon />,
+    icon: <CalendarIcon className="h-6 w-6" />,
   },
   {
     value: "30",
     label: "Days left",
-    icon: <ClockIcon />,
+    icon: <ClockIcon className="h-6 w-6" />,
   },
 ];
 
@@ -51,7 +51,7 @@ const SIGNAL_TYPES = [
   { id: "encourage", label: "Encourage", icon: <EncourageIcon /> },
   { id: "goal-share", label: "Goal Share", icon: <GoalIcon /> },
   { id: "push-back", label: "Push Back", icon: <PushIcon /> },
-  { id: "check-in", label: "Check-In", icon: <RadarIcon /> },
+  { id: "check-in", label: "Check-In", icon: <CheckInIcon className="h-6 w-6" /> },
   { id: "celebrate", label: "Celebrate", icon: <CelebrateIcon /> },
 ];
 
@@ -188,7 +188,7 @@ export default function PartnerPage() {
                 className="flex items-center gap-4 rounded-2xl border border-brand/10 bg-surface p-6 shadow-sm transition-colors"
               >
                 {/* Icon */}
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl  bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
                   {stat.icon}
                 </div>
 
@@ -211,7 +211,7 @@ export default function PartnerPage() {
           <div className="flex min-w-0 items-center gap-6">
             {/* Icon */}
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-brand/10 bg-tint shadow-sm">
-              <CalendarIcon />
+              <CalendarIcon className="h-8 w-8" />
             </div>
 
             {/* Content */}
@@ -294,10 +294,6 @@ export default function PartnerPage() {
         </div>
       </div>
 
-      {/* Recent Signals + Send Signal — rebuilt with theme tokens (was hardcoded
-          bg-white/hex colors that stayed white in dark mode) and a responsive
-          grid (was a fixed w-[1082px]/w-[529px] pair that overflowed on
-          anything narrower than that) */}
       <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-2">
         {/* LEFT PANEL */}
         <div className="flex w-full flex-col rounded-2xl border border-brand/10 bg-surface p-6 shadow-sm sm:p-8">
@@ -314,7 +310,10 @@ export default function PartnerPage() {
                 className="flex items-start gap-4 border-b border-brand/10 pb-5 last:border-0 last:pb-0"
               >
                 {/* Icon */}
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
+                <div
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg  ${isDark ? "bg-[#FAF7F2]/8  text-[#FAF7F2]" : "bg-[#EEF0F8]  text-[#1A1A4E]"
+                    }`}
+                >
                   {SIGNAL_TYPE_ICONS[signal.type]}
                 </div>
 
@@ -351,8 +350,8 @@ export default function PartnerPage() {
                 className="flex flex-col items-center gap-2"
               >
                 <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl border bg-tint text-ink transition-colors sm:h-14 sm:w-14 ${signalType === type.id ? "border-brand/20" : "border-brand/10"
-                    } ${isDark ? "hover:bg-white hover:text-[#1A1A4E]" : "hover:bg-tint-strong"}`}
+                  className={`flex h-11 w-11 items-center justify-center rounded-xl transition-colors sm:h-14 sm:w-14 ${isDark ? "bg-[#FAF7F2]/8  text-[#FAF7F2]" : "bg-[#EEF0F8] text-[#1A1A4E]"
+                    } ${signalType === type.id ? "ring-2 ring-brand ring-offset-2 ring-offset-surface" : ""}`}
                 >
                   {type.icon}
                 </div>

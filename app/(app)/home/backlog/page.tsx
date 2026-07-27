@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/icons";
 
 type Subject = "physics" | "chemistry" | "maths";
-import { LineIcon,ClockIcon,BoltIcon ,CrossIcon,BoxIcon,MenuIcon,ChemistryIcon,MathIcon,PhysicsIcon} from "@/assets/icons";
+import { LineIcon,BoltIcon ,CrossIcon,BoxIcon,MenuIcon,ChemistryIcon,MathIcon,PhysicsIcon,Clock} from "@/assets/icons";
 const SUBJECT_ICONS: Record<Subject, React.ReactNode> = {
   physics: <PhysicsIcon />,
   chemistry: <ChemistryIcon />,
@@ -143,7 +143,7 @@ export default function BacklogPage() {
         {/* Time Span */}
         <div className="flex h-[142px] items-center rounded-2xl border border-brand/10 bg-surface p-6">
           <span className="mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
-            <ClockIcon />
+            <Clock />
           </span>
 
           <div>
@@ -327,7 +327,7 @@ export default function BacklogPage() {
               {/* Left */}
               <div className="flex items-center gap-4">
                 {/* Subject Icon */}
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
                   {SUBJECT_ICONS[item.subject]}
                 </span>
 

@@ -15,7 +15,7 @@ import {
   // CalendarIcon,
   // ClockIcon,
 } from "@/components/ui/icons";
-import {ClockIcon,CalendarIcon,FileIcon} from "@/assets/icons";
+import { ClockIcon, CalendarIcon, FileIcon } from "@/assets/icons";
 const SUBJECT_FILTERS = ["All", "Physics", "Chemistry", "Maths"];
 const TYPE_FILTERS = ["All", "Silly", "Concept", "Time", "Guess"];
 
@@ -122,7 +122,7 @@ function MistakeRow({ entry }: { entry: MistakeEntry }) {
         ) : (
           <Link
             href="/home/mistake-notebook/entry"
-            className="inline-flex h-9 w-[138px] items-center justify-center gap-2 rounded-lg border border-brand px-4 text-[14px] font-semibold text-ink transition-colors hover:bg-[#FF7A59] hover:text-white"
+            className="inline-flex h-9 w-[138px] items-center justify-center gap-2 rounded-lg border border-[var(--button-border)] bg-surface px-4 text-[14px] font-semibold text-body-text transition-colors hover:border-[#FF7A59] hover:bg-[#FF7A59] hover:text-white"
           >
             Start Practice
           </Link>
@@ -165,7 +165,7 @@ export default function MistakeNotebookPage() {
       </div>
 
       <div className="flex items-center gap-6 rounded-2xl border border-brand/10 bg-surface p-6 min-h-[112px] w-full">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-ink bg-icon-chip-bg text-ink shadow-sm dark:bg-[#FAF7F2]/8 [&>svg]:h-6 [&>svg]:w-auto">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl  bg-icon-chip-bg text-ink shadow-sm dark:bg-[#FAF7F2]/8 [&>svg]:h-6 [&>svg]:w-auto">
           <FileIcon />
         </div>
 
@@ -188,7 +188,7 @@ export default function MistakeNotebookPage() {
 
       <div className="w-full rounded-2xl border border-brand/10 bg-surface px-6 pt-[17px] pb-6 shadow-sm">
         <div className="flex items-center justify-between">
-          <p className="text-[14px] font-bold uppercase tracking-[0.7px] text-muted">Filters</p>
+          <p className="text-[14px] font-bold uppercase tracking-[0.7px]">Filters</p>
 
           <button
             type="button"

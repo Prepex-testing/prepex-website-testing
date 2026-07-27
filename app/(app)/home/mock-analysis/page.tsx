@@ -5,7 +5,7 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
-import { CalendarIcon, ClockIcon, TargetIcon, ChartBarIcons, TrophyIcons, TrendingUpIcon, UploadIcon } from "@/assets/icons";
+import { CalendarIcon, ClockIcon, TargetIcon, ChartBarIcons, TrophyIcons, TrendingUpIcon, UploadIcon,LeftIconcon } from "@/assets/icons";
 import {
   BellIcon,
   RefreshIcon,
@@ -149,7 +149,7 @@ export default function MockAnalysisPage() {
           >
             View Calendar
             <span className="[&>svg]:h-4 [&>svg]:w-4">
-              <ChevronRightIcon />
+              <LeftIconcon />
             </span>
           </button>
         </div>

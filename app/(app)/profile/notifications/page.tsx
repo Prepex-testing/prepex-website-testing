@@ -120,6 +120,7 @@ export default function NotificationSettingsPage() {
         icon={<BellIcon />}
         title="Master Notifications"
         subtitle="Enable or disable all notifications from Prepex."
+        iconClassName="border-2 border-[#1A1A4E] bg-[#EEF0F8] text-[#1A1A4E] dark:border-[#FAF7F2] dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]"
         right={
           <Switch
             checked={master}
@@ -197,7 +198,7 @@ export default function NotificationSettingsPage() {
           />
 
           {/* Right */}
-          <div className="flex items-center gap-4 lg:shrink-0">
+          <div className="flex flex-wrap items-center gap-4 lg:shrink-0">
 
             {/* From */}
             <div className="flex flex-col">
@@ -261,7 +262,7 @@ export default function NotificationSettingsPage() {
               {/* Left */}
               <div className="flex items-center gap-4">
 
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[#1A1A4E] bg-[#EEF0F8] text-[#1A1A4E] dark:border-[#FAF7F2] dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]">
                   {item.icon}
                 </div>
 
