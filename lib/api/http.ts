@@ -8,9 +8,15 @@ export class ApiError extends Error {
 }
 
 export async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<T> {
+  // FormData bodies need the browser to set their own multipart boundary —
+  // forcing application/json here would break upload parsing server-side.
+  const isFormData = options.body instanceof FormData;
+
   const response = await fetch(url, {
     ...options,
-    headers: { "Content-Type": "application/json", ...options.headers },
+    headers: isFormData
+      ? options.headers
+      : { "Content-Type": "application/json", ...options.headers },
   });
 
   const body = await response.json().catch(() => null);

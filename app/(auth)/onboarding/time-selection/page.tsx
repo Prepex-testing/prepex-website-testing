@@ -1,17 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { RadioOption } from "@/components/ui/RadioOption";
 import { Stepper } from "@/components/ui/Stepper";
 import { StepProgress } from "@/components/ui/StepProgress";
 // import { CloudSunIcon, SunIcon, CloudMoonIcon, MoonIcon } from "@/components/ui/icons";
 import {CloudSunIcon,SunIcon} from "@/assets/icons";
-import { saveStudySchedule } from "@/lib/api/onboarding";
+import { getOnboardingProgress, saveStudySchedule, skipOnboardingStep } from "@/lib/api/onboarding";
+import type { ChronotypeValue } from "@/lib/api/onboarding";
 import { ApiError } from "@/lib/api/http";
+import { useScheduleSuggestion } from "@/lib/onboarding/schedule-suggestion-context";
 
 type SlotId = "morning" | "midday" | "evening" | "night";
 
@@ -29,14 +32,14 @@ const TIME_SLOTS: TimeSlot[] = [
   { id: "night", label: "Night", range: "9 PM - 4 AM", icon: <CloudSunIcon /> },
 ];
 
-function deriveStyle(selected: SlotId[]): string {
-  if (selected.length === 0) return "Not set yet";
-  const dayLeaning = selected.some((id) => id === "morning" || id === "midday");
-  const nightLeaning = selected.some((id) => id === "evening" || id === "night");
-  if (dayLeaning && !nightLeaning) return "Day person";
-  if (nightLeaning && !dayLeaning) return "Night owl";
-  return "Flexible";
-}
+const CHRONOTYPE_OPTIONS: Array<{ value: ChronotypeValue; label: string }> = [
+  { value: "MORNING_PERSON", label: "Morning Person" },
+  { value: "MIDDAY_PERSON", label: "Day Person" },
+  { value: "EVENING_PERSON", label: "Evening Person" },
+  { value: "NIGHT_PERSON", label: "Night Person" },
+];
+
+const DEFAULT_CHRONOTYPE: ChronotypeValue = "MIDDAY_PERSON";
 
 export default function TimeSelectionPage() {
   const router = useRouter();
@@ -44,8 +47,38 @@ export default function TimeSelectionPage() {
   const [weekendHours, setWeekendHours] = useState(8);
   const [sameEveryDay, setSameEveryDay] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState<SlotId[]>(["morning"]);
+  const [chronotype, setChronotype] = useState<ChronotypeValue>(DEFAULT_CHRONOTYPE);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
+  const [isSkipping, setSkipping] = useState(false);
+  const { suggestion } = useScheduleSuggestion();
+
+  useEffect(() => {
+    getOnboardingProgress()
+      .then(({ data }) => {
+        const profile = data.profile;
+        if (profile?.weekdayHours != null) setWeekdayHours(profile.weekdayHours);
+        if (profile?.weekendHours != null) setWeekendHours(profile.weekendHours);
+        if (profile) setSameEveryDay(profile.sameDailyTarget);
+
+        // A saved answer always wins; a fresh step-3a upload suggestion only
+        // fills in blanks the user hasn't already answered.
+        const savedWindows = profile?.studyWindows.length ? profile.studyWindows : null;
+        const effectiveWindows = savedWindows ?? suggestion?.studyWindows.map((w) => ({ window: w }));
+        if (effectiveWindows?.length) {
+          setSelectedSlots(effectiveWindows.map((entry) => entry.window.toLowerCase() as SlotId));
+        }
+
+        const effectiveChronotype = profile?.chronotype ?? suggestion?.chronotype;
+        if (effectiveChronotype) setChronotype(effectiveChronotype);
+      })
+      .catch(() => {
+        // Best-effort — fall back to a blank form if progress can't be loaded.
+      });
+    // Only the initial suggestion snapshot matters for prefill — deliberately
+    // not re-running this on every context update.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleWeekdayChange = (value: number) => {
     setWeekdayHours(value);
@@ -55,7 +88,10 @@ export default function TimeSelectionPage() {
   const handleSameEveryDayToggle = () => {
     setSameEveryDay((current) => {
       const next = !current;
-      if (next) setWeekendHours(weekdayHours);
+      if (next) {
+        setWeekdayHours(6);
+        setWeekendHours(6);
+      }
       return next;
     });
   };
@@ -78,6 +114,7 @@ export default function TimeSelectionPage() {
         weekdayHours,
         weekendHours,
         sameDailyTarget: sameEveryDay,
+        chronotype,
         studyWindows: selectedSlots.map(
           (slot) => slot.toUpperCase() as "MORNING" | "MIDDAY" | "EVENING" | "NIGHT",
         ),
@@ -91,6 +128,20 @@ export default function TimeSelectionPage() {
     }
   };
 
+  const handleSkip = async () => {
+    setError(null);
+    setSkipping(true);
+    try {
+      await skipOnboardingStep(4);
+      router.push("/onboarding/which-chapters-have-you-studied");
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
+      );
+      setSkipping(false);
+    }
+  };
+
   return (
     <AuthCard>
       <StepProgress
@@ -98,7 +149,8 @@ export default function TimeSelectionPage() {
         totalSteps={5}
         backHref="/onboarding/where-do-you-study"
         showSkip
-        skipHref="/onboarding/which-chapters-have-you-studied"
+        onSkip={handleSkip}
+        skipDisabled={isSubmitting || isSkipping}
       />
 
       <div className="mt-4 flex flex-col gap-1">
@@ -108,7 +160,7 @@ export default function TimeSelectionPage() {
         </p>
       </div>
 
-      <div className="mt-6 flex flex-col gap-4 rounded-xl bg-tint-strong p-4">
+      <div className="mt-6 flex flex-col gap-4 rounded-xl bg-tint-strong p-4 dark:bg-[#FAF7F2]/8">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Stepper label="Weekdays" value={weekdayHours} onChange={handleWeekdayChange} />
           <Stepper
@@ -119,11 +171,13 @@ export default function TimeSelectionPage() {
           />
         </div>
 
-        <Checkbox
-          label="Same target every day"
-          checked={sameEveryDay}
-          onChange={handleSameEveryDayToggle}
-        />
+        <div className="w-full border-t border-black/5 pt-4 dark:border-[#FAF7F2]/[0.12]">
+          <Checkbox
+            label="Same target every day"
+            checked={sameEveryDay}
+            onChange={handleSameEveryDayToggle}
+          />
+        </div>
       </div>
 
       <div className="mt-6 flex flex-col gap-1">
@@ -140,19 +194,23 @@ export default function TimeSelectionPage() {
               type="button"
               onClick={() => toggleSlot(slot.id)}
               aria-pressed={selected}
-              className={`flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-center transition-colors ${
+              className={`flex flex-col items-center gap-1.5 rounded-lg border bg-surface px-2 py-4 text-center transition-colors ${
                 selected
-                  ? "border-brand bg-brand text-white"
-                  : "border-brand/15 bg-surface text-ink"
+                  ? "rounded-xl border-[1.5px] border-brand shadow-hover dark:border-[#FAF7F2]"
+                  : "border-brand/15 dark:border-[#FAF7F2]/6"
               }`}
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+              <span
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
+                  selected
+                    ? "bg-brand text-white dark:bg-[#FAF7F2] dark:text-[#0D0D2B]"
+                    : "bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8"
+                }`}
+              >
                 {slot.icon}
               </span>
-              <span className="text-xs font-semibold">{slot.label}</span>
-              <span className={`text-[10px] ${selected ? "text-white/80" : "text-muted"}`}>
-                {slot.range}
-              </span>
+              <span className="text-xs font-semibold text-ink">{slot.label}</span>
+              <span className="text-[10px] text-muted dark:text-ink">{slot.range}</span>
             </button>
           );
         })}
@@ -161,9 +219,22 @@ export default function TimeSelectionPage() {
       <p className="mt-3 text-xs text-muted">
         Helps crafting planner according to your timings when your brain works best
       </p>
-      <p className="mt-1 text-sm font-semibold text-ink">
-        Your style: {deriveStyle(selectedSlots)}
-      </p>
+
+      <div className="mt-4 flex flex-col gap-3">
+        <p className="text-sm font-semibold text-ink">Your style</p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Chronotype">
+          {CHRONOTYPE_OPTIONS.map((option) => (
+            <RadioOption
+              key={option.value}
+              name="chronotype"
+              value={option.value}
+              label={option.label}
+              selected={chronotype === option.value}
+              onSelect={() => setChronotype(option.value)}
+            />
+          ))}
+        </div>
+      </div>
 
       {error && (
         <p
@@ -177,7 +248,7 @@ export default function TimeSelectionPage() {
       <Button
         variant="primary"
         onClick={handleContinue}
-        disabled={isSubmitting}
+        disabled={isSubmitting || isSkipping}
         className="mt-6 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting ? "Saving..." : "Continue"}

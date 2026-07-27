@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/Input";
 import { OptionCard } from "@/components/ui/OptionCard";
 import { StepProgress } from "@/components/ui/StepProgress";
 import { GraduationCapIcon, StarIcons, LayersIcon } from "@/assets/icons";
-import { saveAcademicProfile } from "@/lib/api/onboarding";
+import { getOnboardingProgress, saveAcademicProfile, skipOnboardingStep } from "@/lib/api/onboarding";
 import { ApiError } from "@/lib/api/http";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 
@@ -56,6 +56,27 @@ function displayDateToIso(display: string): string | null {
   return `${year}-${month}-${day}`;
 }
 
+function isoToDisplayDate(iso: string): string {
+  const [year, month, day] = iso.slice(0, 10).split("-");
+  if (!year || !month || !day) return "";
+  return `${day}/${month}/${year}`;
+}
+
+function addYearsIso(years: number): string {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() + years);
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+// Class 11 students are 2 years out from their target exam; everyone else
+// (class 12, droppers, other) is assumed to be 1 year out.
+function defaultExamDateIso(level: CurrentLevel): string {
+  return addYearsIso(level === "CLASS_11" ? 2 : 1);
+}
+
 export default function TellUsAboutYouPage() {
   const router = useRouter();
   const storedFullName = useStoredFullName();
@@ -67,19 +88,42 @@ export default function TellUsAboutYouPage() {
   const [selectedClass, setSelectedClass] = useState<CurrentLevel>("CLASS_11");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
+  const [isSkipping, setSkipping] = useState(false);
+  const [isLoading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getOnboardingProgress()
+      .then(({ data }) => {
+        const profile = data.profile;
+        if (profile?.currentLevel) setSelectedClass(profile.currentLevel);
+        if (profile?.targetExamDate) setExamDate(isoToDisplayDate(profile.targetExamDate));
+        if (profile?.city) setCity(profile.city);
+        if (profile?.phoneNumber) setPhoneNumber(profile.phoneNumber);
+      })
+      .catch(() => {
+        // Best-effort — fall back to a blank form if progress can't be loaded.
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const fullName = fullNameTouched ? fullNameInput : storedFullName;
 
   const handleContinue = async () => {
-    const targetExamDate = displayDateToIso(examDate);
-
     if (!fullName.trim() || !city.trim() || !phoneNumber.trim()) {
       setError("Please fill in all fields.");
       return;
     }
-    if (!targetExamDate) {
-      setError("Enter a valid exam date (DD/MM/YYYY).");
-      return;
+
+    let targetExamDate: string;
+    if (examDate.trim()) {
+      const parsed = displayDateToIso(examDate);
+      if (!parsed) {
+        setError("Enter a valid exam date (DD/MM/YYYY).");
+        return;
+      }
+      targetExamDate = parsed;
+    } else {
+      targetExamDate = defaultExamDateIso(selectedClass);
     }
 
     setError(null);
@@ -101,6 +145,20 @@ export default function TellUsAboutYouPage() {
     }
   };
 
+  const handleSkip = async () => {
+    setError(null);
+    setSkipping(true);
+    try {
+      await skipOnboardingStep(2);
+      router.push("/onboarding/where-do-you-study");
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
+      );
+      setSkipping(false);
+    }
+  };
+
   return (
     <AuthCard>
       <StepProgress
@@ -108,7 +166,8 @@ export default function TellUsAboutYouPage() {
         totalSteps={5}
         backHref="/onboarding/preparing-for"
         showSkip
-        skipHref="/onboarding/where-do-you-study"
+        onSkip={handleSkip}
+        skipDisabled={isSubmitting || isSkipping || isLoading}
       />
 
       <div className="mt-4 flex flex-col gap-1">
@@ -185,19 +244,23 @@ export default function TellUsAboutYouPage() {
           </div>
         </div>
 
-        <DateInput
-          label="When is your exam?"
-          helperText="We use this to calculate your daily pace and exam countdown."
-          name="examDate"
-          required
-          onDateChange={setExamDate}
-        />
+        {isLoading ? (
+          <p className="text-sm text-muted">Loading...</p>
+        ) : (
+          <DateInput
+            label="When is your exam?"
+            helperText="Optional — leave blank and we'll estimate this from your class."
+            name="examDate"
+            defaultValue={examDate}
+            onDateChange={setExamDate}
+          />
+        )}
       </div>
 
       <Button
         variant="primary"
         onClick={handleContinue}
-        disabled={isSubmitting}
+        disabled={isSubmitting || isSkipping || isLoading}
         className="mt-6 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting ? "Saving..." : "Continue"}

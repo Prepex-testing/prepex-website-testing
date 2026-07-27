@@ -10,7 +10,7 @@ import { OptionCard } from "@/components/ui/OptionCard";
 import { StepProgress } from "@/components/ui/StepProgress";
 import { LayersIcon, BookIcon, RadarIcons, BriefcaseIcons, CuteIcon } from "@/assets/icons";
 import { getExams } from "@/lib/api/dashboard";
-import { selectExam } from "@/lib/api/onboarding";
+import { getOnboardingProgress, selectExam } from "@/lib/api/onboarding";
 import { ApiError } from "@/lib/api/http";
 import type { Exam } from "@/lib/api/dashboard";
 
@@ -32,10 +32,15 @@ export default function PreparingForPage() {
   const [isSubmitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    getExams()
-      .then(({ data }) => {
+    Promise.all([getExams(), getOnboardingProgress().catch(() => null)])
+      .then(([{ data }, progress]) => {
         setExams(data);
-        setSelected(data[0]?.id ?? null);
+        const savedExamId = progress?.data.profile?.examId;
+        setSelected(
+          savedExamId && data.some((exam) => exam.id === savedExamId)
+            ? savedExamId
+            : (data[0]?.id ?? null),
+        );
       })
       .catch(() => setError("Couldn't load exams. Please refresh and try again."))
       .finally(() => setLoading(false));

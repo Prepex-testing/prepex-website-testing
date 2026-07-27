@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { ChapterItem } from "@/components/ui/ChapterItem";
 import { StepProgress } from "@/components/ui/StepProgress";
 import { CheckCircleIcon, XIcon } from "@/components/ui/icons";
-import { getStudentChapters, saveChapterProgress } from "@/lib/api/onboarding";
+import { getOnboardingProgress, getStudentChapters, saveChapterProgress } from "@/lib/api/onboarding";
 import { ApiError } from "@/lib/api/http";
 import type { SubjectChapters } from "@/lib/api/dashboard";
 
@@ -20,6 +20,12 @@ function cycleState(state: ChapterState): ChapterState {
   return "none";
 }
 
+function stateFromStatus(status: "NOT_STARTED" | "IN_REVISION" | "MASTERED"): ChapterState {
+  if (status === "MASTERED") return "done";
+  if (status === "IN_REVISION") return "partial";
+  return "none";
+}
+
 export default function WhichChaptersHaveYouStudiedPage() {
   const router = useRouter();
   const [subjects, setSubjects] = useState<SubjectChapters[]>([]);
@@ -27,15 +33,27 @@ export default function WhichChaptersHaveYouStudiedPage() {
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
+  const [isSkipping, setSkipping] = useState(false);
 
   useEffect(() => {
-    getStudentChapters()
-      .then(({ data }) => {
+    Promise.all([getStudentChapters(), getOnboardingProgress().catch(() => null)])
+      .then(([{ data }, progress]) => {
         const withChapters = data.filter((subject) => subject.chapters.length > 0);
         setSubjects(withChapters);
+
+        const savedStatusById = new Map<string, "NOT_STARTED" | "IN_REVISION" | "MASTERED">();
+        for (const subject of progress?.data.subjects ?? []) {
+          for (const chapter of subject.chapters) {
+            savedStatusById.set(chapter.id, chapter.status);
+          }
+        }
+
         const initial: Record<string, ChapterState> = {};
         for (const subject of withChapters) {
-          for (const chapter of subject.chapters) initial[chapter.id] = "none";
+          for (const chapter of subject.chapters) {
+            const savedStatus = savedStatusById.get(chapter.id);
+            initial[chapter.id] = savedStatus ? stateFromStatus(savedStatus) : "none";
+          }
         }
         setChapterState(initial);
       })
@@ -97,6 +115,28 @@ export default function WhichChaptersHaveYouStudiedPage() {
     }
   };
 
+  const handleSkip = async () => {
+    setError(null);
+    setSkipping(true);
+    try {
+      const chapterProgress = subjects.flatMap((subject) =>
+        subject.chapters.map((chapter) => ({
+          chapterId: chapter.id,
+          status: "NOT_STARTED" as const,
+        })),
+      );
+      if (chapterProgress.length > 0) {
+        await saveChapterProgress({ chapterProgress });
+      }
+      router.push("/onboarding/analyzing");
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
+      );
+      setSkipping(false);
+    }
+  };
+
   return (
     <AuthCard>
       <StepProgress
@@ -104,7 +144,8 @@ export default function WhichChaptersHaveYouStudiedPage() {
         totalSteps={5}
         backHref="/onboarding/time-selection"
         showSkip
-        skipHref="/onboarding/analyzing"
+        onSkip={handleSkip}
+        skipDisabled={isSubmitting || isSkipping || isLoading}
       />
 
       <div className="mt-4 flex flex-col gap-1">
@@ -200,7 +241,7 @@ export default function WhichChaptersHaveYouStudiedPage() {
       <Button
         variant="primary"
         onClick={handleContinue}
-        disabled={isSubmitting}
+        disabled={isSubmitting || isSkipping}
         className="mt-6 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting ? "Saving..." : "Skip & Continue"}
