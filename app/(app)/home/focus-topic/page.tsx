@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import {
-  ArrowLeftIcon,
-  BellIcon,
+  // ArrowLeftIcon,
+  // BellIcon,
   ListIcon,
   CheckCircleIcon,
   // FileIcon,
@@ -19,7 +19,7 @@ import {
   // PencilIcon,
   // RefreshIcon,
 } from "@/components/ui/icons";
-import {ClockIcon,FileIcon,LayersIcon,AlertTriangleIcon,PlayIcon,NoteIcon,LoderIcon} from "@/assets/icons";
+import { ClockIcon, FileIcon, LayersIcon, AlertTriangleIcon, PlayIcon, NoteIcon, LoderIcon,ArrowLeftIcon ,BellIcon} from "@/assets/icons";
 type SignalLevel = "high" | "medium";
 
 // HIGH -> navy/lavender pill (matches "Coordinate Geometry" tag treatment in both screenshots)
@@ -83,12 +83,12 @@ export default function FocusTopicPage() {
           </Link>
           <h1 className="text-h1 text-ink">This Week&apos;s Focus Topic</h1>
         </div>
-        <div className="flex items-center gap-4">
+            <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
@@ -139,14 +139,14 @@ export default function FocusTopicPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2">
           {/* Left: Signal Breakdown */}
           <div className="flex flex-col gap-6 border-t border-brand/10 p-8 sm:border-r">
-            <p className="flex items-center gap-2 text-[14px] font-normal uppercase leading-[15px] tracking-[1px] text-muted">
+            <p className="flex items-center gap-2 text-[14px] font-normal uppercase leading-[15px] tracking-[1px]">
               <ListIcon />
               Signal Breakdown
             </p>
             <div className="flex flex-col divide-y divide-brand/10">
               {SIGNALS.map((signal) => (
                 <div key={signal.title} className="flex items-start gap-3 py-3 first:pt-0">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full  bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
                     {signal.icon}
                   </span>
                   <div className="flex flex-col gap-0.5">
@@ -162,9 +162,11 @@ export default function FocusTopicPage() {
                     </p>
                     <p className="text-xs text-muted">{signal.description}</p>
                     {signal.note && (
-                      <p className="mt-1 flex items-center gap-1 text-[11px] text-success">
-                        <CheckCircleIcon />
-                        {signal.note}
+                      <p className="mt-1 flex items-center gap-1 text-[10px] sm:text-[11px] md:text-[12px] font-medium leading-[17px] text-success">
+                        <CheckCircleIcon className="h-[14px] w-[14px] shrink-0 sm:h-4 sm:w-4" />
+                        <span className="truncate">
+                          {signal.note}
+                        </span>
                       </p>
                     )}
                   </div>
@@ -175,13 +177,13 @@ export default function FocusTopicPage() {
 
           {/* Right: Focus This Week */}
           <div className="flex flex-col gap-6 border-t border-brand/10 p-8">
-            <p className="text-[14px] font-normal uppercase leading-[15px] tracking-[1px] text-muted">
+            <p className="text-[14px] font-normal uppercase leading-[15px] tracking-[1px]">
               Focus This Week
             </p>
             <div className="flex flex-col gap-4">
               {FOCUS_ACTIONS.map((action) => (
                 <div key={action.text} className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
                     {action.icon}
                   </span>
                   <p className="text-[14px] font-semibold leading-5 text-ink">

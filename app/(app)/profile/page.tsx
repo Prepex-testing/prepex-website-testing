@@ -5,17 +5,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   MoonIcon,
-  BellIcon,
+  // BellIcon,
   SunIcon,
   MonitorIcon,
-  BookIcon,
-  BriefcaseIcon,
-  GraduationCapIcon,
-  UserIcon,
-  CalendarIcon,
-  PinIcon,
-  ClockIcon,
-  UsersIcon,
+  // BookIcon,
+  // BriefcaseIcon,
+  // GraduationCapIcon,
+  // UserIcon,
+  // CalendarIcon,
+  // PinIcon,
+  // ClockIcon,
+  // UsersIcon,
   LogoutIcon,
   PencilIcon,
   ChevronRightIcon,
@@ -30,16 +30,16 @@ import { EditProfileModal } from "@/components/profile/EditProfileModal";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { UserMenu } from "@/components/layout/UserMenu";
-
+import {QuickIcon,Coaching,GraduationCapIcon,UserIcons,CalendarIcons,ClockIcon,CalendarIcon,Patners,UserIcon,EditIcons,BellIcon} from "@/assets/icons";
 const PROFILE_COMPLETE = 72;
 
 const DETAILS = [
-  { label: "Target Exam", value: "JEE Main + Advanced", icon: <BookIcon /> },
-  { label: "Coaching", value: "Allen Kota", icon: <BriefcaseIcon /> },
+  { label: "Target Exam", value: "JEE Main + Advanced", icon: <QuickIcon /> },
+  { label: "Coaching", value: "Allen Kota", icon: <Coaching /> },
   { label: "Class", value: "12th", icon: <GraduationCapIcon /> },
-  { label: "Batch", value: "Leader Batch", icon: <UserIcon /> },
-  { label: "Exam Date", value: "25 Jan 2027", icon: <CalendarIcon /> },
-  { label: "School", value: "Add School →", icon: <PinIcon />, isLink: true },
+  { label: "Batch", value: "Leader Batch", icon: <UserIcons /> },
+  { label: "Exam Date", value: "25 Jan 2027", icon: <CalendarIcons /> },
+  { label: "School", value: "Add School →", icon: <Coaching />, isLink: true },
 ];
 
 const THEME_OPTIONS = [
@@ -65,7 +65,7 @@ const NOTIFICATION_ITEMS = [
     id: "journal",
     label: "Weekly Win Journal",
     subtitle: "Weekly summary and wins",
-    icon: <PencilIcon />,
+    icon: <EditIcons />,
   },
   {
     id: "emotional",
@@ -83,7 +83,7 @@ const NOTIFICATION_ITEMS = [
     id: "parent",
     label: "Parent Report Updates",
     subtitle: "When weekly reports are sent",
-    icon: <UsersIcon />,
+    icon: <UserIcon />,
   },
 ];
 
@@ -221,10 +221,8 @@ export default function ProfilePage() {
                   className="flex h-10 items-center gap-4"
                 >
                   {/* Icon */}
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint">
-                    <span className="text-ink">
-                      {detail.icon}
-                    </span>
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#EEF0F8] text-[#1A1A4E]  dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]">
+                    {detail.icon}
                   </div>
 
                   {/* Text */}
@@ -366,8 +364,8 @@ export default function ProfilePage() {
               <div className="flex h-[66px] items-center justify-between rounded-xl border border-brand/10 px-3 transition-colors hover:bg-tint/30">
 
                 <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint text-ink">
-                    <UsersIcon />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg  bg-[#EEF0F8] text-[#1A1A4E]  dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]">
+                    <Patners />
                   </div>
 
                   <div>
@@ -390,7 +388,7 @@ export default function ProfilePage() {
 
                 <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint text-ink">
-                    <UsersIcon />
+                    <UserIcon />
                   </div>
 
                   <div>
@@ -564,7 +562,7 @@ export default function ProfilePage() {
           <SettingRow icon={<UserIcon />} title="Account Settings" subtitle="Email, password and data" />
         </Link>
         <Link href="/profile/help" className="block">
-          <SettingRow icon={<BookIcon />} title="Help and Support" subtitle="FAQs, contact and feedback" />
+          <SettingRow icon={<QuickIcon />} title="Help and Support" subtitle="FAQs, contact and feedback" />
         </Link>
       </div>
 

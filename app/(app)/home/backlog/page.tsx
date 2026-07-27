@@ -8,8 +8,8 @@ import { CircularProgress } from "@/components/ui/CircularProgress";
 import { RecoveryModeModal } from "@/components/home/RecoveryModeModal";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import {
-  ArrowLeftIcon,
-  BellIcon,
+  // ArrowLeftIcon,
+  // BellIcon,
   // AlertTriangleIcon,
   // ClockIcon,
   // BoltIcon,
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/icons";
 
 type Subject = "physics" | "chemistry" | "maths";
-import { LineIcon,ClockIcon,BoltIcon ,CrossIcon,BoxIcon,MenuIcon,ChemistryIcon,MathIcon,PhysicsIcon} from "@/assets/icons";
+import { LineIcon, BoltIcon, CrossIcon, BoxIcon, MenuIcon, ChemistryIcon, MathIcon, PhysicsIcon, Clock ,BellIcon,ArrowLeftIcon} from "@/assets/icons";
 const SUBJECT_ICONS: Record<Subject, React.ReactNode> = {
   physics: <PhysicsIcon />,
   chemistry: <ChemistryIcon />,
@@ -93,12 +93,12 @@ export default function BacklogPage() {
           </Link>
           <h1 className="text-h1 text-ink">Your Backlog</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
@@ -143,7 +143,7 @@ export default function BacklogPage() {
         {/* Time Span */}
         <div className="flex h-[142px] items-center rounded-2xl border border-brand/10 bg-surface p-6">
           <span className="mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
-            <ClockIcon />
+            <Clock />
           </span>
 
           <div>
@@ -309,7 +309,7 @@ export default function BacklogPage() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <span className="text-muted">
-            <MenuIcon/>
+            <MenuIcon />
           </span>
 
           <h2 className="text-[20px] font-semibold uppercase leading-7 tracking-[-0.5px] text-ink">
@@ -327,7 +327,7 @@ export default function BacklogPage() {
               {/* Left */}
               <div className="flex items-center gap-4">
                 {/* Subject Icon */}
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
                   {SUBJECT_ICONS[item.subject]}
                 </span>
 

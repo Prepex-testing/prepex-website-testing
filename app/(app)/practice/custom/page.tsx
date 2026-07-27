@@ -55,15 +55,12 @@ function CheckboxRow({
     <label className="flex h-6 w-fit cursor-pointer items-center gap-2"> {/* CHANGED: added h-6 */}
       <input type="checkbox" checked={checked} onChange={onChange} className="peer sr-only" />
       <span
-        className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[4px] border-2 border-brand/25 peer-checked:border-brand peer-checked:bg-brand"
+        className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[4px] border-2 border-brand/25 text-surface peer-checked:border-brand peer-checked:bg-brand"
       /* CHANGED: h-4 w-4 -> h-[18px] w-[18px], rounded -> rounded-[4px] */
       >
         {checked && <CheckIcon />} {/* CHANGED: sized icon */}
       </span>
-      <span
-        className="text-[14px] font-medium leading-[21px]" /* CHANGED: was text-sm text-body-text */
-        style={{ color: "var(--text-primary, #FAF7F2)" }} /* CHANGED: color now via CSS var */
-      >
+      <span className="text-[14px] font-medium leading-[21px] text-ink"> {/* CHANGED: was text-sm text-body-text, then an undefined --text-primary var */}
         {label}
       </span>
     </label>
@@ -125,8 +122,8 @@ export default function CustomPracticeBuilderPage() {
                 onClick={() => setDifficulty(level)}
                 aria-pressed={difficulty === level}
                 className={`flex h-[39px] w-[105px] items-center justify-center rounded-full border text-[14px] font-semibold transition-all duration-200 ${difficulty === level
-                  ? "border-white bg-white text-[#111145]"
-                  : "border-[#8B8998] bg-transparent text-[#FAF7F2] hover:bg-white hover:text-[#111145]"
+                  ? "border-ink bg-ink text-surface"
+                  : "border-brand/40 dark:border-muted bg-transparent text-ink hover:bg-ink hover:text-surface"
                   }`}
               >
                 {level}
@@ -147,19 +144,19 @@ export default function CustomPracticeBuilderPage() {
                   key={type}
                   type="button"
                   onClick={() => toggle(questionTypes, setQuestionTypes, type)}
-                  className={`flex h-[55px] w-full items-center justify-between rounded-xl border px-[15px] ${checked ? "border-white bg-white/10" : "border-white bg-transparent"
+                  className={`flex h-[55px] w-full items-center justify-between rounded-xl border border-ink px-[15px] ${checked ? "bg-ink/10" : "bg-transparent"
                     }`}
                 >
                   <span className="text-[14px] font-medium text-ink">{type}</span>
                   <div
-                    className={`flex h-[22px] w-[22px] items-center justify-center rounded-[4px] border ${checked ? "border-white bg-white" : "border-[#8B8998] bg-transparent"
+                    className={`flex h-[22px] w-[22px] items-center justify-center rounded-[4px] border ${checked ? "border-ink bg-ink" : "border-brand/40 dark:border-muted bg-transparent"
                       }`}
                   >
                     {checked && (
                       <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none">
                         <path
                           d="M5 10L8.5 13.5L15 7"
-                          stroke="#111145"
+                          stroke="var(--surface)"
                           strokeWidth="2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -174,10 +171,7 @@ export default function CustomPracticeBuilderPage() {
         </div>
 
         <div className="mt-6 border-t border-brand/10 pt-6"> {/* CHANGED */}
-          <p
-            className="text-[12px] font-semibold uppercase tracking-[0.6px]" /* CHANGED */
-            style={{ color: "var(--text-secondary, #8B8998)" }} /* CHANGED */
-          >
+          <p className="text-[12px] font-semibold uppercase tracking-[0.6px] text-muted"> {/* CHANGED: was an undefined --text-secondary var */}
             Source
           </p>
           <div className="mt-3 flex flex-col gap-2"> {/* CHANGED: mt-2 -> mt-3 */}
@@ -194,102 +188,82 @@ export default function CustomPracticeBuilderPage() {
 
         <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-2">
 
-  {/* Number of Questions */}
-  <div className="w-full max-w-[248px]">
+          {/* Number of Questions */}
+          <div className="w-full max-w-[248px]">
 
-    <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.6px] text-muted">
-      Number of Questions
-    </p>
+            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.6px] text-muted">
+              Number of Questions
+            </p>
 
-    <Stepper
-      value={questionCount}
-      min={5}
-      max={50}
-      onChange={setQuestionCount}
-    />
+            <Stepper
+              value={questionCount}
+              min={5}
+              max={50}
+              onChange={setQuestionCount}
+            />
 
-  </div>
+          </div>
 
-  {/* Time Limit */}
-  <div className="w-full max-w-[248px]">
+          {/* Time Limit */}
+          <div className="w-full max-w-[248px]">
 
-    <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.6px] text-muted">
-      Time Limit
-    </p>
+            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.6px] text-muted">
+              Time Limit
+            </p>
 
-    <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4">
 
-      <label
-        className="flex cursor-pointer items-center gap-3"
-        onClick={() => setTimeLimit("60")}
-      >
-        <div
-          className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border ${
-            timeLimit === "60"
-              ? "border-white bg-white"
-              : "border-[#8B8998]"
-          }`}
-        >
-          {timeLimit === "60" && (
-            <div className="h-[10px] w-[10px] rounded-full bg-[#111145]" />
-          )}
+              <label
+                className="flex cursor-pointer items-center gap-3"
+                onClick={() => setTimeLimit("60")}
+              >
+                <div
+                  className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border ${timeLimit === "60"
+                    ? "border-ink bg-ink"
+                    : "border-brand/40 dark:border-muted"
+                    }`}
+                >
+                  {timeLimit === "60" && (
+                    <div className="h-[10px] w-[10px] rounded-full bg-surface" />
+                  )}
+                </div>
+
+                <span className="text-[14px] text-muted">
+                  60 min
+                </span>
+              </label>
+
+              <label
+                className="flex cursor-pointer items-center gap-3"
+                onClick={() => setTimeLimit("none")}
+              >
+                <div
+                  className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border ${timeLimit === "none"
+                    ? "border-ink bg-ink"
+                    : "border-brand/40 dark:border-muted"
+                    }`}
+                >
+                  {timeLimit === "none" && (
+                    <div className="h-[10px] w-[10px] rounded-full bg-surface" />
+                  )}
+                </div>
+
+                <span className="text-[14px] text-muted">
+                  No limit
+                </span>
+              </label>
+
+            </div>
+
+          </div>
+
         </div>
-
-        <span className="text-[14px] text-muted">
-          60 min
-        </span>
-      </label>
-
-      <label
-        className="flex cursor-pointer items-center gap-3"
-        onClick={() => setTimeLimit("none")}
-      >
-        <div
-          className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border ${
-            timeLimit === "none"
-              ? "border-white bg-white"
-              : "border-[#8B8998]"
-          }`}
-        >
-          {timeLimit === "none" && (
-            <div className="h-[10px] w-[10px] rounded-full bg-[#111145]" />
-          )}
-        </div>
-
-        <span className="text-[14px] text-muted">
-          No limit
-        </span>
-      </label>
-
-    </div>
-
-  </div>
-
-</div>
       </div>
-      <div className="mt-6 flex w-full justify-end">
+      <div className="mt-2 flex w-full justify-end">
         <Button
           variant="primary"
           onClick={() => router.push("/practice")}
-          className="
-      !flex
-      !h-[60px]
-      !w-[309px]
-      !min-w-[309px]
-      !items-center
-      !justify-center
-      !rounded-2xl
-      !px-12
-      !py-4
-      text-center
-      !text-[20px]
-      !font-semibold
-      !leading-7
-      whitespace-nowrap
-      transition-all
-      hover:bg-[#FF7A59]
-      hover:shadow-[0px_4px_20px_0px_#00000008]
-    "
+          className="h-[60px] w-full max-w-[309px] whitespace-nowrap rounded-2xl px-6 py-4 text-[20px] font-semibold leading-7"
         >
           Start Custom Practice
         </Button>

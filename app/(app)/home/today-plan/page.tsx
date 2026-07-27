@@ -14,10 +14,10 @@ import type { PlanTask } from "@/components/home/PlanTaskRow";
 import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
-import { CheckIcon, ClockIcon, ListIcon, CalendarIcon } from "@/assets/icons";
+import { CheckIcon, ClockIcon, ListIcon, CalendarIcon,BellIcon ,ArrowLeftIcon} from "@/assets/icons";
 import {
-  ArrowLeftIcon,
-  BellIcon,
+  // ArrowLeftIcon,
+  // BellIcon,
   // CheckIcon,
   // ClockIcon,
   // ListIcon,
@@ -126,19 +126,12 @@ export default function TodayPlanPage() {
             <p className="text-sm text-muted">Monday, 29 June</p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className={`
-              flex h-11 w-11 items-center justify-center rounded-full
-              transition-colors
-              ${isDark
-                ? "bg-slate-800 text-white hover:bg-slate-700"
-                : "bg-white text-[#1B245A] hover:bg-tint-strong"
-              }
-            `}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>

@@ -3,8 +3,8 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
 import {
-  ArrowLeftIcon,
-  BellIcon,
+  // ArrowLeftIcon,
+  // BellIcon,
   BookIcon,
   AlertTriangleIcon,
   CheckCircleIcon,
@@ -14,7 +14,7 @@ import {
   ExternalLinkIcon,
   CircleXIcon,
 } from "@/components/ui/icons";
-import {CalendarIcon,Open,TargetIcon} from "@/assets/icons";
+import { CalendarIcon, Open, TargetIcon ,BellIcon,ArrowLeftIcon} from "@/assets/icons";
 const OPTIONS = [
   { key: "A", value: "2√11" },
   { key: "B", value: "3√5" },
@@ -48,12 +48,12 @@ export default function MistakeNotebookEntryPage() {
           </Link>
           <h1 className="text-h1 text-ink">Mistake Notebook</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
@@ -136,9 +136,11 @@ export default function MistakeNotebookEntryPage() {
 
 
       <div className="mt-3 rounded-xl border border-success/50 bg-success-bg p-5">
-        <p className="flex items-center gap-2 text-[16px] font-bold leading-6 text-success">
-          <CheckCircleIcon />
-          Correct Answer
+        <p className="flex items-center gap-2 text-sm sm:text-base font-bold leading-6 text-success">
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center sm:h-[18px] sm:w-[18px] [&>svg]:h-full [&>svg]:w-full">
+            <CheckCircleIcon />
+          </span>
+          <span>Correct Answer</span>
         </p>
         <p className="mt-3 text-[14px] font-bold leading-5 text-ink">Option C</p>
         <span className="mt-3 inline-flex h-[42px] items-center justify-center rounded-lg border border-success bg-success/10 px-6 text-[14px] font-bold text-success">

@@ -16,7 +16,7 @@ export function SettingRow({
   iconClassName = "bg-tint text-ink",
 }: SettingRowProps) {
   return (
-    <div className="flex min-h-[104px] items-center justify-between rounded-xl border border-brand/10 bg-surface px-6 py-6 shadow-sm">
+    <div className="flex min-h-[104px] items-center justify-between rounded-xl  bg-surface px-6 py-6 ">
 
       {/* Left */}
       <div className="flex min-w-0 items-center gap-4">

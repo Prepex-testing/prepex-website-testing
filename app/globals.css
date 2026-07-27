@@ -50,6 +50,11 @@
 
   /* icon for color */
   --button-border: #333333;
+
+  /* header icon-action row: theme toggle, bell, user menu */
+  --icon-action-bg: #ffffff;
+  --icon-action-text: #171658;
+  --border-card: #1a1a4e;
 }
 
 [data-theme="dark"] {
@@ -95,6 +100,11 @@
 
   /* icon for color */
   --button-border: #FAF7F2;
+
+  /* header icon-action row: theme toggle, bell, user menu */
+  --icon-action-bg: #242453;
+  --icon-action-text: var(--border-card, #FAF7F214);
+  --border-card: #faf7f2;
 }
 
 @theme inline {
@@ -125,6 +135,9 @@
   --color-icon-chip-bg: var(--icon-chip-bg);
   --color-plan-avatar-bg: var(--plan-avatar-bg);
   --color-toggle-on: var(--toggle-on);
+  --color-icon-action-bg: var(--icon-action-bg);
+  --color-icon-action-text: var(--icon-action-text);
+  --color-border-card: var(--border-card);
 
   --font-sans: var(--font-jakarta);
 

@@ -6,12 +6,12 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import {
-  ArrowLeftIcon,
-  BellIcon,
+  // ArrowLeftIcon,
+  // BellIcon,
   // ClockIcon,
   // CalendarIcon,
 } from "@/components/ui/icons";
-import { CalendarIcon,ClockIcon} from "@/assets/icons";
+import { CalendarIcon, ClockIcon ,ArrowLeftIcon,BellIcon} from "@/assets/icons";
 type HistoryEntry = {
   id: string;
   badge: string;
@@ -119,7 +119,8 @@ function HistoryCard({ entry }: { entry: HistoryEntry }) {
 
           <Link
             href="/home/journal"
-            className={`inline-flex h-12 w-[160px] items-center justify-center gap-3 rounded-lg border px-8 py-4 text-[16px] font-bold text-ink transition-colors hover:bg-[#FF7A59] hover:text-white ${isDark ? "border-white" : "border-brand"}`}
+            className={`inline-flex h-12 w-full max-w-[160px] sm:w-[160px] shrink items-center justify-center gap-3 rounded-lg border px-4 sm:px-8 text-[14px] sm:text-[16px] font-bold whitespace-nowrap text-ink transition-colors hover:bg-[#FF7A59] hover:text-white ${isDark ? "border-white" : "border-brand"
+              }`}
           >
             View Card
           </Link>
@@ -148,12 +149,12 @@ export default function WinJournalHistoryPage() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>

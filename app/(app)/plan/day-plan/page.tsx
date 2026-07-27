@@ -57,7 +57,7 @@ export default function DayPlanPage() {
         {/* Previous */}
         <button
           type="button"
-          className="flex h-[30px] w-[30px] items-center justify-center rounded-md border border-brand/10 bg-surface text-ink"
+          className="flex h-[30px] w-[30px] items-center justify-center rounded-sm border border-brand/10 bg-surface text-ink"
           aria-label="Previous day"
         >
           <ArrowLeftIcon />
@@ -66,7 +66,7 @@ export default function DayPlanPage() {
         {/* Next */}
         <button
           type="button"
-          className="flex h-[30px] w-[30px] items-center justify-center rounded-md border border-brand/10 bg-surface text-ink"
+          className="flex h-[30px] w-[30px] items-center justify-center rounded-sm border border-brand/10 bg-surface text-ink"
           aria-label="Next day"
         >
           <span className="rotate-180">
@@ -256,11 +256,11 @@ export default function DayPlanPage() {
               {/* Right Badge */}
               <div className="ml-4 shrink-0">
                 {task.status === "done" ? (
-                  <span className="rounded-md bg-success/10 px-3 py-1 font-['Plus_Jakarta_Sans'] text-[12px] font-semibold uppercase leading-4 text-success">
+                  <span className="rounded-sm bg-success/10 px-3 py-1 font-['Plus_Jakarta_Sans'] text-[12px] font-semibold uppercase leading-4 text-success">
                     DONE
                   </span>
                 ) : (
-                  <span className="rounded-md bg-tint px-3 py-1 font-['Plus_Jakarta_Sans'] text-[12px] font-semibold leading-4 text-ink">
+                  <span className="rounded-sm bg-tint px-3 py-1 font-['Plus_Jakarta_Sans'] text-[12px] font-semibold leading-4 text-ink">
                     Skipped
                   </span>
                 )}

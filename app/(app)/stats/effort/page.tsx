@@ -1,8 +1,8 @@
 import { Fragment } from "react";
 import {
-  ClockIcon,
-  FlameIcon,
-  CalendarIcon,
+  // ClockIcon,
+  // FlameIcon,
+  // CalendarIcon,
   ChartBarIcon,
   HomeIcon,
   SparkleIcon,
@@ -13,10 +13,10 @@ import {
 import { StatCard } from "@/components/stats/StatCard";
 import { DistributionRow, MeterRow } from "@/components/stats/MeterRow";
 import { SubjectDonut } from "@/components/stats/SubjectDonut";
-
+import { ClockIcon,FlameIcon,Check,CalendarIcon,Chart} from "@/assets/icons";
 type BarState = "past" | "today" | "recovery" | "future";
 
-const BAR_COLORS: Record<BarState, string> = {
+const BAR_COLORS: Record<BarState, string> = {  
   past: "bg-ink",
   today: "bg-[#FF7F5C]",
   recovery: "bg-[#FB923C]",
@@ -179,7 +179,7 @@ export default function EffortStatsPage() {
           <div className="flex items-center gap-5">
 
             <div className="flex h-16 w-[60px] shrink-0 items-center justify-center rounded-[14px] bg-[#E1DFFF66] dark:bg-tint">
-              <CalendarIcon />
+              <Check />
             </div>
 
             <div>
@@ -299,7 +299,7 @@ export default function EffortStatsPage() {
           <div className="flex h-12 items-start justify-between gap-4">
             <div className="flex min-w-0 items-center gap-5">
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white/10 text-[#FAF7F2]">
-                <ChartBarIcon />
+                <Chart />
               </span>
 
               <div className="min-w-0">

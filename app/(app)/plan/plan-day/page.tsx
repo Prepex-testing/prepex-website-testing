@@ -2,15 +2,14 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Chip } from "@/components/ui/Chip";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
-import { BellIcon, MinusIcon, StarIcon, PinIcon, PlusIcon } from "@/components/ui/icons";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
-
+import { BellIcon, PlusIcon } from "@/components/ui/icons";
+import { StarIcon, MinusIcon, PinIcon } from "@/assets/icons";
 const NO_STUDY_REASONS = ["Festival", "Family", "Health", "School exam", "Personal"];
 
 const MOCK_DURATION_OPTIONS = [
@@ -22,12 +21,22 @@ const MOCK_DURATION_OPTIONS = [
 
 type Marking = { type: "no-study"; reason: string } | { type: "mock"; name: string } | null;
 
+const ICON_BADGE_CLASSES =
+  "flex h-12 w-12 items-center justify-center rounded-md  bg-[#EEF0F8] text-[#1A1A4E] dark:border-[#FAF7F2] dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]";
+
 export default function PlanDayPage() {
   const [marking, setMarking] = useState<Marking>(null);
   const [mockName, setMockName] = useState("");
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
+  const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+
+  const toggleReason = (reason: string) => {
+    setSelectedReasons((prev) =>
+      prev.includes(reason) ? prev.filter((r) => r !== reason) : [...prev, reason]
+    );
+  };
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -54,7 +63,7 @@ export default function PlanDayPage() {
           (not border-l) so it stays clipped to the rounded corner instead
           of squaring off past it. */}
       <div className="relative overflow-hidden rounded-lg bg-surface py-6 pl-8 pr-6 shadow-sm">
-        <span className="absolute inset-y-0 left-0 w-1 bg-brand" />
+        <span className="absolute left-0 top-0 h-full w-1 bg-brand" />
         <p className="text-lg font-bold text-ink">
           Currently: AI will generate your plan for this day
         </p>
@@ -66,17 +75,14 @@ export default function PlanDayPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* No-Study Day */}
         <div
-          className={`rounded-2xl border-2 bg-surface p-8 ${
-            marking?.type === "no-study"
-              ? isDark
-                ? "border-white"
-                : "border-brand"
-              : "border-brand/10"
-          }`}
+          className={`rounded-2xl border-2 bg-surface p-8 ${marking?.type === "no-study"
+            ? isDark
+              ? "border-white"
+              : "border-brand"
+            : "border-brand/10"
+            }`}
         >
-          <span
-            className={`flex h-12 w-12 items-center justify-center rounded-full ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
-          >
+          <span className={ICON_BADGE_CLASSES}>
             <MinusIcon />
           </span>
           <p className="mt-3 text-xl font-semibold leading-7 text-ink">No-Study Day</p>
@@ -88,18 +94,21 @@ export default function PlanDayPage() {
           <p className="mt-4 text-[10px] font-medium uppercase tracking-wide text-muted">
             Reason:
           </p>
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 pt-2">
             {NO_STUDY_REASONS.map((reason) => {
-              const selected = marking?.type === "no-study" && marking.reason === reason;
+              const selected = selectedReasons.includes(reason);
               return (
-                <Chip
+                <button
                   key={reason}
-                  selected={selected}
-                  onClick={() => setMarking({ type: "no-study", reason })}
-                  className={isDark && !selected ? "text-white!" : ""}
+                  type="button"
+                  onClick={() => toggleReason(reason)}
+                  className={`inline-flex h-[26.5px] items-center justify-center rounded-full border px-3 py-1 text-xs font-medium transition-colors ${selected
+                      ? "border-[#1A1A4E] bg-[#1A1A4E] text-white dark:border-white dark:bg-white dark:text-[#1A1A4E]"
+                      : "border-[#1A1A4E] bg-surface text-[#1A1A4E] dark:border-white dark:text-white hover:bg-tint-strong"
+                    }`}
                 >
                   {reason}
-                </Chip>
+                </button>
               );
             })}
           </div>
@@ -107,9 +116,7 @@ export default function PlanDayPage() {
 
         {/* Mock Day */}
         <div className="rounded-2xl border border-brand/10 bg-surface p-8">
-          <span
-            className={`flex h-12 w-12 items-center justify-center rounded-full ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
-          >
+          <span className={ICON_BADGE_CLASSES}>
             <StarIcon />
           </span>
           <p className="mt-3 text-xl font-semibold leading-7 text-ink">Mock Day</p>
@@ -133,7 +140,7 @@ export default function PlanDayPage() {
               variant="secondary"
               size="sm"
               onClick={() => setMarking({ type: "mock", name: mockName || "Mock Test" })}
-              className={isDark ? "" : "border-[#1A1A4E]!"}
+              className="border-[#1A1A4E]! dark:border-white!"
             >
               Confirm Mock
             </Button>
@@ -142,9 +149,7 @@ export default function PlanDayPage() {
 
         {/* Custom day */}
         <div className="rounded-2xl border border-brand/10 bg-surface p-8">
-          <span
-            className={`flex h-12 w-12 items-center justify-center rounded-full ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
-          >
+          <span className={ICON_BADGE_CLASSES}>
             <PinIcon />
           </span>
           <p className="mt-3 text-xl font-semibold leading-7 text-ink">Custom day</p>
@@ -175,7 +180,7 @@ export default function PlanDayPage() {
       {/* Confirmation toast — 380x52, rounded-2xl (16px), 16/24 padding, per spec */}
       {marking && (
         <div className="flex justify-center">
-          <div className="min-w-[380px] rounded-2xl bg-brand px-6 py-4 text-sm font-medium text-white">
+          <div className="min-w-[380px] rounded-2xl bg-[#1A1A4E] px-6 py-4 text-sm font-medium text-white">
             May 23 marked as {marking.type === "no-study" ? "No-Study Day" : "Mock Day"}.{" "}
             <button
               type="button"

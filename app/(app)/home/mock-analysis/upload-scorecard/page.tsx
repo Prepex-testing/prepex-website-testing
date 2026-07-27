@@ -11,14 +11,14 @@ import { DateInput } from "@/components/ui/DateInput";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import {
-  ArrowLeftIcon,
-  BellIcon,
+  // ArrowLeftIcon,
+  // BellIcon,
   RefreshIcon,
   PlusIcon,
   UploadIcon,
   InfoIcon,
 } from "@/components/ui/icons";
-
+import { ArrowLeftIcon ,BellIcon} from "@/assets/icons";
 type Tab = "manual" | "upload-image" | "quick-log";
 
 const TABS: { id: Tab; label: string }[] = [
@@ -72,12 +72,12 @@ export default function UploadScorecardPage() {
             <p className="text-sm text-muted">{TAB_SUBTITLES[tab]}</p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>

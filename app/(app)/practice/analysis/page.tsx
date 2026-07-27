@@ -7,14 +7,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   BellIcon,
-  ClockIcon,
+  // ClockIcon,
   XIcon,
-  AlertTriangleIcon,
-  BookIcon,
-  HelpCircleIcon,
+  // AlertTriangleIcon,
+  // BookIcon,
+  // HelpCircleIcon,
   CheckIcon,
 } from "@/components/ui/icons";
-
+import { ClockIcon, ConceptualIcon, TimeIcon, DiceIcon, VectorIcon } from "@/assets/icons";
 const OPTIONS = [
   { key: "A", value: "√15 units" },
   { key: "B", value: "√21 units" },
@@ -26,10 +26,10 @@ const CORRECT_KEY = "A";
 const SELECTED_KEY = "B";
 
 const MISTAKE_TAGS = [
-  { id: "silly-error", label: "Silly Error", icon: <AlertTriangleIcon /> },
-  { id: "conceptual-gap", label: "Conceptual Gap", icon: <BookIcon /> },
-  { id: "time-pressure", label: "Time Pressure", icon: <ClockIcon /> },
-  { id: "wild-guess", label: "Wild Guess", icon: <HelpCircleIcon /> },
+  { id: "silly-error", label: "Silly Error", icon: <VectorIcon /> },
+  { id: "conceptual-gap", label: "Conceptual Gap", icon: <ConceptualIcon /> },
+  { id: "time-pressure", label: "Time Pressure", icon: <TimeIcon /> },
+  { id: "wild-guess", label: "Wild Guess", icon: <DiceIcon /> },
 ];
 
 export default function QuestionAnalysisPage() {
@@ -58,7 +58,7 @@ export default function QuestionAnalysisPage() {
       {/* Question Context card */}
       <div className="rounded-2xl border border-brand/10 bg-surface p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">
+          <p className="text-xs font-bold uppercase tracking-wide text-ink">
             Question Context
           </p>
           <span
@@ -84,9 +84,8 @@ export default function QuestionAnalysisPage() {
             return (
               <div
                 key={option.key}
-                className={`rounded-xl border p-4 ${
-                  isSelected ? "border-[1.5px] border-[#F59E0B] bg-cta/5" : "border-brand/10"
-                }`}
+                className={`rounded-xl border p-4 ${isSelected ? "border-[1.5px] border-[#F59E0B] bg-cta/5" : "border-brand/10"
+                  }`}
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
@@ -135,7 +134,7 @@ export default function QuestionAnalysisPage() {
           </div>
         </div>
 
-        <p className="mt-4 flex items-center gap-1.5 text-xs text-muted">
+        <p className="mt-4 flex items-center gap-1.5 text-xs ">
           <ClockIcon />
           Time Taken: 2:14
         </p>
@@ -146,27 +145,36 @@ export default function QuestionAnalysisPage() {
         <p className="text-[14px] font-bold uppercase leading-5 tracking-[1.4px] text-ink">
           Tag This Mistake
         </p>
-        <div className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-4">
+
+        <div className="mt-6 flex flex-wrap justify-center gap-3 lg:justify-start">
           {MISTAKE_TAGS.map((item) => {
             const isSelected = tag === item.id;
+            const stateColor = isSelected
+              ? "text-[#1A1A4E] dark:text-white"
+              : "text-[#333333] dark:text-muted";
+
             return (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => setTag(item.id)}
                 aria-pressed={isSelected}
-                className={`flex min-h-33.5 flex-col items-center gap-3 rounded-2xl border px-9 pt-5 pb-9 text-center transition-colors ${
-                  isSelected
-                    ? "border-[#1A1A4E] bg-white text-[#1A1A4E]"
-                    : "border-brand/10 bg-tint text-muted hover:bg-tint-strong"
-                }`}
+                className={`flex h-[134px] w-full max-w-[129px] shrink-0 flex-col items-center rounded-2xl border px-[36px] pt-5 pb-9 transition-colors ${isSelected
+                    ? "border-[#1A1A4E] bg-[#EEF0F8] dark:border-white dark:bg-transparent"
+                    : "border-[#E5E7EB] bg-white hover:border-[#1A1A4E]/20 dark:border-[#FAF7F214] dark:bg-[#FAF7F214] dark:hover:bg-[#FAF7F21A]"
+                  }`}
               >
                 <span
-                  className={`[&>svg]:h-12 [&>svg]:w-12 ${isSelected ? "text-[#1A1A4E]" : "text-muted"}`}
+                  className={`flex items-center justify-center [&>svg]:h-12 [&>svg]:w-12 ${stateColor}`}
                 >
                   {item.icon}
                 </span>
-                <span className="text-[12px] font-bold leading-4">{item.label}</span>
+
+                <span
+                  className={`mt-3 text-center font-['Plus_Jakarta_Sans'] text-[12px] font-bold leading-4 tracking-normal ${stateColor}`}
+                >
+                  {item.label}
+                </span>
               </button>
             );
           })}

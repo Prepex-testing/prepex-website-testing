@@ -4,8 +4,8 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
 import {
-  ArrowLeftIcon,
-  BellIcon,
+  // ArrowLeftIcon,
+  // BellIcon,
   // TrophyIcon,
   // FlameIcon,
   // CheckCircleIcon,
@@ -16,7 +16,7 @@ import {
   PrinterIcon,
   // TrophyIcons,
 } from "@/components/ui/icons";
-import { FlameIcon,TargetIcon, TrendingUpIcon,CalendarIcon,ClockIcon,LayersIcon,Check,TrophyIcons} from "@/assets/icons";
+import { FlameIcon, TargetIcon, TrendingUpIcon, CalendarIcon, ClockIcon, LayersIcon, Check, TrophyIcons,ArrowLeftIcon,BellIcon } from "@/assets/icons";
 const STAT_TILES = [
   { icon: <FlameIcon />, text: "14 day streak · new record" },
   { icon: <Check />, text: "27 tasks completed", caption: "Efficiency: 94%" },
@@ -39,12 +39,12 @@ export default function WeeklyWinJournalPage() {
           </Link>
           <h1 className="text-h1 text-ink">Weekly Win Journal</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>

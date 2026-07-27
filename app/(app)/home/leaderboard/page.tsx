@@ -5,16 +5,16 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import {
-  BellIcon,
+  // BellIcon,
   // ClockIcon,
   FlameIcon,
   // TrendingUpIcon,
   // ChartBarIcon,
   // TrophyIcon,
   ChevronDownIcon,
-  ArrowLeftIcon,
+  // ArrowLeftIcon,
 } from "@/components/ui/icons";
-import { ClockIcon,TrophyIcons,UserIcon,TrendingUpIcon} from "@/assets/icons";
+import { ClockIcon, TrophyIcons, UserIcon, TrendingUpIcon,BellIcon,ArrowLeftIcon} from "@/assets/icons";
 const MEDALS: Record<number, string> = {
   1: "🥇",
   2: "🥈",
@@ -105,12 +105,12 @@ export default function LeaderboardPage() {
           </Link>
           <h1 className="text-h1 text-ink">Leaderboard</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
@@ -122,7 +122,10 @@ export default function LeaderboardPage() {
       <div className="flex w-full flex-col gap-4">
         <button
           type="button"
-          className={`flex h-11 w-fit items-center justify-center rounded-full px-8 text-base font-semibold ${isDark ? "bg-white text-[#1A1A4E]" : "bg-brand text-white"}`}
+          className={`flex h-11 w-fit items-center justify-center rounded-full px-8 text-base font-semibold ${isDark
+            ? "bg-[#242453] text-white"
+            : "bg-brand text-white"
+            }`}
         >
           Global
         </button>
@@ -185,7 +188,10 @@ export default function LeaderboardPage() {
                     <td className="py-4 pl-8">
                       <div className="flex items-center gap-3">
                         <span
-                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[6.67px] text-sm font-bold ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[6.67px] text-sm font-bold ${isDark
+                            ? "bg-[#242453] text-white"
+                            : "bg-tint text-ink"
+                            }`}
                         >
                           {entry.initial}
                         </span>

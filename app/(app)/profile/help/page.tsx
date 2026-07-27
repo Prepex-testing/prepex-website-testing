@@ -3,46 +3,46 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
-  HelpCircleIcon,
-  ChatIcon,
-  MailIcon,
-  SunIcon,
-  AlertTriangleIcon,
+  // HelpCircleIcon,
+  // ChatIcon,
+  // MailIcon,
+  // SunIcon,
+  // AlertTriangleIcon,
   InfoIcon,
   ChevronDownIcon,
   ChevronRightIcon,
-  ClockIcon,
+  // ClockIcon,
   BookOpenIcon,
-  ShieldIcon,
+  // ShieldIcon,
 } from "@/components/ui/icons";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
 import { SettingRow } from "@/components/profile/SettingRow";
-
+import { ClockIcon, HelpCircleIcon, WhatsApp, EmailIcon, MessageIcon, ShieldIcon, SunIcon } from "@/assets/icons";
 const SUPPORT_OPTIONS = [
   {
     id: "faqs",
-    icon: <HelpCircleIcon />,
+    icon: <HelpCircleIcon className="h-6 w-6" />,
     title: "FAQs",
     subtitle: "Browse answers to common questions",
     action: "View FAQs",
   },
   {
     id: "whatsapp",
-    icon: <ChatIcon />,
+    icon: <WhatsApp className="h-6 w-6" />,
     title: "WhatsApp Support",
     subtitle: "Chat with our support team on WhatsApp",
     action: "Open WhatsApp",
   },
   {
     id: "email",
-    icon: <MailIcon />,
+    icon: <EmailIcon className="h-6 w-6" />,
     title: "Email Support",
     subtitle: "Send us an email and we'll get back to you",
     action: "Send Email",
   },
   {
     id: "wellness",
-    icon: <SunIcon />,
+    icon: <SunIcon className="h-6 w-6" />,
     title: "Wellness Resources",
     subtitle: "Explore mental wellness and student resources",
     action: "Open Resources",
@@ -79,7 +79,7 @@ export default function HelpAndSupportPage() {
       "
           >
             {/* Icon */}
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-tint text-ink">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full  bg-[#EEF0F8] text-[#1A1A4E]  dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]">
               {option.icon}
             </div>
 
@@ -170,13 +170,13 @@ export default function HelpAndSupportPage() {
         </div>
 
         {/* Right */}
-        <div className="rounded-xl border border-brand/10 bg-tint p-8 shadow-sm">
+        <div className="rounded-xl border border-brand/10 bg-surface p-8 shadow-sm">
 
           {/* Header */}
           <div className="flex items-start gap-4">
 
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-tint">
-              <ChatIcon />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl  bg-[#EEF0F8] text-[#1A1A4E]  dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]">
+              <MessageIcon className="h-4 w-4" />
             </div>
 
             <div>
@@ -195,11 +195,11 @@ export default function HelpAndSupportPage() {
 
             {/* WhatsApp */}
             <button
-              className="flex h-[68px] w-full items-center justify-between rounded-xl border border-brand/10 px-4"
+              className="flex h-[68px] w-full items-center justify-between rounded-xl border border-brand/10 bg-tint px-4"
             >
               <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint">
-                  <ChatIcon />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#EEF0F8] text-[#1A1A4E]  dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]">
+                  <MessageIcon className="h-4 w-4" />
                 </div>
 
                 <div className="text-left">
@@ -218,11 +218,11 @@ export default function HelpAndSupportPage() {
 
             {/* Email */}
             <button
-              className="flex h-[68px] w-full items-center justify-between rounded-xl border border-brand/10 px-4"
+              className="flex h-[68px] w-full items-center justify-between rounded-xl border border-brand/10 bg-tint px-4"
             >
               <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint">
-                  <MailIcon />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg  bg-[#EEF0F8] text-[#1A1A4E]  dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]">
+                  <EmailIcon className="h-4 w-4" />
                 </div>
 
                 <div className="text-left">
@@ -241,11 +241,11 @@ export default function HelpAndSupportPage() {
 
             {/* Support Hours */}
             <div
-              className="flex h-[68px] items-center justify-between rounded-xl border border-brand/10 px-4"
+              className="flex h-[68px] items-center justify-between rounded-xl border border-brand/10 bg-tint px-4"
             >
               <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint">
-                  <ClockIcon />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg  bg-[#EEF0F8] text-[#1A1A4E]  dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]">
+                  <ClockIcon className="h-4 w-4" />
                 </div>
 
                 <div>
@@ -265,10 +265,10 @@ export default function HelpAndSupportPage() {
             </div>
 
             {/* Privacy */}
-            <div className="rounded-xl border border-brand/10 p-4">
+            <div className="rounded-xl border border-brand/10 bg-tint p-4">
               <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint">
-                  <ShieldIcon />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg  bg-[#EEF0F8] text-[#1A1A4E]  dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]">
+                  <ShieldIcon className="h-4 w-4" />
                 </div>
 
                 <p className="text-[11px] leading-5 text-muted">
