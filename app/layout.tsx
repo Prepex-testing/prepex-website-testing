@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import { RegisterServiceWorker } from "@/components/pwa/RegisterServiceWorker";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { InlineThemeScript } from "@/components/theme/InlineThemeScript";
+import { AuthGate } from "@/components/auth/AuthGate";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -50,7 +51,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
-          {children}
+          <AuthGate>{children}</AuthGate>
           <RegisterServiceWorker />
         </ThemeProvider>
       </body>

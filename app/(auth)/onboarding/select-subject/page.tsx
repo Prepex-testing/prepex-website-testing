@@ -10,7 +10,7 @@ import { OptionCard } from "@/components/ui/OptionCard";
 import { ArrowLeftIcon } from "@/components/ui/icons";
 import { GlobeIcon, FlaskIcon, CalculatorIcon, AtomIcon, LayersIcon } from "@/assets/icons";
 import { getSubjects } from "@/lib/api/dashboard";
-import { selectSubjects } from "@/lib/api/onboarding";
+import { getOnboardingProgress, selectSubjects } from "@/lib/api/onboarding";
 import { ApiError } from "@/lib/api/http";
 import type { Subject } from "@/lib/api/dashboard";
 
@@ -31,8 +31,12 @@ export default function SelectSubjectPage() {
   const [isSubmitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    getSubjects()
-      .then(({ data }) => setSubjects(data))
+    Promise.all([getSubjects(), getOnboardingProgress().catch(() => null)])
+      .then(([{ data }, progress]) => {
+        setSubjects(data);
+        const savedSubjectIds = progress?.data.subjects.map((subject) => subject.subjectId);
+        if (savedSubjectIds?.length) setSelected(savedSubjectIds);
+      })
       .catch(() => setError("Couldn't load subjects. Please refresh and try again."))
       .finally(() => setLoading(false));
   }, []);
