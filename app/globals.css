@@ -85,6 +85,9 @@
   --processing-text: #4C1D95;
 
   --badge-partial-bg: #eef0f8;
+
+    --mood-card-bg: #FFFFFF;
+  --mood-chip-bg: #E7EEFF;
 }
 
 [data-theme="dark"] {
@@ -165,6 +168,9 @@
   --processing-text: #FAF7F2;
 
   --badge-partial-bg: #FAF7F240;
+
+    --mood-card-bg: #2A2A6E;
+  --mood-chip-bg: #232C6B;
 ;  
 }
 
@@ -229,6 +235,9 @@
   --color-chapter-box-border: var(--chapter-box-border);
   --color-processing-text: var(--processing-text);
   --color-badge-partial-bg: var(--badge-partial-bg);
+
+  --color-mood-card-bg: var(--mood-card-bg);
+  --color-mood-chip-bg: var(--mood-chip-bg);
   
 }
 
