@@ -76,13 +76,15 @@
   --oc-button-bg: #ff7a59;
   --oc-button-text: #ffffff;
 
-  --accordion-open-bg: #EFF2FE;
 
   --accordion-open-bg: #EFF2FE;   
   --accordion-row-bg: #FFFFFF;  
 
     --chapter-box-bg: #FFFFFF;
   --chapter-box-border: rgb(26 26 78 / 0.10);  
+  --processing-text: #4C1D95;
+
+  --badge-partial-bg: #eef0f8;
 }
 
 [data-theme="dark"] {
@@ -154,13 +156,15 @@
   --oc-button-bg: #ff7a59;
   --oc-button-text: #ffffff;
 
-  --accordion-open-bg: #13133D;
 
-  --accordion-open-bg: #242453;  
+  --accordion-open-bg: #13133D;  
  --accordion-row-bg: #FAF7F240;
 
    --chapter-box-bg: #13133D;
   --chapter-box-border: rgb(250 247 242 / 0.06);
+  --processing-text: #FAF7F2;
+
+  --badge-partial-bg: #FAF7F240;
 ;  
 }
 
@@ -218,11 +222,13 @@
   --color-accordion-open-bg: var(--accordion-open-bg);
   --color-sub: var(--sub);
 
-  --color-accordion-open-bg: var(--accordion-open-bg);
+
   --color-accordion-row-bg: var(--accordion-row-bg); 
 
     --color-chapter-box-bg: var(--chapter-box-bg);
   --color-chapter-box-border: var(--chapter-box-border);
+  --color-processing-text: var(--processing-text);
+  --color-badge-partial-bg: var(--badge-partial-bg);
   
 }
 

@@ -3,18 +3,18 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
-import { CircularProgress } from "@/components/ui/CircularProgress";
-import { CalendarIcon, ClockIcon, BookIcon, BriefcaseIcon } from "@/components/ui/icons";
+import { AnimatedCircularProgress } from "@/components/ui/AnimatedCircularProgress";
+// import { CalendarIcon, ClockIcon} from "@/components/ui/icons";
 import { confirmOnboarding } from "@/lib/api/onboarding";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
-
+import { GraduationCapIcon, BookIcon, ClockIcon, CalendarIcon } from "@/assets/icons";
 const REDIRECT_DELAY_MS = 2000;
 
 const PROFILE_SUMMARY = [
   { icon: <CalendarIcon />, text: "JEE Main 2026 in 284 days" },
   { icon: <ClockIcon />, text: "6-7 hours daily study target" },
   { icon: <BookIcon />, text: "42 chapters already studied" },
-  { icon: <BriefcaseIcon />, text: "Allen Coaching (Evening Batch) schedule" },
+  { icon: <GraduationCapIcon />, text: "Allen Coaching (Evening Batch) schedule" },
 ];
 
 export default function AnalyzingPage() {
@@ -41,7 +41,11 @@ export default function AnalyzingPage() {
       </div>
 
       <div className="mt-6 flex justify-center">
-        <CircularProgress percent={8} label="Optimizing" />
+        <AnimatedCircularProgress
+          targetPercent={100}
+          durationMs={REDIRECT_DELAY_MS}
+          label="Optimizing"
+        />
       </div>
 
       <p className="mt-6 text-center text-sm font-bold text-ink">
@@ -62,7 +66,7 @@ export default function AnalyzingPage() {
         ))}
       </div>
 
-      <p className="mt-4 text-center text-xs font-medium text-cta">
+      <p className="mt-4 text-center text-xs font-medium text-processing-text">
         Processing academic data... This takes about 5 seconds.
       </p>
     </AuthCard>

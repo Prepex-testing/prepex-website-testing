@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
 import { Button } from "@/components/ui/Button";
 import { OutlineChip } from "@/components/ui/OutlineChip";
 import { GoogleIcon, CheckIcon } from "@/components/ui/icons";
+import { getGoogleAuthUrl } from "@/lib/api/auth";
 
 const PREVIEW_TASKS = [
   {
@@ -141,7 +144,12 @@ export default function WelcomePage() {
 
           {/* Google Button */}
           <div className="flex w-full flex-col gap-3">
-            <Button variant="secondary">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                window.location.href = getGoogleAuthUrl();
+              }}
+            >
               <GoogleIcon />
               Continue with Google
             </Button>
