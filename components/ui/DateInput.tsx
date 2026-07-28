@@ -99,9 +99,6 @@ export function DateInput({
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
         />
       </div>
-      <p id={`${inputId}-format`} className="text-[11px] text-muted/70">
-        Format: {DISPLAY_FORMAT}
-      </p>
     </div>
   );
 }

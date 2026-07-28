@@ -21,14 +21,21 @@ export function OptionCard({
   className = "",
 }: OptionCardProps) {
   return (
-    // Box — 329x90, radius Large (16px), border 1.5px light / 1px dark, padding 20px
     <button
       type="button"
       onClick={onClick}
       className={`flex items-center gap-5 rounded-2xl border p-5 text-left transition-colors ${compact ? "" : "justify-between"
         } ${selected
-          ? `border-ink dark:border-ink ${compact ? "bg-surface" : "bg-tint-strong"}`
-          : "border-brand/15 bg-surface dark:border-white/15"
+          ? `
+        border-[1.5px]
+        border-ink
+        ${compact ? "bg-surface" : "dark:bg-surface"}
+      `
+          : `
+        border border-brand/15
+        bg-surface
+        dark:border-white/15
+      `
         } ${className}`}
     >
       <span className="flex items-center gap-5">
@@ -49,8 +56,8 @@ export function OptionCard({
       {!compact && (
         <span
           className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${selected
-              ? "bg-ink text-white dark:text-[#1A1A4E]"
-              : "border border-brand/15 bg-surface dark:border-white/15"
+            ? "bg-ink text-white dark:text-[#1A1A4E]"
+            : "border border-brand/15 bg-surface dark:border-white/15"
             }`}
         >
           {selected && <CheckIcon />}

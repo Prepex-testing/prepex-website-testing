@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { OptionCard } from "@/components/ui/OptionCard";
+import { OptionCardSkeleton } from "@/components/ui/OptionCardSkeleton";
 import { StepProgress } from "@/components/ui/StepProgress";
 import { LayersIcon, BookIcon, RadarIcons, BriefcaseIcons, CuteIcon } from "@/assets/icons";
 import { getExams } from "@/lib/api/dashboard";
@@ -22,6 +23,10 @@ const EXAM_META: Record<string, { subtitle: string; icon: ReactNode }> = {
   BOARDS: { subtitle: "Class 12 Boards", icon: <BookIcon /> },
 };
 const DEFAULT_META = { subtitle: "Personalized prep plan", icon: <LayersIcon /> };
+
+// Exams that always need a subject pick, regardless of what the API reports —
+// covers combo exams like JEE+CUET that share Boards/CUET's subject-selection flow.
+const SUBJECT_SELECTION_EXAM_CODES = new Set(["CUET", "BOARDS", "JEE+CUET"]);
 
 export default function PreparingForPage() {
   const router = useRouter();
@@ -52,8 +57,12 @@ export default function PreparingForPage() {
     setSubmitting(true);
     try {
       const { requiresSubjectSelection } = await selectExam({ examId: selected });
+      const selectedExam = exams.find((exam) => exam.id === selected);
+      const needsSubjectSelection =
+        requiresSubjectSelection ||
+        (selectedExam ? SUBJECT_SELECTION_EXAM_CODES.has(selectedExam.code.toUpperCase()) : false);
       router.push(
-        requiresSubjectSelection
+        needsSubjectSelection
           ? "/onboarding/select-subject"
           : "/onboarding/tell-us-about-you",
       );
@@ -87,7 +96,10 @@ export default function PreparingForPage() {
       )}
 
       <div className="mt-6 flex flex-col gap-3">
-        {isLoading && <p className="text-sm text-muted">Loading exams...</p>}
+        {isLoading &&
+          Array.from({ length: 4 }).map((_, index) => (
+            <OptionCardSkeleton key={index} />
+          ))}
         {!isLoading &&
           exams.map((exam) => {
             const meta = EXAM_META[exam.code] ?? DEFAULT_META;

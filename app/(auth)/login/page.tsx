@@ -143,7 +143,7 @@ export default function LoginPage() {
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-muted">
+      <p className="mt-6 text-center text-sm">
         Don&apos;t have an account?{" "}
         <Link
           href="/create-account"

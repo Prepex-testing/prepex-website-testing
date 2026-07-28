@@ -16,6 +16,7 @@ export function Input({
   icon,
   id,
   type = "text",
+  required,
   ...props
 }: InputProps) {
   const generatedId = useId();
@@ -39,6 +40,7 @@ export function Input({
         "
       >
         {label}
+        {required && <span className="text-cta"> *</span>}
       </label>
 
       {/* Helper */}
@@ -72,21 +74,19 @@ export function Input({
         <input
           id={inputId}
           type={resolvedType}
+          required={required}
           className="
-            min-w-0
-            flex-1
-            bg-transparent
-            text-[16px]
-            font-semibold
-            leading-none
-            text-ink
-            outline-none
+    min-w-0
+    flex-1
+    bg-transparent
+    text-[16px]
+    font-semibold
+    leading-none
+    text-ink
+    outline-none
 
-            placeholder:text-muted
-
-            dark:text-muted
-            dark:placeholder:text-muted
-          "
+    placeholder:text-muted
+  "
           {...props}
         />
 

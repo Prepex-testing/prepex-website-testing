@@ -6,8 +6,9 @@ import { AuthCard } from "@/components/layout/AuthCard";
 import { Accordion } from "@/components/ui/Accordion";
 import { Button } from "@/components/ui/Button";
 import { ChapterItem } from "@/components/ui/ChapterItem";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { StepProgress } from "@/components/ui/StepProgress";
-import { CheckCircleIcon, XIcon } from "@/components/ui/icons";
+import { CheckIcon, XIcon } from "@/components/ui/icons";
 import { getOnboardingProgress, getStudentChapters, saveChapterProgress } from "@/lib/api/onboarding";
 import { ApiError } from "@/lib/api/http";
 import type { SubjectChapters } from "@/lib/api/dashboard";
@@ -61,11 +62,12 @@ export default function WhichChaptersHaveYouStudiedPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const { markedCount, partialCount } = useMemo(() => {
+  const { markedCount, partialCount, allMarked } = useMemo(() => {
     const values = Object.values(chapterState);
     return {
       markedCount: values.filter((value) => value !== "none").length,
       partialCount: values.filter((value) => value === "partial").length,
+      allMarked: values.length > 0 && values.every((value) => value !== "none"),
     };
   }, [chapterState]);
 
@@ -87,6 +89,14 @@ export default function WhichChaptersHaveYouStudiedPage() {
       for (const key of Object.keys(next)) next[key] = "none";
       return next;
     });
+  };
+
+  const toggleMarkAll = () => {
+    if (allMarked) {
+      clearAll();
+    } else {
+      markAll();
+    }
   };
 
   const handleContinue = async () => {
@@ -148,9 +158,11 @@ export default function WhichChaptersHaveYouStudiedPage() {
         skipDisabled={isSubmitting || isSkipping || isLoading}
       />
 
-      <div className="mt-4 flex flex-col gap-1">
-        <h1 className="text-h1 text-ink">Which chapters have you studied?</h1>
-        <p className="text-sm text-muted">
+      <div className="mt-4 flex flex-col gap-4 sm:mt-5">
+        <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
+          Which chapters have you studied?
+        </h1>
+        <p className="text-[14px] font-semibold leading-[100%] text-[#666666] sm:text-[16px]">
           Tap to mark studied. Skip what you haven&apos;t touched. Even partial study
           counts
         </p>
@@ -165,15 +177,15 @@ export default function WhichChaptersHaveYouStudiedPage() {
         </p>
       )}
 
-      <div className="mt-6 rounded-xl border border-brand/10 bg-surface p-4">
+      <div className="mt-6 rounded-xl border border-brand/10 bg-surface p-4 dark:border-white/10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="whitespace-nowrap rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-white sm:px-4 sm:text-sm">
+            <span className="whitespace-nowrap rounded-lg bg-ink px-3 py-2 text-xs font-semibold text-surface dark:text-[#111145] sm:px-4 sm:text-sm">
               {markedCount - partialCount} chapter
               {markedCount - partialCount !== 1 ? "s" : ""} marked as complete
             </span>
 
-            <span className="whitespace-nowrap rounded-lg border border-brand bg-white px-3 py-2 text-xs font-semibold text-brand sm:px-4 sm:text-sm">
+            <span className="whitespace-nowrap rounded-lg border border-ink bg-surface px-3 py-2 text-xs font-semibold text-ink sm:px-4 sm:text-sm">
               {partialCount} chapter
               {partialCount !== 1 ? "s" : ""} marked as partial
             </span>
@@ -182,17 +194,25 @@ export default function WhichChaptersHaveYouStudiedPage() {
           <div className="flex shrink-0 items-center gap-4">
             <button
               type="button"
-              onClick={markAll}
-              className="flex items-center gap-1.5 whitespace-nowrap text-sm text-ink"
+              onClick={toggleMarkAll}
+              aria-pressed={allMarked}
+              className="flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold text-ink dark:text-muted"
             >
-              <CheckCircleIcon />
+              <span
+                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${allMarked
+                  ? "border-brand bg-brand text-white"
+                  : "border-brand/25 text-transparent dark:border-white/25"
+                  }`}
+              >
+                <CheckIcon className="h-2.5 w-2.5" />
+              </span>
               Mark all
             </button>
 
             <button
               type="button"
               onClick={clearAll}
-              className="flex items-center gap-1.5 whitespace-nowrap text-sm text-ink"
+              className="flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold text-ink dark:text-muted"
             >
               <XIcon />
               Clear
@@ -207,8 +227,12 @@ export default function WhichChaptersHaveYouStudiedPage() {
         </p>
       </div>
 
-      <div className="mt-4 flex flex-col gap-3">
-        {isLoading && <p className="text-sm text-muted">Loading chapters...</p>}
+      <div className="mt-5 flex flex-col gap-2 sm:mt-6">
+        {isLoading && (
+          <div className="flex items-center justify-center py-10">
+            <LoadingIndicator size={40} />
+          </div>
+        )}
         {!isLoading &&
           subjects.map((subject, index) => {
             const selectedCount = subject.chapters.filter(
@@ -223,7 +247,7 @@ export default function WhichChaptersHaveYouStudiedPage() {
                 meta={`${String(selectedCount).padStart(2, "0")}/${subject.chapters.length} CHAPTERS SELECTED`}
                 defaultOpen={index === 0}
               >
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {subject.chapters.map((chapter) => (
                     <ChapterItem
                       key={chapter.id}

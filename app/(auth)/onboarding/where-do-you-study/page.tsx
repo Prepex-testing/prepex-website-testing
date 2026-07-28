@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { Button } from "@/components/ui/Button";
@@ -58,6 +58,7 @@ export default function WhereDoYouStudyPage() {
   const [batch, setBatch] = useState("");
   const [hasScheduleUpload, setHasScheduleUpload] = useState(false);
   const [hadScheduleUploadOnFile, setHadScheduleUploadOnFile] = useState(false);
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
   const [isUploadingSchedule, setUploadingSchedule] = useState(false);
   const [uploadSummary, setUploadSummary] = useState<string | null>(null);
   const [uploadParsed, setUploadParsed] = useState(false);
@@ -65,6 +66,17 @@ export default function WhereDoYouStudyPage() {
   const [isSubmitting, setSubmitting] = useState(false);
   const [isSkipping, setSkipping] = useState(false);
   const { setSuggestion } = useScheduleSuggestion();
+
+  const previewUrl = useMemo(
+    () => (previewFile ? URL.createObjectURL(previewFile) : null),
+    [previewFile],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   useEffect(() => {
     getOnboardingProgress()
@@ -127,8 +139,12 @@ export default function WhereDoYouStudyPage() {
   };
 
   const handleFileSelect = async (file: File | null) => {
+    setPreviewFile(file);
+
     if (!file) {
       setHasScheduleUpload(false);
+      setUploadSummary(null);
+      setUploadParsed(false);
       return;
     }
 
@@ -189,7 +205,7 @@ export default function WhereDoYouStudyPage() {
         </p>
       )}
 
-      <div className="mt-6 flex flex-col gap-3" role="radiogroup" aria-label="Coaching status">
+      <div className="mt-5 flex flex-col gap-3 sm:mt-6" role="radiogroup" aria-label="Coaching status">
         <RadioOption
           name="coachingStatus"
           value="coaching"
@@ -199,7 +215,6 @@ export default function WhereDoYouStudyPage() {
         >
           <Select
             label="Coaching Name"
-            required
             placeholder="Select Coaching"
             options={COACHING_NAME_OPTIONS}
             name="coachingName"
@@ -208,7 +223,6 @@ export default function WhereDoYouStudyPage() {
           />
           <Select
             label="Batch"
-            required
             placeholder="Select Batch"
             options={BATCH_OPTIONS}
             name="batch"
@@ -236,42 +250,62 @@ export default function WhereDoYouStudyPage() {
 
       {showScheduleUpload && (
         <>
-          <p className="mt-4 text-center text-xs text-muted">or</p>
+          {/* Divider */}
+          <div className="mt-5 flex items-center gap-3 sm:mt-6">
+            <span className="h-px flex-1 bg-brand/10 dark:bg-white/10" />
+            <span className="text-xs text-muted">or</span>
+            <span className="h-px flex-1 bg-brand/10 dark:bg-white/10" />
+          </div>
 
-          <div className="mt-4 rounded-xl  p-4">
-            <p className="text-sm font-semibold text-ink">
+          {/* Schedule Screenshot Card */}
+          <div className="mt-5 rounded-2xl border border-brand/10 p-4 dark:border-white/10 sm:mt-6 sm:p-6">
+            <p className="text-[16px] font-bold leading-[100%] text-ink sm:text-[18px]">
               Got a schedule screenshot?
             </p>
-            <p className="text-xs text-muted">
+
+            <p className="mt-1 text-[14px] font-medium leading-[140%] text-muted sm:text-[16px]">
               Lets us auto-build your timetable in 30 seconds instead of 5 minutes.
             </p>
 
-            <div className="mt-3">
-              <UploadDropzone onFileSelect={handleFileSelect} />
+            <div className="mt-4">
+              <UploadDropzone
+                onFileSelect={handleFileSelect}
+                previewUrl={previewUrl}
+                fileName={previewFile?.name}
+              />
             </div>
 
+            {/* Uploading State */}
             {isUploadingSchedule && (
-              <p className="mt-2 text-xs text-muted">Reading your schedule...</p>
+              <p className="mt-3 text-xs text-muted">
+                Reading your schedule...
+              </p>
             )}
 
+            {/* Success / Error */}
             {uploadSummary && (
               <p
-                className={`mt-2 text-xs font-medium ${uploadParsed ? "text-success" : "text-danger"}`}
+                className={`mt-3 text-xs font-medium ${uploadParsed ? "text-success" : "text-danger"
+                  }`}
               >
                 {uploadSummary}
               </p>
             )}
 
+            {/* Already Uploaded */}
             {!uploadSummary && hadScheduleUploadOnFile && (
-              <p className="mt-2 text-xs font-medium text-success">
-                Schedule already on file from a previous step
+              <p className="mt-3 text-xs font-medium text-success">
+                Schedule already on file from a previous step.
               </p>
             )}
 
-            <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-success">
-               <CheckIcon className="h-4 w-4 sm:h-4 sm:w-4 text-success" />
-              Lets us auto-build your timetable in 30 seconds instead of 5 minutes.
-            </p>    
+            {/* Default Success Message */}
+            {!isUploadingSchedule && !uploadSummary && !hadScheduleUploadOnFile && (
+              <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-success">
+                <CheckIcon className="h-4 w-4 shrink-0 text-success" />
+                <span> Lets us auto-build your timetable in 30 seconds instead of 5 minutes.</span>
+              </p>
+            )}
           </div>
         </>
       )}

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { OptionCard } from "@/components/ui/OptionCard";
+import { OptionCardSkeleton } from "@/components/ui/OptionCardSkeleton";
 import { ArrowLeftIcon } from "@/components/ui/icons";
 import { GlobeIcon, FlaskIcon, CalculatorIcon, AtomIcon, LayersIcon } from "@/assets/icons";
 import { getSubjects } from "@/lib/api/dashboard";
@@ -91,7 +92,10 @@ export default function SelectSubjectPage() {
       )}
 
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {isLoading && <p className="text-sm text-muted">Loading subjects...</p>}
+        {isLoading &&
+          Array.from({ length: 4 }).map((_, index) => (
+            <OptionCardSkeleton key={index} compact />
+          ))}
         {!isLoading &&
           subjects.map((subject) => (
             <OptionCard
