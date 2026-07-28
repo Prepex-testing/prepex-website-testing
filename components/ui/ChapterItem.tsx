@@ -1,5 +1,3 @@
-import { CheckIcon } from "@/components/ui/icons";
-
 type ChapterState = "none" | "partial" | "done";
 
 type ChapterItemProps = {
@@ -17,26 +15,20 @@ export function ChapterItem({ title, state, onCycle }: ChapterItemProps) {
       type="button"
       onClick={onCycle}
       aria-pressed={state !== "none"}
-      className={`flex min-h-[63px] items-center justify-between gap-3 rounded-xl border p-4 text-left transition-colors sm:p-5 ${
-        isDone
-          ? "border-brand bg-tint-strong dark:border-chapter-box-border dark:bg-chapter-box-bg"
-          : isPartial
-            ? "border-cta/40 bg-surface dark:border-chapter-box-border dark:bg-chapter-box-bg"
-            : "border-brand/10 bg-surface dark:border-chapter-box-border dark:bg-chapter-box-bg"
-      }`}
+      className={`flex min-h-[63px] items-center justify-between gap-3 rounded-xl border p-4 text-left transition-colors sm:p-5 ${isDone
+        ? "border-brand bg-tint-strong dark:border-chapter-box-border dark:bg-chapter-box-bg"
+        : isPartial
+          ? "border-cta/40 bg-surface dark:border-chapter-box-border dark:bg-transparent"
+          : "border-brand/10 bg-surface dark:border-chapter-box-border dark:bg-transparent"
+        }`}
     >
       <span className="flex items-center gap-3">
-        {/* Radio / check — 24x24 */}
+        {/* Radio indicator — 24x24, ring + inner dot when done */}
         <span
-          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${
-            isDone
-              ? "border-brand bg-brand text-white"
-              : isPartial
-                ? "border-cta bg-cta"
-                : "border-brand/25"
-          }`}
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${isDone ? "border-ink" : "border-brand/25"
+            }`}
         >
-          {isDone && <CheckIcon />}
+          {isDone && <span className="h-2.5 w-2.5 rounded-full bg-ink" />}
         </span>
         {/* Label — Jakarta 500, 14px, lh 21 */}
         <span className="text-sm font-medium leading-[21px] text-body-text">
@@ -45,7 +37,8 @@ export function ChapterItem({ title, state, onCycle }: ChapterItemProps) {
       </span>
 
       {isPartial && (
-        <span className="shrink-0 rounded-full bg-cta/10 px-2 py-0.5 text-[10px] font-semibold text-cta">
+        // Badge — 6px radius, py4/px10, Bold 12/16
+        <span className="shrink-0 rounded-sm bg-badge-partial-bg px-1.5 py-0.5 text-[9px] font-bold leading-3 text-subject-text">
           Partial
         </span>
       )}

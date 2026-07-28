@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ArrowLeftIcon } from "@/components/ui/icons";
-
+// import { ArrowLeftIcon } from "@/components/ui/icons";
+import { ArrowLeftIcon} from "@/assets/icons";
 type StepProgressProps = {
   step: number;
   totalSteps: number;

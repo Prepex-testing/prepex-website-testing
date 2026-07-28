@@ -52,7 +52,7 @@ export function Accordion({
             </span>
             {/* Meta — Jakarta 400, 12px, lh 100%, uppercase */}
             <span
-              className={`text-[12px] font-normal uppercase leading-none ${open
+              className={`text-[10px] font-normal uppercase leading-none tracking-wide sm:text-[11px] md:text-[12px] lg:text-[13px] ${open
                   ? "text-[#464650B2] dark:text-muted"
                   : "text-[#464650B2] dark:text-ink"
                 }`}
