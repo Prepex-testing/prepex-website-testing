@@ -58,49 +58,47 @@ export function DateInput({
   };
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-2">
       <label
         htmlFor={inputId}
-        className="text-[14px] font-semibold leading-[20px] text-ink"
+        className="text-[14px] font-bold leading-[100%] text-body-text dark:text-ink sm:text-[16px]"
       >
         {label}
         {required && <span className="text-cta"> *</span>}
       </label>
-      {helperText && <p className="text-xs text-muted">{helperText}</p>}
-      <div className="relative mt-1 flex items-center gap-2 rounded-xl border border-brand/15 px-4 py-3 focus-within:border-focus-ring">
+      {helperText && <p className="text-[12px] leading-[100%] text-body-text dark:text-muted">
+        {helperText}
+      </p>}
+      {/* Input box — 681x56, radius Medium, border 1px */}
+      <div
+        className="relative flex h-14 items-center gap-2 rounded-xl border border-ink px-4 py-[16.5px] focus-within:border-focus-ring dark:border-muted"
+        onClick={openPicker}
+      >
         <input
           id={inputId}
           name={name}
           type="text"
           inputMode="numeric"
-          autoComplete="off"
           value={value}
           onChange={handleTextChange}
           placeholder={placeholder}
-          aria-describedby={`${inputId}-format`}
           className="flex-1 bg-transparent text-sm text-body-text outline-none placeholder:text-muted/70"
           {...props}
         />
-        <button
-          type="button"
-          onClick={openPicker}
-          aria-label={`Pick a date for ${label}`}
-          className="shrink-0 text-muted hover:text-ink"
-        >
+
+        <span className="pointer-events-none shrink-0 text-muted">
           <CalendarIcon />
-        </button>
+        </span>
+
         <input
           ref={nativeDateRef}
           type="date"
           tabIndex={-1}
           aria-hidden="true"
           onChange={handleNativeChange}
-          className="pointer-events-none absolute inset-y-0 right-4 w-0 opacity-0"
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
         />
       </div>
-      <p id={`${inputId}-format`} className="text-[11px] text-muted/70">
-        Format: {DISPLAY_FORMAT}
-      </p>
     </div>
   );
 }

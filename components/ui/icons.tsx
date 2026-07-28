@@ -36,14 +36,13 @@ export function AppleIcon({ className = "h-4 w-3" }: { className?: string }) {
   );
 }
 
-export function CheckIcon() {
+export function CheckIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
-      width="32"
-      height="32"
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
+      {...props}
     >
       <path
         d="M5 12.5L10 17.5L19 8.5"

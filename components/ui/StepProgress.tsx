@@ -21,44 +21,84 @@ export function StepProgress({
   skipDisabled = false,
 }: StepProgressProps) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
+      {/* Back Button */}
       {backHref && (
-        <Link href={backHref} aria-label="Go back" className="w-fit text-ink">
+        <Link
+          href={backHref}
+          aria-label="Go back"
+          className="w-fit text-ink transition-colors hover:opacity-80"
+        >
           <ArrowLeftIcon />
         </Link>
       )}
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-wide text-cta">
-          Onboarding
-        </span>
+
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[10px] font-bold uppercase leading-[15px] tracking-[2px] text-cta">
+            Onboarding
+          </span>
+
+          <p className="text-[14px] font-extrabold leading-[20px] text-ink sm:text-[15px]">
+            Step {step} of {totalSteps}
+          </p>
+        </div>
+
+        {/* Skip Button */}
         {showSkip && onSkip && (
           <button
             type="button"
             onClick={onSkip}
             disabled={skipDisabled}
-            className="text-xs font-semibold text-muted hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+            className="
+              pt-4
+              text-[12px]
+              font-semibold
+              leading-[18px]
+              text-muted
+              transition-colors
+              hover:text-ink
+              disabled:cursor-not-allowed
+              disabled:opacity-50
+              sm:text-[13px]
+              sm:leading-[19.5px]
+            "
           >
             Skip
           </button>
         )}
+
+        {/* Skip Link */}
         {showSkip && !onSkip && skipHref && (
           <Link
             href={skipHref}
-            className="text-xs font-semibold text-muted hover:text-ink"
+            className="
+              pt-4
+              text-[12px]
+              font-semibold
+              leading-[18px]
+              text-muted
+              transition-colors
+              hover:text-ink
+              sm:text-[13px]
+              sm:leading-[19.5px]
+            "
           >
             Skip
           </Link>
         )}
       </div>
-      <p className="text-sm font-bold text-ink">
-        Step {step} of {totalSteps}
-      </p>
+
+      {/* Progress Bar */}
       <div className="flex gap-1.5">
         {Array.from({ length: totalSteps }).map((_, index) => (
           <span
             key={index}
-            className={`h-1.5 flex-1 rounded-full ${
-              index < step ? "bg-brand dark:bg-ink" : "bg-brand/10 dark:bg-muted"
+            className={`h-1 flex-1 rounded-full transition-colors ${
+              index < step
+                ? "bg-[linear-gradient(90.08deg,#1A1A4E_0.48%,#4C1D95_99.05%)] dark:bg-ink dark:bg-none"
+                : "bg-brand/10 dark:bg-ink/15"
             }`}
           />
         ))}

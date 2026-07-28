@@ -58,23 +58,29 @@ export function OtpInput({ value, onChange }: OtpInputProps) {
   };
 
   return (
-    <div className="flex justify-center gap-1 sm:gap-2">
-      {digits.map((digit, index) => (
-        <input
-          key={index}
-          ref={(el) => {
-            inputsRef.current[index] = el;
-          }}
-          value={digit}
-          onChange={(event) => handleChange(index, event.target.value)}
-          onPaste={(event) => handlePaste(index, event)}
-          onKeyDown={(event) => handleKeyDown(index, event)}
-          inputMode="numeric"
-          maxLength={1}
-          aria-label={`Digit ${index + 1}`}
-          className="h-12 w-9 rounded-xl border border-brand/15 text-center text-lg font-bold text-ink outline-none focus:border-focus-ring sm:h-14 sm:w-12"
-        />
-      ))}
+    <div className="flex w-full max-w-[465px] justify-center gap-2 xs:gap-3 sm:gap-4">
+      {digits.map((digit, index) => {
+        const isFilled = digit !== "";
+        return (
+          <input
+            key={index}
+            ref={(el) => {
+              inputsRef.current[index] = el;
+            }}
+            value={digit}
+            onChange={(event) => handleChange(index, event.target.value)}
+            onPaste={(event) => handlePaste(index, event)}
+            onKeyDown={(event) => handleKeyDown(index, event)}
+            inputMode="numeric"
+            maxLength={1}
+            aria-label={`Digit ${index + 1}`}
+            className={`aspect-square w-11 min-w-0 flex-1 rounded-lg p-2 text-center text-base font-bold outline-none focus:border-focus-ring xs:w-12 xs:text-lg sm:h-16 sm:w-16 sm:flex-none sm:p-3 sm:text-lg ${isFilled
+                ? "border border-ink text-ink dark:border-2 dark:border-ink dark:text-white"
+                : "border border-[#E4E4E6] text-ink"
+              }`}
+          />
+        );
+      })}
     </div>
   );
 }

@@ -48,14 +48,21 @@ function EmailVerificationForm() {
 
   return (
     <AuthCard>
-      <div className="flex flex-col items-center gap-6">
+      {/* HEADER — 333x75, gap 4px */}
+      <div className="flex flex-col items-center gap-1">
         <Logo size="compact" />
+      </div>
 
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-h1 text-ink">Verify your email</h1>
-          <p className="text-sm text-muted">
+      {/* SECOND CONTAINER — 560x348, gap 32px */}
+      <div className="mt-10 flex flex-col items-center gap-6 sm:mt-14 sm:gap-8">
+        {/* TITLE BLOCK — 560x96, gap 8px */}
+        <div className="flex flex-col items-center gap-2 text-center">
+          <h1 className="text-[24px] font-bold leading-[32px] tracking-[-0.48px] text-ink sm:text-[32px] sm:leading-[40px] sm:tracking-[-0.64px]">
+            Verify your email
+          </h1>
+          <p className="text-[14px] leading-[22px] text-[#8B8998] sm:text-[16px] sm:leading-[24px]">
             We&apos;ve sent a 6-digit code to{" "}
-            <span className="font-semibold text-ink">{email}</span>.
+            <span className="font-semibold">{email}</span>.
             <br />
             Enter it below to continue.
           </p>
@@ -70,31 +77,38 @@ function EmailVerificationForm() {
           </p>
         )}
 
-        <OtpInput value={otp} onChange={setOtp} />
+        {/* OTP + BELOW BLOCK — 465 wide, gap 24px */}
+        <div className="flex w-full max-w-[465px] flex-col items-center gap-5 sm:gap-6">
+          {/* OTP ROW — 465x64, gap 16px, boxes 64x64 radius 8 */}
+          <OtpInput value={otp} onChange={setOtp} />
 
-        <p className="text-sm text-muted">
-          Didn&apos;t receive the code?{" "}
-          <button
-            type="button"
-            className="font-semibold text-ink underline"
-          >
-            Resend Code
-          </button>{" "}
-          (in 45 sec)
-        </p>
+          {/* LAST BLOCK — 465x132, gap 12px */}
+          <div className="flex w-full flex-col items-center gap-3">
+            <p className="px-2 pb-2 text-center text-[13px] font-semibold leading-[18px] sm:px-[64.77px] sm:pb-4 sm:text-[14px] sm:leading-[20px]">
+              Didn&apos;t receive the code?{" "}
+              <button type="button" className="text-ink underline">
+                Resend Code
+              </button>{" "}
+              ( In 45 sec )
+            </p>
 
-        <Button
-          variant="primary"
-          onClick={handleVerify}
-          disabled={isSubmitting}
-          className="disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isSubmitting ? "Verifying..." : "Verify & Continue"}
-        </Button>
+            <Button
+              variant="primary"
+              onClick={handleVerify}
+              disabled={isSubmitting}
+              className="h-[52px] w-full rounded-2xl text-[15px] font-bold disabled:cursor-not-allowed disabled:opacity-60 sm:h-[57px] sm:text-[16px]"
+            >
+              {isSubmitting ? "Verifying..." : "Verify & Continue"}
+            </Button>
 
-        <Link href="/create-account" className="text-sm font-semibold text-ink">
-          Change Email
-        </Link>
+            <Link
+              href="/create-account"
+              className="text-[14px] font-bold leading-[100%] text-muted dark:text-ink sm:text-[16px]"
+            >
+              Change Email
+            </Link>
+          </div>
+        </div>
       </div>
     </AuthCard>
   );

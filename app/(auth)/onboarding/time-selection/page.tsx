@@ -10,7 +10,7 @@ import { RadioOption } from "@/components/ui/RadioOption";
 import { Stepper } from "@/components/ui/Stepper";
 import { StepProgress } from "@/components/ui/StepProgress";
 // import { CloudSunIcon, SunIcon, CloudMoonIcon, MoonIcon } from "@/components/ui/icons";
-import {CloudSunIcon,SunIcon} from "@/assets/icons";
+import { CloudSunIcon, SunIcon } from "@/assets/icons";
 import { getOnboardingProgress, saveStudySchedule, skipOnboardingStep } from "@/lib/api/onboarding";
 import type { ChronotypeValue } from "@/lib/api/onboarding";
 import { ApiError } from "@/lib/api/http";
@@ -153,25 +153,31 @@ export default function TimeSelectionPage() {
         skipDisabled={isSubmitting || isSkipping}
       />
 
-      <div className="mt-4 flex flex-col gap-1">
-        <h1 className="text-h1 text-ink">How many hours can you study daily?</h1>
-        <p className="text-sm text-muted">
+      <div className="mt-4 flex flex-col gap-4 sm:mt-5">
+        <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
+          How many hours can you study daily?
+        </h1>
+        <p className="text-[14px] font-semibold leading-[100%] text-[#666666] sm:text-[16px]">
           This is the daily target your plan respects. Your real life, not aspirational
         </p>
       </div>
 
-      <div className="mt-6 flex flex-col gap-4 rounded-xl bg-tint-strong p-4 dark:bg-[#FAF7F2]/8">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Stepper label="Weekdays" value={weekdayHours} onChange={handleWeekdayChange} />
-          <Stepper
-            label="Weekends"
-            value={weekendHours}
-            onChange={setWeekendHours}
-            disabled={sameEveryDay}
-          />
+      <div className="mt-5 flex flex-col gap-6 rounded-xl bg-[#EEF0F8] p-4 shadow-[0_1px_2px_0_rgba(26,26,78,0.06)] dark:bg-[#FAF7F214] sm:mt-6 sm:gap-8 sm:p-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-8">
+          <div className="flex flex-col gap-3 sm:gap-4">
+            <Stepper label="Weekdays" value={weekdayHours} onChange={handleWeekdayChange} />
+          </div>
+          <div className="flex flex-col gap-3 sm:gap-4">
+            <Stepper
+              label="Weekends"
+              value={weekendHours}
+              onChange={setWeekendHours}
+              disabled={sameEveryDay}
+            />
+          </div>
         </div>
 
-        <div className="w-full border-t border-black/5 pt-4 dark:border-[#FAF7F2]/[0.12]">
+        <div className="flex items-center gap-2 border-t border-brand/10 pt-4 dark:border-white/10">
           <Checkbox
             label="Same target every day"
             checked={sameEveryDay}
@@ -180,9 +186,11 @@ export default function TimeSelectionPage() {
         </div>
       </div>
 
-      <div className="mt-6 flex flex-col gap-1">
-        <p className="text-sm font-semibold text-ink">When do you usually study?</p>
-        <p className="text-xs text-muted">Pick all that apply</p>
+       <div className="mt-5 flex flex-col gap-2 sm:mt-6">
+        <p className="text-[14px] font-bold leading-[100%] text-body-text dark:text-ink sm:text-[16px]">
+          When do you usually study?
+        </p>
+        <p className="text-[12px] leading-[100%] text-muted">Pick all that apply</p>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -194,18 +202,16 @@ export default function TimeSelectionPage() {
               type="button"
               onClick={() => toggleSlot(slot.id)}
               aria-pressed={selected}
-              className={`flex flex-col items-center gap-1.5 rounded-lg border bg-surface px-2 py-4 text-center transition-colors ${
-                selected
+              className={`flex flex-col items-center gap-1.5 rounded-lg border bg-surface px-2 py-4 text-center transition-colors ${selected
                   ? "rounded-xl border-[1.5px] border-brand shadow-hover dark:border-[#FAF7F2]"
                   : "border-brand/15 dark:border-[#FAF7F2]/6"
-              }`}
+                }`}
             >
               <span
-                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
-                  selected
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${selected
                     ? "bg-brand text-white dark:bg-[#FAF7F2] dark:text-[#0D0D2B]"
                     : "bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8"
-                }`}
+                  }`}
               >
                 {slot.icon}
               </span>
@@ -216,12 +222,12 @@ export default function TimeSelectionPage() {
         })}
       </div>
 
-      <p className="mt-3 text-xs text-muted">
-        Helps crafting planner according to your timings when your brain works best
+      <p className="mt-3 text-[12px] leading-[100%] text-body-text text-muted">
+        Helps creating planner according to your timings when your brain works best
       </p>
 
       <div className="mt-4 flex flex-col gap-3">
-        <p className="text-sm font-semibold text-ink">Your style</p>
+        <p className="mt-2 text-[14px] font-semibold leading-[100%] text-body-text dark:text-ink sm:text-[16px]">Your style</p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Chronotype">
           {CHRONOTYPE_OPTIONS.map((option) => (
             <RadioOption

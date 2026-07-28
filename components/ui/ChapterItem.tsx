@@ -17,17 +17,18 @@ export function ChapterItem({ title, state, onCycle }: ChapterItemProps) {
       type="button"
       onClick={onCycle}
       aria-pressed={state !== "none"}
-      className={`flex items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${
+      className={`flex min-h-[63px] items-center justify-between gap-3 rounded-xl border p-4 text-left transition-colors sm:p-5 ${
         isDone
-          ? "border-brand bg-tint-strong"
+          ? "border-brand bg-tint-strong dark:border-chapter-box-border dark:bg-chapter-box-bg"
           : isPartial
-            ? "border-cta/40 bg-surface"
-            : "border-brand/10 bg-surface"
+            ? "border-cta/40 bg-surface dark:border-chapter-box-border dark:bg-chapter-box-bg"
+            : "border-brand/10 bg-surface dark:border-chapter-box-border dark:bg-chapter-box-bg"
       }`}
     >
-      <span className="flex items-center gap-2">
+      <span className="flex items-center gap-3">
+        {/* Radio / check — 24x24 */}
         <span
-          className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${
             isDone
               ? "border-brand bg-brand text-white"
               : isPartial
@@ -37,7 +38,10 @@ export function ChapterItem({ title, state, onCycle }: ChapterItemProps) {
         >
           {isDone && <CheckIcon />}
         </span>
-        <span className="text-body-text">{title}</span>
+        {/* Label — Jakarta 500, 14px, lh 21 */}
+        <span className="text-sm font-medium leading-[21px] text-body-text">
+          {title}
+        </span>
       </span>
 
       {isPartial && (
