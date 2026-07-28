@@ -15,8 +15,12 @@ export async function apiRequest<T>(url: string, options: RequestInit = {}): Pro
   const response = await fetch(url, {
     ...options,
     headers: isFormData
-      ? options.headers
-      : { "Content-Type": "application/json", ...options.headers },
+      ? { "ngrok-skip-browser-warning": "true", ...options.headers }
+      : {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+          ...options.headers,
+        },
   });
 
   const body = await response.json().catch(() => null);

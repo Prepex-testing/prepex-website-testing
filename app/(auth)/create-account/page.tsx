@@ -36,13 +36,15 @@ export default function CreateAccountPage() {
   return (
     <AuthCard>
       <div className="flex flex-col items-center gap-1 text-center">
-        <h1 className="text-h1 text-ink">Create your account</h1>
-        <p className="text-sm text-muted">
+        <h1 className="text-[32px] font-bold leading-[40px] tracking-[-0.64px] text-ink">
+          Create your account
+        </h1>
+        <p className="text-[16px] leading-[24px] text-muted">
           Quick setup. Takes 30 seconds.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
+      <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-6 pt-2">
         {error && (
           <p
             role="alert"
@@ -91,14 +93,14 @@ export default function CreateAccountPage() {
           type="submit"
           variant="primary"
           disabled={isSubmitting}
-          className="disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-[57px] rounded-2xl text-[16px] font-bold disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? "Signing up..." : "Sign up"}
         </Button>
       </form>
 
-      <p className="mt-4 text-center text-xs text-muted">
-        By clicking “Sign Up”, you agree to our{" "}
+      <p className="mt-4 text-center text-[12px] leading-[100%] text-muted">
+        By clicking &ldquo;Sign Up&rdquo;, you agree to our{" "}
         <Link href="/terms" className="text-ink">
           Terms of Service
         </Link>{" "}
@@ -108,9 +110,12 @@ export default function CreateAccountPage() {
         </Link>
       </p>
 
-      <p className="mt-6 text-center text-sm text-muted">
+      <p className="mt-6 border-t border-tint pt-5 text-center text-[16px] font-bold leading-[100%] text-muted">
         Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-ink underline">
+        <Link
+          href="/login"
+          className="font-bold text-ink underline dark:text-cta"
+        >
           Login
         </Link>
       </p>

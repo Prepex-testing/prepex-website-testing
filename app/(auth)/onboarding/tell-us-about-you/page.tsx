@@ -170,9 +170,11 @@ export default function TellUsAboutYouPage() {
         skipDisabled={isSubmitting || isSkipping || isLoading}
       />
 
-      <div className="mt-4 flex flex-col gap-1">
-        <h1 className="text-h1 text-ink">Tell us about you</h1>
-        <p className="text-sm text-muted">
+      <div className="mt-4 flex flex-col gap-4 py-2 sm:mt-5">
+        <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
+          Tell us about you
+        </h1>
+        <p className="text-[14px] font-semibold leading-[100%] text-muted sm:text-[16px]">
           We&apos;ll personalize your plan to fit your life
         </p>
       </div>
@@ -186,7 +188,7 @@ export default function TellUsAboutYouPage() {
         </p>
       )}
 
-      <div className="mt-6 flex flex-col gap-5">
+      <div className="mt-5 flex flex-col gap-6 sm:mt-6">
         <Input
           label="Full Name"
           helperText="Used in your daily plan greetings"
@@ -200,7 +202,7 @@ export default function TellUsAboutYouPage() {
           }}
         />
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Input
             label="City"
             helperText="For partner matching by region"
@@ -221,14 +223,16 @@ export default function TellUsAboutYouPage() {
           />
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <div>
-            <p className="text-sm font-semibold text-ink">Current class?</p>
-            <p className="text-xs text-muted">
+            <p className="text-[14px] font-bold leading-[100%] text-body-text dark:text-ink sm:text-[16px]">
+              Current class?
+            </p>
+            <p className="mt-1 text-xs text-muted">
               Helps us understand your overall schedule and content depth
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {CLASSES.map((item) => (
               <OptionCard
                 key={item.id}
@@ -261,7 +265,7 @@ export default function TellUsAboutYouPage() {
         variant="primary"
         onClick={handleContinue}
         disabled={isSubmitting || isSkipping || isLoading}
-        className="mt-6 disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-6 h-[52px] rounded-xl bg-cta text-[15px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-60 sm:h-[54px] sm:text-[16px]"
       >
         {isSubmitting ? "Saving..." : "Continue"}
       </Button>

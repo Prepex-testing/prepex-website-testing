@@ -147,7 +147,7 @@ export default function LoginPage() {
         Don&apos;t have an account?{" "}
         <Link
           href="/create-account"
-          className="font-semibold text-ink underline"
+          className="font-semibold text-ink underline dark:text-cta"
         >
           Create an Account
         </Link>

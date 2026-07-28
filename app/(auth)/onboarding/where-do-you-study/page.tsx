@@ -171,9 +171,11 @@ export default function WhereDoYouStudyPage() {
         skipDisabled={isSubmitting || isSkipping}
       />
 
-      <div className="mt-4 flex flex-col gap-1">
-        <h1 className="text-h1 text-ink">Do you attend coaching?</h1>
-        <p className="text-sm text-muted">
+      <div className="mt-4 flex flex-col gap-4 py-2 sm:mt-5">
+        <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
+          Do you attend coaching?
+        </h1>
+        <p className="text-[14px] font-semibold leading-[100%] text-muted sm:text-[16px]">
           Tells us when you&apos;re in lecture vs free for self-study.
         </p>
       </div>
@@ -267,9 +269,9 @@ export default function WhereDoYouStudyPage() {
             )}
 
             <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-success">
-              <CheckIcon />
-              Saves 5 mins vs manual entry
-            </p>
+               <CheckIcon className="h-4 w-4 sm:h-4 sm:w-4 text-success" />
+              Lets us auto-build your timetable in 30 seconds instead of 5 minutes.
+            </p>    
           </div>
         </>
       )}

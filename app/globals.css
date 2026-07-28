@@ -55,6 +55,26 @@
   --icon-action-bg: #ffffff;
   --icon-action-text: #171658;
   --border-card: #1a1a4e;
+
+  --oc-card-bg: conic-gradient(
+    from 90deg at 100% 0%,
+    #e0e7ff -100.4deg,
+    #ffffff 252deg,
+    #e0e7ff 259.6deg,
+    #ffffff 612deg
+  );
+
+  --oc-icon-bg: var(--ink);
+  --oc-icon-ring: #ffffff;
+  --oc-icon-color: #ffffff;
+
+  --oc-heading1: #0f172a;
+  --oc-subtext: #475569;
+  --oc-heading2: #110c4a;
+  --oc-body: #64748b;
+
+  --oc-button-bg: #ff7a59;
+  --oc-button-text: #ffffff;
 }
 
 [data-theme="dark"] {
@@ -105,6 +125,26 @@
   --icon-action-bg: #242453;
   --icon-action-text: var(--border-card, #FAF7F214);
   --border-card: #faf7f2;
+
+   --oc-card-bg: conic-gradient(
+    from 90deg at 100% 0%,
+    #111145 -181.73deg,
+    #0d0d2b 102.12deg,
+    #111145 178.27deg,
+    #0d0d2b 462.12deg
+  );
+
+  --oc-icon-bg: var(--ink);
+  --oc-icon-ring: #1a1a4e;
+  --oc-icon-color: #1a1a4e;
+
+  --oc-heading1: #faf7f2;
+  --oc-subtext: #d6d6d6;
+  --oc-heading2: #ffffff;
+  --oc-body: #ffffff;
+
+  --oc-button-bg: #ff7a59;
+  --oc-button-text: #ffffff;
 }
 
 @theme inline {
