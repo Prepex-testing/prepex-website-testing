@@ -27,46 +27,55 @@ export function CheckInBody({
 
   return (
     <>
-      <div className="flex flex-col items-center gap-1 text-center">
-        <h2 className="text-h2 text-ink">
+      {/* Header — gap 4px, pb 48 */}
+      <div className="flex flex-col items-center gap-1 pb-6 text-center sm:pb-12">
+        {/* Title — ExtraBold 32, lh 100% */}
+        <h2 className="text-lg font-extrabold leading-tight text-ink sm:text-[32px] sm:leading-none">
           {isUpdateMode ? (
             <>Update Today&apos;s Mood</>
           ) : (
             `Good Morning, ${name} 👋`
           )}
         </h2>
-        <p className="text-sm font-semibold text-ink">
+        {/* Subtitle — SemiBold 18, lh 100% */}
+        <p className="text-sm font-semibold leading-none text-ink sm:text-lg">
           How are you feeling today?
         </p>
-        <p className="text-xs text-muted">
+        {/* Caption — Medium 16, muted */}
+        <p className="text-xs font-medium leading-snug text-muted sm:text-base sm:leading-none">
           We&apos;ll adjust today&apos;s study plan accordingly.
         </p>
       </div>
 
-      <div className="mt-6 grid grid-cols-3 gap-2 sm:grid-cols-5">
-        {MOODS.map((mood) => (
-          <button
-            key={mood.id}
-            type="button"
-            onClick={() => setSelectedMood(mood.id)}
-            aria-pressed={selectedMood === mood.id}
-            className={`flex flex-col items-center gap-2 rounded-xl border p-2 text-center transition-colors ${
-              selectedMood === mood.id
-                ? "border-brand bg-tint-strong"
-                : "border-brand/10 bg-surface"
-            }`}
-          >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-tint text-lg">
-              {mood.emoji}
-            </span>
-            <span className="text-[11px] font-medium text-body-text">
-              {mood.label}
-            </span>
-          </button>
-        ))}
+      {/* Mood grid — always 5 across, compact at 320/375, full at sm */}
+      <div className="grid grid-cols-5 gap-1 sm:gap-6">
+        {MOODS.map((mood) => {
+          const isSelected = selectedMood === mood.id;
+          return (
+            <button
+              key={mood.id}
+              type="button"
+              onClick={() => setSelectedMood(mood.id)}
+              aria-pressed={isSelected}
+              className={`flex flex-col items-center justify-center gap-1 rounded-lg border bg-mood-card-bg px-0.5 py-2 text-center transition-colors sm:gap-3 sm:rounded-2xl sm:border-2 sm:px-1 sm:py-6 ${
+                isSelected ? "border-brand" : "border-transparent"
+              }`}
+            >
+              {/* Emoji chip — 36px @320/375 → 64px @sm */}
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-mood-chip-bg text-base leading-none sm:h-16 sm:w-16 sm:text-4xl">
+                {mood.emoji}
+              </span>
+              {/* Label */}
+              <span className="text-[9px] font-semibold leading-tight text-body-text dark:text-ink sm:text-base">
+                {mood.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
-      <div className="mt-6 flex flex-col items-center gap-2">
+      {/* Actions — gap 12 */}
+      <div className="mt-6 flex flex-col items-center gap-3 sm:mt-12">
         {isUpdateMode ? (
           <>
             <Button
@@ -74,7 +83,7 @@ export function CheckInBody({
               variant="primary"
               disabled={!selected}
               onClick={() => selected && onSave?.(selected)}
-              className="disabled:cursor-not-allowed disabled:opacity-40"
+              className="w-full rounded-xl disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:min-w-[388px]"
             >
               Save
             </Button>
@@ -88,7 +97,12 @@ export function CheckInBody({
           </>
         ) : (
           <>
-            <Button type="button" variant="primary" onClick={() => onContinue?.(selected)}>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={() => onContinue?.(selected)}
+              className="w-full rounded-xl sm:w-auto sm:min-w-[388px]"
+            >
               Continue to today&apos;s plan
             </Button>
             <button
