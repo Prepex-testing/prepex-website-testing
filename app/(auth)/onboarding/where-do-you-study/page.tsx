@@ -8,7 +8,7 @@ import { RadioOption } from "@/components/ui/RadioOption";
 import { Select } from "@/components/ui/Select";
 import { StepProgress } from "@/components/ui/StepProgress";
 import { UploadDropzone } from "@/components/ui/UploadDropzone";
-import { CheckIcon } from "@/components/ui/icons";
+import { CheckCircleIcon, CheckIcon } from "@/components/ui/icons";
 import {
   getOnboardingProgress,
   saveCoachingProfile,
@@ -302,7 +302,7 @@ export default function WhereDoYouStudyPage() {
             {/* Default Success Message */}
             {!isUploadingSchedule && !uploadSummary && !hadScheduleUploadOnFile && (
               <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-success">
-                <CheckIcon className="h-4 w-4 shrink-0 text-success" />
+                <CheckCircleIcon className="h-4 w-4 shrink-0 text-success" />
                 <span> Lets us auto-build your timetable in 30 seconds instead of 5 minutes.</span>
               </p>
             )}

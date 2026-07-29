@@ -56,13 +56,11 @@
   --icon-action-text: #171658;
   --border-card: #1a1a4e;
 
-  --oc-card-bg: conic-gradient(
-    from 90deg at 100% 0%,
-    #e0e7ff -100.4deg,
-    #ffffff 252deg,
-    #e0e7ff 259.6deg,
-    #ffffff 612deg
-  );
+  --oc-card-bg: conic-gradient(from 90deg at 100% 0%,
+      #e0e7ff -100.4deg,
+      #ffffff 252deg,
+      #e0e7ff 259.6deg,
+      #ffffff 612deg);
 
   --oc-icon-bg: var(--ink);
   --oc-icon-ring: #ffffff;
@@ -77,17 +75,29 @@
   --oc-button-text: #ffffff;
 
 
-  --accordion-open-bg: #EFF2FE;   
-  --accordion-row-bg: #FFFFFF;  
+  --accordion-open-bg: #EFF2FE;
+  --accordion-row-bg: #FFFFFF;
 
-    --chapter-box-bg: #FFFFFF;
-  --chapter-box-border: rgb(26 26 78 / 0.10);  
+  --chapter-box-bg: #FFFFFF;
+  --chapter-box-border: rgb(26 26 78 / 0.10);
   --processing-text: #4C1D95;
 
   --badge-partial-bg: #eef0f8;
 
-    --mood-card-bg: #FFFFFF;
+  --mood-card-bg: #FFFFFF;
   --mood-chip-bg: #E7EEFF;
+  --modal-bg: #FAF7F2;
+
+  --logo-tagline: #333333;
+
+  --stats-card-bg: #FFFFFF;
+  --stats-card-border: #1A1A4E;
+  --preview-card-bg: linear-gradient(122.03deg, #EEF0F8 0%, #FFFFFF 100%);
+  --preview-card-border: #EEF0F8;
+
+  /* Input */
+  --input-border: #E4E4E6;
+  --input-shadow: 0px 1px 2px 0px #1A1A4E0F;
 }
 
 [data-theme="dark"] {
@@ -129,7 +139,7 @@
   --score-ring-from: #ffffff;
   --score-ring-to: #ffffff;
 
-  --sub:#242453;
+  --sub: #242453;
 
   /* icon for color */
   --button-border: #FAF7F2;
@@ -139,13 +149,11 @@
   --icon-action-text: var(--border-card, #FAF7F214);
   --border-card: #faf7f2;
 
-   --oc-card-bg: conic-gradient(
-    from 90deg at 100% 0%,
-    #111145 -181.73deg,
-    #0d0d2b 102.12deg,
-    #111145 178.27deg,
-    #0d0d2b 462.12deg
-  );
+  --oc-card-bg: conic-gradient(from 90deg at 100% 0%,
+      #111145 -181.73deg,
+      #0d0d2b 102.12deg,
+      #111145 178.27deg,
+      #0d0d2b 462.12deg);
 
   --oc-icon-bg: var(--ink);
   --oc-icon-ring: #1a1a4e;
@@ -160,18 +168,29 @@
   --oc-button-text: #ffffff;
 
 
-  --accordion-open-bg: #13133D;  
- --accordion-row-bg: #FAF7F240;
+  --accordion-open-bg: #13133D;
+  --accordion-row-bg: #FAF7F240;
 
-   --chapter-box-bg: #13133D;
+  --chapter-box-bg: #13133D;
   --chapter-box-border: rgb(250 247 242 / 0.06);
   --processing-text: #FAF7F2;
 
   --badge-partial-bg: #FAF7F240;
 
-    --mood-card-bg: #2A2A6E;
+  --mood-card-bg: #2A2A6E;
   --mood-chip-bg: #232C6B;
-;  
+  --modal-bg: #111145;
+  --logo-tagline: #F0EDE5;
+
+  --stats-card-bg: #1A1A4E;
+  --stats-card-border: #242453;
+  --preview-card-bg: #13133D;
+  --preview-card-border: #242453;
+
+  /* Input */
+  --input-border: #8B8998;
+  --input-shadow: 0px 1px 2px 0px #1A1A4E0F;
+
 }
 
 @theme inline {
@@ -222,23 +241,36 @@
   --color-question-dot-active: var(--question-dot-active);
   --color-question-dot-inactive: var(--question-dot-inactive);
 
-    /* icon for color */
+  /* icon for color */
   --color-button-border: var(--button-border);
 
   --color-accordion-open-bg: var(--accordion-open-bg);
   --color-sub: var(--sub);
 
 
-  --color-accordion-row-bg: var(--accordion-row-bg); 
+  --color-accordion-row-bg: var(--accordion-row-bg);
 
-    --color-chapter-box-bg: var(--chapter-box-bg);
+  --color-chapter-box-bg: var(--chapter-box-bg);
   --color-chapter-box-border: var(--chapter-box-border);
   --color-processing-text: var(--processing-text);
   --color-badge-partial-bg: var(--badge-partial-bg);
 
   --color-mood-card-bg: var(--mood-card-bg);
   --color-mood-chip-bg: var(--mood-chip-bg);
-  
+
+  --color-logo-tagline: var(--logo-tagline);
+
+  --color-stats-card-bg: var(--stats-card-bg);
+  --color-stats-card-border: var(--stats-card-border);
+
+  --color-preview-card-bg: var(--preview-card-bg);
+  --color-preview-card-border: var(--preview-card-border);
+
+  --color-input-border: var(--input-border);
+  --shadow-input: var(--input-shadow);
+
+  --color-modal-bg: var(--modal-bg);
+
 }
 
 html {
@@ -269,6 +301,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -281,6 +314,7 @@ body {
     opacity: 0;
     transform: translateY(24px) scale(0.7);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
