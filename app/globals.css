@@ -98,6 +98,8 @@
   /* Input */
   --input-border: #E4E4E6;
   --input-shadow: 0px 1px 2px 0px #1A1A4E0F;
+
+  --primary-button-border: #D6D6D6;
 }
 
 [data-theme="dark"] {
@@ -191,6 +193,8 @@
   --input-border: #8B8998;
   --input-shadow: 0px 1px 2px 0px #1A1A4E0F;
 
+  --primary-button-border: #8B8998;
+
 }
 
 @theme inline {
@@ -270,6 +274,7 @@
   --shadow-input: var(--input-shadow);
 
   --color-modal-bg: var(--modal-bg);
+  --color-primary-button-border: var(--primary-button-border);
 
 }
 

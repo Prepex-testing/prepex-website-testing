@@ -13,7 +13,7 @@ const SIZE_CLASSES: Record<Size, string> = {
 };
 
 const VARIANT_CLASSES: Record<Variant, string> = {
-  primary: "bg-cta text-white hover:bg-cta/90",
+  primary: "border-[1px] border-primary-button-border bg-cta text-white hover:bg-cta/90",
   secondary:
     "border border-[var(--button-border)] bg-surface text-body-text hover:bg-tint-strong",
   task: "border border-[var(--button-border)] bg-surface text-body-text hover:border-cta hover:bg-cta hover:text-white active:border-cta active:bg-cta active:text-white",
