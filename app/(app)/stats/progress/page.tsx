@@ -86,8 +86,10 @@ export default function ProgressStatsPage() {
   return (
     <div className="flex flex-col gap-5">
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[38%_62%]">
-        <StatCard className="h-[546px] p-6">
+      {/* fr units (not %) so gap-6 doesn't overflow. min-w-0 lets cards shrink to their track. */}
+      <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[38fr_62fr]">
+        {/* Left */}
+        <StatCard className="flex h-full w-full min-w-0 flex-col p-6">
           {/* Header */}
           <div className="flex items-center justify-between">
             <h2 className="text-[22px] font-bold leading-none text-[#FAF7F2]">
@@ -104,23 +106,19 @@ export default function ProgressStatsPage() {
             <div className="flex flex-col items-end gap-1">
               {/* Circular Progress */}
               <div className="relative h-16 w-16">
-                <svg
-                  className="h-16 w-16 -rotate-90"
-                  viewBox="0 0 36 36"
-                >
+                <svg className="h-16 w-16 -rotate-90" viewBox="0 0 36 36">
                   <path
                     d="M18 2.5
-              a15.5 15.5 0 1 1 0 31
-              a15.5 15.5 0 1 1 0-31"
+        a15.5 15.5 0 1 1 0 31
+        a15.5 15.5 0 1 1 0-31"
                     fill="none"
                     stroke="rgba(255,255,255,.18)"
                     strokeWidth="2.5"
                   />
-
                   <path
                     d="M18 2.5
-              a15.5 15.5 0 1 1 0 31
-              a15.5 15.5 0 1 1 0-31"
+        a15.5 15.5 0 1 1 0 31
+        a15.5 15.5 0 1 1 0-31"
                     fill="none"
                     stroke="#FAF7F2"
                     strokeWidth="2.5"
@@ -130,9 +128,7 @@ export default function ProgressStatsPage() {
                 </svg>
 
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-lg font-bold text-white">
-                    53%
-                  </span>
+                  <span className="text-lg font-bold text-white">53%</span>
                 </div>
               </div>
 
@@ -145,10 +141,7 @@ export default function ProgressStatsPage() {
           {/* Subjects */}
           <div className="mt-8 flex flex-col gap-6">
             {SYLLABUS_SUBJECTS.map((subject) => (
-              <div
-                key={subject.label}
-                className="flex gap-3"
-              >
+              <div key={subject.label} className="flex gap-3">
                 {/* Badge */}
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10">
                   <span className="text-base font-bold text-white">
@@ -157,17 +150,16 @@ export default function ProgressStatsPage() {
                 </div>
 
                 {/* Right */}
-                <div className="flex-1">
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm font-bold text-white">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <span className="truncate text-sm font-bold text-white">
                       {subject.label}
                     </span>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2">
                       <span className="text-sm font-bold text-white">
                         {subject.percent}%
                       </span>
-
                       <span className="text-[11px] text-[#A0A0B0]">
                         {subject.fraction}
                       </span>
@@ -177,13 +169,9 @@ export default function ProgressStatsPage() {
                   {/* Progress */}
                   <div className="h-2 overflow-hidden rounded-full bg-white/20">
                     <div
-                      className={`h-full rounded-full ${subject.short === "C"
-                        ? "bg-[#5B21B6]"
-                        : "bg-[#FAF7F2]"
+                      className={`h-full rounded-full ${subject.short === "C" ? "bg-[#5B21B6]" : "bg-[#FAF7F2]"
                         }`}
-                      style={{
-                        width: `${subject.percent}%`,
-                      }}
+                      style={{ width: `${subject.percent}%` }}
                     />
                   </div>
 
@@ -196,26 +184,15 @@ export default function ProgressStatsPage() {
           </div>
         </StatCard>
 
+        {/* Right */}
         <StatCard
-          className="min-h-[546px] p-6"
+          className="flex h-full w-full min-w-0 flex-col p-6"
           title="Precision Gap Analysis"
           subtitle="Highest growth potential in these areas"
         >
           <PrecisionRankedList items={PRECISION_GAPS} />
 
-          <button
-            className="
-      mt-6
-      flex
-      w-full
-      items-center
-      justify-center
-      gap-2
-      text-xs
-      font-bold
-      text-white
-    "
-          >
+          <button className="mt-6 flex w-full items-center justify-center gap-2 text-xs font-bold text-white">
             View weak topics
             <ChevronRightIcon className="h-4 w-4" />
           </button>
