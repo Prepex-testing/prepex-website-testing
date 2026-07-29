@@ -84,7 +84,7 @@
 
   --badge-partial-bg: #eef0f8;
 
-  --mood-card-bg: #FFFFFF;
+  --mood-card-bg: #FAF7F2;
   --mood-chip-bg: #E7EEFF;
   --modal-bg: #FAF7F2;
 
@@ -100,6 +100,10 @@
   --input-shadow: 0px 1px 2px 0px #1A1A4E0F;
 
   --primary-button-border: #D6D6D6;
+
+  /* Weekly chart header */
+  --weekly-title: #2D2E6E;
+  --weekly-label: #6B7280;
 }
 
 [data-theme="dark"] {
@@ -195,6 +199,10 @@
 
   --primary-button-border: #8B8998;
 
+  /* Weekly chart header */
+  --weekly-title: #FAF7F2;
+  --weekly-label: #FAF7F2;
+
 }
 
 @theme inline {
@@ -276,6 +284,9 @@
   --color-modal-bg: var(--modal-bg);
   --color-primary-button-border: var(--primary-button-border);
 
+  --color-weekly-title: var(--weekly-title);
+  --color-weekly-label: var(--weekly-label);
+
 }
 
 html {
@@ -313,29 +324,6 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
-
-@keyframes fade-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(24px) scale(0.7);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.animate-step-in {
-  animation: fade-slide-up 650ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-step-in {
-    animation: none;
-  }
-}
-
 .pt-safe {
   padding-top: env(safe-area-inset-top);
 }

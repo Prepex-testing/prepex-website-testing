@@ -6,6 +6,7 @@ import { CheckInBody } from "@/components/check-in/CheckInBody";
 import type { Mood } from "@/components/check-in/moods";
 import { submitCheckIn, moodIdToApiValue } from "@/lib/api/checkin";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
+import { CheckInCard } from "@/components/layout/CheckInCard";
 
 export default function CheckInPage() {
   const router = useRouter();
@@ -28,13 +29,13 @@ export default function CheckInPage() {
   };
 
   return (
-    <AuthCard>
-      <CheckInBody
-        name={name}
-        mode="onboarding"
-        onContinue={handleContinue}
-        onSkip={handleSkip}
-      />
-    </AuthCard>
-  );
+  <CheckInCard>
+    <CheckInBody
+      name={name}
+      mode="onboarding"
+      onContinue={handleContinue}
+      onSkip={handleSkip}
+    />
+  </CheckInCard>
+);
 }

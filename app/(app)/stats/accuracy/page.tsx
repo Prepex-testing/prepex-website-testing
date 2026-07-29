@@ -366,10 +366,12 @@ export default function AccuracyStatsPage() {
         </StatCard>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[48%_52%]">
-        {/* Left */}
+      {/* w-full + max-w caps at 1090 and centers.
+    Two columns from lg up. gap-6 is the ONLY space between the boxes. */}
+      <div className="mx-auto grid w-full  grid-cols-1 items-stretch gap-6 lg:grid-cols-[506fr_560fr]">
+        {/* Left — 506fr */}
         <StatCard
-          className="min-h-[489px] p-6"
+          className="flex h-full w-full min-w-0 flex-col p-6"
           title="Mistake Patterns (Recoverable Marks)"
           right={
             <span className="text-xs font-semibold text-white">
@@ -380,9 +382,9 @@ export default function AccuracyStatsPage() {
           <RankedList items={MISTAKE_PATTERNS} />
         </StatCard>
 
-        {/* Right */}
+        {/* Right — 560fr */}
         <StatCard
-          className="min-h-[489px] p-6"
+          className="flex h-full w-full min-w-0 flex-col p-6"
           title="Accuracy by Chapter"
           right={
             <span className="text-xs font-semibold text-cta">
@@ -390,7 +392,7 @@ export default function AccuracyStatsPage() {
             </span>
           }
         >
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <ChapterRankedList
               title="TOP 5 WEAKEST"
               titleColor="#F59E0B"
