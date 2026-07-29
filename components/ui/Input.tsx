@@ -53,17 +53,15 @@ export function Input({
       {/* Input Box */}
       <div
         className="
-          flex h-14 w-full min-w-0 items-center gap-3
-          rounded-2xl
-          border
-          border-ink
-          bg-surface
-          px-4
-          focus-within:border-ink
-          dark:border-muted
-          dark:bg-surface
-          dark:focus-within:border-muted
-        "
+    flex h-14 w-full min-w-0 items-center gap-3
+    rounded-2xl
+    border
+    border-input-border
+    bg-surface
+    px-4
+    shadow-input
+    focus-within:border-input-border
+  "
       >
         {icon && (
           <span className="shrink-0 text-muted">

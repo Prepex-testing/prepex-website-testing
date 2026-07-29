@@ -110,7 +110,7 @@ export default function CreateAccountPage() {
         </Link>
       </p>
 
-      <p className="mt-6 border-t border-tint pt-5 text-center text-[16px] font-bold leading-[100%] text-muted">
+      <p className="mt-6 border-t border-tint pt-5 text-center text-[16px] font-bold leading-[100%] text-muted dark:text-ink">
         Already have an account?{" "}
         <Link
           href="/login"

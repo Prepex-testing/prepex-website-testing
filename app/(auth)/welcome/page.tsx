@@ -69,7 +69,7 @@ export default function WelcomePage() {
           >
             {/* Stats */}
             <div className="flex w-full gap-3 sm:gap-4">
-              <div className="flex h-[95px] flex-1 flex-col items-center justify-center rounded-2xl border border-brand/15 bg-surface dark:border-[#242453] dark:bg-[#1A1A4E]">
+              <div className="flex h-[95px] flex-1 flex-col items-center justify-center rounded-2xl border border-stats-card-border bg-stats-card-bg">
                 <p className="text-[28px] font-extrabold leading-none text-ink sm:text-[32px]">
                   12
                 </p>
@@ -79,7 +79,7 @@ export default function WelcomePage() {
                 </p>
               </div>
 
-              <div className="flex h-[95px] flex-1 flex-col items-center justify-center rounded-2xl border border-brand/15 bg-surface dark:border-[#242453] dark:bg-[#1A1A4E]">
+              <div className="flex h-[95px] flex-1 flex-col items-center justify-center rounded-2xl border border-stats-card-border bg-stats-card-bg">
                 <p className="text-[28px] font-extrabold leading-none text-ink sm:text-[32px]">
                   4 / 6
                 </p>
@@ -101,8 +101,8 @@ export default function WelcomePage() {
                   <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                     <span
                       className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full sm:h-4 sm:w-4 ${task.badge
-                        ? "border border-ink text-ink"
-                        : "bg-ink text-white dark:text-[#1A1A4E]"
+                        ? "border border-ink bg-ink text-surface"
+                        : "bg-ink text-surface"
                         }`}
                     >
                       <CheckIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3" />

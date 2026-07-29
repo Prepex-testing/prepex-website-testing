@@ -78,9 +78,11 @@ export default function PreparingForPage() {
     <AuthCard>
       <StepProgress step={1} totalSteps={5} />
 
-      <div className="mt-4 flex flex-col gap-1">
-        <h1 className="text-h1 text-ink">What are you preparing for?</h1>
-        <p className="text-sm text-muted">
+       <div className="mt-4 flex flex-col gap-4 py-2 sm:mt-5">
+        <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
+          What are you preparing for?
+        </h1>
+        <p className="text-[14px] font-semibold leading-[100%] text-muted sm:text-[16px]">
           This filters your syllabus, mocks, and partner matching to match
           your goal
         </p>
