@@ -1,27 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
 import { PencilIcon, PlusIcon, XIcon } from "@/components/ui/icons";
+import { addPlannerTask, type SuggestedWindow } from "@/lib/api/planner";
+import {
+  getSubjectsChapters,
+  type ProfileChapter,
+  type ProfileSubject,
+} from "@/lib/api/profile";
 
-const SUBJECT_OPTIONS = [
-  { value: "physics", label: "Physics" },
-  { value: "chemistry", label: "Chemistry" },
-  { value: "maths", label: "Maths" },
-  { value: "biology", label: "Biology" },
-];
-
-const TOPIC_OPTIONS = [
-  { value: "friction", label: "Friction" },
-  { value: "kinematics", label: "Kinematics" },
-  { value: "optics", label: "Optics" },
-  { value: "electrostatics", label: "Electrostatics" },
-];
+const DEFAULT_SUBJECT_ID = 1;
 
 const TASK_TYPES = ["New Learning", "Revision", "Practice", "DPP", "Other"];
+
+const TASK_TYPE_API_VALUES: Record<string, string> = {
+  "New Learning": "NEW_LEARNING",
+  Revision: "REVISION",
+  Practice: "PRACTICE",
+  DPP: "PRACTICE",
+  Other: "WELLNESS",
+};
+
+const SUGGESTED_WINDOW_VALUES: Record<string, SuggestedWindow> = {
+  morning: "MORNING",
+  midday: "MIDDAY",
+  evening: "EVENING",
+  night: "NIGHT",
+};
 
 const DURATION_OPTIONS = [
   { value: "30", label: "30 min" },
@@ -52,6 +61,7 @@ type AddCustomTaskModalProps = {
   onClose: () => void;
   mode?: "add" | "edit";
   initialValues?: TaskFormInitialValues;
+  onTaskAdded?: () => void;
 };
 
 export function AddCustomTaskModal({
@@ -59,9 +69,88 @@ export function AddCustomTaskModal({
   onClose,
   mode = "add",
   initialValues,
+  onTaskAdded,
 }: AddCustomTaskModalProps) {
   const [taskType, setTaskType] = useState(initialValues?.taskType ?? "Practice");
+  const [taskName, setTaskName] = useState(initialValues?.taskName ?? "");
+  const [durationValue, setDurationValue] = useState(initialValues?.durationValue ?? "60");
+  const [timePreferenceValue, setTimePreferenceValue] = useState(
+    initialValues?.timePreferenceValue ?? "",
+  );
+  const [notes, setNotes] = useState(initialValues?.notes ?? "");
+  const [subjects, setSubjects] = useState<ProfileSubject[]>([]);
+  const [chapters, setChapters] = useState<ProfileChapter[]>([]);
+  const [subjectId, setSubjectId] = useState<number | null>(null);
+  const [chapterId, setChapterId] = useState("");
+  const [isLoadingChapters, setLoadingChapters] = useState(false);
+  const [isSubmitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const isEdit = mode === "edit";
+
+  useEffect(() => {
+    if (!open) return;
+
+    async function loadSubjectsChapters() {
+      setLoadingChapters(true);
+      try {
+        const { data } = await getSubjectsChapters(subjectId ?? DEFAULT_SUBJECT_ID);
+        setSubjects(data.subjects);
+        setChapters(data.chapters);
+        setSubjectId((current) => {
+          if (current != null) return current;
+          const matched = initialValues?.subjectValue
+            ? data.subjects.find((s) => s.name.toLowerCase() === initialValues.subjectValue)
+            : undefined;
+          return matched?.id ?? data.chapters[0]?.subjectId ?? data.subjects[0]?.id ?? null;
+        });
+        setChapterId((current) =>
+          data.chapters.some((chapter) => chapter.id === current)
+            ? current
+            : (data.chapters[0]?.id ?? ""),
+        );
+      } catch {
+        // Best-effort — the form still works without live subject/chapter data.
+      } finally {
+        setLoadingChapters(false);
+      }
+    }
+
+    loadSubjectsChapters();
+    // Only the subject changing should trigger a refetch — initialValues is
+    // read once on open to seed the match, not tracked as a dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, subjectId]);
+
+  const handleSubmit = async () => {
+    if (isEdit) {
+      onClose();
+      return;
+    }
+
+    if (!taskName.trim()) return;
+
+    setSubmitting(true);
+    setError(null);
+    try {
+      await addPlannerTask({
+        title: taskName.trim(),
+        taskType: TASK_TYPE_API_VALUES[taskType] ?? "PRACTICE",
+        estimatedMinutes: Number(durationValue),
+        description: notes.trim() || undefined,
+        suggestedWindow: SUGGESTED_WINDOW_VALUES[timePreferenceValue],
+        subjectId: subjectId ?? undefined,
+        chapterId: chapterId || undefined,
+      });
+      onTaskAdded?.();
+      setTaskName("");
+      setNotes("");
+      onClose();
+    } catch {
+      setError("Couldn't add the task. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <Modal
@@ -99,7 +188,8 @@ export function AddCustomTaskModal({
           label="Task Name"
           name="taskName"
           placeholder="e.g. Watch PW lecture on Friction"
-          defaultValue={initialValues?.taskName}
+          value={taskName}
+          onChange={(event) => setTaskName(event.target.value)}
         />
 
         <div>
@@ -126,23 +216,28 @@ export function AddCustomTaskModal({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Select
             label="Subject"
-            options={SUBJECT_OPTIONS}
-            defaultValue={initialValues?.subjectValue ?? "physics"}
+            options={subjects.map((subject) => ({ value: String(subject.id), label: subject.name }))}
+            value={subjectId != null ? String(subjectId) : ""}
+            onChange={(event) => setSubjectId(Number(event.target.value))}
           />
           <Select
             label="Topic"
-            options={TOPIC_OPTIONS}
-            defaultValue={initialValues?.topicValue ?? "friction"}
+            options={chapters.map((chapter) => ({ value: chapter.id, label: chapter.name }))}
+            value={chapterId}
+            onChange={(event) => setChapterId(event.target.value)}
+            placeholder={isLoadingChapters ? "Loading chapters..." : "Select a chapter"}
           />
           <Select
             label="Duration"
             options={DURATION_OPTIONS}
-            defaultValue={initialValues?.durationValue ?? "60"}
+            value={durationValue}
+            onChange={(event) => setDurationValue(event.target.value)}
           />
           <Select
             label="Time Preference"
             options={TIME_PREFERENCE_OPTIONS}
-            defaultValue={initialValues?.timePreferenceValue}
+            value={timePreferenceValue}
+            onChange={(event) => setTimePreferenceValue(event.target.value)}
             placeholder="Morning (5-11 AM)"
           />
         </div>
@@ -155,18 +250,26 @@ export function AddCustomTaskModal({
             id="task-notes"
             rows={3}
             placeholder="Specific focus areas, resources to use..."
-            defaultValue={initialValues?.notes}
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
             className="mt-1 w-full resize-none rounded-xl border border-brand/15 bg-surface px-4 py-3 text-sm text-body-text outline-none placeholder:text-muted/70 focus:border-focus-ring"
           />
         </div>
+
+        {error && <p className="text-sm text-danger">{error}</p>}
       </div>
 
       <div className="mt-6 flex items-center justify-end gap-3">
         <Button variant="secondary" size="sm" onClick={onClose}>
           Cancel
         </Button>
-        <Button variant="primary" size="sm" onClick={onClose}>
-          {isEdit ? "Save Changes" : "Add Task"}
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={handleSubmit}
+          disabled={isSubmitting || (!isEdit && !taskName.trim())}
+        >
+          {isSubmitting ? "Adding..." : isEdit ? "Save Changes" : "Add Task"}
         </Button>
       </div>
     </Modal>

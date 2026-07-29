@@ -45,8 +45,26 @@ export function moodIdToApiValue(moodId: string): CheckInMoodValue {
   return MOOD_API_VALUES[moodId] ?? (moodId.toUpperCase() as CheckInMoodValue);
 }
 
+export type CheckInStatus = {
+  checkinDate: string;
+  exists: boolean;
+  checkin: {
+    id: string;
+    mood: CheckInMoodValue;
+    isSkipped: boolean;
+    burnoutDetected: boolean;
+    burnoutTier: number;
+    streakCount: number;
+    longestStreak: number;
+    missingDays: number;
+  } | null;
+  isInBurnout: boolean;
+  burnoutStatus: { isInBurnout: boolean; message: string };
+  isMockToday: boolean;
+};
+
 export function getCheckInStatus() {
-  return authRequest<{ success: true; data: { exists: boolean } }>("/status");
+  return authRequest<{ success: true; data: CheckInStatus }>("/status");
 }
 
 export function submitCheckIn(input: { mood: CheckInMoodValue } | { isSkipped: true }) {

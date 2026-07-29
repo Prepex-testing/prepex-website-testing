@@ -16,7 +16,7 @@ export default function WelcomeToPrepexPage() {
           {/* Welcome */}
           <div className="mt-6 max-w-[457px]">
             <h2 className="text-[28px] leading-[34px] font-extrabold tracking-[-0.9px] text-[var(--oc-heading1)] sm:text-[32px] sm:leading-[38px] md:text-[36px] md:leading-[40px]">
-               Welcome to Prepex{name ? `, ${name}` : ""}
+               Welcome to Prepex{name ? `, ${name.trim().split(/\s+/)[0]}` : ""}
             </h2>
 
             <p className="mt-2 text-base leading-6 font-medium text-[var(--oc-subtext)] sm:text-lg sm:leading-7">
