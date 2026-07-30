@@ -48,13 +48,14 @@ export function Stepper({
             <MinusIcon />
           </button>
 
-          <div className="w-[56px] text-center">
-            <div className="text-[28px] font-bold leading-none text-ink">
+          <div className="flex w-[56px] items-end justify-center gap-1">
+            <span className="text-[28px] font-bold leading-none text-ink">
               {value}
-            </div>
-            <div className="mt-1 text-[12px] leading-none text-ink">
+            </span>
+
+            <span className="mb-[2px] text-[12px] leading-none text-ink">
               hours
-            </div>
+            </span>
           </div>
 
           <button

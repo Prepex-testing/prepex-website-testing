@@ -99,7 +99,7 @@ export default function CreateAccountPage() {
         </Button>
       </form>
 
-      <p className="mt-4 text-center text-[12px] leading-[100%] text-muted">
+      <p className="mx-auto mt-4 max-w-[320px] px-2 text-center text-[12px] leading-[1.4] text-muted sm:max-w-none sm:px-0">
         By clicking &ldquo;Sign Up&rdquo;, you agree to our{" "}
         <Link href="/terms" className="text-ink">
           Terms of Service
