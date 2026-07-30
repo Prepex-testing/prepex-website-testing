@@ -8,8 +8,8 @@ import { AuthCard } from "@/components/layout/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { OptionCard } from "@/components/ui/OptionCard";
 import { OptionCardSkeleton } from "@/components/ui/OptionCardSkeleton";
-import { ArrowLeftIcon } from "@/components/ui/icons";
-import { GlobeIcon, FlaskIcon, CalculatorIcon, AtomIcon, LayersIcon } from "@/assets/icons";
+// import { ArrowLeftIcon } from "@/components/ui/icons";
+import { GlobeIcon, FlaskIcon, CalculatorIcon, AtomIcon, LayersIcon ,ArrowLeftIcon} from "@/assets/icons";
 import { getSubjects } from "@/lib/api/dashboard";
 import { getOnboardingProgress, selectSubjects } from "@/lib/api/onboarding";
 import { ApiError } from "@/lib/api/http";
@@ -76,11 +76,16 @@ export default function SelectSubjectPage() {
         <ArrowLeftIcon />
       </Link>
 
-      <h1 className="mt-2 text-h1 text-ink">Select your subjects</h1>
-      <p className="mt-1 text-sm text-muted">
-        Choose your exam subjects to get a personalized study roadmap and
-        progress tracking.
-      </p>
+
+      <div className="mt-4 flex flex-col gap-4 py-2 sm:mt-5">
+        <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
+          Select your subjects
+        </h1>
+        <p className="text-[14px] font-semibold leading-[100%] text-muted sm:text-[16px]">
+          Choose your exam subjects to get a personalized study roadmap and
+          progress tracking.
+        </p>
+      </div>
 
       {error && (
         <p

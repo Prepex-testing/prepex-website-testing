@@ -258,7 +258,7 @@ export default function WhereDoYouStudyPage() {
           </div>
 
           {/* Schedule Screenshot Card */}
-          <div className="mt-5 rounded-2xl border border-brand/10 p-4 dark:border-white/10 sm:mt-6 sm:p-6">
+          <div className="mt-5 rounded-2xl border border-[#D1D5DB] p-4 dark:border-[#D1D5DB] sm:mt-6 sm:p-6">
             <p className="text-[16px] font-bold leading-[100%] text-ink sm:text-[18px]">
               Got a schedule screenshot?
             </p>
@@ -301,9 +301,9 @@ export default function WhereDoYouStudyPage() {
 
             {/* Default Success Message */}
             {!isUploadingSchedule && !uploadSummary && !hadScheduleUploadOnFile && (
-              <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-success">
-                <CheckCircleIcon className="h-4 w-4 shrink-0 text-success" />
-                <span> Lets us auto-build your timetable in 30 seconds instead of 5 minutes.</span>
+              <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-[#1A5276] dark:text-[#FAF7F2]">
+                <CheckCircleIcon className="h-4 w-4 shrink-0 text-[#10B981] dark:text-[#FAF7F2]" />
+                <span>Saves 5 min vs manual entry</span>
               </p>
             )}
           </div>
