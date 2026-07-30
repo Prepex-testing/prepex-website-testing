@@ -65,7 +65,7 @@ export function OptionCard({
             : "border border-brand/15 bg-surface dark:border-white/15"
             }`}
         >
-          {selected && <CheckIcon />}
+          {selected && <CheckIcon className="h-5 w-5 sm:h-5 sm:w-5 md:h-6 md:w-6" />}
         </span>
       )}
     </button>

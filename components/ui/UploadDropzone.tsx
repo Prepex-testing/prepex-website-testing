@@ -35,7 +35,7 @@ export function UploadDropzone({ onFileSelect, previewUrl, fileName }: UploadDro
   if (previewUrl) {
     return (
       // Box — same footprint as the empty dropzone, swapped for a single-image preview.
-      <div className="flex flex-col items-center gap-3 rounded-xl border border-[#D9DADB] bg-surface p-4 sm:p-6">
+      <div className="flex flex-col items-center gap-3 rounded-xl border border-[#D1D5DB] dark:border-[#D1D5DB] bg-surface p-4 sm:p-6">
         {/* eslint-disable-next-line @next/next/no-img-element -- local blob preview, not a static/remote asset */}
         <img
           src={previewUrl}
@@ -73,7 +73,7 @@ export function UploadDropzone({ onFileSelect, previewUrl, fileName }: UploadDro
     // Box — 631x197.9, radius 12px, dashed border, padding 64px (scaled down on mobile)
     <label
       htmlFor={inputId}
-      className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[#D9DADB] bg-surface px-6 py-10 text-center sm:px-16 sm:py-14"
+      className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[#D1D5DB] dark:border-[#D1D5DB] bg-surface px-6 py-10 text-center sm:px-16 sm:py-14"
     >
       <span className="flex h-8 w-9 items-center justify-center text-body-text dark:text-ink">
         <PlusIcon />

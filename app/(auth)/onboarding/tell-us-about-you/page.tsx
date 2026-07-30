@@ -245,7 +245,7 @@ export default function TellUsAboutYouPage() {
         ) : (
           <DateInput
             label="When is your exam?"
-            helperText="Optional — leave blank and we'll estimate this from your class."
+            helperText="We use this to calculate your daily pace and exam countdown."
             name="examDate"
             defaultValue={examDate}
             onDateChange={setExamDate}
