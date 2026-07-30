@@ -23,10 +23,21 @@ const SUBJECT_ICONS: Record<string, ReactNode> = {
 };
 const DEFAULT_ICON = <LayersIcon />;
 
+// Short label used in "Select your {label} subjects" — mirrors the exam
+// names shown on PreparingForPage so the heading reads naturally.
+const EXAM_LABEL: Record<string, string> = {
+  JEE_MAIN: "JEE Main",
+  JEE_ADVANCED: "JEE Advanced",
+  NEET: "NEET",
+  CUET: "CUET",
+  BOARDS: "Boards",
+};
+
 export default function SelectSubjectPage() {
   const router = useRouter();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
+  const [examLabel, setExamLabel] = useState<string | null>(null);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
@@ -37,6 +48,9 @@ export default function SelectSubjectPage() {
         setSubjects(data);
         const savedSubjectIds = progress?.data.subjects.map((subject) => subject.subjectId);
         if (savedSubjectIds?.length) setSelected(savedSubjectIds);
+
+        const exam = progress?.data.profile?.exam;
+        if (exam) setExamLabel(EXAM_LABEL[exam.code] ?? exam.name);
       })
       .catch(() => setError("Couldn't load subjects. Please refresh and try again."))
       .finally(() => setLoading(false));
@@ -79,7 +93,7 @@ export default function SelectSubjectPage() {
 
       <div className="mt-4 flex flex-col gap-4 py-2 sm:mt-5">
         <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
-          Select your subjects
+          Select your {examLabel ? `${examLabel} ` : ""}subjects
         </h1>
         <p className="text-[14px] font-semibold leading-[100%] text-muted sm:text-[16px]">
           Choose your exam subjects to get a personalized study roadmap and
