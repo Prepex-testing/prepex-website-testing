@@ -315,6 +315,23 @@
   --color-secondary-button-border: var(--secondary-button-border);
   --color-outline-chip-border: var(--outline-chip-border);
 
+  --animate-float-slow: float 7s ease-in-out infinite;
+  --animate-float-medium: float 5.5s ease-in-out infinite;
+  --animate-float-fast: float 4s ease-in-out infinite;
+}
+
+/*
+ * Drift for decorative floating bubbles. Each bubble sets its own
+ * --float-x/--float-y so this single keyframe can drive varied motion.
+ */
+@keyframes float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(var(--float-x, 0px), var(--float-y, -16px), 0);
+  }
 }
 
 html {
@@ -350,6 +367,10 @@ body {
   *::before,
   *::after {
     transition-duration: 0.01ms !important;
+  }
+
+  [class*="animate-float"] {
+    animation: none !important;
   }
 }
 
