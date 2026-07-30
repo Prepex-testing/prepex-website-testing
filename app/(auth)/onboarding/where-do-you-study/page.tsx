@@ -253,7 +253,7 @@ export default function WhereDoYouStudyPage() {
           {/* Divider */}
           <div className="mt-5 flex items-center gap-3 sm:mt-6">
             <span className="h-px flex-1 bg-brand/10 dark:bg-white/10" />
-            <span className="text-xs text-muted">or</span>
+            <span className="text-xs">or</span>
             <span className="h-px flex-1 bg-brand/10 dark:bg-white/10" />
           </div>
 
