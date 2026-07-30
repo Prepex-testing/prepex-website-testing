@@ -14,7 +14,7 @@
   --brand: #1a1a4e;
   --body-text: #333333;
   --muted: #666666;
-  --cta: #ff7a59;
+  --cta: #FF7A59;
   --tint: #eff2fe;
   --tint-strong: #eef0f8;
   --warning: #d68910;
@@ -90,8 +90,6 @@
 
   --logo-tagline: #333333;
 
-  --stats-card-bg: #FFFFFF;
-  --stats-card-border: #1A1A4E;
   --preview-card-bg: linear-gradient(122.03deg, #EEF0F8 0%, #FFFFFF 100%);
   --preview-card-border: #EEF0F8;
 
@@ -104,6 +102,16 @@
   /* Weekly chart header */
   --weekly-title: #2D2E6E;
   --weekly-label: #6B7280;
+
+  --loader-dot: #FF7F5C;
+
+  --stats-card-bg: linear-gradient(122.03deg, #EEF0F8 0%, #FFFFFF 100%);
+  --stats-card-border: rgba(26, 26, 78, 0.12);
+
+  --task-card-border: #F3F4F6;
+
+  --secondary-button-border: #D6D6D6;
+  --outline-chip-border: #D6D6D6;
 }
 
 [data-theme="dark"] {
@@ -188,8 +196,7 @@
   --modal-bg: #111145;
   --logo-tagline: #F0EDE5;
 
-  --stats-card-bg: #1A1A4E;
-  --stats-card-border: #242453;
+
   --preview-card-bg: #13133D;
   --preview-card-border: #242453;
 
@@ -202,6 +209,16 @@
   /* Weekly chart header */
   --weekly-title: #FAF7F2;
   --weekly-label: #FAF7F2;
+
+  --loader-dot: #FFFFFF;
+
+  --stats-card-bg: #13133D;
+  --stats-card-border: #242453;
+
+  --task-card-border: #242453;
+
+  --secondary-button-border: #8B8998;
+  --outline-chip-border: #D6D6D6;
 
 }
 
@@ -286,6 +303,17 @@
 
   --color-weekly-title: var(--weekly-title);
   --color-weekly-label: var(--weekly-label);
+  --color-loader-dot: var(--loader-dot);
+
+
+  --color-stats-container-bg: var(--stats-container-bg);
+  --color-stats-item-bg: var(--stats-item-bg);
+  --color-stats-border: var(--stats-border);
+
+  --color-task-card-border: var(--task-card-border);
+
+  --color-secondary-button-border: var(--secondary-button-border);
+  --color-outline-chip-border: var(--outline-chip-border);
 
 }
 
@@ -324,6 +352,7 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
 .pt-safe {
   padding-top: env(safe-area-inset-top);
 }
