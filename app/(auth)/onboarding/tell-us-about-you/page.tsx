@@ -234,7 +234,13 @@ export default function TellUsAboutYouPage() {
                 subtitle={item.subtitle}
                 selected={selectedClass === item.id}
                 onClick={() => setSelectedClass(item.id)}
-                className={item.id === "OTHER" ? "sm:col-span-2" : undefined}
+                className={`${
+                  selectedClass === item.id
+                    ? "dark:border! dark:border-[#FAF7F2]!"
+                    : "dark:border-[#8B8998]!"
+                } dark:shadow-[0px_2px_8px_0px_#1A1A4E14] ${
+                  item.id === "OTHER" ? "sm:col-span-2" : ""
+                }`}
               />
             ))}
           </div>

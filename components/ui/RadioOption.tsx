@@ -7,6 +7,12 @@ type RadioOptionProps = {
   selected: boolean;
   onSelect: () => void;
   children?: ReactNode;
+  /** Text color classes applied to the label when this option is NOT selected. Defaults to the standard ink color. */
+  unselectedLabelClassName?: string;
+  /** Extra classes merged onto the box border/shadow when NOT selected. */
+  unselectedBoxClassName?: string;
+  /** Extra classes merged onto the box border when selected. */
+  selectedBoxClassName?: string;
 };
 
 export function RadioOption({
@@ -16,12 +22,17 @@ export function RadioOption({
   selected,
   onSelect,
   children,
+  unselectedLabelClassName = "text-ink",
+  unselectedBoxClassName = "",
+  selectedBoxClassName = "",
 }: RadioOptionProps) {
   return (
     // Box — 681x56 min, radius Medium, border 1.5px, shadow when selected
     <div
       className={`rounded-xl border-[1.5px] bg-surface p-4 shadow-[0_1px_2px_0_rgba(26,26,78,0.06)] transition-colors ${
-        selected ? "border-ink" : "border-brand/15 dark:border-white/15"
+        selected
+          ? `border-ink ${selectedBoxClassName}`
+          : `border-brand/15 dark:border-white/15 ${unselectedBoxClassName}`
       }`}
     >
       <label className="flex cursor-pointer items-center gap-3">
@@ -41,13 +52,26 @@ export function RadioOption({
         >
           {selected && <span className="h-3 w-3 rounded-full bg-ink" />}
         </span>
-        <span className="text-[14px] font-semibold leading-[100%] text-ink sm:text-[16px]">
+        <span
+          className={`text-[14px] font-semibold leading-[100%] sm:text-[16px] ${
+            selected ? "text-ink" : unselectedLabelClassName
+          }`}
+        >
           {label}
         </span>
       </label>
 
-      {selected && children && (
-        <div className="mt-4 flex flex-col gap-6 pl-9">{children}</div>
+      {children && (
+        <div
+          aria-hidden={!selected}
+          className={`grid overflow-hidden transition-[grid-template-rows,opacity] duration-500 ease-in-out ${
+            selected ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          }`}
+        >
+          <div className="min-h-0">
+            <div className="flex flex-col gap-6 pl-9 pt-4">{children}</div>
+          </div>
+        </div>
       )}
     </div>
   );
