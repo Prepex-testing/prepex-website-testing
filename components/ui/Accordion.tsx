@@ -53,8 +53,8 @@ export function Accordion({
             {/* Meta — Jakarta 400, 12px, lh 100%, uppercase */}
             <span
               className={`text-[10px] font-normal uppercase leading-none tracking-wide sm:text-[11px] md:text-[12px] lg:text-[13px] ${open
-                  ? "text-[#464650B2] dark:text-muted"
-                  : "text-[#464650B2] dark:text-ink"
+                ? "text-[#464650B2] dark:text-muted"
+                : "text-[#464650B2] dark:text-ink"
                 }`}
             >
               {meta}
@@ -77,7 +77,7 @@ export function Accordion({
       </button>
 
       {open && (
-        <div className="border-t border-brand/10 bg-surface p-4 dark:border-white/10 sm:p-6">
+        <div className="border-t border-brand/10 bg-surface p-4 dark:border-white/10 dark:bg-[#FAF7F214] sm:p-6">
           {children}
         </div>
       )}
