@@ -138,17 +138,11 @@ function EmailVerificationForm() {
 
             <Button
               variant="primary"
-              onClick={countdown === 0 ? handleResend : handleVerify}
-              disabled={isSubmitting || isResending}
+              onClick={handleVerify}
+              disabled={isSubmitting}
               className="h-[52px] w-full rounded-2xl text-[15px] font-bold disabled:cursor-not-allowed disabled:opacity-60 sm:h-[57px] sm:text-[16px]"
             >
-              {isSubmitting
-                ? "Verifying..."
-                : isResending
-                  ? "Resending..."
-                  : countdown === 0
-                    ? "Resend code"
-                    : "Verify & Continue"}
+              {isSubmitting ? "Verifying..." : "Verify & Continue"}
             </Button>
 
             <Link
