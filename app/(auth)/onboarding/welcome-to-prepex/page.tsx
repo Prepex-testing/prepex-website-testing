@@ -98,7 +98,7 @@ export default function WelcomeToPrepexPage() {
 
           {/* Button */}
           <Button
-            href="/home"
+            href="/check-in"
             variant="primary"
             className="mt-8 h-[60px] w-full max-w-[284px] rounded-full! bg-[var(--oc-button-bg)]! px-6 sm:px-8 text-base sm:text-lg! font-bold! text-[var(--oc-button-text)]! whitespace-nowrap"
           >
