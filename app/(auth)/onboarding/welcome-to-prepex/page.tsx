@@ -1,6 +1,7 @@
 "use client";
 import type { CSSProperties } from "react";
 import { Button } from "@/components/ui/Button";
+import { Confetti } from "@/components/ui/confetti";
 import { CheckIcon } from "@/components/ui/icons";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 
@@ -48,7 +49,6 @@ function FloatingBubbles() {
               left: bubble.left,
               right: bubble.right,
               backgroundColor: bubble.color,
-              boxShadow: `0 0 ${bubble.size * 1.5}px ${bubble.size / 2}px ${bubble.color}`,
               opacity: 0.6,
               animationDelay: bubble.delay,
               "--float-x": `${bubble.floatX}px`,
@@ -76,7 +76,7 @@ export default function WelcomeToPrepexPage() {
           {/* Welcome */}
           <div className="mt-6 max-w-[457px]">
             <h2 className="whitespace-nowrap text-[28px] leading-[34px] font-extrabold tracking-[-0.9px] text-[var(--oc-heading1)] sm:text-[32px] sm:leading-[38px] md:text-[36px] md:leading-[40px]">
-              Welcome to Prepex{name ? `, ${name.trim().split(/\s+/)[0]}` : ""}
+              Welcome to prepex{name ? `, ${name.trim().split(/\s+/)[0]}` : ""}
             </h2>
 
             <p className="mt-2 text-base leading-6 font-medium text-[var(--oc-subtext)] sm:text-lg sm:leading-7">
@@ -105,6 +105,11 @@ export default function WelcomeToPrepexPage() {
             Go to Home Dashboard
           </Button>
         </div>
+
+        <Confetti
+          className="pointer-events-none absolute inset-0 h-full w-full"
+          options={{ particleCount: 150, spread: 90, origin: { y: 0.4 } }}
+        />
       </div>
     </main>
   );
