@@ -207,7 +207,7 @@ export default function TellUsAboutYouPage() {
             required
             inputMode="numeric"
             maxLength={10}
-            placeholder="8888899999"
+            placeholder="Phone Number"
             value={phoneNumber}
             onChange={(event) =>
               setPhoneNumber(event.target.value.replace(/\D/g, "").slice(0, 10))
