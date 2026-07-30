@@ -73,7 +73,7 @@ export function Input({
           id={inputId}
           type={resolvedType}
           required={required}
-          className="min-w-0 flex-1 bg-transparent text-[16px] font-semibold leading-none text-ink outline-none placeholder:text-muted"
+          className="min-w-0 flex-1 bg-transparent text-[16px] font-semibold leading-none text-ink outline-none placeholder:font-normal placeholder:text-[#666666]"
           {...props}
         />
 
