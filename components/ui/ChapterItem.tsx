@@ -16,10 +16,10 @@ export function ChapterItem({ title, state, onCycle }: ChapterItemProps) {
       onClick={onCycle}
       aria-pressed={state !== "none"}
       className={`flex h-18.5 items-center justify-between gap-3 rounded-xl border p-4 text-left transition-colors sm:h-20.5 sm:p-5 ${isDone
-        ? "border-brand bg-tint-strong dark:border-chapter-box-border dark:bg-chapter-box-bg"
-        : isPartial
-          ? "border-cta/40 bg-surface dark:border-chapter-box-border dark:bg-transparent"
-          : "border-brand/10 bg-surface dark:border-chapter-box-border dark:bg-transparent"
+          ? "border-[#1A1A4E] bg-tint-strong dark:border-[#FAF7F2] dark:bg-chapter-box-bg"
+          : isPartial
+            ? "border-[#1A1A4E] bg-surface dark:border-[#FAF7F2] dark:bg-transparent"
+            : "border-brand/10 bg-surface dark:border-chapter-box-border dark:bg-transparent"
         }`}
     >
       <span className="flex items-center gap-3">
