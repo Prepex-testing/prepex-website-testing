@@ -1,14 +1,16 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { Logo } from "@/components/ui/Logo";
 import { Button } from "@/components/ui/Button";
 import { OtpInput } from "@/components/ui/OtpInput";
-import { verifyOtp, ApiError } from "@/lib/api/auth";
+import { verifyOtp, resendOtp, ApiError } from "@/lib/api/auth";
 import { saveSession } from "@/lib/auth/session";
+
+const RESEND_COUNTDOWN_SECONDS = 45;
 
 export default function EmailVerificationPage() {
   return (
@@ -25,7 +27,35 @@ function EmailVerificationForm() {
 
   const [otp, setOtp] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
+  const [countdown, setCountdown] = useState(RESEND_COUNTDOWN_SECONDS);
+  const [isResending, setIsResending] = useState(false);
+
+  useEffect(() => {
+    if (countdown === 0) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => (prev > 0 ? prev - 1 : prev));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  const handleResend = async () => {
+    setError(null);
+    setResendMessage(null);
+    setIsResending(true);
+    try {
+      const { message } = await resendOtp(email);
+      setResendMessage(message);
+      setCountdown(RESEND_COUNTDOWN_SECONDS);
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
+      );
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   const handleVerify = async () => {
     if (otp.length !== 6) {
@@ -77,6 +107,15 @@ function EmailVerificationForm() {
           </p>
         )}
 
+        {resendMessage && (
+          <p
+            role="status"
+            className="w-full rounded-lg bg-success-bg px-3 py-2 text-center text-xs font-medium text-success"
+          >
+            {resendMessage}
+          </p>
+        )}
+
         {/* OTP + BELOW BLOCK — 465 wide, gap 24px */}
         <div className="flex w-full max-w-[465px] flex-col items-center gap-5 sm:gap-6">
           {/* OTP ROW — 465x64, gap 16px, boxes 64x64 radius 8 */}
@@ -86,19 +125,30 @@ function EmailVerificationForm() {
           <div className="flex w-full flex-col items-center gap-3">
             <p className="px-2 pb-2 text-center text-[13px] font-semibold leading-[18px] sm:px-[64.77px] sm:pb-4 sm:text-[14px] sm:leading-[20px]">
               Didn&apos;t receive the code?{" "}
-              <button type="button" className="text-ink underline">
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={isResending}
+                className="text-ink underline disabled:cursor-not-allowed disabled:opacity-60"
+              >
                 Resend Code
               </button>{" "}
-              ( In 45 sec )
+              ( {countdown} sec )
             </p>
 
             <Button
               variant="primary"
-              onClick={handleVerify}
-              disabled={isSubmitting}
+              onClick={countdown === 0 ? handleResend : handleVerify}
+              disabled={isSubmitting || isResending}
               className="h-[52px] w-full rounded-2xl text-[15px] font-bold disabled:cursor-not-allowed disabled:opacity-60 sm:h-[57px] sm:text-[16px]"
             >
-              {isSubmitting ? "Verifying..." : "Verify & Continue"}
+              {isSubmitting
+                ? "Verifying..."
+                : isResending
+                  ? "Resending..."
+                  : countdown === 0
+                    ? "Resend code"
+                    : "Verify & Continue"}
             </Button>
 
             <Link

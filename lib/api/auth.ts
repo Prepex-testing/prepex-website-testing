@@ -46,6 +46,13 @@ export function verifyOtp(input: { email: string; otp: string }) {
   });
 }
 
+export function resendOtp(email: string) {
+  return request<{ success: true; message: string }>("/resend-otp", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
 export function login(input: { email: string; password: string }) {
   return request<{ success: true; data: AuthResult }>("/login", {
     method: "POST",
