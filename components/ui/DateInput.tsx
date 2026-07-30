@@ -14,9 +14,8 @@ type DateInputProps = {
   name?: string;
   /** Text shown before a date is chosen */
   placeholder?: string;
-  /** ISO date string, e.g. "2026-05-14" */
   defaultValue?: string;
-  /** Returns the ISO date string (YYYY-MM-DD) */
+  /** Returns the display date string (DD/MM/YYYY) — same as the old component */
   onDateChange?: (value: string) => void;
 };
 
@@ -38,9 +37,7 @@ export function DateInput({
 }: DateInputProps) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
-  const [value, setValue] = useState(
-    defaultValue ? isoToDisplay(defaultValue) : ""
-  );
+  const [value, setValue] = useState(defaultValue);
   const nativeDateRef = useRef<HTMLInputElement>(null);
 
   const openPicker = () => {
@@ -51,9 +48,9 @@ export function DateInput({
   };
 
   const handleNativeChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const iso = event.target.value;
-    setValue(isoToDisplay(iso));
-    onDateChange?.(iso);
+    const display = isoToDisplay(event.target.value);
+    setValue(display);
+    onDateChange?.(display);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -83,6 +80,11 @@ export function DateInput({
         </p>
       )}
 
+      {/*
+        Input box — Figma: 681 x ~92, radius Large (16px), border 1px, padding 20px, gap 24px
+        Light: border #1A1A4E · shadow 0 2 8 #1A1A4E14
+        Dark:  border #1A1A4E33 · shadow 0 2 8 #1A1A4E14
+      */}
       <div
         role="button"
         tabIndex={0}
@@ -130,7 +132,6 @@ export function DateInput({
           id={inputId}
           name={name}
           type="date"
-          defaultValue={defaultValue}
           tabIndex={-1}
           aria-hidden="true"
           onChange={handleNativeChange}
