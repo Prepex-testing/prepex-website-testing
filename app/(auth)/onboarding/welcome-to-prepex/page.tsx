@@ -16,7 +16,7 @@ export default function WelcomeToPrepexPage() {
           {/* Welcome */}
           <div className="mt-6 max-w-[457px]">
             <h2 className="text-[28px] leading-[34px] font-extrabold tracking-[-0.9px] text-[var(--oc-heading1)] sm:text-[32px] sm:leading-[38px] md:text-[36px] md:leading-[40px]">
-               Welcome to Prepex{name ? `, ${name}` : ""}
+               Welcome to prepex{name ? `, ${name}` : ""}
             </h2>
 
             <p className="mt-2 text-base leading-6 font-medium text-[var(--oc-subtext)] sm:text-lg sm:leading-7">
@@ -25,7 +25,7 @@ export default function WelcomeToPrepexPage() {
           </div>
 
           {/* Heading */}
-          <div className="mt-2 sm:mt-8">
+          <div className="mt-1 sm:mt-6">
             <h1 className="text-[32px] leading-[38px] font-black text-[var(--oc-heading2)] sm:text-4xl sm:leading-tight md:text-5xl md:leading-[60px]">
               Your first plan is ready
             </h1>

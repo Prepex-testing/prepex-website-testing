@@ -46,7 +46,7 @@ export function Logo1({ size = "hero", showTagline = true }: LogoProps) {
         prepex<span className="text-cta">.</span>
       </p>
       {showTagline && (
-        <p className="mt-2 text-[13px] font-bold uppercase tracking-[0.2em] text-cta dark:text-logo-tagline sm:text-base">
+        <p className="mt-2 text-[13px] font-bold uppercase tracking-[0.2em] text-cta sm:text-base">
           PLAN&middot;EXECUTE&middot;SURVIVE&middot;WIN
         </p>
       )}

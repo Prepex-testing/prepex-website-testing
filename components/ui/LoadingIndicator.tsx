@@ -17,7 +17,7 @@ export function LoadingIndicator({ size = 64 }: { size?: number }) {
         return (
           <span
             key={i}
-            className="absolute left-1/2 top-1/2 rounded-full bg-cta"
+            className="absolute left-1/2 top-1/2 rounded-full bg-loader-dot"
             style={{
               width: dotSize,
               height: dotSize,
