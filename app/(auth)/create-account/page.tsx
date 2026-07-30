@@ -39,7 +39,7 @@ export default function CreateAccountPage() {
         <h1 className="text-[32px] font-bold leading-[40px] tracking-[-0.64px] text-ink">
           Create your account
         </h1>
-        <p className="text-[16px] leading-[24px] text-muted">
+        <p className="text-[16px] leading-[24px]">
           Quick setup. Takes 30 seconds.
         </p>
       </div>

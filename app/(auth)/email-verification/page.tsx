@@ -90,14 +90,13 @@ function EmailVerificationForm() {
           <h1 className="text-[24px] font-bold leading-[32px] tracking-[-0.48px] text-ink sm:text-[32px] sm:leading-[40px] sm:tracking-[-0.64px]">
             Verify your email
           </h1>
-          <p className="text-[14px] leading-[22px] text-[#8B8998] sm:text-[16px] sm:leading-[24px]">
+
+          <p className="max-w-[320px] text-center text-[14px] font-normal leading-[20px] text-muted sm:max-w-[420px] sm:text-[16px] sm:leading-[24px]">
             We&apos;ve sent a 6-digit code to{" "}
-            <span className="font-semibold">{email}</span>.
-            <br />
-            Enter it below to continue.
+            <span className="font-medium text-ink">{email}</span>. Enter it below to
+            continue.
           </p>
         </div>
-
         {error && (
           <p
             role="alert"
@@ -133,7 +132,9 @@ function EmailVerificationForm() {
               >
                 Resend Code
               </button>{" "}
-              ( {countdown} sec )
+              <span className="whitespace-nowrap text-muted">
+                ({countdown} sec)
+              </span>
             </p>
 
             <Button
