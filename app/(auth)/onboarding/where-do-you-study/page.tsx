@@ -212,6 +212,9 @@ export default function WhereDoYouStudyPage() {
           label="Yes, I'm in a coaching"
           selected={status === "coaching"}
           onSelect={() => setStatus("coaching")}
+          unselectedLabelClassName="text-[#333333] dark:text-ink"
+          unselectedBoxClassName="dark:border-[#D1D5DB]! dark:shadow-[0px_1px_2px_0px_#1A1A4E0F]!"
+          selectedBoxClassName="dark:border-[#FFFFFF]!"
         >
           <Select
             label="Coaching Name"
@@ -237,6 +240,9 @@ export default function WhereDoYouStudyPage() {
           label="Online courses + self-study"
           selected={status === "self-study"}
           onSelect={() => setStatus("self-study")}
+          unselectedLabelClassName="text-[#333333] dark:text-ink"
+          unselectedBoxClassName="dark:border-[#D1D5DB]! dark:shadow-[0px_1px_2px_0px_#1A1A4E0F]!"
+          selectedBoxClassName="dark:border-[#FFFFFF]!"
         />
 
         <RadioOption
@@ -245,6 +251,9 @@ export default function WhereDoYouStudyPage() {
           label="Self-prep only"
           selected={status === "self-prep"}
           onSelect={() => setStatus("self-prep")}
+          unselectedLabelClassName="text-[#333333] dark:text-ink"
+          unselectedBoxClassName="dark:border-[#D1D5DB]! dark:shadow-[0px_1px_2px_0px_#1A1A4E0F]!"
+          selectedBoxClassName="dark:border-[#FFFFFF]!"
         />
       </div>
 
