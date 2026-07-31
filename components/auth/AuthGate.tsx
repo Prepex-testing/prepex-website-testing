@@ -8,6 +8,7 @@ import { getAccessToken } from "@/lib/auth/session";
 // has to run client-side — there's no session state a server-side proxy
 // could read.
 const PUBLIC_PATHS = [
+  "/",
   "/splash",
   "/welcome",
   "/login",
