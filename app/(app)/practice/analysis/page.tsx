@@ -12,9 +12,9 @@ import {
   // AlertTriangleIcon,
   // BookIcon,
   // HelpCircleIcon,
-  CheckIcon,
+  // CheckIcon,
 } from "@/components/ui/icons";
-import { ClockIcon, ConceptualIcon, TimeIcon, DiceIcon, VectorIcon } from "@/assets/icons";
+import { ClockIcon, ConceptualIcon, TimeIcon, DiceIcon, VectorIcon, CheckIcon } from "@/assets/icons";
 const OPTIONS = [
   { key: "A", value: "√15 units" },
   { key: "B", value: "√21 units" },
@@ -39,15 +39,14 @@ export default function QuestionAnalysisPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
-      {/* Page header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-h1 text-ink">Question Analysis</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
@@ -55,7 +54,7 @@ export default function QuestionAnalysisPage() {
         </div>
       </div>
 
-      {/* Question Context card */}
+
       <div className="rounded-2xl border border-brand/10 bg-surface p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs font-bold uppercase tracking-wide text-ink">
@@ -160,8 +159,8 @@ export default function QuestionAnalysisPage() {
                 onClick={() => setTag(item.id)}
                 aria-pressed={isSelected}
                 className={`flex h-[134px] w-full max-w-[129px] shrink-0 flex-col items-center rounded-2xl border px-[36px] pt-5 pb-9 transition-colors ${isSelected
-                    ? "border-[#1A1A4E] bg-[#EEF0F8] dark:border-white dark:bg-transparent"
-                    : "border-[#E5E7EB] bg-white hover:border-[#1A1A4E]/20 dark:border-[#FAF7F214] dark:bg-[#FAF7F214] dark:hover:bg-[#FAF7F21A]"
+                  ? "border-[#1A1A4E] bg-[#EEF0F8] dark:border-white dark:bg-transparent"
+                  : "border-[#E5E7EB] bg-white hover:border-[#1A1A4E]/20 dark:border-[#FAF7F214] dark:bg-[#FAF7F214] dark:hover:bg-[#FAF7F21A]"
                   }`}
               >
                 <span

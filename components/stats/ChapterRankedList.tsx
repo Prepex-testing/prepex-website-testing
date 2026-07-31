@@ -27,8 +27,8 @@ export function ChapterRankedList({
         h-full
         rounded-xl
         border
-        border-white/10
-        bg-[#1A1A4E]
+        border-brand/10
+        bg-tint
         p-3
         shadow-[0_1px_2px_rgba(26,26,78,0.06)]
       "
@@ -48,7 +48,7 @@ export function ChapterRankedList({
                         key={item.id}
                         className="
               rounded-xl
-              bg-[#20205A]
+              bg-tint-strong
               p-2
             "
                     >
@@ -63,7 +63,7 @@ export function ChapterRankedList({
                             {/* Title + Progress */}
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center justify-between gap-2">
-                                    <p className="truncate text-sm font-semibold text-[#FAF7F2]">
+                                    <p className="truncate text-sm font-semibold text-ink">
                                         {item.title}
                                     </p>
 
@@ -75,7 +75,7 @@ export function ChapterRankedList({
                                     </span>
                                 </div>
 
-                                <div className="mt-2 h-[6px] overflow-hidden rounded-full bg-white/20">
+                                <div className="mt-2 h-[6px] overflow-hidden rounded-full bg-ink/10">
                                     <div
                                         className="h-full rounded-full"
                                         style={{

@@ -8,15 +8,60 @@ import {
   CalendarIcon,
   TargetIcon,
   ChartBarIcon,
-  UserIcon,
+  // UserIcon,
 } from "@/components/ui/icons";
+import {UserIcons,PracticeIcon,StatsIcon} from "@/assets/icons";
+
+// Figma: 20x20 icon slot containing a 16x16 glyph (1.78px stroke).
+const ICON_BOX_CLASS = "flex h-5 w-5 shrink-0 items-center justify-center";
+const ICON_CLASS = "h-4 w-4";
 
 export const NAV_ITEMS = [
-  { href: "/home", label: "Home", icon: <HomeIcon /> },
-  { href: "/plan", label: "Plan", icon: <CalendarIcon /> },
-  { href: "/practice/sessions", label: "Practice", icon: <TargetIcon /> },
-  { href: "/stats", label: "Stats", icon: <ChartBarIcon /> },
-  { href: "/profile", label: "Profile", icon: <UserIcon /> },
+  {
+    href: "/home",
+    label: "Home",
+    icon: (
+      <span className={ICON_BOX_CLASS}>
+        <HomeIcon className={ICON_CLASS} />
+      </span>
+    ),
+  },
+  {
+    href: "/plan",
+    label: "Plan",
+    icon: (
+      <span className={ICON_BOX_CLASS}>
+        <CalendarIcon className={ICON_CLASS} />
+      </span>
+    ),
+  },
+  {
+    href: "/practice/sessions",
+    label: "Practice",
+    icon: (
+      <span className={ICON_BOX_CLASS}>
+        <PracticeIcon className={ICON_CLASS} />
+      </span>
+    ),
+  },
+  {
+    href: "/stats",
+    label: "Stats",
+    icon: (
+      <span className={ICON_BOX_CLASS}>
+        <StatsIcon className={ICON_CLASS} />
+      </span>
+    ),
+  },
+  {
+    href: "/profile",
+    label: "Profile",
+    icon: (
+      <span className={ICON_BOX_CLASS}>
+        <UserIcons className={ICON_CLASS} />
+      </span>
+    ),
+  },
 ];
 
 export function Sidebar() {
@@ -41,8 +86,8 @@ export function Sidebar() {
               href={item.href}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                 active
-                  ? "bg-tint-strong text-ink"
-                  : "text-muted hover:bg-tint-strong/60"
+                  ? "bg-sidebar-active-bg text-sidebar-active-fg"
+                  : "text-sidebar-inactive-fg"
               }`}
             >
               {item.icon}

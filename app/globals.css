@@ -112,6 +112,11 @@
 
   --secondary-button-border: #D6D6D6;
   --outline-chip-border: #D6D6D6;
+
+  /* Sidebar nav item states */
+  --sidebar-active-bg: #EEF0F8;
+  --sidebar-active-fg: #1A1A4E;
+  --sidebar-inactive-fg: #7E7E85;
 }
 
 [data-theme="dark"] {
@@ -220,6 +225,10 @@
   --secondary-button-border: #8B8998;
   --outline-chip-border: #D6D6D6;
 
+  /* Sidebar nav item states */
+  --sidebar-active-bg: #FAF7F2;
+  --sidebar-active-fg: #1A1A4E;
+  --sidebar-inactive-fg: #8B8998;
 }
 
 @theme inline {
@@ -314,6 +323,10 @@
 
   --color-secondary-button-border: var(--secondary-button-border);
   --color-outline-chip-border: var(--outline-chip-border);
+
+  --color-sidebar-active-bg: var(--sidebar-active-bg);
+  --color-sidebar-active-fg: var(--sidebar-active-fg);
+  --color-sidebar-inactive-fg: var(--sidebar-inactive-fg);
 
   --animate-float-slow: float 7s ease-in-out infinite;
   --animate-float-medium: float 5.5s ease-in-out infinite;

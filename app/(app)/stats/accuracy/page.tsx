@@ -188,14 +188,14 @@ export default function AccuracyStatsPage() {
         <StatCard
           title="Accuracy by Subject"
           right={
-            <span className="shrink-0 text-xs font-semibold text-link">Detailed view →</span>
+            <span className="shrink-0 text-xs font-semibold text-cta">Detailed view →</span>
           }
         >
           <div className="flex flex-col gap-5">
             {SUBJECTS.map((subject) => (
               <div key={subject.label} className="flex items-center gap-3">
                 {/* Subject Initial */}
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand/20 text-sm font-bold text-white">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand/20 text-sm font-bold text-ink">
                   {subject.short}
                 </div>
 
@@ -232,7 +232,7 @@ export default function AccuracyStatsPage() {
           title="Mock Trend (JEE Main)"
           subtitle="Last 5 mocks performance analysis"
           right={
-            <span className="shrink-0 text-xs font-semibold text-link">
+            <span className="shrink-0 text-xs font-semibold text-cta">
               Detailed view →
             </span>
           }
@@ -313,7 +313,7 @@ export default function AccuracyStatsPage() {
                         x="2"
                         y={y + 4}
                         fontSize="9"
-                        fill="#8186A6"
+                        fill="var(--muted)"
                       >
                         {tick}
                       </text>
@@ -340,8 +340,8 @@ export default function AccuracyStatsPage() {
                         cx={point.x}
                         cy={point.y}
                         r="3.5"
-                        fill="#1A1A4E"
-                        stroke="white"
+                        fill="var(--ink)"
+                        stroke="var(--surface)"
                         strokeWidth="1.8"
                       />
 
@@ -350,7 +350,7 @@ export default function AccuracyStatsPage() {
                         y={point.y - 10}
                         textAnchor="middle"
                         fontSize="10"
-                        fill="white"
+                        fill="var(--ink)"
                         fontWeight="700"
                       >
                         {point.value}
@@ -395,17 +395,17 @@ export default function AccuracyStatsPage() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <ChapterRankedList
               title="TOP 5 WEAKEST"
-              titleColor="#F59E0B"
-              rankBg="bg-[#3A2C18] text-[#F59E0B]"
-              valueColor="#FAF7F2"
+              titleColor="var(--warning)"
+              rankBg="bg-warning-bg text-warning"
+              valueColor="var(--ink)"
               items={WEAKEST_CHAPTERS}
             />
 
             <ChapterRankedList
               title="TOP 5 STRONGEST"
-              titleColor="#22C55E"
-              rankBg="bg-[#153C31] text-[#22C55E]"
-              valueColor="#FAF7F2"
+              titleColor="var(--success)"
+              rankBg="bg-success-bg text-success"
+              valueColor="var(--ink)"
               items={STRONGEST_CHAPTERS}
             />
           </div>
