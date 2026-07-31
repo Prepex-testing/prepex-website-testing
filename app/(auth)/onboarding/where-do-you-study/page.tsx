@@ -8,7 +8,7 @@ import { RadioOption } from "@/components/ui/RadioOption";
 import { Select } from "@/components/ui/Select";
 import { StepProgress } from "@/components/ui/StepProgress";
 import { UploadDropzone } from "@/components/ui/UploadDropzone";
-import { CheckIcon } from "@/components/ui/icons";
+import { CheckCircleIcon, CheckIcon } from "@/components/ui/icons";
 import {
   getOnboardingProgress,
   saveCoachingProfile,
@@ -212,6 +212,9 @@ export default function WhereDoYouStudyPage() {
           label="Yes, I'm in a coaching"
           selected={status === "coaching"}
           onSelect={() => setStatus("coaching")}
+          unselectedLabelClassName="text-[#333333] dark:text-ink"
+          unselectedBoxClassName="dark:border-[#D1D5DB]! dark:shadow-[0px_1px_2px_0px_#1A1A4E0F]!"
+          selectedBoxClassName="dark:border-[#FFFFFF]!"
         >
           <Select
             label="Coaching Name"
@@ -237,6 +240,9 @@ export default function WhereDoYouStudyPage() {
           label="Online courses + self-study"
           selected={status === "self-study"}
           onSelect={() => setStatus("self-study")}
+          unselectedLabelClassName="text-[#333333] dark:text-ink"
+          unselectedBoxClassName="dark:border-[#D1D5DB]! dark:shadow-[0px_1px_2px_0px_#1A1A4E0F]!"
+          selectedBoxClassName="dark:border-[#FFFFFF]!"
         />
 
         <RadioOption
@@ -245,6 +251,9 @@ export default function WhereDoYouStudyPage() {
           label="Self-prep only"
           selected={status === "self-prep"}
           onSelect={() => setStatus("self-prep")}
+          unselectedLabelClassName="text-[#333333] dark:text-ink"
+          unselectedBoxClassName="dark:border-[#D1D5DB]! dark:shadow-[0px_1px_2px_0px_#1A1A4E0F]!"
+          selectedBoxClassName="dark:border-[#FFFFFF]!"
         />
       </div>
 
@@ -253,12 +262,12 @@ export default function WhereDoYouStudyPage() {
           {/* Divider */}
           <div className="mt-5 flex items-center gap-3 sm:mt-6">
             <span className="h-px flex-1 bg-brand/10 dark:bg-white/10" />
-            <span className="text-xs text-muted">or</span>
+            <span className="text-xs">or</span>
             <span className="h-px flex-1 bg-brand/10 dark:bg-white/10" />
           </div>
 
           {/* Schedule Screenshot Card */}
-          <div className="mt-5 rounded-2xl border border-brand/10 p-4 dark:border-white/10 sm:mt-6 sm:p-6">
+          <div className="mt-5 rounded-2xl border border-[#D1D5DB] p-4 dark:border-[#D1D5DB] sm:mt-6 sm:p-6">
             <p className="text-[16px] font-bold leading-[100%] text-ink sm:text-[18px]">
               Got a schedule screenshot?
             </p>
@@ -301,9 +310,9 @@ export default function WhereDoYouStudyPage() {
 
             {/* Default Success Message */}
             {!isUploadingSchedule && !uploadSummary && !hadScheduleUploadOnFile && (
-              <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-success">
-                <CheckIcon className="h-4 w-4 shrink-0 text-success" />
-                <span> Lets us auto-build your timetable in 30 seconds instead of 5 minutes.</span>
+              <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-[#1A5276] dark:text-[#FAF7F2]">
+                <CheckCircleIcon className="h-4 w-4 shrink-0 text-[#10B981] dark:text-[#FAF7F2]" />
+                <span>Saves 5 min vs manual entry</span>
               </p>
             )}
           </div>

@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AuthCard } from "@/components/layout/AuthCard";
 import { CheckInBody } from "@/components/check-in/CheckInBody";
 import type { Mood } from "@/components/check-in/moods";
 import { submitCheckIn, moodIdToApiValue } from "@/lib/api/checkin";
 import { generatePlanForMood } from "@/lib/api/planner";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { LoderIcon } from "@/assets/icons";
+import { CheckInCard } from "@/components/layout/CheckInCard";
 
 export default function CheckInPage() {
   const router = useRouter();
@@ -51,13 +51,13 @@ export default function CheckInPage() {
   }
 
   return (
-    <AuthCard>
+    <CheckInCard>
       <CheckInBody
         name={name}
         mode="onboarding"
         onContinue={handleContinue}
         onSkip={handleSkip}
       />
-    </AuthCard>
+    </CheckInCard>
   );
 }

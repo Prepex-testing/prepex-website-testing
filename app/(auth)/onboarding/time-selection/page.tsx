@@ -186,14 +186,14 @@ export default function TimeSelectionPage() {
         </div>
       </div>
 
-       <div className="mt-5 flex flex-col gap-2 sm:mt-6">
+      <div className="mt-5 flex flex-col gap-2 sm:mt-6">
         <p className="text-[14px] font-bold leading-[100%] text-body-text dark:text-ink sm:text-[16px]">
           When do you usually study?
         </p>
         <p className="text-[12px] leading-[100%] text-muted">Pick all that apply</p>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mt-4 grid grid-cols-2 gap-5 sm:grid-cols-4">
         {TIME_SLOTS.map((slot) => {
           const selected = selectedSlots.includes(slot.id);
           return (
@@ -203,26 +203,43 @@ export default function TimeSelectionPage() {
               onClick={() => toggleSlot(slot.id)}
               aria-pressed={selected}
               className={`flex flex-col items-center gap-1.5 rounded-lg border bg-surface px-2 py-4 text-center transition-colors ${selected
-                  ? "rounded-xl border-[1.5px] border-brand shadow-hover dark:border-[#FAF7F2]"
-                  : "border-brand/15 dark:border-[#FAF7F2]/6"
+                ? "rounded-xl border-[1.5px] border-brand shadow-hover dark:border-[#FAF7F2]"
+                : "border-brand/15 dark:border-[#FAF7F2]/6"
                 }`}
             >
               <span
                 className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${selected
-                    ? "bg-brand text-white dark:bg-[#FAF7F2] dark:text-[#0D0D2B]"
-                    : "bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8"
+                  ? "bg-brand text-white dark:bg-[#FAF7F2] dark:text-[#0D0D2B]"
+                  : "bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8"
                   }`}
               >
                 {slot.icon}
               </span>
-              <span className="text-xs font-semibold text-ink">{slot.label}</span>
-              <span className="text-[10px] text-muted dark:text-ink">{slot.range}</span>
+              <div className="flex flex-col items-center">
+                <span
+                  className={`text-center text-[12px] font-normal leading-none sm:text-[14px] ${selected
+                      ? "text-ink"
+                      : "text-body-text dark:text-ink"
+                    }`}
+                >
+                  {slot.label}
+                </span>
+
+                <span
+                  className={`mt-1 text-center text-[10px] font-normal leading-none sm:text-[14px] ${selected
+                      ? "text-ink"
+                      : "text-body-text dark:text-ink"
+                    }`}
+                >
+                  {slot.range}
+                </span>
+              </div>
             </button>
           );
         })}
       </div>
 
-      <p className="mt-3 text-[12px] leading-[100%] text-body-text text-muted">
+      <p className="mt-4 text-[12px] leading-[100%] text-body-text text-muted">
         Helps creating planner according to your timings when your brain works best
       </p>
 

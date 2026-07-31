@@ -1,6 +1,6 @@
 import { useId } from "react";
 import type { ChangeEvent, MouseEvent } from "react";
-import { PlusIcon, XIcon } from "@/components/ui/icons";
+import { PlusIcon, PlusIcon1, XIcon } from "@/components/ui/icons";
 
 type UploadDropzoneProps = {
   onFileSelect?: (file: File | null) => void;
@@ -35,7 +35,7 @@ export function UploadDropzone({ onFileSelect, previewUrl, fileName }: UploadDro
   if (previewUrl) {
     return (
       // Box — same footprint as the empty dropzone, swapped for a single-image preview.
-      <div className="flex flex-col items-center gap-3 rounded-xl border border-[#D9DADB] bg-surface p-4 sm:p-6">
+      <div className="flex flex-col items-center gap-3 rounded-xl border border-[#D1D5DB] dark:border-[#D1D5DB] bg-surface p-4 sm:p-6">
         {/* eslint-disable-next-line @next/next/no-img-element -- local blob preview, not a static/remote asset */}
         <img
           src={previewUrl}
@@ -73,12 +73,12 @@ export function UploadDropzone({ onFileSelect, previewUrl, fileName }: UploadDro
     // Box — 631x197.9, radius 12px, dashed border, padding 64px (scaled down on mobile)
     <label
       htmlFor={inputId}
-      className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[#D9DADB] bg-surface px-6 py-10 text-center sm:px-16 sm:py-14"
+      className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[#D1D5DB] dark:border-[#D1D5DB] bg-surface px-6 py-10 text-center sm:px-16 sm:py-14"
     >
       <span className="flex h-8 w-9 items-center justify-center text-body-text dark:text-ink">
-        <PlusIcon />
+       <PlusIcon1 className="h-4 w-4 sm:h-5 sm:w-5 lg:h-[19.5px] lg:w-[19.5px]" />
       </span>
-      <span className="text-[14px] font-semibold leading-[100%] text-ink sm:text-[16px]">
+      <span className="text-[14px] font-semibold leading-[100%] text-[#191C1D] dark:text-ink sm:text-[16px]">
         Drop your screenshot or browse
       </span>
       <span className="text-xs text-muted">JPG, PNG, HEIC, up to 10MB</span>

@@ -39,7 +39,7 @@ export default function CreateAccountPage() {
         <h1 className="text-[32px] font-bold leading-[40px] tracking-[-0.64px] text-ink">
           Create your account
         </h1>
-        <p className="text-[16px] leading-[24px] text-muted">
+        <p className="text-[16px] leading-[24px]">
           Quick setup. Takes 30 seconds.
         </p>
       </div>
@@ -99,7 +99,7 @@ export default function CreateAccountPage() {
         </Button>
       </form>
 
-      <p className="mt-4 text-center text-[12px] leading-[100%] text-muted">
+      <p className="mx-auto mt-4 max-w-[320px] px-2 text-center text-[12px] leading-[1.4] text-muted sm:max-w-none sm:px-0">
         By clicking &ldquo;Sign Up&rdquo;, you agree to our{" "}
         <Link href="/terms" className="text-ink">
           Terms of Service
@@ -110,7 +110,7 @@ export default function CreateAccountPage() {
         </Link>
       </p>
 
-      <p className="mt-6 border-t border-tint pt-5 text-center text-[16px] font-bold leading-[100%] text-muted">
+      <p className="mt-6 border-t border-tint pt-5 text-center text-[16px] font-bold leading-[100%] text-muted dark:text-ink">
         Already have an account?{" "}
         <Link
           href="/login"

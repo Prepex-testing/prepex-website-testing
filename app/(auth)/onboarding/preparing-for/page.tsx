@@ -17,12 +17,12 @@ import type { Exam } from "@/lib/api/dashboard";
 
 const EXAM_META: Record<string, { subtitle: string; icon: ReactNode }> = {
   JEE_MAIN: { subtitle: "NITs, IIITs & GFTIs", icon: <RadarIcons /> },
-  JEE_ADVANCED: { subtitle: "NITs, IIITs & GFTIs", icon: <LayersIcon /> },
+  "JEE_MAIN+ADVANCED": { subtitle: "NITs, IIITs & GFTIs", icon: <LayersIcon /> },
   NEET: { subtitle: "Medical Entrance Exam", icon: <BriefcaseIcons /> },
   CUET: { subtitle: "Central University Entrance Test", icon: <CuteIcon /> },
   BOARDS: { subtitle: "Class 12 Boards", icon: <BookIcon /> },
 };
-const DEFAULT_META = { subtitle: "Personalized prep plan", icon: <LayersIcon /> };
+const DEFAULT_META = { subtitle: "Personalized prep plan", icon: <CuteIcon /> };
 
 // Exams that always need a subject pick, regardless of what the API reports —
 // covers combo exams like JEE+CUET that share Boards/CUET's subject-selection flow.
@@ -78,9 +78,11 @@ export default function PreparingForPage() {
     <AuthCard>
       <StepProgress step={1} totalSteps={5} />
 
-      <div className="mt-4 flex flex-col gap-1">
-        <h1 className="text-h1 text-ink">What are you preparing for?</h1>
-        <p className="text-sm text-muted">
+      <div className="mt-4 flex flex-col gap-4 py-2 sm:mt-5">
+        <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
+          What are you preparing for?
+        </h1>
+        <p className="text-[14px] font-semibold leading-[100%] text-muted sm:text-[16px]">
           This filters your syllabus, mocks, and partner matching to match
           your goal
         </p>
@@ -102,7 +104,7 @@ export default function PreparingForPage() {
           ))}
         {!isLoading &&
           exams.map((exam) => {
-            const meta = EXAM_META[exam.code] ?? DEFAULT_META;
+            const meta = EXAM_META[exam.code.toUpperCase()] ?? DEFAULT_META;
             return (
               <OptionCard
                 key={exam.id}
@@ -125,9 +127,12 @@ export default function PreparingForPage() {
         >
           {isSubmitting ? "Saving..." : "Continue"}
         </Button>
-        <p className="text-xs text-muted">
+        <p className="px-4 text-center text-[12px] leading-[18px] text-muted sm:px-0 sm:text-xs sm:leading-5">
           By continuing, you agree to our{" "}
-          <Link href="/terms" className="text-ink underline">
+          <Link
+            href="/terms"
+            className="whitespace-nowrap font-semibold text-ink underline"
+          >
             Terms of Service
           </Link>
         </p>

@@ -13,10 +13,10 @@ import {
 import { StatCard } from "@/components/stats/StatCard";
 import { DistributionRow, MeterRow } from "@/components/stats/MeterRow";
 import { SubjectDonut } from "@/components/stats/SubjectDonut";
-import { ClockIcon,FlameIcon,Check,CalendarIcon,Chart} from "@/assets/icons";
+import { ClockIcon, FlameIcon, Check, CalendarIcon, Chart } from "@/assets/icons";
 type BarState = "past" | "today" | "recovery" | "future";
 
-const BAR_COLORS: Record<BarState, string> = {  
+const BAR_COLORS: Record<BarState, string> = {
   past: "bg-ink",
   today: "bg-[#FF7F5C]",
   recovery: "bg-[#FB923C]",
@@ -130,10 +130,10 @@ const LEGEND_ITEMS: { label: string; bucket: Bucket }[] = [
 export default function EffortStatsPage() {
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-3">
 
         {/* Card 1 */}
-        <StatCard className="min-h-[126px]">
+        <StatCard className="flex h-full min-h-[126px] w-full min-w-0 flex-col justify-center">
           <div className="flex items-center gap-5">
 
             <div className="flex h-16 w-[60px] shrink-0 items-center justify-center rounded-[14px] bg-[#E1DFFF66] dark:bg-tint">
@@ -199,42 +199,35 @@ export default function EffortStatsPage() {
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         {/* LEFT CARD */}
-        <StatCard
-          className="
-      h-[291px]
-      rounded-2xl
-      border border-white/10
-      bg-[#111145]
-      shadow-[0_1px_3px_rgba(0,0,0,0.13),0_1px_2px_rgba(0,0,0,0.05)]
-    "
-          padding="pt-3 pb-3 px-6"
+        <StatCard className="h-[291px] rounded-2xl border border-white/10 bg-[#111145] shadow-[0_1px_3px_rgba(0,0,0,0.13),0_1px_2px_rgba(0,0,0,0.05)]" padding="pt-3 pb-3 px-6"
         >
           {/* Header */}
           <div className="flex h-[26px] items-center justify-between">
             <div className="flex items-center gap-6">
-              <h2 className="text-[16px] font-bold leading-6 text-[#FAF7F2]">
+              <h2 className="text-[16px] font-bold leading-6 text-weekly-title">
                 This Week
               </h2>
 
               <div className="flex items-center gap-4">
-                <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.5px] text-[#FAF7F2]">
-                  <span className="h-[10px] w-[10px] rounded-full bg-[#FAF7F2]" />
+                <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.5px] text-weekly-label">
+                  <span className="h-[10px] w-[10px] rounded-full bg-brand" />
                   Focus Time
                 </span>
 
-                <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.5px] text-[#FAF7F2]">
-                  <span className="h-[10px] w-[10px] rounded-full bg-[#FF7A59]" />
+                <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.5px] text-weekly-label">
+                  <span className="h-[10px] w-[10px] rounded-full bg-cta" />
                   Today
                 </span>
 
-                <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.5px] text-[#FAF7F2]">
-                  <span className="h-[10px] w-[10px] rounded-full bg-[#FB923C]" />
+                <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.5px] text-weekly-label">
+                  <span className="h-[10px] w-[10px] rounded-full bg-chart-recovery" />
                   Recovery
                 </span>
               </div>
             </div>
 
-            <button className="flex h-[26px] w-[117px] items-center justify-between rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-2 text-[12px] font-bold text-[#1E293B]">
+            <button className="flex h-[26px] w-[117px] items-center justify-between rounded-lg border border-input-border bg-surface px-2 text-[12px] font-bold text-body-text shadow-input"
+            >
               <span>Weekly View</span>
               <ChevronDownIcon className="h-4 w-4" />
             </button>
@@ -242,25 +235,28 @@ export default function EffortStatsPage() {
 
           {/* Chart */}
           <div className="mt-6 flex h-[205px]">
-            <div className="mr-3 flex h-[160px] flex-col justify-between text-[10px] text-[#A0A0B0]">
+            {/* Y Axis */}
+            <div className="mr-3 flex h-[160px] flex-col justify-between text-[10px] text-weekly-label">
               <span>6h</span>
               <span>4h</span>
               <span>2h</span>
               <span>0h</span>
             </div>
 
+            {/* Bars */}
             <div className="flex flex-1 items-end justify-between">
               {WEEK_BARS.map((bar) => (
                 <div
                   key={bar.day}
                   className="flex w-[48px] flex-col items-center"
                 >
+                  {/* Today / Recovery */}
                   <span
                     className={`mb-2 text-[10px] font-bold ${bar.state === "today"
-                      ? "text-[#FF7A59]"
-                      : bar.state === "recovery"
-                        ? "text-[#FB923C]"
-                        : "text-transparent"
+                        ? "text-cta"
+                        : bar.state === "recovery"
+                          ? "text-chart-recovery"
+                          : "text-transparent"
                       }`}
                   >
                     {bar.state === "today"
@@ -270,6 +266,7 @@ export default function EffortStatsPage() {
                         : "."}
                   </span>
 
+                  {/* Bar */}
                   <div className="flex h-[110px] items-end">
                     <div
                       className={`w-10 rounded-t-lg ${BAR_COLORS[bar.state]}`}
@@ -279,11 +276,13 @@ export default function EffortStatsPage() {
                     />
                   </div>
 
-                  <span className="mt-2 text-[10px] font-bold text-[#FAF7F2]">
+                  {/* Day */}
+                  <span className="mt-2 text-[10px] font-bold text-weekly-label">
                     {bar.day}
                   </span>
 
-                  <span className="text-[10px] text-[#A0A0B0]">
+                  {/* Hours */}
+                  <span className="text-[10px] text-weekly-label">
                     {bar.hours}h
                   </span>
                 </div>
@@ -421,8 +420,10 @@ export default function EffortStatsPage() {
         </div>
       </StatCard>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <StatCard className="flex w-full flex-col rounded-2xl border border-[#FAF7F214] bg-[#111145] p-6 pb-[26px] shadow-[0px_1px_2px_0px_#00000005,0px_1px_3px_0px_#0000000D]">
+      {/* items-stretch keeps both cards equal height; grid-cols already give equal width */}
+      <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2">
+        {/* LEFT CARD */}
+        <StatCard className="flex w-full flex-col rounded-2xl border border-[#FAF7F214] bg-[#111145] p-6 shadow-[0px_1px_2px_0px_#00000005,0px_1px_3px_0px_#0000000D]">
           <div className="flex items-center gap-2">
             <p className="text-[16px] font-bold leading-[24px] text-[#FAF7F2]">
               Session Length Distribution
@@ -432,7 +433,7 @@ export default function EffortStatsPage() {
             </span>
           </div>
 
-          <div className="mt-8 flex flex-col gap-8">
+          <div className="mt-8 flex flex-1 flex-col justify-center gap-8">
             {SESSION_LENGTHS.map((row) => (
               <DistributionRow
                 key={row.label}
@@ -445,25 +446,26 @@ export default function EffortStatsPage() {
           </div>
         </StatCard>
 
-        <StatCard className="w-full max-w-[533px] rounded-2xl border border-[#252554] bg-[#111145] p-[16.66px]">
+        {/* RIGHT CARD */}
+        <StatCard className="flex w-full flex-col rounded-2xl border border-[#252554] bg-[#111145] p-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <p className="text-[16px] font-bold leading-[24px] text-[#FAF7F2]">
               Time of Day Heatmap
             </p>
-            <span className="text-[10px] font-extrabold uppercase leading-[15px] tracking-[1px] text-[#8B8998]">
+            <span className="shrink-0 text-[10px] font-extrabold uppercase leading-[15px] tracking-[1px] text-[#8B8998]">
               Efficiency Peaks
             </span>
           </div>
 
           {/* Body */}
-          <div className="mt-4 flex gap-[8.33px]">
+          <div className="mt-6 flex flex-1 gap-2">
             {/* Y-axis */}
-            <div className="flex h-[156.15px] flex-col justify-between pr-[8.33px]">
+            <div className="flex flex-col justify-between pr-1">
               {Y_AXIS_LABELS.map((value) => (
                 <span
                   key={value}
-                  className="text-right text-[7.29px] leading-[10.93px] text-[#8B8998]"
+                  className="text-right text-[8px] leading-none text-[#8B8998]"
                 >
                   {value}%
                 </span>
@@ -471,42 +473,46 @@ export default function EffortStatsPage() {
             </div>
 
             {/* Bars */}
-            <div className="relative flex flex-1 items-end justify-between gap-4">
-              {/* Gridlines */}
-              <div className="pointer-events-none absolute inset-0 flex flex-col justify-between">
-                {Y_AXIS_LABELS.map((value) => (
-                  <div key={value} className="h-px w-full bg-white/5" />
+            <div className="relative flex flex-1 flex-col">
+              <div className="relative flex flex-1 items-end justify-between gap-3">
+                {/* Gridlines */}
+                <div className="pointer-events-none absolute inset-0 flex flex-col justify-between">
+                  {Y_AXIS_LABELS.map((value) => (
+                    <div key={value} className="h-px w-full bg-white/5" />
+                  ))}
+                </div>
+
+                {TIME_PERIODS.map((period) => (
+                  <div
+                    key={period.category}
+                    className="relative flex flex-1 flex-col items-center gap-2"
+                  >
+                    <div className="flex h-[100px] w-full items-end justify-center gap-1.5">
+                      {period.slots.map((slot) => (
+                        <div
+                          key={slot.label}
+                          className="flex h-full flex-1 flex-col items-center justify-end gap-1"
+                        >
+                          <div className="flex h-full w-full items-end justify-center">
+                            <div
+                              className={`w-full max-w-[25px] rounded-t-lg ${slot.colorClassName}`}
+                              style={{
+                                height: `${Math.min(100, Math.max(0, slot.percent))}%`,
+                              }}
+                            />
+                          </div>
+                          <span className="whitespace-nowrap text-[7px] font-medium text-[#8B8998]">
+                            {slot.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <span className="text-[9px] font-extrabold uppercase leading-[13.5px] tracking-wide text-[#D1D5DB]">
+                      {period.category}
+                    </span>
+                  </div>
                 ))}
               </div>
-
-              {TIME_PERIODS.map((period) => (
-                <div
-                  key={period.category}
-                  className="relative flex flex-1 flex-col items-center gap-2"
-                >
-                  <div className="flex h-[101.5px] w-full items-end justify-center gap-1.5">
-                    {period.slots.map((slot) => (
-                      <div
-                        key={slot.label}
-                        className="flex h-full flex-1 flex-col items-center justify-end gap-1"
-                      >
-                        <div className="flex h-full w-full items-end justify-center">
-                          <div
-                            className={`w-full max-w-[24.98px] rounded-t-lg ${slot.colorClassName}`}
-                            style={{ height: `${Math.min(100, Math.max(0, slot.percent))}%` }}
-                          />
-                        </div>
-                        <span className="whitespace-nowrap text-[7px] font-medium text-[#8B8998]">
-                          {slot.label}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <span className="text-[9px] font-extrabold uppercase leading-[13.5px] tracking-wide text-[#D1D5DB]">
-                    {period.category}
-                  </span>
-                </div>
-              ))}
             </div>
           </div>
         </StatCard>

@@ -69,7 +69,7 @@ export default function WelcomePage() {
           >
             {/* Stats */}
             <div className="flex w-full gap-3 sm:gap-4">
-              <div className="flex h-[95px] flex-1 flex-col items-center justify-center rounded-2xl border border-brand/15 bg-surface dark:border-[#242453] dark:bg-[#1A1A4E]">
+              <div className="flex h-[95px] flex-1 flex-col items-center justify-center rounded-2xl border border-stats-card-border bg-stats-card-bg">
                 <p className="text-[28px] font-extrabold leading-none text-ink sm:text-[32px]">
                   12
                 </p>
@@ -79,7 +79,7 @@ export default function WelcomePage() {
                 </p>
               </div>
 
-              <div className="flex h-[95px] flex-1 flex-col items-center justify-center rounded-2xl border border-brand/15 bg-surface dark:border-[#242453] dark:bg-[#1A1A4E]">
+              <div className="flex h-[95px] flex-1 flex-col items-center justify-center rounded-2xl border border-stats-card-border bg-stats-card-bg">
                 <p className="text-[28px] font-extrabold leading-none text-ink sm:text-[32px]">
                   4 / 6
                 </p>
@@ -91,47 +91,83 @@ export default function WelcomePage() {
             </div>
 
             {/* Task List */}
-            <div className="flex flex-col gap-2">
-              {PREVIEW_TASKS.map((task) => (
-                <div
-                  key={task.title}
-                  className={`flex min-h-[40px] items-center justify-between rounded-xl px-2 py-2 sm:h-10 sm:px-3 ${task.badge ? "bg-surface" : "bg-tint-strong"
-                    }`}
-                >
-                  <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-                    <span
-                      className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full sm:h-4 sm:w-4 ${task.badge
-                        ? "border border-ink text-ink"
-                        : "bg-ink text-white dark:text-[#1A1A4E]"
-                        }`}
-                    >
-                      <CheckIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                    </span>
+            <div className="mt-3 flex flex-col gap-2">
+              {/* Kinematics Practice */}
+              <div
+                className="
+      flex h-[54px] items-center justify-between
+      rounded-xl border border-[#F3F4F6]
+      bg-surface px-3
+      dark:border-[#242453]
+      dark:bg-surface
+    "
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <span
+                    className="
+    flex h-4 w-4 shrink-0 items-center justify-center
+    rounded-full
+    bg-ink
+    text-white
+    dark:bg-[#F0EDE5]
+    dark:text-[#111145]
+  "
+                  >
+                    <CheckIcon className="h-[10px] w-[10px]" />
+                  </span>
 
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[11px] font-semibold leading-tight text-ink xs:text-xs sm:text-[14px]">
-                        {task.title}
-                      </p>
+                  <div className="min-w-0">
+                    <p className="truncate text-[14px] font-semibold leading-none text-ink">
+                      Kinematics Practice
+                    </p>
 
-                      {task.badge && (
-                        <p className="truncate text-[10px] leading-tight text-muted xs:text-[11px] sm:text-xs">
-                          {task.meta}
-                        </p>
-                      )}
-                    </div>
+                    <p className="mt-1 text-[11px] leading-none text-muted">
+                      Physics · 45 mins
+                    </p>
                   </div>
-
-                  {task.badge ? (
-                    <span className="ml-2 shrink-0 rounded-sm bg-ink px-2 py-0.5 text-[9px] font-bold text-white dark:text-[#1A1A4E] sm:px-2.5 sm:py-1 sm:text-[11px]">
-                      {task.badge}
-                    </span>
-                  ) : (
-                    <span className="ml-2 shrink-0 text-[10px] text-muted sm:text-xs">
-                      {task.meta}
-                    </span>
-                  )}
                 </div>
-              ))}
+
+                <span
+                  className="
+        flex h-5 min-w-[42px] items-center justify-center
+        rounded-sm
+        bg-ink
+        px-3
+        text-[10px]
+        font-bold
+        text-white
+        dark:bg-[#FAF7F2]
+        dark:text-[#111145]
+      "
+                >
+                  GO
+                </span>
+              </div>
+
+              {/* Mole Concept Done */}
+              <div
+                className="
+      flex h-[40px] items-center justify-between
+      rounded-xl
+      bg-tint-strong
+      px-3
+      dark:bg-[#242453]
+    "
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-ink text-white dark:bg-surface dark:text-[#F0EDE5]">
+                    <CheckIcon className="h-[10px] w-[10px]" />
+                  </span>
+
+                  <p className="truncate text-[14px] font-semibold text-ink">
+                    Mole Concept Done
+                  </p>
+                </div>
+
+                <p className="truncate text-[12px] text-ink">
+                  Chemistry · Completed
+                </p>
+              </div>
             </div>
           </div>
 

@@ -1,14 +1,16 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { Logo } from "@/components/ui/Logo";
 import { Button } from "@/components/ui/Button";
 import { OtpInput } from "@/components/ui/OtpInput";
-import { verifyOtp, ApiError } from "@/lib/api/auth";
+import { verifyOtp, resendOtp, ApiError } from "@/lib/api/auth";
 import { saveSession } from "@/lib/auth/session";
+
+const RESEND_COUNTDOWN_SECONDS = 45;
 
 export default function EmailVerificationPage() {
   return (
@@ -25,7 +27,35 @@ function EmailVerificationForm() {
 
   const [otp, setOtp] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
+  const [countdown, setCountdown] = useState(RESEND_COUNTDOWN_SECONDS);
+  const [isResending, setIsResending] = useState(false);
+
+  useEffect(() => {
+    if (countdown === 0) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => (prev > 0 ? prev - 1 : prev));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  const handleResend = async () => {
+    setError(null);
+    setResendMessage(null);
+    setIsResending(true);
+    try {
+      const { message } = await resendOtp(email);
+      setResendMessage(message);
+      setCountdown(RESEND_COUNTDOWN_SECONDS);
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
+      );
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   const handleVerify = async () => {
     if (otp.length !== 6) {
@@ -60,20 +90,28 @@ function EmailVerificationForm() {
           <h1 className="text-[24px] font-bold leading-[32px] tracking-[-0.48px] text-ink sm:text-[32px] sm:leading-[40px] sm:tracking-[-0.64px]">
             Verify your email
           </h1>
-          <p className="text-[14px] leading-[22px] text-[#8B8998] sm:text-[16px] sm:leading-[24px]">
+
+          <p className="max-w-[320px] text-center text-[14px] font-normal leading-[20px] text-muted sm:max-w-[420px] sm:text-[16px] sm:leading-[24px]">
             We&apos;ve sent a 6-digit code to{" "}
-            <span className="font-semibold">{email}</span>.
-            <br />
-            Enter it below to continue.
+            <span className="font-medium text-ink">{email}</span>. Enter it below to
+            continue.
           </p>
         </div>
-
         {error && (
           <p
             role="alert"
             className="w-full rounded-lg bg-danger-bg px-3 py-2 text-center text-xs font-medium text-danger"
           >
             {error}
+          </p>
+        )}
+
+        {resendMessage && (
+          <p
+            role="status"
+            className="w-full rounded-lg bg-success-bg px-3 py-2 text-center text-xs font-medium text-success"
+          >
+            {resendMessage}
           </p>
         )}
 
@@ -86,10 +124,17 @@ function EmailVerificationForm() {
           <div className="flex w-full flex-col items-center gap-3">
             <p className="px-2 pb-2 text-center text-[13px] font-semibold leading-[18px] sm:px-[64.77px] sm:pb-4 sm:text-[14px] sm:leading-[20px]">
               Didn&apos;t receive the code?{" "}
-              <button type="button" className="text-ink underline">
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={isResending}
+                className="text-ink underline disabled:cursor-not-allowed disabled:opacity-60"
+              >
                 Resend Code
               </button>{" "}
-              ( In 45 sec )
+              <span className="whitespace-nowrap text-muted">
+                ({countdown} sec)
+              </span>
             </p>
 
             <Button

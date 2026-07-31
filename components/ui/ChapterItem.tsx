@@ -15,11 +15,11 @@ export function ChapterItem({ title, state, onCycle }: ChapterItemProps) {
       type="button"
       onClick={onCycle}
       aria-pressed={state !== "none"}
-      className={`flex min-h-[63px] items-center justify-between gap-3 rounded-xl border p-4 text-left transition-colors sm:p-5 ${isDone
-        ? "border-brand bg-tint-strong dark:border-chapter-box-border dark:bg-chapter-box-bg"
-        : isPartial
-          ? "border-cta/40 bg-surface dark:border-chapter-box-border dark:bg-transparent"
-          : "border-brand/10 bg-surface dark:border-chapter-box-border dark:bg-transparent"
+      className={`flex h-18.5 items-center justify-between gap-3 rounded-xl border p-4 text-left transition-colors sm:h-20.5 sm:p-5 ${isDone
+          ? "border-[#1A1A4E] bg-tint-strong dark:border-[#FAF7F2] dark:bg-chapter-box-bg"
+          : isPartial
+            ? "border-[#1A1A4E] bg-surface dark:border-[#FAF7F2] dark:bg-transparent"
+            : "border-brand/10 bg-surface dark:border-chapter-box-border dark:bg-transparent"
         }`}
     >
       <span className="flex items-center gap-3">
@@ -30,8 +30,8 @@ export function ChapterItem({ title, state, onCycle }: ChapterItemProps) {
         >
           {isDone && <span className="h-2.5 w-2.5 rounded-full bg-ink" />}
         </span>
-        {/* Label — Jakarta 500, 14px, lh 21 */}
-        <span className="text-sm font-medium leading-[21px] text-body-text">
+        {/* Label — Jakarta 500, 14px, lh 21, capped at 2 lines to match the fixed card height */}
+        <span className="line-clamp-2 text-sm font-medium leading-[21px] text-body-text">
           {title}
         </span>
       </span>

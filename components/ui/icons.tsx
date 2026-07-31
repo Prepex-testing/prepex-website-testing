@@ -360,6 +360,23 @@ export function PlusIcon() {
   );
 }
 
+export function PlusIcon1(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <path
+        d="M8 2.5v11M2.5 8h11"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 export function MinusIcon() {
   return (
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
@@ -453,17 +470,30 @@ export function MoonIcon(props: SVGProps<SVGSVGElement>) {
 
 export function XIcon() {
   return (
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
-        d="M2.5 2.5l7 7M9.5 2.5l-7 7"
+        d="M6 6L18 18"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="2"
         strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M18 6L6 18"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
 }
-
 
 
 export function CheckCircleIcon(props: SVGProps<SVGSVGElement>) {
@@ -1016,15 +1046,39 @@ export function ChatIcon() {
 
 export function EyeOffIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
-        d="M2 8s2.5-4.5 6-4.5c1.1 0 2.1.3 2.9.8M14 8s-1 1.9-2.8 3.2M6.2 5.9A2.5 2.5 0 0 0 8 10.5c.5 0 1-.15 1.4-.4"
+        d="M3 3L21 21"
         stroke="currentColor"
-        strokeWidth="1.3"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M10.6 10.6C10.2 11 10 11.5 10 12C10 13.1 10.9 14 12 14C12.5 14 13 13.8 13.4 13.4"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M9.9 5.1C10.6 4.9 11.3 4.8 12 4.8C17 4.8 20.3 9 21 12C20.7 13.2 19.8 14.8 18.3 16.2"
+        stroke="currentColor"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path d="M2 2l12 12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <path
+        d="M14.1 18.9C13.4 19.1 12.7 19.2 12 19.2C7 19.2 3.7 15 3 12C3.4 10.5 4.6 8.5 6.5 7"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

@@ -207,7 +207,7 @@ export default function TellUsAboutYouPage() {
             required
             inputMode="numeric"
             maxLength={10}
-            placeholder="8888899999"
+            placeholder="Phone Number"
             value={phoneNumber}
             onChange={(event) =>
               setPhoneNumber(event.target.value.replace(/\D/g, "").slice(0, 10))
@@ -234,7 +234,13 @@ export default function TellUsAboutYouPage() {
                 subtitle={item.subtitle}
                 selected={selectedClass === item.id}
                 onClick={() => setSelectedClass(item.id)}
-                className={item.id === "OTHER" ? "sm:col-span-2" : undefined}
+                className={`${
+                  selectedClass === item.id
+                    ? "dark:border! dark:border-[#FAF7F2]!"
+                    : "dark:border-[#8B8998]!"
+                } dark:shadow-[0px_2px_8px_0px_#1A1A4E14] ${
+                  item.id === "OTHER" ? "sm:col-span-2" : ""
+                }`}
               />
             ))}
           </div>
@@ -245,7 +251,7 @@ export default function TellUsAboutYouPage() {
         ) : (
           <DateInput
             label="When is your exam?"
-            helperText="Optional — leave blank and we'll estimate this from your class."
+            helperText="We use this to calculate your daily pace and exam countdown."
             name="examDate"
             defaultValue={examDate}
             onDateChange={setExamDate}

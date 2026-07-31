@@ -8,8 +8,8 @@ import { AuthCard } from "@/components/layout/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { OptionCard } from "@/components/ui/OptionCard";
 import { OptionCardSkeleton } from "@/components/ui/OptionCardSkeleton";
-import { ArrowLeftIcon } from "@/components/ui/icons";
-import { GlobeIcon, FlaskIcon, CalculatorIcon, AtomIcon, LayersIcon } from "@/assets/icons";
+// import { ArrowLeftIcon } from "@/components/ui/icons";
+import { GlobeIcon, FlaskIcon, CalculatorIcon, AtomIcon, LayersIcon ,ArrowLeftIcon} from "@/assets/icons";
 import { getSubjects } from "@/lib/api/dashboard";
 import { getOnboardingProgress, selectSubjects } from "@/lib/api/onboarding";
 import { ApiError } from "@/lib/api/http";
@@ -23,10 +23,21 @@ const SUBJECT_ICONS: Record<string, ReactNode> = {
 };
 const DEFAULT_ICON = <LayersIcon />;
 
+// Short label used in "Select your {label} subjects" — mirrors the exam
+// names shown on PreparingForPage so the heading reads naturally.
+const EXAM_LABEL: Record<string, string> = {
+  JEE_MAIN: "JEE Main",
+  JEE_ADVANCED: "JEE Advanced",
+  NEET: "NEET",
+  CUET: "CUET",
+  BOARDS: "Boards",
+};
+
 export default function SelectSubjectPage() {
   const router = useRouter();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
+  const [examLabel, setExamLabel] = useState<string | null>(null);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
@@ -37,6 +48,9 @@ export default function SelectSubjectPage() {
         setSubjects(data);
         const savedSubjectIds = progress?.data.subjects.map((subject) => subject.subjectId);
         if (savedSubjectIds?.length) setSelected(savedSubjectIds);
+
+        const exam = progress?.data.profile?.exam;
+        if (exam) setExamLabel(EXAM_LABEL[exam.code] ?? exam.name);
       })
       .catch(() => setError("Couldn't load subjects. Please refresh and try again."))
       .finally(() => setLoading(false));
@@ -76,11 +90,16 @@ export default function SelectSubjectPage() {
         <ArrowLeftIcon />
       </Link>
 
-      <h1 className="mt-2 text-h1 text-ink">Select your subjects</h1>
-      <p className="mt-1 text-sm text-muted">
-        Choose your exam subjects to get a personalized study roadmap and
-        progress tracking.
-      </p>
+
+      <div className="mt-4 flex flex-col gap-4 py-2 sm:mt-5">
+        <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
+          Select your {examLabel ? `${examLabel} ` : ""}subjects
+        </h1>
+        <p className="text-[14px] font-semibold leading-[100%] text-muted sm:text-[16px]">
+          Choose your exam subjects to get a personalized study roadmap and
+          progress tracking.
+        </p>
+      </div>
 
       {error && (
         <p

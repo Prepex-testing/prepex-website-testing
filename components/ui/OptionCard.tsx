@@ -40,7 +40,12 @@ export function OptionCard({
     >
       <span className="flex items-center gap-5">
         {/* Icon box — 48x48, radius 12px */}
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+        <span
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${selected
+              ? "bg-brand text-white dark:bg-[#FAF7F2] dark:text-[#0D0D2B]"
+              : "bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8 dark:text-ink"
+            }`}
+        >
           {icon}
         </span>
         <span>
@@ -60,7 +65,7 @@ export function OptionCard({
             : "border border-brand/15 bg-surface dark:border-white/15"
             }`}
         >
-          {selected && <CheckIcon />}
+          {selected && <CheckIcon className="h-5 w-5 sm:h-5 sm:w-5 md:h-6 md:w-6" />}
         </span>
       )}
     </button>

@@ -27,9 +27,7 @@ export function CheckInBody({
 
   return (
     <>
-      {/* Header — gap 4px, pb 48 */}
-      <div className="flex flex-col items-center gap-1 pb-6 text-center sm:pb-12">
-        {/* Title — ExtraBold 32, lh 100% */}
+      <div className="flex flex-col items-center gap-3 pb-6 text-center sm:gap-4 sm:pb-12">
         <h2 className="text-lg font-extrabold leading-tight text-ink sm:text-[32px] sm:leading-none">
           {isUpdateMode ? (
             <>Update Today&apos;s Mood</>
@@ -37,18 +35,22 @@ export function CheckInBody({
             `Good Morning, ${name} 👋`
           )}
         </h2>
-        {/* Subtitle — SemiBold 18, lh 100% */}
-        <p className="text-sm font-semibold leading-none text-ink sm:text-lg">
+
+        <p className="text-sm font-semibold leading-none text-body-text dark:text-ink sm:text-lg">
           How are you feeling today?
         </p>
-        {/* Caption — Medium 16, muted */}
+
         <p className="text-xs font-medium leading-snug text-muted sm:text-base sm:leading-none">
           We&apos;ll adjust today&apos;s study plan accordingly.
         </p>
       </div>
 
-      {/* Mood grid — always 5 across, compact at 320/375, full at sm */}
-      <div className="grid grid-cols-5 gap-1 sm:gap-6">
+      {/*
+        Mobile: flex-wrap + justify-center → 3 boxes on row 1, remaining 2 centered on row 2.
+        sm and up: 5 boxes in a single row via grid.
+        Each box is a square (aspect-square) so height === width at every breakpoint.
+      */}
+      <div className="flex flex-wrap justify-center gap-2 sm:grid sm:grid-cols-5 sm:gap-6">
         {MOODS.map((mood) => {
           const isSelected = selectedMood === mood.id;
           return (
@@ -57,16 +59,15 @@ export function CheckInBody({
               type="button"
               onClick={() => setSelectedMood(mood.id)}
               aria-pressed={isSelected}
-              className={`flex flex-col items-center justify-center gap-1 rounded-lg border bg-mood-card-bg px-0.5 py-2 text-center transition-colors sm:gap-3 sm:rounded-2xl sm:border-2 sm:px-1 sm:py-6 ${
+              className={`flex aspect-square w-[28%] flex-col items-center justify-center gap-1 rounded-lg border bg-white p-2 text-center transition-colors dark:bg-[#2A2A6E] sm:w-auto sm:gap-2 sm:rounded-2xl sm:border-2 sm:p-3 ${
                 isSelected ? "border-brand" : "border-transparent"
               }`}
             >
-              {/* Emoji chip — 36px @320/375 → 64px @sm */}
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-mood-chip-bg text-base leading-none sm:h-16 sm:w-16 sm:text-4xl">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-mood-chip-bg text-lg leading-none sm:h-14 sm:w-14 sm:text-3xl">
                 {mood.emoji}
               </span>
-              {/* Label */}
-              <span className="text-[9px] font-semibold leading-tight text-body-text dark:text-ink sm:text-base">
+
+              <span className="text-[9px] font-semibold leading-tight text-body-text dark:text-ink sm:text-sm">
                 {mood.label}
               </span>
             </button>
@@ -74,7 +75,6 @@ export function CheckInBody({
         })}
       </div>
 
-      {/* Actions — gap 12 */}
       <div className="mt-6 flex flex-col items-center gap-3 sm:mt-12">
         {isUpdateMode ? (
           <>
