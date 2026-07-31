@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { ClockIcon, CalendarIcon, GripVerticalIcon } from "@/components/ui/icons";
+import { ClockIcon, CalendarIcon, GripVerticalIcon, CheckIcon } from "@/components/ui/icons";
 import { TaskEditMenu } from "@/components/home/TaskEditMenu";
-import { TYPE_STYLES, TYPE_LABELS } from "@/components/home/TaskRow";
+import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS } from "@/components/home/TaskRow";
 import type { TaskType } from "@/components/home/TaskRow";
 
 type Difficulty = "high" | "medium";
@@ -30,6 +30,7 @@ export type PlanTask = {
   timeRange: string;
   difficulty: Difficulty;
   actionLabel: string;
+  isCompleted?: boolean;
 };
 
 type PlanTaskRowProps = {
@@ -40,6 +41,7 @@ type PlanTaskRowProps = {
 export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
   const [done, setDone] = useState(false);
   const isStartPractice = task.actionLabel.toLowerCase().includes("practice");
+  const displayLabel = task.isCompleted ? COMPLETED_ACTION_LABELS[task.type] : task.actionLabel;
 
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-xl border border-brand/10 bg-surface p-4 sm:gap-4">
@@ -94,27 +96,43 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
         <Button
           variant="task"
           size="sm"
-          className="h-[38px] rounded-lg border border-[#1A1A4E] px-3 sm:px-5 py-2 text-xs sm:text-sm font-bold leading-5 text-[#1A1A4E] whitespace-nowrap"
-          href={
-            task.actionLabel === "Start Session"
-              ? "/home/session"
-              : task.actionLabel === "Start Revision"
-                ? "/revision-session"
-                : undefined
+          disabled={task.isCompleted}
+          className={
+            task.isCompleted
+              ? "h-[38px] rounded-lg border-transparent! bg-[#E7F9F3]! px-3 sm:px-5 py-2 text-xs sm:text-sm font-bold leading-5 text-[#10B981]! cursor-default whitespace-nowrap"
+              : "h-[38px] rounded-lg border border-[#1A1A4E] px-3 sm:px-5 py-2 text-xs sm:text-sm font-bold leading-5 text-[#1A1A4E] whitespace-nowrap"
           }
-          onClick={isStartPractice ? onStartPractice : undefined}
+          href={
+            task.isCompleted
+              ? undefined
+              : task.actionLabel === "Start Session"
+                ? `/home/session?taskId=${task.id}`
+                : task.actionLabel === "Start Revision"
+                  ? "/revision-session"
+                  : undefined
+          }
+          onClick={!task.isCompleted && isStartPractice ? onStartPractice : undefined}
         >
-          {task.actionLabel}
+          {displayLabel}
         </Button>
 
         <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={done}
-            onChange={() => setDone((value) => !value)}
-            aria-label={`Mark "${task.title}" complete`}
-            className="h-5 w-5 rounded border border-[#333333] dark:border-[#8B8998]"
-          />
+          {task.isCompleted ? (
+            <span
+              aria-label={`${task.title} completed`}
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#E7F9F3] text-[#10B981] dark:bg-white"
+            >
+              <CheckIcon className="h-3.5 w-3.5" />
+            </span>
+          ) : (
+            <input
+              type="checkbox"
+              checked={done}
+              onChange={() => setDone((value) => !value)}
+              aria-label={`Mark "${task.title}" complete`}
+              className="h-5 w-5 rounded border border-[#333333] dark:border-[#8B8998]"
+            />
+          )}
           <TaskEditMenu
             task={{
               title: task.title,

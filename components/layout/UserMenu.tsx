@@ -5,13 +5,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UserIcon, LogoutIcon } from "@/components/ui/icons";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 
 type UserMenuProps = {
   name?: string;
   initial?: string;
 };
 
-export function UserMenu({ name = "Rohan", initial = "R" }: UserMenuProps) {
+export function UserMenu({ name, initial }: UserMenuProps) {
+  const storedFullName = useStoredFullName();
+  const displayName = name ?? (storedFullName.trim().split(/\s+/)[0] || "Student");
+  const displayInitial = initial ?? displayName[0]?.toUpperCase() ?? "S";
   const router = useRouter();
   const [isOpen, setOpen] = useState(false);
   const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
@@ -56,7 +60,7 @@ export function UserMenu({ name = "Rohan", initial = "R" }: UserMenuProps) {
         text-sm font-bold text-white
       "
         >
-          {initial}
+          {displayInitial}
         </span>
 
         {/* Name */}
@@ -69,7 +73,7 @@ export function UserMenu({ name = "Rohan", initial = "R" }: UserMenuProps) {
         truncate
       "
         >
-          {name}
+          {displayName}
         </span>
       </button>
 

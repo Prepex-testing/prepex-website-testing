@@ -6,6 +6,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { XIcon, PencilIcon } from "@/components/ui/icons";
+import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 
 type EditProfileModalProps = {
   open: boolean;
@@ -13,8 +14,12 @@ type EditProfileModalProps = {
 };
 
 export function EditProfileModal({ open, onClose }: EditProfileModalProps) {
-  const [fullName, setFullName] = useState("Rohan Sharma");
+  const storedFullName = useStoredFullName();
+  const [fullNameInput, setFullNameInput] = useState("");
+  const [fullNameTouched, setFullNameTouched] = useState(false);
   const [city, setCity] = useState("New Delhi");
+  const fullName = fullNameTouched ? fullNameInput : storedFullName;
+  const initial = fullName[0]?.toUpperCase() ?? "S";
 
   return (
     <Modal open={open} onClose={onClose} ariaLabel="Edit Profile">
@@ -33,7 +38,7 @@ export function EditProfileModal({ open, onClose }: EditProfileModalProps) {
       <div className="mt-4 flex flex-col items-center gap-3">
         <div className="relative">
           <span className="flex h-20 w-20 items-center justify-center rounded-full bg-brand text-2xl font-bold text-white">
-            R
+            {initial}
           </span>
           <span className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-surface text-ink">
             <PencilIcon />
@@ -52,7 +57,10 @@ export function EditProfileModal({ open, onClose }: EditProfileModalProps) {
           <Input
             label="Full Name"
             value={fullName}
-            onChange={(event) => setFullName(event.target.value)}
+            onChange={(event) => {
+              setFullNameInput(event.target.value);
+              setFullNameTouched(true);
+            }}
           />
           <Select
             label="Class"

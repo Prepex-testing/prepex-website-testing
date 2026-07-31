@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { RadioOption } from "@/components/ui/RadioOption";
 import { ArrowLeftIcon, BellIcon, ClockIcon } from "@/components/ui/icons";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { getCheckInStatus } from "@/lib/api/checkin";
+import { updatePlannerTask, type TaskStatus } from "@/lib/api/planner";
+import { getActiveSessionTaskId, clearActiveSessionTaskId } from "@/lib/session/activeTask";
+import { minutesSince } from "@/lib/utils/datetime";
 
 const OUTCOMES = [
   { id: "completed", label: "Completed as planned" },
@@ -15,8 +20,56 @@ const OUTCOMES = [
   { id: "cancelled", label: "Cancel session" },
 ];
 
+const OUTCOME_STATUS: Record<string, TaskStatus> = {
+  completed: "COMPLETED",
+  partial: "IN_PROGRESS",
+  distracted: "IN_PROGRESS",
+  cancelled: "SKIPPED",
+};
+
 export default function WelcomeBackPage() {
+  const router = useRouter();
   const [outcome, setOutcome] = useState("completed");
+  const [crossAppActivity, setCrossAppActivity] = useState("Watch Coaching Lecture");
+  const [switchedAt, setSwitchedAt] = useState<string | null>(null);
+  const [elapsedMinutes, setElapsedMinutes] = useState(0);
+
+  useEffect(() => {
+    getCheckInStatus()
+      .then(({ data }) => {
+        if (data.checkin?.crossAppActivity) setCrossAppActivity(data.checkin.crossAppActivity);
+        if (data.checkin?.switchCrossStudyAt) setSwitchedAt(data.checkin.switchCrossStudyAt);
+      })
+      .catch(() => {
+        // Best-effort — the page falls back to the placeholder session below.
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!switchedAt) return;
+    const tick = () => setElapsedMinutes(minutesSince(switchedAt));
+    const immediate = setTimeout(tick, 0);
+    const timer = setInterval(tick, 1000);
+    return () => {
+      clearTimeout(immediate);
+      clearInterval(timer);
+    };
+  }, [switchedAt]);
+
+  const handleConfirm = () => {
+    const taskId = getActiveSessionTaskId();
+    if (taskId) {
+      updatePlannerTask(taskId, {
+        minutesCompleted: elapsedMinutes,
+        status: OUTCOME_STATUS[outcome] ?? "IN_PROGRESS",
+        isStudyingCrossApp: false,
+      }).catch(() => {
+        // Best-effort — the user still returns to the app.
+      });
+    }
+    clearActiveSessionTaskId();
+    router.push("/home");
+  };
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -53,13 +106,13 @@ export default function WelcomeBackPage() {
             <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
               Active Task
             </p>
-            <p className="mt-1 text-sm font-bold text-ink">Watch Coaching Lecture</p>
+            <p className="mt-1 text-sm font-bold text-ink">{crossAppActivity}</p>
           </div>
           <div className="rounded-xl border border-brand/10 p-3">
             <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
               Duration
             </p>
-            <p className="mt-1 text-sm font-bold text-ink">62 mins elapsed</p>
+            <p className="mt-1 text-sm font-bold text-ink">{elapsedMinutes} mins elapsed</p>
           </div>
         </div>
 
@@ -78,7 +131,7 @@ export default function WelcomeBackPage() {
           ))}
         </div>
 
-        <Button href="/home/session" variant="primary" className="mt-6">
+        <Button variant="primary" className="mt-6" onClick={handleConfirm}>
           Confirm
         </Button>
       </div>

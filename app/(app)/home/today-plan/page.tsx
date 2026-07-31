@@ -16,6 +16,7 @@ import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { getTodayPlan, type PlannerTask, type TodayPlanResponse } from "@/lib/api/planner";
+import { formatTimeRange } from "@/lib/utils/datetime";
 import { CheckIcon, ClockIcon, ListIcon, CalendarIcon,BellIcon ,ArrowLeftIcon} from "@/assets/icons";
 import {
   // ArrowLeftIcon,
@@ -67,9 +68,14 @@ function toPlanTask(task: PlannerTask): PlanTask {
     title: task.title,
     meta: task.description ?? task.chapter?.name ?? "",
     duration: `${task.estimatedMinutes} min`,
-    timeRange: formatWindow(task.suggestedWindow),
+    timeRange: task.scheduledStart && task.scheduledEnd
+      ? formatTimeRange(task.scheduledStart, task.scheduledEnd)
+      : formatWindow(task.suggestedWindow),
     difficulty: "medium",
-    actionLabel: TASK_ACTION_LABEL[task.taskType] ?? "Start Session",
+    actionLabel: task.taskType === "PRACTICE" && task.questionCount
+      ? `Practice ${task.questionCount} Qs`
+      : TASK_ACTION_LABEL[task.taskType] ?? "Start Session",
+    isCompleted: task.status === "COMPLETED",
   };
 }
 
@@ -186,6 +192,9 @@ export default function TodayPlanPage() {
   const plan = planData?.plan;
   const summary = planData?.summary;
   const { morning, afternoon, evening } = groupTasksByWindow(plan?.tasks ?? []);
+  const morningTasks = plan ? morning.map(toPlanTask) : MORNING_TASKS;
+  const afternoonTasks = plan ? afternoon.map(toPlanTask) : AFTERNOON_TASKS;
+  const eveningTasks = plan ? evening.map(toPlanTask) : EVENING_TASKS;
   const completionPercent = summary?.completionPercentage ?? 35;
   const statTiles = summary
     ? [
@@ -280,39 +289,45 @@ export default function TodayPlanPage() {
 
 
       <div className="flex flex-col gap-6">
-        <TimeBlockSection
-          icon={<CloudSunIcon />}
-          title="Morning"
-          meta={plan ? sectionMeta(morning) : "2 Tasks • 1h 45m"}
-        >
-          <div className="flex flex-col gap-3">
-            {(plan ? morning.map(toPlanTask) : MORNING_TASKS).map((task) => (
-              <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
-            ))}
-          </div>
-        </TimeBlockSection>
-        <TimeBlockSection
-          icon={<SunIcon />}
-          title="Afternoon"
-          meta={plan ? sectionMeta(afternoon) : "1 Task • 1h 15m"}
-        >
-          <div className="flex flex-col gap-3">
-            {(plan ? afternoon.map(toPlanTask) : AFTERNOON_TASKS).map((task) => (
-              <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
-            ))}
-          </div>
-        </TimeBlockSection>
-        <TimeBlockSection
-          icon={<CloudMoonIcon />}
-          title="Evening"
-          meta={plan ? sectionMeta(evening) : "2 Tasks • 2h 00m"}
-        >
-          <div className="flex flex-col gap-3">
-            {(plan ? evening.map(toPlanTask) : EVENING_TASKS).map((task) => (
-              <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
-            ))}
-          </div>
-        </TimeBlockSection>
+        {morningTasks.length > 0 && (
+          <TimeBlockSection
+            icon={<CloudSunIcon />}
+            title="Morning"
+            meta={plan ? sectionMeta(morning) : "2 Tasks • 1h 45m"}
+          >
+            <div className="flex flex-col gap-3">
+              {morningTasks.map((task) => (
+                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
+              ))}
+            </div>
+          </TimeBlockSection>
+        )}
+        {afternoonTasks.length > 0 && (
+          <TimeBlockSection
+            icon={<SunIcon />}
+            title="Afternoon"
+            meta={plan ? sectionMeta(afternoon) : "1 Task • 1h 15m"}
+          >
+            <div className="flex flex-col gap-3">
+              {afternoonTasks.map((task) => (
+                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
+              ))}
+            </div>
+          </TimeBlockSection>
+        )}
+        {eveningTasks.length > 0 && (
+          <TimeBlockSection
+            icon={<CloudMoonIcon />}
+            title="Evening"
+            meta={plan ? sectionMeta(evening) : "2 Tasks • 2h 00m"}
+          >
+            <div className="flex flex-col gap-3">
+              {eveningTasks.map((task) => (
+                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
+              ))}
+            </div>
+          </TimeBlockSection>
+        )}
       </div>
 
 

@@ -12,13 +12,15 @@ import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { CheckInModal, MOODS, type Mood } from "@/components/check-in/CheckInModal";
-import { moodIdToApiValue } from "@/lib/api/checkin";
+import { moodIdToApiValue, apiValueToMoodId, getCheckInStatus } from "@/lib/api/checkin";
+import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import {
-  generatePlanForMood,
+  regeneratePlanForMood,
   getTodayPlan,
   type PlannerTask,
   type TodayPlanResponse,
 } from "@/lib/api/planner";
+import { formatTimeRange } from "@/lib/utils/datetime";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { FlameIcon, BackIcon, BookIcon, BriefcaseIcon, ChartBarIcon, LayersIcon, LoderIcon, QuickIcon, RadarIcon, RevisionIcon, TrophyIcon, UserIcon, BellIcon } from "@/assets/icons";
@@ -165,8 +167,12 @@ function toHomeTask(task: PlannerTask): Task {
     meta: task.description ?? task.chapter?.name ?? "",
     duration: `${task.estimatedMinutes} min`,
     timeSlot: formatWindow(task.suggestedWindow),
+    scheduledRange: task.scheduledStart && task.scheduledEnd
+      ? formatTimeRange(task.scheduledStart, task.scheduledEnd)
+      : undefined,
     hasResource: Boolean(task.chapter),
     actionLabel: TASK_ACTION_LABEL[task.taskType] ?? "Start Session",
+    isCompleted: task.status === "COMPLETED",
   };
 }
 
@@ -188,6 +194,8 @@ function getIsFridayServerSnapshot() {
 
 export default function HomePage() {
   const router = useRouter();
+  const storedFullName = useStoredFullName();
+  const firstName = storedFullName.trim().split(/\s+/)[0] || "there";
   const [isQuickFocusOpen, setQuickFocusOpen] = useState(false);
   const [isPracticeModalOpen, setPracticeModalOpen] = useState(false);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
@@ -198,6 +206,7 @@ export default function HomePage() {
   );
   const [planData, setPlanData] = useState<TodayPlanResponse | null>(null);
   const [isGeneratingPlan, setGeneratingPlan] = useState(false);
+  const [streakCount, setStreakCount] = useState<number | null>(null);
   const isFriday = useSyncExternalStore(
     subscribeNoop,
     getIsFridaySnapshot,
@@ -206,21 +215,39 @@ export default function HomePage() {
 
   const refetchPlan = () => {
     getTodayPlan()
-      .then(({ data }) => setPlanData(data))
+      .then(({ data }) => {
+        setPlanData(data);
+        const planMood = data.plan?.mood;
+        if (planMood) {
+          const moodId = apiValueToMoodId(planMood);
+          const matchedMood = MOODS.find((mood) => mood.id === moodId);
+          if (matchedMood) setEnergyMood(matchedMood);
+        }
+      })
       .catch(() => {
         // Best-effort — the page falls back to the placeholder plan below.
       });
   };
 
+  const refetchCheckInStatus = () => {
+    getCheckInStatus()
+      .then(({ data }) => setStreakCount(data.checkin?.streakCount ?? null))
+      .catch(() => {
+        // Best-effort — the page falls back to the placeholder streak below.
+      });
+  };
+
   useEffect(refetchPlan, []);
+  useEffect(refetchCheckInStatus, []);
 
   const handleMoodSave = async (mood: Mood) => {
     setEnergyMood(mood);
     setGeneratingPlan(true);
     try {
-      await generatePlanForMood(moodIdToApiValue(mood.id));
+      await regeneratePlanForMood(moodIdToApiValue(mood.id));
       const { data } = await getTodayPlan();
       setPlanData(data);
+      refetchCheckInStatus();
     } catch {
       // Best-effort — the UI already reflects the new mood.
     } finally {
@@ -242,7 +269,7 @@ export default function HomePage() {
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-ink lg:text-h1">Good Morning, Rohan</h1>
+          <h1 className="text-2xl font-bold text-ink lg:text-h1">Good Morning, {firstName}</h1>
           <p className="text-sm text-muted">JEE Main 2026 in 284 days</p>
         </div>
         <div className="flex shrink-0 items-center gap-4">
@@ -296,7 +323,7 @@ export default function HomePage() {
               </div>
               <div>
                 <h3 className="text-2xl font-bold leading-none text-ink">
-                  14 Day Streak
+                  {streakCount ?? 14} Day Streak
                 </h3>
                 <p className="mt-2 text-sm text-muted">Keep going.</p>
               </div>
@@ -563,7 +590,7 @@ export default function HomePage() {
       <CheckInModal
         open={isCheckInOpen}
         onClose={() => setCheckInOpen(false)}
-        name="Rohan"
+        name={firstName}
         onSave={handleMoodSave}
       />
       <QuickFocusModal open={isQuickFocusOpen} onClose={() => setQuickFocusOpen(false)} />

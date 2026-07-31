@@ -52,6 +52,8 @@ export type PlannerChapter = {
   subject: PlannerSubject;
 } | null;
 
+export type TaskStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "SKIPPED";
+
 export type PlannerTask = {
   id: string;
   taskType: "WELLNESS" | "PRACTICE" | "REVISION" | "NEW_LEARNING" | string;
@@ -59,8 +61,10 @@ export type PlannerTask = {
   description: string | null;
   estimatedMinutes: number;
   minutesCompleted: number;
+  scheduledStart: string;
+  scheduledEnd: string;
   suggestedWindow: string;
-  status: "PENDING" | "COMPLETED" | "SKIPPED" | string;
+  status: TaskStatus | string;
   questionCount: number | null;
   subject: PlannerSubject | null;
   chapter: PlannerChapter;
@@ -75,6 +79,7 @@ export type DailyPlan = {
   aiSummary: string | null;
   plannerMode: string;
   generationType: PlanGenerationReason;
+  mood: CheckInMoodValue | string | null;
   tasks: PlannerTask[];
 };
 
@@ -146,6 +151,17 @@ export function addPlannerTask(input: AddPlannerTaskInput) {
   });
 }
 
+export type UpdatePlannerTaskInput =
+  | { minutesCompleted: number; status: TaskStatus; isStudyingCrossApp: false }
+  | { isStudyingCrossApp: true; crossAppActivity: string };
+
+export function updatePlannerTask(taskId: string, input: UpdatePlannerTaskInput) {
+  return authRequest<{ success: true; data: unknown }>(`/${taskId}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
 /**
  * Submits today's mood, reads back burnout/mock status, and generates the
  * plan for the reason that status implies. Callers show a loading state for
@@ -157,4 +173,26 @@ export async function generatePlanForMood(mood: CheckInMoodValue) {
   const reason = getPlanGenerationReason(status);
   await generatePlan(reason);
   return reason;
+}
+
+const MOOD_REGEN_REASON: Record<CheckInMoodValue, RegenReason> = {
+  DRAINED: "TOO_LIGHT",
+  HEAVY: "TOO_LIGHT",
+  STEADY: "FRESH_TAKE",
+  GOOD: "TOO_HEAVY",
+  STRONG: "TOO_HEAVY",
+};
+
+/**
+ * Submits an updated mood from the home page's "Change" energy popup and
+ * regenerates today's plan around it — distinct from generatePlanForMood
+ * (used by the /check-in flow), which drives plan generation off
+ * burnout/mock status instead of the mood itself. Callers show a loading
+ * state for the duration of this call and then refetch getTodayPlan().
+ */
+export async function regeneratePlanForMood(mood: CheckInMoodValue) {
+  await submitCheckIn({ mood });
+  const regenReason = MOOD_REGEN_REASON[mood];
+  await regeneratePlan(regenReason);
+  return regenReason;
 }
