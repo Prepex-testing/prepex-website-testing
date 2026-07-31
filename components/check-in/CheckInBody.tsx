@@ -108,7 +108,7 @@ export function CheckInBody({
             <button
               type="button"
               onClick={onSkip}
-              className="text-xs font-medium text-muted underline"
+              className="text-xs font-medium text-muted"
             >
               Skip for today
             </button>

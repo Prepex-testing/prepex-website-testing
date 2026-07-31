@@ -53,7 +53,12 @@ export function OptionCard({
             {title}
           </span>
           {subtitle && (
-            <span className="mt-1 block text-xs text-muted">{subtitle}</span>
+            <span
+              className={`mt-1 block text-xs ${selected ? "text-body-text dark:text-ink" : "text-muted"
+                }`}
+            >
+              {subtitle}
+            </span>
           )}
         </span>
       </span>

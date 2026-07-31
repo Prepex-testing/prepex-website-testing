@@ -162,7 +162,7 @@ export default function WhichChaptersHaveYouStudiedPage() {
         <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
           Which chapters have you studied?
         </h1>
-        <p className="text-[14px] font-semibold leading-[100%] text-[#666666] sm:text-[16px]">
+        <p className="text-[14px] font-semibold leading-[100%] text-muted sm:text-[16px]">
           Tap to mark studied. Skip what you haven&apos;t touched. Even partial study
           counts
         </p>

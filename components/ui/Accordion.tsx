@@ -68,7 +68,7 @@ export function Accordion({
             }`}
         >
           <ChevronDownIcon
-            className={`h-4 w-4 transition-transform ${open
+            className={`h-4 w-4 stroke-[2.4] transition-transform ${open
               ? "rotate-180 text-ink"
               : "text-ink dark:text-brand"
               }`}
