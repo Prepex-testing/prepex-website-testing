@@ -79,7 +79,6 @@ export type DailyPlan = {
   aiSummary: string | null;
   plannerMode: string;
   generationType: PlanGenerationReason;
-  mood: CheckInMoodValue | string | null;
   tasks: PlannerTask[];
 };
 

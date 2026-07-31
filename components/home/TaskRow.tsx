@@ -162,7 +162,7 @@ export function TaskRow({
         >
 
           <Button
-            variant={task.isCompleted ? "secondary" : task.type === "revision" ? "primary" : "task"}
+            variant={task.isCompleted ? "secondary" : "task"}
             size="sm"
             disabled={task.isCompleted}
             className={task.isCompleted ? "border-transparent! bg-[#E7F9F3]! text-[#10B981]! cursor-default" : ""}

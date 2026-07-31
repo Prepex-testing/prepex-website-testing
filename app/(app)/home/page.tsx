@@ -201,9 +201,7 @@ export default function HomePage() {
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
   const [isRegenerateOpen, setRegenerateOpen] = useState(false);
   const [isCheckInOpen, setCheckInOpen] = useState(false);
-  const [energyMood, setEnergyMood] = useState(
-    () => MOODS.find((mood) => mood.id === "good") ?? MOODS[3],
-  );
+  const [energyMood, setEnergyMood] = useState<Mood | null>(null);
   const [planData, setPlanData] = useState<TodayPlanResponse | null>(null);
   const [isGeneratingPlan, setGeneratingPlan] = useState(false);
   const [streakCount, setStreakCount] = useState<number | null>(null);
@@ -215,15 +213,7 @@ export default function HomePage() {
 
   const refetchPlan = () => {
     getTodayPlan()
-      .then(({ data }) => {
-        setPlanData(data);
-        const planMood = data.plan?.mood;
-        if (planMood) {
-          const moodId = apiValueToMoodId(planMood);
-          const matchedMood = MOODS.find((mood) => mood.id === moodId);
-          if (matchedMood) setEnergyMood(matchedMood);
-        }
-      })
+      .then(({ data }) => setPlanData(data))
       .catch(() => {
         // Best-effort — the page falls back to the placeholder plan below.
       });
@@ -231,9 +221,18 @@ export default function HomePage() {
 
   const refetchCheckInStatus = () => {
     getCheckInStatus()
-      .then(({ data }) => setStreakCount(data.checkin?.streakCount ?? null))
+      .then(({ data }) => {
+        setStreakCount(data.checkin?.streakCount ?? null);
+        const moodValue = data.checkin?.mood;
+        if (moodValue) {
+          const moodId = apiValueToMoodId(moodValue);
+          setEnergyMood(MOODS.find((mood) => mood.id === moodId) ?? null);
+        } else {
+          setEnergyMood(null);
+        }
+      })
       .catch(() => {
-        // Best-effort — the page falls back to the placeholder streak below.
+        // Best-effort — mood/streak stay unset (no dummy fallback) until this succeeds.
       });
   };
 
@@ -291,13 +290,13 @@ export default function HomePage() {
             <div className="flex items-center gap-4">
               <div className="flex h-15 w-15 shrink-0 items-center justify-center rounded-xl bg-tint">
                 <span className="text-[32px] leading-none">
-                  {energyMood.emoji}
+                  {energyMood?.emoji ?? ""}
                 </span>
               </div>
               <div>
                 <p className="text-sm text-muted">Today's Energy</p>
                 <h3 className="text-3xl font-bold leading-none text-ink">
-                  {energyMood.label}
+                  {energyMood?.label ?? "—"}
                 </h3>
                 <p className="text-sm text-muted">Plan optimized for you</p>
               </div>
@@ -323,7 +322,7 @@ export default function HomePage() {
               </div>
               <div>
                 <h3 className="text-2xl font-bold leading-none text-ink">
-                  {streakCount ?? 14} Day Streak
+                  {streakCount !== null ? `${streakCount} Day Streak` : "—"}
                 </h3>
                 <p className="mt-2 text-sm text-muted">Keep going.</p>
               </div>
