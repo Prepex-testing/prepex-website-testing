@@ -41,6 +41,9 @@ const COACHING_NAME_OPTIONS = [
   { value: "allen", label: "Allen Career Institute" },
   { value: "fiitjee", label: "FIITJEE" },
   { value: "resonance", label: "Resonance" },
+  { value: "pw", label: "PW" },
+  { value: "unacademy", label: "Unacademy" },
+  { value: "narayana", label: "Narayana" },
   { value: "other", label: "Other" },
 ];
 
@@ -53,7 +56,7 @@ const BATCH_OPTIONS = [
 
 export default function WhereDoYouStudyPage() {
   const router = useRouter();
-  const [status, setStatus] = useState<CoachingStatus>("coaching");
+  const [status, setStatus] = useState<CoachingStatus>("self-prep");
   const [coachingName, setCoachingName] = useState("");
   const [batch, setBatch] = useState("");
   const [hasScheduleUpload, setHasScheduleUpload] = useState(false);

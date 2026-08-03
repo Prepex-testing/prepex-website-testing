@@ -1,5 +1,7 @@
-import { useId } from "react";
-import type { ChangeEvent, MouseEvent } from "react";
+"use client";
+
+import { useId, useState } from "react";
+import type { ChangeEvent, DragEvent, MouseEvent } from "react";
 import { PlusIcon, PlusIcon1, XIcon } from "@/components/ui/icons";
 
 type UploadDropzoneProps = {
@@ -10,6 +12,7 @@ type UploadDropzoneProps = {
 
 export function UploadDropzone({ onFileSelect, previewUrl, fileName }: UploadDropzoneProps) {
   const inputId = useId();
+  const [isDragActive, setDragActive] = useState(false);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     onFileSelect?.(event.target.files?.[0] ?? null);
@@ -20,6 +23,23 @@ export function UploadDropzone({ onFileSelect, previewUrl, fileName }: UploadDro
   const handleRemove = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     onFileSelect?.(null);
+  };
+
+  const handleDragOver = (event: DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (event: DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    setDragActive(false);
+  };
+
+  const handleDrop = (event: DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    setDragActive(false);
+    const file = event.dataTransfer.files?.[0];
+    if (file) onFileSelect?.(file);
   };
 
   const fileInput = (
@@ -73,7 +93,14 @@ export function UploadDropzone({ onFileSelect, previewUrl, fileName }: UploadDro
     // Box — 631x197.9, radius 12px, dashed border, padding 64px (scaled down on mobile)
     <label
       htmlFor={inputId}
-      className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[#D1D5DB] dark:border-[#D1D5DB] bg-surface px-6 py-10 text-center sm:px-16 sm:py-14"
+      onDragOver={handleDragOver}
+      onDragEnter={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed bg-surface px-6 py-10 text-center sm:px-16 sm:py-14 ${isDragActive
+          ? "border-cta bg-cta/5"
+          : "border-[#D1D5DB] dark:border-[#D1D5DB]"
+        }`}
     >
       <span className="flex h-8 w-9 items-center justify-center text-body-text dark:text-ink">
        <PlusIcon1 className="h-4 w-4 sm:h-5 sm:w-5 lg:h-[19.5px] lg:w-[19.5px]" />

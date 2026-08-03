@@ -62,8 +62,12 @@ export function getOnboardingStepPath(step: number): string {
   return STEP_PATHS[step] ?? "/onboarding/preparing-for";
 }
 
-async function authRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const url = `${CORE_API_BASE_URL}/api/onboarding${path}`;
+async function authRequest<T>(
+  path: string,
+  options: RequestInit = {},
+  basePath = "/api/onboarding",
+): Promise<T> {
+  const url = `${CORE_API_BASE_URL}${basePath}${path}`;
   const accessToken = getAccessToken();
 
   try {
@@ -178,8 +182,41 @@ export function saveStudySchedule(input: {
   });
 }
 
-export function getStudentChapters() {
-  return authRequest<{ success: true; data: SubjectChapters[] }>("/chapters");
+type ProfileSubjectChapter = {
+  id: string;
+  subjectId: number;
+  name: string;
+  sequenceOrder: number;
+  isActive: boolean;
+};
+
+type ProfileSubject = {
+  id: number;
+  code: string;
+  name: string;
+  chapters: ProfileSubjectChapter[];
+};
+
+export async function getStudentChapters() {
+  const { success, data } = await authRequest<{
+    success: true;
+    data: { subjects: ProfileSubject[] };
+  }>("/subjects-chapters", {}, "/api/profile");
+
+  const subjects: SubjectChapters[] = data.subjects.map((subject) => ({
+    subjectId: subject.id,
+    subjectCode: subject.code,
+    subjectName: subject.name,
+    chapters: subject.chapters.map((chapter) => ({
+      id: chapter.id,
+      subjectId: chapter.subjectId,
+      name: chapter.name,
+      sequenceOrder: chapter.sequenceOrder,
+      isActive: chapter.isActive,
+    })),
+  }));
+
+  return { success, data: subjects };
 }
 
 export function saveChapterProgress(input: {
