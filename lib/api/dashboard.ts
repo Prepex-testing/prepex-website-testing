@@ -34,8 +34,16 @@ function request<T>(path: string): Promise<T> {
   return apiRequest<T>(`${DASHBOARD_API_BASE_URL}/api/dashboard${path}`);
 }
 
+let examsCache: Promise<{ success: true; data: Exam[] }> | null = null;
+
 export function getExams() {
-  return request<{ success: true; data: Exam[] }>("/exams");
+  if (!examsCache) {
+    examsCache = request<{ success: true; data: Exam[] }>("/exams").catch((err) => {
+      examsCache = null;
+      throw err;
+    });
+  }
+  return examsCache;
 }
 
 export function getSubjects() {

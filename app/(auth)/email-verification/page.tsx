@@ -128,7 +128,7 @@ function EmailVerificationForm() {
                 type="button"
                 onClick={handleResend}
                 disabled={isResending}
-                className="text-ink underline disabled:cursor-not-allowed disabled:opacity-60"
+                className="text-ink disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Resend Code
               </button>{" "}

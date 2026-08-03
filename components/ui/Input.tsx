@@ -84,7 +84,7 @@ export function Input({
             className="shrink-0 text-muted"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
-            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+            {showPassword ? <EyeIcon /> : <EyeOffIcon />}
           </button>
         )}
       </div>

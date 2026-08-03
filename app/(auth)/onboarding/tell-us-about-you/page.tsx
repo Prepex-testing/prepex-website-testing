@@ -62,13 +62,11 @@ function isoToDisplayDate(iso: string): string {
   return `${day}/${month}/${year}`;
 }
 
+// JEE Main falls in mid-May, so the default exam date targets May 15 of the
+// target year rather than carrying over today's day-of-year.
 function addYearsIso(years: number): string {
-  const date = new Date();
-  date.setFullYear(date.getFullYear() + years);
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
+  const year = new Date().getFullYear() + years;
+  return `${year}-05-15`;
 }
 
 // Class 11 students are 2 years out from their target exam; everyone else

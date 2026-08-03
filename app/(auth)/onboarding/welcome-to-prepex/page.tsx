@@ -85,7 +85,7 @@ export default function WelcomeToPrepexPage() {
           </div>
 
           {/* Heading */}
-          <div className="mt-1 sm:mt-6">
+          <div className="mt-4 sm:mt-8">
             <h1 className="text-[32px] leading-[38px] font-black text-[var(--oc-heading2)] sm:text-4xl sm:leading-tight md:text-5xl md:leading-[60px]">
               Your first plan is ready
             </h1>
@@ -100,7 +100,7 @@ export default function WelcomeToPrepexPage() {
           <Button
             href="/check-in"
             variant="primary"
-            className="mt-8 h-[60px] w-full max-w-[284px] rounded-full! bg-[var(--oc-button-bg)]! px-6 sm:px-8 text-base sm:text-lg! font-bold! text-[var(--oc-button-text)]! whitespace-nowrap"
+            className="mt-8 h-[60px] w-full max-w-[284px] rounded-full! border-none! bg-[var(--oc-button-bg)]! px-6 sm:px-8 text-base sm:text-lg! font-bold! text-[var(--oc-button-text)]! whitespace-nowrap"
           >
             Go to Home Dashboard
           </Button>
