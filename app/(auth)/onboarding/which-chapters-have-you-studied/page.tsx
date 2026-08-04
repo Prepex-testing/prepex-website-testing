@@ -178,8 +178,8 @@ export default function WhichChaptersHaveYouStudiedPage() {
       )}
 
       <div className="mt-6 rounded-xl border border-brand/10 bg-surface p-4 dark:border-white/10">
-        <div className="flex flex-wrap items-center justify-between gap-3 sm:flex-nowrap">
-          <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="whitespace-nowrap rounded-lg bg-ink px-3 py-2 text-xs font-semibold text-surface dark:text-[#111145] sm:px-4 sm:text-sm">
               {markedCount - partialCount} chapter
               {markedCount - partialCount !== 1 ? "s" : ""} marked as complete

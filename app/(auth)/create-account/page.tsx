@@ -60,7 +60,7 @@ export default function CreateAccountPage() {
           icon={<UserIcon />}
           name="fullName"
           type="text"
-          placeholder="Rohan"
+          placeholder="Rohan Sharma"
           value={fullName}
           onChange={(event) => setFullName(event.target.value)}
           required
