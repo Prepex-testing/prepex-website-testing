@@ -13,12 +13,12 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Prepex",
+  title: "prepex",
   description: "Plan. Execute. Survive. Win.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Prepex",
+    title: "prepex",
   },
   other: {
     "mobile-web-app-capable": "yes",

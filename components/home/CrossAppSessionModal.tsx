@@ -69,7 +69,7 @@ export function CrossAppSessionModal({ open, onClose, onStart }: CrossAppSession
         Start session
       </Button>
       <p className="mt-2 text-center text-xs text-muted">
-        When you&apos;re done, return to Prepex and confirm. Counts as focus time.
+        When you&apos;re done, return to prepex and confirm. Counts as focus time.
       </p>
     </Modal>
   );
