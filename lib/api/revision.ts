@@ -4,7 +4,7 @@ import { refreshAccessToken } from "@/lib/api/auth";
 import { getAccessToken, getRefreshToken, saveTokens, clearSession } from "@/lib/auth/session";
 
 async function authRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const url = `${CORE_API_BASE_URL}/api/profile${path}`;
+  const url = `${CORE_API_BASE_URL}/api/revision${path}`;
   const accessToken = getAccessToken();
 
   try {
@@ -31,33 +31,15 @@ async function authRequest<T>(path: string, options: RequestInit = {}): Promise<
   }
 }
 
-export type ProfileSubject = { id: number; code: string; name: string };
+export function updateRevisionProgress(revisionId: string, minutesCompleted: number) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/progress`, {
+    method: "PATCH",
+    body: JSON.stringify({ minutesCompleted }),
+  });
+}
 
-export type ChapterMetadata = {
-  category: string;
-  difficulty: "EASY" | "MEDIUM" | "HARD";
-  recommendedWindow: string;
-  averageLearningMinutes: number;
-  averageRevisionMinutes: number;
-  averagePracticeQuestions: number;
-} | null;
-
-export type ProfileChapter = {
-  id: string;
-  subjectId: number;
-  name: string;
-  sequenceOrder: number;
-  isActive: boolean;
-  subject: ProfileSubject;
-  chapterMetadata: ChapterMetadata;
-};
-
-export type SubjectWithChapters = ProfileSubject & { chapters: ProfileChapter[] };
-
-export type SubjectsChaptersResponse = {
-  subjects: SubjectWithChapters[];
-};
-
-export function getSubjectsChapters() {
-  return authRequest<{ success: true; data: SubjectsChaptersResponse }>("/subjects-chapters");
+export function markRevisionDone(revisionId: string) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/mark-done`, {
+    method: "POST",
+  });
 }

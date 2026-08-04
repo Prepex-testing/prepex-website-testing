@@ -5,15 +5,12 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
-import { PencilIcon, PlusIcon, XIcon } from "@/components/ui/icons";
+import { MinusIcon, PencilIcon, PlusIcon, XIcon } from "@/components/ui/icons";
 import { addPlannerTask, type SuggestedWindow } from "@/lib/api/planner";
 import {
   getSubjectsChapters,
-  type ProfileChapter,
-  type ProfileSubject,
+  type SubjectWithChapters,
 } from "@/lib/api/profile";
-
-const DEFAULT_SUBJECT_ID = 1;
 
 const TASK_TYPES = ["New Learning", "Revision", "Practice", "DPP", "Other"];
 
@@ -32,12 +29,9 @@ const SUGGESTED_WINDOW_VALUES: Record<string, SuggestedWindow> = {
   night: "NIGHT",
 };
 
-const DURATION_OPTIONS = [
-  { value: "30", label: "30 min" },
-  { value: "45", label: "45 min" },
-  { value: "60", label: "60 min" },
-  { value: "90", label: "90 min" },
-];
+const DURATION_STEP_MINUTES = 5;
+const MIN_DURATION_MINUTES = 5;
+const MAX_DURATION_MINUTES = 300;
 
 const TIME_PREFERENCE_OPTIONS = [
   { value: "morning", label: "Morning (5-11 AM)" },
@@ -73,13 +67,12 @@ export function AddCustomTaskModal({
 }: AddCustomTaskModalProps) {
   const [taskType, setTaskType] = useState(initialValues?.taskType ?? "Practice");
   const [taskName, setTaskName] = useState(initialValues?.taskName ?? "");
-  const [durationValue, setDurationValue] = useState(initialValues?.durationValue ?? "60");
+  const [durationValue, setDurationValue] = useState(initialValues?.durationValue ?? "30");
   const [timePreferenceValue, setTimePreferenceValue] = useState(
     initialValues?.timePreferenceValue ?? "",
   );
   const [notes, setNotes] = useState(initialValues?.notes ?? "");
-  const [subjects, setSubjects] = useState<ProfileSubject[]>([]);
-  const [chapters, setChapters] = useState<ProfileChapter[]>([]);
+  const [subjects, setSubjects] = useState<SubjectWithChapters[]>([]);
   const [subjectId, setSubjectId] = useState<number | null>(null);
   const [chapterId, setChapterId] = useState("");
   const [isLoadingChapters, setLoadingChapters] = useState(false);
@@ -87,27 +80,24 @@ export function AddCustomTaskModal({
   const [error, setError] = useState<string | null>(null);
   const isEdit = mode === "edit";
 
+  // The API returns every subject with its own chapters nested — fetched once
+  // per open, then subject selection filters the already-loaded chapters
+  // locally instead of refetching.
   useEffect(() => {
     if (!open) return;
 
     async function loadSubjectsChapters() {
       setLoadingChapters(true);
       try {
-        const { data } = await getSubjectsChapters(subjectId ?? DEFAULT_SUBJECT_ID);
+        const { data } = await getSubjectsChapters();
         setSubjects(data.subjects);
-        setChapters(data.chapters);
         setSubjectId((current) => {
           if (current != null) return current;
           const matched = initialValues?.subjectValue
             ? data.subjects.find((s) => s.name.toLowerCase() === initialValues.subjectValue)
             : undefined;
-          return matched?.id ?? data.chapters[0]?.subjectId ?? data.subjects[0]?.id ?? null;
+          return matched?.id ?? null;
         });
-        setChapterId((current) =>
-          data.chapters.some((chapter) => chapter.id === current)
-            ? current
-            : (data.chapters[0]?.id ?? ""),
-        );
       } catch {
         // Best-effort — the form still works without live subject/chapter data.
       } finally {
@@ -116,10 +106,22 @@ export function AddCustomTaskModal({
     }
 
     loadSubjectsChapters();
-    // Only the subject changing should trigger a refetch — initialValues is
-    // read once on open to seed the match, not tracked as a dependency.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, subjectId]);
+  }, [open]);
+
+  const chapters = subjects.find((subject) => subject.id === subjectId)?.chapters ?? [];
+
+  useEffect(() => {
+    setChapterId((current) => (chapters.some((chapter) => chapter.id === current) ? current : ""));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subjectId, subjects]);
+
+  const adjustDuration = (delta: number) => {
+    setDurationValue((current) => {
+      const next = (Number(current) || 0) + delta;
+      return String(Math.min(MAX_DURATION_MINUTES, Math.max(MIN_DURATION_MINUTES, next)));
+    });
+  };
 
   const handleSubmit = async () => {
     if (isEdit) {
@@ -219,20 +221,39 @@ export function AddCustomTaskModal({
             options={subjects.map((subject) => ({ value: String(subject.id), label: subject.name }))}
             value={subjectId != null ? String(subjectId) : ""}
             onChange={(event) => setSubjectId(Number(event.target.value))}
+            placeholder="Subject"
           />
           <Select
             label="Topic"
             options={chapters.map((chapter) => ({ value: chapter.id, label: chapter.name }))}
             value={chapterId}
             onChange={(event) => setChapterId(event.target.value)}
-            placeholder={isLoadingChapters ? "Loading chapters..." : "Select a chapter"}
+            placeholder={isLoadingChapters ? "Loading chapters..." : "Topic"}
           />
-          <Select
-            label="Duration"
-            options={DURATION_OPTIONS}
-            value={durationValue}
-            onChange={(event) => setDurationValue(event.target.value)}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-[14px] font-semibold leading-[20px] text-ink">Duration</label>
+            <div className="flex h-[46px] items-center justify-between rounded-xl border border-brand/15 bg-surface px-3">
+              <button
+                type="button"
+                onClick={() => adjustDuration(-DURATION_STEP_MINUTES)}
+                disabled={Number(durationValue) <= MIN_DURATION_MINUTES}
+                aria-label="Decrease duration"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                <MinusIcon />
+              </button>
+              <span className="text-sm font-semibold text-body-text">{durationValue} min</span>
+              <button
+                type="button"
+                onClick={() => adjustDuration(DURATION_STEP_MINUTES)}
+                disabled={Number(durationValue) >= MAX_DURATION_MINUTES}
+                aria-label="Increase duration"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                <PlusIcon />
+              </button>
+            </div>
+          </div>
           <Select
             label="Time Preference"
             options={TIME_PREFERENCE_OPTIONS}

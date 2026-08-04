@@ -1,16 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import {
-  // ArrowLeftIcon,
-  ClockIcon,
-  CheckIcon,
-  FileIcon,
-  // PlayIcon,
-} from "@/components/ui/icons";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ClockIcon, CheckIcon } from "@/components/ui/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { TargetIcon, PlayIcon, Open,ArrowLeftIcon } from "@/assets/icons";
+import { FileIcon, PlayIcon, Open, ArrowLeftIcon, LightbulbIcon } from "@/assets/icons";
+import { updateRevisionProgress, markRevisionDone } from "@/lib/api/revision";
 
 const QUESTIONS = [
   "What is Newton's First Law of Motion?",
@@ -21,9 +17,9 @@ const QUESTIONS = [
 ];
 
 const REFERENCES = [
-  { label: "NCERT Chapter", meta: "Chapter 5", icon: <TargetIcon /> },
-  { label: "Teacher Notes", meta: "Handwritten Notes", icon: <TargetIcon /> },
-  { label: "Lecture Slides", meta: "PDF • 24 Slides", icon: <PlayIcon /> },
+  { label: "NCERT Chapter", meta: "Chapter 5", icon: <FileIcon className="h-6 w-6" /> },
+  { label: "Teacher Notes", meta: "Handwritten Notes", icon: <FileIcon className="h-6 w-6" /> },
+  { label: "Lecture Slides", meta: "PDF • 24 Slides", icon: <PlayIcon className="h-6 w-6" /> },
 ];
 
 function formatTime(totalSeconds: number): string {
@@ -33,16 +29,55 @@ function formatTime(totalSeconds: number): string {
 }
 
 export default function RevisionSessionPage() {
+  return (
+    <Suspense fallback={null}>
+      <RevisionSessionContent />
+    </Suspense>
+  );
+}
+
+function RevisionSessionContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const revisionId = searchParams.get("taskId");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [recalled, setRecalled] = useState(false);
   const [seconds, setSeconds] = useState(0);
+  const [isEnding, setEnding] = useState(false);
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const savedMinutesRef = useRef(0);
 
   useEffect(() => {
     const timer = setInterval(() => setSeconds((value) => value + 1), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (!revisionId) return;
+    const minutesElapsed = Math.floor(seconds / 60);
+    if (minutesElapsed === 0 || minutesElapsed === savedMinutesRef.current) return;
+    savedMinutesRef.current = minutesElapsed;
+    updateRevisionProgress(revisionId, minutesElapsed).catch(() => {
+      // Best-effort — progress will be retried on the next minute tick.
+    });
+  }, [seconds, revisionId]);
+
+  const handleEndSession = async () => {
+    if (!revisionId) {
+      router.push("/revision-session/complete");
+      return;
+    }
+    setEnding(true);
+    try {
+      await markRevisionDone(revisionId);
+    } catch {
+      // Best-effort — still let the user proceed to rate difficulty.
+    } finally {
+      setEnding(false);
+      router.push("/revision-session/complete");
+    }
+  };
 
   const goTo = (index: number) => {
     setQuestionIndex(Math.min(Math.max(index, 0), QUESTIONS.length - 1));
@@ -73,7 +108,7 @@ export default function RevisionSessionPage() {
         </h1>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <span
-            className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase leading-[15px] ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+            className={`rounded px-3 py-1 text-[10px] font-extrabold uppercase leading-[15px] ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
           >
             Physics
           </span>
@@ -81,6 +116,7 @@ export default function RevisionSessionPage() {
             Concept Video • NCERT Chapter • Class 11
           </span>
         </div>
+        <div className="mt-3 h-px w-full bg-brand/10" />
       </div>
 
       {/* Quick Recall + Focus Timer */}
@@ -88,14 +124,14 @@ export default function RevisionSessionPage() {
         <p className="text-[12px] font-extrabold uppercase leading-[15px] tracking-[1px] text-muted">
           Quick Recall
         </p>
-        <p className="text-sm font-bold text-ink">
+        <p className="text-[20px] font-extrabold leading-[28px] text-ink">
           Question {questionIndex + 1} of {QUESTIONS.length}
         </p>
         <div className="flex gap-1.5">
           {QUESTIONS.map((_, index) => (
             <span
               key={index}
-              className={`h-3 w-3 rounded-full transition-colors ${index <= questionIndex ? "bg-ink" : "bg-ink/10"
+              className={`h-3 w-3 rounded-full transition-colors ${index <= questionIndex ? "bg-ink" : "bg-tint"
                 }`}
             />
           ))}
@@ -109,7 +145,7 @@ export default function RevisionSessionPage() {
               {formatTime(seconds)}
             </span>
             <span className="text-[10px] font-semibold  leading-5 tracking-wide text-muted dark:text-[#111145]/70">
-              Focus Time
+              focus time
             </span>
           </div>
         </div>
@@ -120,7 +156,8 @@ export default function RevisionSessionPage() {
         <h2 className="mx-auto max-w-[606px] text-[22px] font-extrabold leading-[28px] text-ink sm:text-[30px] sm:leading-[36px]">
           {QUESTIONS[questionIndex]}
         </h2>
-        <p className="mt-2 text-sm font-semibold leading-5 text-body-text">
+        <p className="mt-2 flex items-center justify-center gap-2 text-sm font-semibold leading-5 text-body-text">
+          <LightbulbIcon className="h-[18px] w-[18px] shrink-0" />
           Take a moment to answer from memory.
         </p>
         <button
@@ -134,8 +171,8 @@ export default function RevisionSessionPage() {
               : "hover:bg-brand/5"
             }`}
         >
-          <CheckIcon />
-          <span className="break-words">
+          <CheckIcon className="h-5 w-5 shrink-0" />
+          <span className="whitespace-nowrap">
             I&apos;ve recalled this answer
           </span>
         </button>
@@ -213,11 +250,11 @@ export default function RevisionSessionPage() {
 
               <button
                 type="button"
-                className={`mt-4 flex h-[38px] w-full items-center justify-center gap-2 rounded-lg border text-sm font-semibold text-ink transition-colors hover:bg-tint-strong ${isDark ? "border-white" : "border-brand/15"
+                className={`mt-4 flex h-[38px] w-full items-center justify-center gap-2 rounded-lg border text-xs font-bold text-ink transition-colors hover:bg-tint-strong ${isDark ? "border-white" : "border-brand/15"
                   }`}
               >
                 <span>Open</span>
-                <Open className="h-4 w-4" />
+                <Open className="h-3 w-3" />
               </button>
             </div>
           ))}
@@ -229,15 +266,17 @@ export default function RevisionSessionPage() {
 
       {/* End session */}
       <div className="flex flex-col items-center gap-3">
-        <Link
-          href="/revision-session/complete"
-          className="flex h-[68px] w-full items-center justify-center rounded-2xl bg-cta text-lg font-bold leading-7 text-white transition-colors hover:bg-cta/90"
-        >
-          End session, rate difficulty
-        </Link>
         <button
           type="button"
-          className="text-sm font-semibold text-muted transition-colors hover:text-ink"
+          onClick={handleEndSession}
+          disabled={isEnding}
+          className="flex h-[68px] w-full items-center justify-center rounded-2xl bg-cta text-lg font-bold leading-7 text-white transition-colors hover:bg-cta/90 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isEnding ? "Ending..." : "End session, rate difficulty"}
+        </button>
+        <button
+          type="button"
+          className="flex h-[72px] items-center justify-center text-lg font-bold text-body-text transition-colors hover:text-ink"
         >
           Pause Session
         </button>

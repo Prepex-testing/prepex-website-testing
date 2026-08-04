@@ -108,7 +108,7 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
               : task.actionLabel === "Start Session"
                 ? `/home/session?taskId=${task.id}`
                 : task.actionLabel === "Start Revision"
-                  ? "/revision-session"
+                  ? `/revision-session?taskId=${task.id}`
                   : undefined
           }
           onClick={!task.isCompleted && isStartPractice ? onStartPractice : undefined}
