@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { Button } from "@/components/ui/Button";
@@ -129,12 +128,12 @@ export default function PreparingForPage() {
         </Button>
         <p className="px-4 text-center text-[12px] leading-[18px] text-muted sm:px-0 sm:text-xs sm:leading-5">
           By continuing, you agree to our{" "}
-          <Link
-            href="/terms"
-            className="whitespace-nowrap font-semibold text-ink underline"
+          <button
+            type="button"
+            className="whitespace-nowrap font-semibold text-ink"
           >
             Terms of Service
-          </Link>
+          </button>
         </p>
       </div>
     </AuthCard>

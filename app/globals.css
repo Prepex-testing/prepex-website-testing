@@ -346,6 +346,39 @@ body {
 }
 
 /*
+ * Browsers only default to a pointer cursor on <a href>. Everything else
+ * clickable (buttons, custom icon/checkbox controls, selects, anything
+ * wired up with an onClick) shows the plain arrow unless told otherwise —
+ * so apply it globally instead of per-component.
+ */
+a[href],
+button:not(:disabled),
+select:not(:disabled),
+summary,
+label[for],
+[role="button"]:not([aria-disabled="true"]),
+[role="link"]:not([aria-disabled="true"]),
+[role="tab"]:not([aria-disabled="true"]),
+[role="menuitem"]:not([aria-disabled="true"]),
+[role="switch"]:not([aria-disabled="true"]),
+input[type="button"]:not(:disabled),
+input[type="submit"]:not(:disabled),
+input[type="reset"]:not(:disabled),
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled),
+[onclick],
+[tabindex]:not([tabindex="-1"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+select:disabled,
+input:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/*
  * Theme toggle switches CSS variables on [data-theme] instantly, which
  * otherwise makes every themed color snap at once. Transition the specific
  * properties driven by those variables so light/dark switches fade instead.
