@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Prepex — Plan. Execute. Survive. Win.",
-    short_name: "Prepex",
+    name: "prepex — Plan. Execute. Survive. Win.",
+    short_name: "prepex",
     description: "Plan. Execute. Survive. Win.",
     start_url: "/splash",
     display: "standalone",
