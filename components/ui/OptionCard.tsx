@@ -7,6 +7,7 @@ type OptionCardProps = {
   subtitle?: string;
   selected?: boolean;
   compact?: boolean;
+  disabled?: boolean;
   onClick?: () => void;
   className?: string;
 };
@@ -17,6 +18,7 @@ export function OptionCard({
   subtitle,
   selected = false,
   compact = false,
+  disabled = false,
   onClick,
   className = "",
 }: OptionCardProps) {
@@ -24,7 +26,8 @@ export function OptionCard({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-5 rounded-2xl border p-5 text-left transition-colors ${compact ? "" : "justify-between"
+      disabled={disabled}
+      className={`flex items-center gap-5 rounded-2xl border p-5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${compact ? "" : "justify-between"
         } ${selected
           ? `
         border-[1.5px]

@@ -101,13 +101,13 @@ export default function CreateAccountPage() {
 
       <p className="mx-auto mt-4 max-w-[320px] px-2 text-center text-[12px] leading-[1.4] text-[#666666] sm:max-w-none sm:px-0">
         By clicking &ldquo;Sign Up&rdquo;, you agree to our{" "}
-        <Link href="/terms" className="text-ink">
+        <button type="button" className="text-ink">
           Terms of Service
-        </Link>{" "}
+        </button>{" "}
         and{" "}
-        <Link href="/privacy" className="text-ink">
+        <button type="button" className="text-ink">
           Privacy Policy
-        </Link>
+        </button>
       </p>
 
       <p className="mt-6 border-t border-tint pt-5 text-center text-[16px] font-bold leading-[100%] text-muted dark:text-ink">

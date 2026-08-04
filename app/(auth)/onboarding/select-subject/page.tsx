@@ -13,6 +13,7 @@ import { GlobeIcon, FlaskIcon, CalculatorIcon, AtomIcon, LayersIcon ,ArrowLeftIc
 import { getSubjectsByExam } from "@/lib/api/dashboard";
 import { getOnboardingProgress, selectSubjects } from "@/lib/api/onboarding";
 import { ApiError } from "@/lib/api/http";
+import { toTitleCase } from "@/lib/utils/text";
 import type { Subject } from "@/lib/api/dashboard";
 
 const SUBJECT_ICONS: Record<string, ReactNode> = {
@@ -127,7 +128,7 @@ export default function SelectSubjectPage() {
               key={subject.id}
               compact
               icon={SUBJECT_ICONS[subject.code] ?? DEFAULT_ICON}
-              title={subject.name}
+              title={toTitleCase(subject.name)}
               selected={selected.includes(subject.id)}
               onClick={() => toggle(subject.id)}
             />
