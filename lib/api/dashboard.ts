@@ -50,6 +50,10 @@ export function getSubjects() {
   return request<{ success: true; data: Subject[] }>("/subjects");
 }
 
+export function getSubjectsByExam(examId: string) {
+  return request<{ success: true; data: Subject[] }>(`/subjects/by-exam/${examId}`);
+}
+
 export function getChapters() {
   return request<{ success: true; data: SubjectChapters[] }>("/chapters");
 }
