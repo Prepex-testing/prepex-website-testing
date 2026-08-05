@@ -22,7 +22,13 @@ type DateInputProps = {
   defaultValue?: string;
   /** Returns the display date string (DD/MM/YYYY) — same as the old component */
   onDateChange?: (value: string) => void;
+  /** Disable every date before today (e.g. for future-only fields like an exam date) */
+  disablePast?: boolean;
 };
+
+function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
 
 function parseDisplayDate(display: string): Date | null {
   const [day, month, year] = display.split("/").map(Number);
@@ -74,6 +80,7 @@ export function DateInput({
   placeholder = "Pick your exam date",
   defaultValue = "",
   onDateChange,
+  disablePast = false,
 }: DateInputProps) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
@@ -148,6 +155,10 @@ export function DateInput({
   const displayText = value || placeholder;
   const gridDays = buildMonthGrid(viewDate);
   const today = new Date();
+  const todayStart = startOfDay(today);
+  const isAtCurrentMonth =
+    viewDate.getFullYear() === today.getFullYear() && viewDate.getMonth() === today.getMonth();
+  const isPrevYearRangeAllPast = disablePast && yearRangeStart <= today.getFullYear();
 
   return (
     <div className="flex w-full flex-col gap-2" ref={containerRef}>
@@ -243,7 +254,8 @@ export function DateInput({
                 type="button"
                 aria-label={mode === "days" ? "Previous month" : "Previous years"}
                 onClick={() => (mode === "days" ? changeMonth(-1) : changeYearRange(-1))}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-ink transition-colors hover:bg-brand/10"
+                disabled={disablePast && (mode === "days" ? isAtCurrentMonth : isPrevYearRangeAllPast)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-ink transition-colors hover:bg-brand/10 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
               >
                 <ChevronRightIcon className="h-4 w-4 rotate-180" />
               </button>
@@ -272,13 +284,15 @@ export function DateInput({
                 {Array.from({ length: YEARS_PER_PAGE }, (_, i) => yearRangeStart + i).map((year) => {
                   const selected = selectedDate !== null && selectedDate.getFullYear() === year;
                   const isCurrentYear = today.getFullYear() === year;
+                  const isPastYear = disablePast && year < today.getFullYear();
                   return (
                     <button
                       key={year}
                       type="button"
                       onClick={() => selectYear(year)}
+                      disabled={isPastYear}
                       aria-pressed={selected}
-                      className={`flex h-10 items-center justify-center rounded-lg text-[13px] font-medium transition-colors ${
+                      className={`flex h-10 items-center justify-center rounded-lg text-[13px] font-medium transition-colors disabled:cursor-not-allowed disabled:text-muted/40 disabled:hover:bg-transparent ${
                         selected ? "bg-cta text-white" : "text-ink hover:bg-brand/10"
                       } ${isCurrentYear && !selected ? "ring-1 ring-inset ring-cta" : ""}`}
                     >
@@ -302,14 +316,16 @@ export function DateInput({
                     const inMonth = date.getMonth() === viewDate.getMonth();
                     const selected = selectedDate !== null && isSameDay(date, selectedDate);
                     const isToday = isSameDay(date, today);
+                    const isPast = disablePast && date < todayStart;
                     return (
                       <button
                         key={toIso(date)}
                         type="button"
                         onClick={() => selectDate(date)}
+                        disabled={isPast}
                         aria-current={isToday ? "date" : undefined}
                         aria-pressed={selected}
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-[12px] font-medium transition-colors ${
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-[12px] font-medium transition-colors disabled:cursor-not-allowed disabled:text-muted/40 disabled:hover:bg-transparent ${
                           selected
                             ? "bg-cta text-white"
                             : inMonth
