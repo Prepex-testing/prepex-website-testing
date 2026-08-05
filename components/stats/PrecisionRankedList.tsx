@@ -23,7 +23,7 @@ export function PrecisionRankedList({ items }: Props) {
                 >
                     {/* Rank */}
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center">
-                        <span className="text-base font-bold text-ink">
+                        <span className="text-base font-bold text-[#312E81] dark:text-[#FAF7F2]">
                             {item.rank}
                         </span>
                     </div>
@@ -35,11 +35,11 @@ export function PrecisionRankedList({ items }: Props) {
                         </p>
 
                         <div className="mt-1 flex items-center gap-2">
-                            <span className="rounded-sm bg-blue-500/15 px-2 py-[2px] text-[9px] font-bold uppercase text-blue-600">
+                            <span className="rounded-sm bg-[#EEF0F8] px-2 py-[2px] text-[9px] font-bold uppercase text-[#1A1A4E] dark:bg-blue-500/15 dark:text-[var(--text-primary,#FAF7F2)]">
                                 {item.subject}
                             </span>
 
-                            <span className="text-[10px] text-muted">
+                            <span className="text-[10px] text-[#9CA3AF] dark:text-[#A0A0B0]">
                                 • Weightage: {item.weightage}
                             </span>
                         </div>
@@ -52,12 +52,12 @@ export function PrecisionRankedList({ items }: Props) {
                                 {item.accuracy}
                             </p>
 
-                            <p className="text-[9px] font-bold uppercase tracking-wide text-muted">
+                            <p className="text-[9px] font-bold uppercase tracking-wide text-[#9CA3AF] dark:text-[#A0A0B0]">
                                 Accuracy
                             </p>
                         </div>
 
-                        <ChevronRightIcon className="h-4 w-4 text-muted" />
+                        <ChevronRightIcon className="h-4 w-4 text-ink" />
                     </div>
                 </div>
             ))}

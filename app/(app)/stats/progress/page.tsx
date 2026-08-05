@@ -68,9 +68,9 @@ const PRIORITY_DOTS: Record<string, string> = {
 };
 
 const MASTERY = [
-  { label: "Learning", count: 12, color: "bg-brand" },
-  { label: "Revision", count: 8, color: "bg-chart-2" },
-  { label: "Mastered", count: 5, color: "bg-success" },
+  { label: "Learning", count: 12, color: "bg-brand", countColor: "#312E81" },
+  { label: "Revision", count: 8, color: "bg-chart-2", countColor: "#4F46E5" },
+  { label: "Mastered", count: 5, color: "bg-success", countColor: "#A5B4FC" },
 ];
 
 const MASTERY_TOTAL = MASTERY.reduce((sum, item) => sum + item.count, 0);
@@ -99,7 +99,7 @@ export default function ProgressStatsPage() {
 
           {/* Coverage Header */}
           <div className="mt-8 flex items-center justify-between">
-            <h3 className="text-[18px] font-semibold text-ink">
+            <h3 className="text-[18px] font-semibold text-[#333333] dark:text-[var(--text-primary,#FAF7F2)]">
               Syllabus Coverage
             </h3>
 
@@ -132,7 +132,7 @@ export default function ProgressStatsPage() {
                 </div>
               </div>
 
-              <p className="text-right text-[10px] font-bold uppercase tracking-[0.5px] text-muted">
+              <p className="text-right text-[10px] font-bold uppercase tracking-[0.5px] text-[#9CA3AF] dark:text-[#A0A0B0]">
                 Overall Syllabus Covered
               </p>
             </div>
@@ -169,7 +169,11 @@ export default function ProgressStatsPage() {
                   {/* Progress */}
                   <div className="h-2 overflow-hidden rounded-full bg-ink/10">
                     <div
-                      className={`h-full rounded-full ${subject.short === "C" ? "bg-[#5B21B6]" : "bg-ink"
+                      className={`h-full rounded-full bg-[#312E81] ${subject.short === "P"
+                          ? "dark:bg-[var(--text-primary,#FAF7F2)]"
+                          : subject.short === "C"
+                            ? "dark:bg-[#4C1D95]"
+                            : "dark:bg-[#8B8998]"
                         }`}
                       style={{ width: `${subject.percent}%` }}
                     />
@@ -189,6 +193,7 @@ export default function ProgressStatsPage() {
           className="flex h-full w-full min-w-0 flex-col p-6"
           title="Precision Gap Analysis"
           subtitle="Highest growth potential in these areas"
+          subtitleClassName="text-[#9CA3AF] dark:text-[#A0A0B0]"
         >
           <PrecisionRankedList items={PRECISION_GAPS} />
 
@@ -222,7 +227,7 @@ export default function ProgressStatsPage() {
         items-center
         justify-center
         rounded
-        bg-cta
+        bg-[#F59E0B]
         px-3
         text-[10px]
         font-bold
@@ -240,7 +245,7 @@ export default function ProgressStatsPage() {
 
           {/* Title Section */}
           <div className="mt-6 space-y-1">
-            <p className="text-[10px] font-bold uppercase tracking-[1px] text-muted">
+            <p className="text-[10px] font-bold uppercase tracking-[1px] text-[#9CA3AF] dark:text-[#A0A0B0]">
               Mathematics
             </p>
 
@@ -258,7 +263,7 @@ export default function ProgressStatsPage() {
           {/* Stats */}
           <div className="mt-8 grid grid-cols-2 gap-4 pt-2">
             <div>
-              <p className="text-[10px] font-bold uppercase text-muted">
+              <p className="text-[10px] font-bold uppercase text-[#9CA3AF] dark:text-[#A0A0B0]">
                 Accuracy
               </p>
 
@@ -268,7 +273,7 @@ export default function ProgressStatsPage() {
             </div>
 
             <div>
-              <p className="text-[10px] font-bold uppercase text-muted">
+              <p className="text-[10px] font-bold uppercase text-[#9CA3AF] dark:text-[#A0A0B0]">
                 JEE Weightage
               </p>
 
@@ -281,7 +286,7 @@ export default function ProgressStatsPage() {
           {/* CTA */}
           <Button
             variant="task"
-            className="mt-10 rounded-xl px-4 py-4 text-base"
+            className="mt-10 rounded-xl px-4 py-4 text-base !border-[#FF7A59] !bg-[#FF7A59] !text-[#FAF7F2] hover:!bg-[#FF7A59] hover:!text-[#FAF7F2] active:!bg-[#FF7A59] active:!text-[#FAF7F2]"
           >
             Plan deep practice for this
           </Button>
@@ -297,7 +302,7 @@ export default function ProgressStatsPage() {
               JEE Weightage Breakdown
             </h2>
 
-            <p className="mt-1 text-[12px] leading-4 text-muted">
+            <p className="mt-1 text-[12px] leading-4 text-[#9CA3AF] dark:text-[#A0A0B0]">
               High weightage topics where you need to improve
             </p>
           </div>
@@ -325,7 +330,7 @@ export default function ProgressStatsPage() {
 
                 {/* Subject */}
                 <div className="w-[94px]">
-                  <p className="text-[14px] font-medium text-muted">
+                  <p className="text-[14px] font-medium text-[#6B7280] dark:text-[#A0A0B0]">
                     {topic.subject}
                   </p>
                 </div>
@@ -420,7 +425,7 @@ export default function ProgressStatsPage() {
                 Mastery Timeline
               </h2>
 
-              <p className="mt-1 text-[12px] leading-4 text-muted">
+              <p className="mt-1 text-[12px] leading-4 text-[#9CA3AF] dark:text-[#A0A0B0]">
                 Topic distribution across learning phases
               </p>
             </div>
@@ -432,11 +437,14 @@ export default function ProgressStatsPage() {
                   key={item.label}
                   className="flex min-w-[70px] flex-col items-center"
                 >
-                  <span className="text-[24px] font-extrabold leading-8 text-ink">
+                  <span
+                    className="text-[24px] font-extrabold leading-8"
+                    style={{ color: item.countColor }}
+                  >
                     {item.count}
                   </span>
 
-                  <span className="mt-[2px] text-[10px] font-bold uppercase tracking-[0.5px] text-muted">
+                  <span className="mt-[2px] text-[10px] font-bold uppercase tracking-[0.5px] text-[#9CA3AF] dark:text-[#A0A0B0]">
                     {item.label}
                   </span>
                 </div>
@@ -445,7 +453,7 @@ export default function ProgressStatsPage() {
           </div>
 
           {/* Progress */}
-          <div className="mt-2 h-[8px] w-full overflow-hidden rounded-full bg-ink/10">
+          <div className="mt-2 h-[8px] w-full overflow-hidden rounded-full bg-[#312E81] dark:bg-[var(--text-primary,#FAF7F2)]">
             {MASTERY.map((item) => (
               <div
                 key={item.label}
@@ -487,7 +495,7 @@ export default function ProgressStatsPage() {
                 Strongest Topics
               </h2>
 
-              <p className="mt-[2px] text-[12px] leading-4 text-muted">
+              <p className="mt-[2px] text-[12px] leading-4 text-[#9CA3AF] dark:text-[#A0A0B0]">
                 Topics you're performing best in
               </p>
             </div>

@@ -1,5 +1,16 @@
 import type { NextConfig } from "next";
 
+const svgrOptions = {
+  svgoConfig: {
+    plugins: [
+      {
+        name: "preset-default",
+        params: { overrides: { removeViewBox: false } },
+      },
+    ],
+  },
+};
+
 const nextConfig: NextConfig = {
   turbopack: {
     rules: {
@@ -7,21 +18,35 @@ const nextConfig: NextConfig = {
         loaders: [
           {
             loader: "@svgr/webpack",
-            options: {
-              svgoConfig: {
-                plugins: [
-                  {
-                    name: "preset-default",
-                    params: { overrides: { removeViewBox: false } },
-                  },
-                ],
-              },
-            },
+            options: svgrOptions,
           },
         ],
         as: "*.js",
       },
     },
+  },
+  webpack(config) {
+    const fileLoaderRule = config.module.rules.find(
+      (rule: any) => rule.test?.test?.(".svg")
+    );
+
+    config.module.rules.push(
+      {
+        ...fileLoaderRule,
+        test: /\.svg$/i,
+        resourceQuery: /url/,
+      },
+      {
+        test: /\.svg$/i,
+        issuer: fileLoaderRule.issuer,
+        resourceQuery: { not: [...fileLoaderRule.resourceQuery.not, /url/] },
+        use: [{ loader: "@svgr/webpack", options: svgrOptions }],
+      }
+    );
+
+    fileLoaderRule.exclude = /\.svg$/i;
+
+    return config;
   },
 };
 

@@ -5,6 +5,7 @@ type MeterRowProps = {
   barClassName?: string;
   trackClassName?: string;
   trackHeightClassName?: string;
+  labelClassName?: string;
   caption?: string;
 };
 
@@ -15,12 +16,13 @@ export function MeterRow({
   barClassName = "bg-brand",
   trackClassName = "bg-tint",
   trackHeightClassName = "h-2",
+  labelClassName = "text-muted",
   caption,
 }: MeterRowProps) {
   return (
     <div>
       <div className="flex items-center justify-between gap-3 text-xs">
-        <span className="font-semibold text-muted">{label}</span>
+        <span className={`font-semibold ${labelClassName}`}>{label}</span>
         <span className="flex shrink-0 items-baseline gap-1">
           <span className="text-[14px] font-extrabold leading-[20px] text-ink">
             {value}
