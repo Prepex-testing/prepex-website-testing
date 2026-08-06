@@ -68,6 +68,7 @@ export type CheckInStatus = {
     streakCount: number;
     longestStreak: number;
     missingDays: number;
+    isInRecoveryMode?: boolean;
   } | null;
   isInBurnout: boolean;
   burnoutStatus: { isInBurnout: boolean; message: string };
@@ -82,5 +83,11 @@ export function submitCheckIn(input: { mood: CheckInMoodValue } | { isSkipped: t
   return authRequest<{ success: true; data: unknown }>("", {
     method: "POST",
     body: JSON.stringify(input),
+  });
+}
+
+export function endRecoveryMode() {
+  return authRequest<{ success: true; data: unknown }>("/end-recovery", {
+    method: "POST",
   });
 }

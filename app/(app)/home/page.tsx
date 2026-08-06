@@ -13,7 +13,7 @@ import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { CheckInModal, MOODS, type Mood } from "@/components/check-in/CheckInModal";
-import { moodIdToApiValue, apiValueToMoodId, getCheckInStatus } from "@/lib/api/checkin";
+import { moodIdToApiValue, apiValueToMoodId, getCheckInStatus, endRecoveryMode } from "@/lib/api/checkin";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import {
   regeneratePlanForMood,
@@ -33,7 +33,10 @@ import {
   PencilIcon,
   CheckCircleIcon,
   ArrowRightIcon,
+  AlertTriangleIcon,
+  XIcon,
 } from "@/components/ui/icons";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { useTheme } from "@/components/theme/ThemeProvider";
 
 const TASKS: Task[] = [
@@ -174,6 +177,7 @@ function toHomeTask(task: PlannerTask): Task {
     hasResource: Boolean(task.chapter),
     actionLabel: withResumeLabel(TASK_ACTION_LABEL[task.taskType] ?? "Start Session", task.status),
     isCompleted: task.status === "COMPLETED",
+    isCustom: Boolean(task.isAnchor),
   };
 }
 
@@ -206,6 +210,9 @@ export default function HomePage() {
   const [planData, setPlanData] = useState<TodayPlanResponse | null>(null);
   const [isGeneratingPlan, setGeneratingPlan] = useState(false);
   const [streakCount, setStreakCount] = useState<number | null>(null);
+  const [isInRecoveryMode, setInRecoveryMode] = useState(false);
+  const [isEndRecoveryOpen, setEndRecoveryOpen] = useState(false);
+  const [isEndingRecovery, setEndingRecovery] = useState(false);
   const isFriday = useSyncExternalStore(
     subscribeNoop,
     getIsFridaySnapshot,
@@ -224,6 +231,7 @@ export default function HomePage() {
     getCheckInStatus()
       .then(({ data }) => {
         setStreakCount(data.checkin?.streakCount ?? null);
+        setInRecoveryMode(Boolean(data.checkin?.isInRecoveryMode));
         const moodValue = data.checkin?.mood;
         if (moodValue) {
           const moodId = apiValueToMoodId(moodValue);
@@ -239,6 +247,20 @@ export default function HomePage() {
 
   useEffect(refetchPlan, []);
   useEffect(refetchCheckInStatus, []);
+
+  const handleEndRecovery = async () => {
+    setEndingRecovery(true);
+    try {
+      await endRecoveryMode();
+      setInRecoveryMode(false);
+      setEndRecoveryOpen(false);
+      refetchPlan();
+    } catch {
+      // Best-effort — the banner stays up so the user can retry.
+    } finally {
+      setEndingRecovery(false);
+    }
+  };
 
   const handleMoodSave = async (mood: Mood) => {
     setEnergyMood(mood);
@@ -284,6 +306,28 @@ export default function HomePage() {
           <UserMenu />
         </div>
       </div>
+
+      {isInRecoveryMode && (
+        <div className="flex items-center justify-between gap-3 rounded-2xl border border-warning/30 bg-warning/10 px-4 py-4 sm:px-5">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-warning/20 text-warning">
+              <AlertTriangleIcon />
+            </span>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-warning">Recovery Mode</p>
+              <p className="text-xs text-muted">Your recovery plan is active</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            aria-label="End recovery mode"
+            onClick={() => setEndRecoveryOpen(true)}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-warning hover:bg-warning/20"
+          >
+            <XIcon />
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-brand/10 bg-surface p-6">
@@ -587,6 +631,14 @@ export default function HomePage() {
         </Button>
       </div>
 
+      <ConfirmModal
+        open={isEndRecoveryOpen}
+        onClose={() => setEndRecoveryOpen(false)}
+        onConfirm={handleEndRecovery}
+        title="End recovery mode?"
+        description="Are you sure you want to end recovery mode?"
+        confirmLabel={isEndingRecovery ? "Ending..." : "Yes, End Recovery"}
+      />
       <CheckInModal
         open={isCheckInOpen}
         onClose={() => setCheckInOpen(false)}
