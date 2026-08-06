@@ -162,7 +162,7 @@ export default function WhichChaptersHaveYouStudiedPage() {
         <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
           Which chapters have you studied?
         </h1>
-        <p className="text-[14px] font-semibold leading-[100%] text-[#666666] sm:text-[16px]">
+        <p className="text-[14px] font-semibold leading-[100%] text-muted sm:text-[16px]">
           Tap to mark studied. Skip what you haven&apos;t touched. Even partial study
           counts
         </p>
@@ -178,7 +178,7 @@ export default function WhichChaptersHaveYouStudiedPage() {
       )}
 
       <div className="mt-6 rounded-xl border border-brand/10 bg-surface p-4 dark:border-white/10">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-2">
             <span className="whitespace-nowrap rounded-lg bg-ink px-3 py-2 text-xs font-semibold text-surface dark:text-[#111145] sm:px-4 sm:text-sm">
               {markedCount - partialCount} chapter

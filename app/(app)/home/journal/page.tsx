@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
+import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import {
   // ArrowLeftIcon,
   // BellIcon,
@@ -29,6 +32,9 @@ const STAT_TILES = [
 ];
 
 export default function WeeklyWinJournalPage() {
+  const storedFullName = useStoredFullName();
+  const firstName = storedFullName.trim().split(/\s+/)[0] || "there";
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8 font-['Plus_Jakarta_Sans']">
       {/* Page header */}
@@ -81,7 +87,7 @@ export default function WeeklyWinJournalPage() {
             </div>
 
             <p className="mt-4 text-lg font-semibold text-[#FAF7F2] sm:text-xl">
-              Rohan, you came through.
+              {firstName}, you came through.
             </p>
           </div>
 

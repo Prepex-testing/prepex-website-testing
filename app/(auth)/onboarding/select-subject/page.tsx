@@ -10,9 +10,10 @@ import { OptionCard } from "@/components/ui/OptionCard";
 import { OptionCardSkeleton } from "@/components/ui/OptionCardSkeleton";
 // import { ArrowLeftIcon } from "@/components/ui/icons";
 import { GlobeIcon, FlaskIcon, CalculatorIcon, AtomIcon, LayersIcon ,ArrowLeftIcon} from "@/assets/icons";
-import { getSubjects } from "@/lib/api/dashboard";
+import { getSubjectsByExam } from "@/lib/api/dashboard";
 import { getOnboardingProgress, selectSubjects } from "@/lib/api/onboarding";
 import { ApiError } from "@/lib/api/http";
+import { toTitleCase } from "@/lib/utils/text";
 import type { Subject } from "@/lib/api/dashboard";
 
 const SUBJECT_ICONS: Record<string, ReactNode> = {
@@ -43,14 +44,20 @@ export default function SelectSubjectPage() {
   const [isSubmitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    Promise.all([getSubjects(), getOnboardingProgress().catch(() => null)])
-      .then(([{ data }, progress]) => {
-        setSubjects(data);
-        const savedSubjectIds = progress?.data.subjects.map((subject) => subject.subjectId);
-        if (savedSubjectIds?.length) setSelected(savedSubjectIds);
+    getOnboardingProgress()
+      .then((progress) => {
+        const savedSubjectIds = progress.data.subjects.map((subject) => subject.subjectId);
+        if (savedSubjectIds.length) setSelected(savedSubjectIds);
 
-        const exam = progress?.data.profile?.exam;
+        const exam = progress.data.profile?.exam;
         if (exam) setExamLabel(EXAM_LABEL[exam.code] ?? exam.name);
+
+        const examId = progress.data.profile?.examId;
+        if (!examId) {
+          setError("No exam selected. Please go back and select an exam.");
+          return;
+        }
+        return getSubjectsByExam(examId).then(({ data }) => setSubjects(data));
       })
       .catch(() => setError("Couldn't load subjects. Please refresh and try again."))
       .finally(() => setLoading(false));
@@ -121,7 +128,7 @@ export default function SelectSubjectPage() {
               key={subject.id}
               compact
               icon={SUBJECT_ICONS[subject.code] ?? DEFAULT_ICON}
-              title={subject.name}
+              title={toTitleCase(subject.name)}
               selected={selected.includes(subject.id)}
               onClick={() => toggle(subject.id)}
             />

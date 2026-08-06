@@ -25,11 +25,12 @@ const DURATION_OPTIONS = [
 type CrossAppSessionModalProps = {
   open: boolean;
   onClose: () => void;
-  onStart: () => void;
+  onStart: (activityLabel: string) => void;
 };
 
 export function CrossAppSessionModal({ open, onClose, onStart }: CrossAppSessionModalProps) {
   const [activity, setActivity] = useState("coaching-lecture");
+  const activityLabel = ACTIVITIES.find((item) => item.id === activity)?.label ?? activity;
 
   return (
     <Modal open={open} onClose={onClose} ariaLabel="Study outside prepex">
@@ -65,11 +66,11 @@ export function CrossAppSessionModal({ open, onClose, onStart }: CrossAppSession
         <Select label="How long?" options={DURATION_OPTIONS} defaultValue="60" />
       </div>
 
-      <Button variant="primary" className="mt-6" onClick={onStart}>
+      <Button variant="primary" className="mt-6" onClick={() => onStart(activityLabel)}>
         Start session
       </Button>
       <p className="mt-2 text-center text-xs text-muted">
-        When you&apos;re done, return to Prepex and confirm. Counts as focus time.
+        When you&apos;re done, return to prepex and confirm. Counts as focus time.
       </p>
     </Modal>
   );

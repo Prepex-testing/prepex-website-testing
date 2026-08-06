@@ -22,6 +22,7 @@ export { default as UploadIcon } from "./UploadIcon.svg";
 export { default as SparkleIcon } from "./SparkleIcon.svg";
 export { default as Container } from "./Container.svg";
 export { default as ArrowLeftIcon } from "./ArrowLeftIcon.svg";
+export { default as LightbulbIcon } from "./LightbulbIcon.svg";
 export { default as PlayIcon } from "./PlayIcon.svg";
 export { default as Open } from "./Open.svg";
 export { default as Check } from "./Check.svg";

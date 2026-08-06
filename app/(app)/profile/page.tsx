@@ -31,6 +31,8 @@ import { EditProfileModal } from "@/components/profile/EditProfileModal";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { useStoredFullName } from "@/lib/auth/useStoredFullName";
+import { performLogout } from "@/lib/api/auth";
 import { QuickIcon, Coaching, GraduationCapIcon, UserIcons, CalendarIcons, ClockIcon, CalendarIcon, Patners, UserIcon, EditIcons, BellIcon } from "@/assets/icons";
 const PROFILE_COMPLETE = 72;
 
@@ -90,6 +92,9 @@ const NOTIFICATION_ITEMS = [
 
 export default function ProfilePage() {
   const router = useRouter();
+  const storedFullName = useStoredFullName();
+  const fullName = storedFullName || "Student";
+  const initial = fullName[0]?.toUpperCase() ?? "S";
   const [isEditOpen, setEditOpen] = useState(false);
   const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -143,7 +148,7 @@ export default function ProfilePage() {
             </p>
 
             <h2 className="mt-4 text-center text-2xl font-bold text-ink">
-              Rohan
+              {fullName}
             </h2>
 
             <div className="mt-3 flex flex-col items-center gap-2">
@@ -567,7 +572,10 @@ export default function ProfilePage() {
       <ConfirmModal
         open={isLogoutConfirmOpen}
         onClose={() => setLogoutConfirmOpen(false)}
-        onConfirm={() => router.push("/login")}
+        onConfirm={async () => {
+          await performLogout();
+          router.push("/login");
+        }}
         title="Log out?"
         description="Are you sure you want to logout? You'll need to sign in again to access your plan."
         confirmLabel="Yes, Logout"

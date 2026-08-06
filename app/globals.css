@@ -130,7 +130,7 @@
   --brand: #6d6dc4;
   --body-text: #e4e5f1;
   --muted: #8b8998;
-  --cta: #ff8a6b;
+  --cta: #FF7A59;
   --tint: #23234f;
   --tint-strong: #2b2b63;
   --warning: #f2b84d;
@@ -367,6 +367,39 @@ body {
 }
 
 /*
+ * Browsers only default to a pointer cursor on <a href>. Everything else
+ * clickable (buttons, custom icon/checkbox controls, selects, anything
+ * wired up with an onClick) shows the plain arrow unless told otherwise —
+ * so apply it globally instead of per-component.
+ */
+a[href],
+button:not(:disabled),
+select:not(:disabled),
+summary,
+label[for],
+[role="button"]:not([aria-disabled="true"]),
+[role="link"]:not([aria-disabled="true"]),
+[role="tab"]:not([aria-disabled="true"]),
+[role="menuitem"]:not([aria-disabled="true"]),
+[role="switch"]:not([aria-disabled="true"]),
+input[type="button"]:not(:disabled),
+input[type="submit"]:not(:disabled),
+input[type="reset"]:not(:disabled),
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled),
+[onclick],
+[tabindex]:not([tabindex="-1"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+select:disabled,
+input:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/*
  * Theme toggle switches CSS variables on [data-theme] instantly, which
  * otherwise makes every themed color snap at once. Transition the specific
  * properties driven by those variables so light/dark switches fade instead.
@@ -409,4 +442,28 @@ body {
 
 .pr-safe {
   padding-right: env(safe-area-inset-right);
+}
+
+/*
+ * Browsers paint autofilled inputs with their own background (often blue or
+ * yellow) that ignores our bg-transparent input styling. Neutralize it by
+ * inset-shadowing the surface color over the whole field.
+ */
+input:is(
+  :-webkit-autofill,
+  :-webkit-autofill:hover,
+  :-webkit-autofill:focus,
+  :-webkit-autofill:active,
+  /* Chrome swaps in these pseudo-classes while its own autofill suggestion
+     dropdown is open/highlighted on the field, which otherwise reverts the
+     text to Chrome's default black. :is() keeps this forgiving so other
+     browsers that don't recognize them still apply the rest of the rule. */
+  :-internal-autofill-selected,
+  :-internal-autofill-previewed
+) {
+  -webkit-box-shadow: 0 0 0 1000px var(--surface) inset !important;
+  box-shadow: 0 0 0 1000px var(--surface) inset !important;
+  -webkit-text-fill-color: var(--ink) !important;
+  caret-color: var(--ink);
+  transition: background-color 9999s ease-in-out 0s;
 }

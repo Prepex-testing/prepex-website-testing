@@ -12,6 +12,7 @@ import {
   ChevronDownIcon,
 } from "@/components/ui/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { TargetIcon, TrendingUpIcon, CalendarIcon, ClockIcon, LayersIcon ,ArrowLeftIcon} from "@/assets/icons";
 type Difficulty = "Low" | "Medium" | "High";
 
@@ -27,6 +28,8 @@ export default function RevisionCompletePage() {
   const [difficulty, setDifficulty] = useState<Difficulty>("Medium");
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const storedFullName = useStoredFullName();
+  const firstName = storedFullName.trim().split(/\s+/)[0] || "there";
 
   return (
     <div className="mx-auto flex w-full max-w-[1083px] flex-col gap-4 p-4 sm:gap-6 sm:p-6 lg:p-8">
@@ -61,7 +64,7 @@ export default function RevisionCompletePage() {
           </span>
 
           <h1 className="text-xl font-bold text-ink sm:text-2xl lg:text-h1">
-            Great job, Rohan
+            Great job, {firstName}
           </h1>
 
           <p className="text-sm leading-5 text-muted">

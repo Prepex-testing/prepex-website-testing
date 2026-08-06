@@ -119,7 +119,7 @@ export default function NotificationSettingsPage() {
       <SettingRow
         icon={<BellIcon />}
         title="Master Notifications"
-        subtitle="Enable or disable all notifications from Prepex."
+        subtitle="Enable or disable all notifications from prepex."
         iconClassName="bg-[#EEF0F8] text-[#1A1A4E] dark:border-[#FAF7F2] dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]"
         right={
           <Switch

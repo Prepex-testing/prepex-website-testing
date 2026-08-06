@@ -62,13 +62,11 @@ function isoToDisplayDate(iso: string): string {
   return `${day}/${month}/${year}`;
 }
 
+// JEE Main falls in mid-May, so the default exam date targets May 15 of the
+// target year rather than carrying over today's day-of-year.
 function addYearsIso(years: number): string {
-  const date = new Date();
-  date.setFullYear(date.getFullYear() + years);
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
+  const year = new Date().getFullYear() + years;
+  return `${year}-05-15`;
 }
 
 // Class 11 students are 2 years out from their target exam; everyone else
@@ -86,6 +84,10 @@ export default function TellUsAboutYouPage() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [examDate, setExamDate] = useState("");
   const [selectedClass, setSelectedClass] = useState<CurrentLevel>("CLASS_11");
+  // Boards and CUET are Class 12-only exams — lock the class picker to
+  // Class 12 and disable the rest instead of letting a mismatched level
+  // (e.g. Class 11 or a dropper year) be saved against them.
+  const [isClassLocked, setClassLocked] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
   const [isLoading, setLoading] = useState(true);
@@ -94,7 +96,14 @@ export default function TellUsAboutYouPage() {
     getOnboardingProgress()
       .then(({ data }) => {
         const profile = data.profile;
-        if (profile?.currentLevel) setSelectedClass(profile.currentLevel);
+        const examCode = profile?.exam?.code?.toUpperCase();
+        const locked = examCode === "BOARDS" || examCode === "CUET";
+        setClassLocked(locked);
+        if (locked) {
+          setSelectedClass("CLASS_12");
+        } else if (profile?.currentLevel) {
+          setSelectedClass(profile.currentLevel);
+        }
         if (profile?.targetExamDate) setExamDate(isoToDisplayDate(profile.targetExamDate));
         if (profile?.city) setCity(profile.city);
         if (profile?.phoneNumber) setPhoneNumber(profile.phoneNumber);
@@ -221,11 +230,15 @@ export default function TellUsAboutYouPage() {
               Current class?
             </p>
             <p className="mt-1 text-xs text-muted">
-              Helps us understand your overall schedule and content depth
+              {isClassLocked
+                ? "Boards and CUET are Class 12 exams, so this is locked to Class 12."
+                : "Helps us understand your overall schedule and content depth"}
             </p>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {CLASSES.map((item) => (
+            {CLASSES.map((item) => {
+              const isDisabled = isClassLocked && item.id !== "CLASS_12";
+              return (
               <OptionCard
                 key={item.id}
                 compact
@@ -233,7 +246,8 @@ export default function TellUsAboutYouPage() {
                 title={item.title}
                 subtitle={item.subtitle}
                 selected={selectedClass === item.id}
-                onClick={() => setSelectedClass(item.id)}
+                disabled={isDisabled}
+                onClick={isDisabled ? undefined : () => setSelectedClass(item.id)}
                 className={`${
                   selectedClass === item.id
                     ? "dark:border! dark:border-[#FAF7F2]!"
@@ -242,7 +256,8 @@ export default function TellUsAboutYouPage() {
                   item.id === "OTHER" ? "sm:col-span-2" : ""
                 }`}
               />
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -255,6 +270,7 @@ export default function TellUsAboutYouPage() {
             name="examDate"
             defaultValue={examDate}
             onDateChange={setExamDate}
+            disablePast
           />
         )}
       </div>
