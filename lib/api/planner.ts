@@ -64,7 +64,7 @@ export type PlannerTask = {
   minutesCompleted: number;
   scheduledStart: string;
   scheduledEnd: string;
-  suggestedWindow: string;
+  suggestedWindow: string | null;
   status: TaskStatus | string;
   questionCount: number | null;
   subject: PlannerSubject | null;
