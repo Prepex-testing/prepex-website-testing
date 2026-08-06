@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ClockIcon, CalendarIcon, GripVerticalIcon, CheckIcon } from "@/components/ui/icons";
 import { TaskEditMenu } from "@/components/home/TaskEditMenu";
-import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS } from "@/components/home/TaskRow";
+import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE } from "@/components/home/TaskRow";
 import type { TaskType } from "@/components/home/TaskRow";
 
 type Difficulty = "high" | "medium";
@@ -31,6 +31,7 @@ export type PlanTask = {
   difficulty: Difficulty;
   actionLabel: string;
   isCompleted?: boolean;
+  isCustom?: boolean;
 };
 
 type PlanTaskRowProps = {
@@ -66,6 +67,13 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
           >
             {TYPE_LABELS[task.type]}
           </span>
+          {task.isCustom && (
+            <span
+              className={`rounded-full px-2 py-0.5 text-[10px] font-bold leading-[15px] ${CUSTOM_BADGE_STYLE}`}
+            >
+              Custom
+            </span>
+          )}
         </div>
 
         <p className="mt-0.5 text-base font-bold leading-6 text-ink">

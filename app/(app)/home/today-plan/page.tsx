@@ -46,7 +46,8 @@ const TASK_ACTION_LABEL: Record<string, string> = {
   WELLNESS: "Start Session",
 };
 
-function formatWindow(window: string) {
+function formatWindow(window: string | null | undefined) {
+  if (!window) return "";
   const label = window.toLowerCase();
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
@@ -76,6 +77,7 @@ function toPlanTask(task: PlannerTask): PlanTask {
       ? `Practice ${task.questionCount} Qs`
       : withResumeLabel(TASK_ACTION_LABEL[task.taskType] ?? "Start Session", task.status),
     isCompleted: task.status === "COMPLETED",
+    isCustom: Boolean(task.isAnchor),
   };
 }
 

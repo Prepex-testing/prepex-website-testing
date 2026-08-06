@@ -4,11 +4,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ClockIcon, SunIcon, FileIcon, CalendarIcon, CheckIcon } from "@/components/ui/icons";
 import { TaskEditMenu } from "@/components/home/TaskEditMenu";
-import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS } from "@/components/home/taskTypes";
+import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE } from "@/components/home/taskTypes";
 import type { TaskType } from "@/components/home/taskTypes";
 
 export type { TaskType };
-export { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS };
+export { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE };
 
 export type Task = {
   id: string;
@@ -23,6 +23,7 @@ export type Task = {
   hasResource: boolean;
   actionLabel: string;
   isCompleted?: boolean;
+  isCustom?: boolean;
 };
 
 type TaskRowProps = {
@@ -106,6 +107,14 @@ export function TaskRow({
               >
                 {TYPE_LABELS[task.type]}
               </span>
+
+              {task.isCustom && (
+                <span
+                  className={`rounded-sm border-0 px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] md:text-xs font-semibold uppercase tracking-[0.5px] leading-none whitespace-nowrap ${CUSTOM_BADGE_STYLE}`}
+                >
+                  Custom
+                </span>
+              )}
             </div>
 
             <h3 className="truncate text-lg font-bold text-ink">

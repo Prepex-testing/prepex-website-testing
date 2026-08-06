@@ -69,6 +69,7 @@ export type PlannerTask = {
   questionCount: number | null;
   subject: PlannerSubject | null;
   chapter: PlannerChapter;
+  isAnchor?: boolean;
 };
 
 export type DailyPlan = {
