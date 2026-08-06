@@ -85,6 +85,8 @@ export { default as Patners } from "./Patners.svg";
 export { default as Coaching } from "./Coaching.svg";
 export { default as CalendarIcons } from "./CalendarIcons.svg";
 export { default as Chart} from "./Chart.svg";
+export { default as StatsIcon} from "./StatsIcon.svg";
+export { default as PracticeIcon} from "./PracticeIcon.svg";
 
 
 

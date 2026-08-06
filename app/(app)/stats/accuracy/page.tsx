@@ -16,11 +16,30 @@ import { MeterRow } from "@/components/stats/MeterRow";
 import { RankedList } from "@/components/stats/RankedList";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { ChapterRankedList } from "@/components/stats/ChapterRankedList";
+import { LeftIconcon } from "@/assets/icons";
 
 const SUBJECTS = [
-  { label: "Physics", short: "P", percent: 72, fraction: "71/99" },
-  { label: "Maths", short: "M", percent: 58, fraction: "57/98" },
-  { label: "Chemistry", short: "C", percent: 41, fraction: "40/98" },
+  {
+    label: "Physics",
+    short: "P",
+    percent: 72,
+    fraction: "71/99",
+    barClassName: "bg-[#1A1A4E] dark:bg-[rgba(250,247,242,0.25)]",
+  },
+  {
+    label: "Maths",
+    short: "M",
+    percent: 58,
+    fraction: "57/98",
+    barClassName: "bg-[#1A1A4E] dark:bg-[#4C1D95]",
+  },
+  {
+    label: "Chemistry",
+    short: "C",
+    percent: 41,
+    fraction: "40/98",
+    barClassName: "bg-[#1A1A4E] dark:bg-[#8B8998]",
+  },
 ];
 
 const MOCK_TREND = [174, 180, 183, 209, 245];
@@ -33,6 +52,9 @@ const MISTAKE_PATTERNS = [
     subtitle: "Careless calculation & reading",
     value: "18",
     icon: <AlertCircleIcon className="h-5 w-5" />,
+    titleClassName: "text-[#1D1D4B] dark:text-ink",
+    subtitleClassName: "text-[#9CA3AF]",
+    valueClassName: "text-[#F59E0B]",
   },
   {
     id: "conceptual",
@@ -40,6 +62,9 @@ const MISTAKE_PATTERNS = [
     subtitle: "Knowledge gaps in basics",
     value: "24",
     icon: <LightbulbIcon className="h-5 w-5" />,
+    titleClassName: "text-[#1D1D4B] dark:text-ink",
+    subtitleClassName: "text-[#9CA3AF]",
+    valueClassName: "text-[#F59E0B]",
   },
   {
     id: "time",
@@ -47,6 +72,9 @@ const MISTAKE_PATTERNS = [
     subtitle: "Incomplete attempts at end",
     value: "12",
     icon: <ClockIconss className="h-5 w-5" />,
+    titleClassName: "text-[#1D1D4B] dark:text-ink",
+    subtitleClassName: "text-[#9CA3AF]",
+    valueClassName: "text-[#F59E0B]",
   },
   {
     id: "guess",
@@ -54,6 +82,9 @@ const MISTAKE_PATTERNS = [
     subtitle: "Incorrect logical deductions",
     value: "8",
     icon: <DiceIcon className="h-5 w-5" />,
+    titleClassName: "text-[#1D1D4B] dark:text-ink",
+    subtitleClassName: "text-[#9CA3AF]",
+    valueClassName: "text-[#F59E0B]",
   },
 ];
 
@@ -134,9 +165,9 @@ const STRONGEST_CHAPTERS = [
 ];
 
 const DIFFICULTY_ACCURACY = [
-  { label: "Easy", percent: 84 },
-  { label: "Medium", percent: 68 },
-  { label: "Hard", percent: 47 },
+  { label: "Easy", percent: 84, barClassName: "bg-brand dark:bg-ink" },
+  { label: "Medium", percent: 68, barClassName: "bg-brand dark:bg-[#4C1D95]" },
+  { label: "Hard", percent: 47, barClassName: "bg-brand dark:bg-ink" },
 ];
 
 const TIME_PER_QUESTION = [
@@ -146,10 +177,26 @@ const TIME_PER_QUESTION = [
 ];
 
 const ACCURACY_BY_TIME = [
-  { label: "Morning", percent: 78, icon: <SunIcon /> },
-  { label: "Afternoon", percent: 69, icon: <CloudSunIcon /> },
-  { label: "Evening", percent: 73, icon: <CloudMoonIcon /> },
-  { label: "Night", percent: 62, icon: <MoonIcon /> },
+  {
+    label: "Morning",
+    percent: 78,
+    icon: <SunIcon className="h-3.5 w-3.5 sm:h-[15px] sm:w-[15px]" />,
+  },
+  {
+    label: "Afternoon",
+    percent: 69,
+    icon: <CloudSunIcon />,
+  },
+  {
+    label: "Evening",
+    percent: 73,
+    icon: <CloudMoonIcon/>,
+  },
+  {
+    label: "Night",
+    percent: 62,
+    icon: <MoonIcon className="h-3.5 w-3.5 sm:h-[15px] sm:w-[15px]" />,
+  },
 ];
 
 export default function AccuracyStatsPage() {
@@ -163,22 +210,23 @@ export default function AccuracyStatsPage() {
               label="Accuracy"
               size={120}
               progressGradient={{ from: "var(--score-ring-from)", to: "var(--score-ring-to)" }}
+              labelClassName="text-[#777681] dark:text-muted"
             />
             <div className="w-full border-t border-brand/10 pt-4">
               <div className="flex items-center justify-around">
                 <div className="text-center">
-                  <p className="text-[10px] uppercase tracking-wide text-muted">
+                  <p className="text-[10px] uppercase tracking-wide text-[#777681] dark:text-muted">
                     Attempted
                   </p>
                   <p className="text-sm font-bold text-ink">142 Qns</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-[10px] uppercase tracking-wide text-muted">Correct</p>
+                  <p className="text-[10px] uppercase tracking-wide text-[#777681] dark:text-muted">Correct</p>
                   <p className="text-sm font-bold text-ink">96 Qns</p>
                 </div>
               </div>
             </div>
-            <p className="flex items-center gap-1 text-xs text-muted">
+            <p className="flex items-center gap-1 text-xs text-[#777681] dark:text-muted">
               <ClockIcon />
               Average time: 1.8 min/question
             </p>
@@ -188,29 +236,32 @@ export default function AccuracyStatsPage() {
         <StatCard
           title="Accuracy by Subject"
           right={
-            <span className="shrink-0 text-xs font-semibold text-link">Detailed view →</span>
+            <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-ink">
+              Detailed view
+              <LeftIconcon className="h-2.5 w-2.5" />
+            </span>
           }
         >
           <div className="flex flex-col gap-5">
             {SUBJECTS.map((subject) => (
               <div key={subject.label} className="flex items-center gap-3">
                 {/* Subject Initial */}
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand/20 text-sm font-bold text-white">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand/20 text-sm font-bold text-ink">
                   {subject.short}
                 </div>
 
                 {/* Subject Name + Progress */}
                 <div className="flex-1">
                   <div className="mb-1 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-body-text">
+                    <span className="text-sm font-semibold text-[#374151] dark:text-ink">
                       {subject.label}
                     </span>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-ink">
+                      <span className="text-sm font-bold text-[#111827] dark:text-ink">
                         {subject.percent}%
                       </span>
-                      <span className="text-xs text-muted">
+                      <span className="text-xs text-[#9CA3AF] dark:text-muted">
                         {subject.fraction}
                       </span>
                     </div>
@@ -218,7 +269,7 @@ export default function AccuracyStatsPage() {
 
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-tint">
                     <div
-                      className="h-full rounded-full bg-toggle-on"
+                      className={`h-full rounded-full ${subject.barClassName}`}
                       style={{ width: `${subject.percent}%` }}
                     />
                   </div>
@@ -231,9 +282,11 @@ export default function AccuracyStatsPage() {
         <StatCard
           title="Mock Trend (JEE Main)"
           subtitle="Last 5 mocks performance analysis"
+          subtitleClassName="text-[#9CA3AF] dark:text-muted"
           right={
-            <span className="shrink-0 text-xs font-semibold text-link">
-              Detailed view →
+            <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-ink">
+              Detailed view
+              <LeftIconcon className="h-2.5 w-2.5" />
             </span>
           }
         >
@@ -313,7 +366,7 @@ export default function AccuracyStatsPage() {
                         x="2"
                         y={y + 4}
                         fontSize="9"
-                        fill="#8186A6"
+                        className="fill-[#9CA3AF] dark:fill-muted"
                       >
                         {tick}
                       </text>
@@ -340,8 +393,8 @@ export default function AccuracyStatsPage() {
                         cx={point.x}
                         cy={point.y}
                         r="3.5"
-                        fill="#1A1A4E"
-                        stroke="white"
+                        fill="var(--ink)"
+                        stroke="var(--surface)"
                         strokeWidth="1.8"
                       />
 
@@ -350,7 +403,7 @@ export default function AccuracyStatsPage() {
                         y={point.y - 10}
                         textAnchor="middle"
                         fontSize="10"
-                        fill="white"
+                        fill="var(--ink)"
                         fontWeight="700"
                       >
                         {point.value}
@@ -374,8 +427,9 @@ export default function AccuracyStatsPage() {
           className="flex h-full w-full min-w-0 flex-col p-6"
           title="Mistake Patterns (Recoverable Marks)"
           right={
-            <span className="text-xs font-semibold text-white">
-              Detailed view →
+            <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-ink">
+              Detailed view
+              <LeftIconcon className="h-2.5 w-2.5" />
             </span>
           }
         >
@@ -387,8 +441,9 @@ export default function AccuracyStatsPage() {
           className="flex h-full w-full min-w-0 flex-col p-6"
           title="Accuracy by Chapter"
           right={
-            <span className="text-xs font-semibold text-cta">
-              View all →
+            <span className="flex items-center gap-1 text-xs font-semibold text-ink">
+              View all
+              <LeftIconcon className="h-2.5 w-2.5" />
             </span>
           }
         >
@@ -396,16 +451,16 @@ export default function AccuracyStatsPage() {
             <ChapterRankedList
               title="TOP 5 WEAKEST"
               titleColor="#F59E0B"
-              rankBg="bg-[#3A2C18] text-[#F59E0B]"
-              valueColor="#FAF7F2"
+              rankBg="bg-[#F59E0B]/15 text-[#F59E0B]"
+              valueColor="var(--ink)"
               items={WEAKEST_CHAPTERS}
             />
 
             <ChapterRankedList
               title="TOP 5 STRONGEST"
-              titleColor="#22C55E"
-              rankBg="bg-[#153C31] text-[#22C55E]"
-              valueColor="#FAF7F2"
+              titleColor="#1E8449"
+              rankBg="bg-[#1E8449]/15 text-[#1E8449]"
+              valueColor="var(--ink)"
               items={STRONGEST_CHAPTERS}
             />
           </div>
@@ -421,8 +476,10 @@ export default function AccuracyStatsPage() {
                 label={row.label}
                 value={`${row.percent}%`}
                 percent={row.percent}
+                barClassName={row.barClassName}
                 trackClassName="bg-muted/25"
                 trackHeightClassName="h-1.5"
+                labelClassName="text-[#6B7280]"
               />
             ))}
           </div>
@@ -432,7 +489,7 @@ export default function AccuracyStatsPage() {
           <div className="flex flex-col gap-4">
             {TIME_PER_QUESTION.map((row) => (
               <div key={row.label} className="flex items-center justify-between text-xs">
-                <span className="flex items-center gap-1.5 font-semibold text-body-text">
+                <span className="flex items-center gap-1.5 font-semibold text-[#4B5563] dark:text-muted">
                   <ClockIcon />
                   {row.label}
                 </span>
@@ -465,11 +522,10 @@ export default function AccuracyStatsPage() {
         <StatCard title="Predicted Next Mock" padding="p-6">
           <div className="flex flex-col items-center">
             <p className="text-center text-[32px] font-extrabold leading-none text-ink">
-              175 <span className="text-muted">± 8</span>
+              175 <span className="">± 8</span>
             </p>
-            <p className="mt-2 text-center text-sm font-bold text-muted">Marks</p>
+            <p className="mt-2 text-center text-sm font-bold text-ink">Marks</p>
             <div className="mt-3 flex items-center justify-center gap-1 rounded-full bg-tint-strong px-3 py-1.5 text-[10px] font-bold text-ink">
-              <StarIcon />
               90% Confidence
             </div>
           </div>

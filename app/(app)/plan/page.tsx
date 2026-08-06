@@ -166,12 +166,12 @@ export default function PlanPage() {
       {/* Page header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-h1 text-ink">Plan</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
@@ -224,14 +224,7 @@ export default function PlanPage() {
                     </div>
                   </div>
                   <p
-                    className="
-    mt-2
-    text-body-lg
-    font-medium
-    leading-none
-    tracking-normal
-    text-muted
-  "
+                    className="mt-2 text-body-lg font-medium leading-none tracking-normal text-muted"
                   >
                     Strategic Revision &amp; Mock Test Phase
                   </p>

@@ -314,12 +314,12 @@ export function MoreIcon() {
   );
 }
 
-export function CalendarIcon() {
+export function CalendarIcon({ className = "h-4 w-4" }: { className?: string } = {}) {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <rect x="2" y="3.5" width="12" height="10.5" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M2 6.5h12" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M5 2v3M11 2v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="2" y="3.5" width="12" height="10.5" rx="1.5" stroke="currentColor" strokeWidth="1.78" />
+      <path d="M2 6.5h12" stroke="currentColor" strokeWidth="1.78" />
+      <path d="M5 2v3M11 2v3" stroke="currentColor" strokeWidth="1.78" strokeLinecap="round" />
     </svg>
   );
 }
@@ -537,16 +537,16 @@ export function ClockIcons() {
   );
 }
 
-export function HomeIcon() {
+export function HomeIcon({ className = "h-4 w-4" }: { className?: string } = {}) {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path
         d="M2 7 8 2l6 5v6.5A1.5 1.5 0 0 1 12.5 15h-9A1.5 1.5 0 0 1 2 13.5V7Z"
         stroke="currentColor"
-        strokeWidth="1.4"
+        strokeWidth="1.78"
         strokeLinejoin="round"
       />
-      <path d="M6 15v-4.5h4V15" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+      <path d="M6 15v-4.5h4V15" stroke="currentColor" strokeWidth="1.78" strokeLinejoin="round" />
     </svg>
   );
 }

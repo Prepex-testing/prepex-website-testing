@@ -36,6 +36,10 @@
   --icon-chip-bg: #eef0f8;
   --plan-avatar-bg: #eef2ff;
 
+  --subject-physics: #2D2E6E;
+  --subject-chemistry: #818CF8;
+  --subject-maths: #C7D2FE;
+
   --shadow-hover: 0 2px 8px rgb(26 26 78 / 0.08);
   --shadow-modal: 0 8px 24px rgb(26 26 78 / 0.12);
 
@@ -112,6 +116,11 @@
 
   --secondary-button-border: #D6D6D6;
   --outline-chip-border: #D6D6D6;
+
+  /* Sidebar nav item states */
+  --sidebar-active-bg: #EEF0F8;
+  --sidebar-active-fg: #1A1A4E;
+  --sidebar-inactive-fg: #7E7E85;
 }
 
 [data-theme="dark"] {
@@ -142,6 +151,10 @@
   --subject-text: #faf7f2;
   --icon-chip-bg: #ffffff;
   --plan-avatar-bg: #1a1a4e;
+
+  --subject-physics: #FAF7F2;
+  --subject-chemistry: #4C1D95;
+  --subject-maths: #8B8998;
 
   --shadow-hover: 0 2px 8px rgb(0 0 0 / 0.35);
   --shadow-modal: 0 8px 24px rgb(0 0 0 / 0.5);
@@ -220,6 +233,10 @@
   --secondary-button-border: #8B8998;
   --outline-chip-border: #D6D6D6;
 
+  /* Sidebar nav item states */
+  --sidebar-active-bg: #FAF7F2;
+  --sidebar-active-fg: #1A1A4E;
+  --sidebar-inactive-fg: #8B8998;
 }
 
 @theme inline {
@@ -314,6 +331,10 @@
 
   --color-secondary-button-border: var(--secondary-button-border);
   --color-outline-chip-border: var(--outline-chip-border);
+
+  --color-sidebar-active-bg: var(--sidebar-active-bg);
+  --color-sidebar-active-fg: var(--sidebar-active-fg);
+  --color-sidebar-inactive-fg: var(--sidebar-inactive-fg);
 
   --animate-float-slow: float 7s ease-in-out infinite;
   --animate-float-medium: float 5.5s ease-in-out infinite;

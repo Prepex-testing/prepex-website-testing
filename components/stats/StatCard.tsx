@@ -10,6 +10,9 @@ type StatCardProps = {
   /** Figma spec uses asymmetric padding on the chart card (12/24/12/24)
    *  vs. symmetric 24px on the performance card. Let callers override. */
   padding?: string;
+  /** Gap between the header row and the body content. Defaults to 20px. */
+  bodyClassName?: string;
+  subtitleClassName?: string;
 };
 
 export function StatCard({
@@ -19,7 +22,9 @@ export function StatCard({
   right,
   children,
   className = "",
-  padding = "p-6", 
+  padding = "p-6",
+  bodyClassName = "mt-5",
+  subtitleClassName = "text-muted",
 }: StatCardProps) {
   return (
     <div
@@ -38,7 +43,7 @@ export function StatCard({
                 <p className="text-sm font-bold text-ink">{title}</p>
               )}
               {subtitle && (
-                <p className="mt-1 text-xs font-bold tracking-[0.5px] text-muted">
+                <p className={`mt-1 text-xs font-bold tracking-[0.5px] ${subtitleClassName}`}>
                   {subtitle}
                 </p>
               )}
@@ -50,7 +55,7 @@ export function StatCard({
       )}
 
       {children && (
-        <div className={title || right || icon ? "mt-5" : ""}>
+        <div className={title || right || icon ? bodyClassName : ""}>
           {children}
         </div>
       )}
