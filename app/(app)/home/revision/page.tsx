@@ -3,10 +3,9 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
 
-import { useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { Chip } from "@/components/ui/Chip";
 import { AddRevisionTaskModal } from "@/components/home/AddRevisionTaskModal";
 import { Container ,BellIcon,ArrowLeftIcon} from "@/assets/icons";
 import {
@@ -18,14 +17,29 @@ import {
   PlusIcon,
   CalendarIcon,
 } from "@/components/ui/icons";
+import type { PlannerSubject, TaskStatus } from "@/lib/api/planner";
+import {
+  getRevisionOverview,
+  type RevisionChapterProgress,
+  type RevisionOverview,
+  type RevisionTask,
+} from "@/lib/api/revision";
+import { withResumeLabel } from "@/components/home/taskTypes";
+import { formatShortDate } from "@/lib/utils/datetime";
 
-const STAT_CARDS = [
-  { label: "Due Today", value: "5", icon: <Container /> },
-  { label: "Upcoming", value: "23", icon: <ClockIcon /> },
-  { label: "Mastered", value: "47", icon: <CheckCircleIcon /> },
+type Tab = "due" | "upcoming" | "mastered";
+
+const TABS: { id: Tab; label: string; icon: ReactNode }[] = [
+  { id: "due", label: "Due Today", icon: <Container /> },
+  { id: "upcoming", label: "Upcoming", icon: <ClockIcon /> },
+  { id: "mastered", label: "Mastered", icon: <CheckCircleIcon /> },
 ];
 
-const FILTERS = ["All", "Physics", "Chemistry", "Maths", "Biology"];
+const STATUS_OPTIONS: { id: TaskStatus; label: string }[] = [
+  { id: "PENDING", label: "Pending" },
+  { id: "IN_PROGRESS", label: "In Progress" },
+  { id: "COMPLETED", label: "Completed" },
+];
 
 type Difficulty = "hard" | "medium" | "easy";
 
@@ -35,46 +49,138 @@ const DIFFICULTY_STYLES: Record<Difficulty, string> = {
   easy: "bg-[#EEF0F8] text-[#4B5563]",
 };
 
-const DUE_TODAY = [
-  {
-    id: "newtons-laws",
-    subjectLabel: "P",
-    subjectName: "Physics",
-    difficulty: "hard" as Difficulty,
-    title: "Newton's Laws",
-    meta: "Physics • 14 days ago",
-  },
-  {
-    id: "electrochemistry",
-    subjectLabel: "C",
-    subjectName: "Chemistry",
-    difficulty: "medium" as Difficulty,
-    title: "Electrochemistry",
-    meta: "Chemistry • 7 days ago",
-  },
-  {
-    id: "complex-numbers",
-    subjectLabel: "M",
-    subjectName: "Maths",
-    difficulty: "easy" as Difficulty,
-    title: "Complex Numbers",
-    meta: "Maths • 21 days ago",
-  },
-  {
-    id: "work-energy",
-    subjectLabel: "P",
-    subjectName: "Physics",
-    difficulty: "medium" as Difficulty,
-    title: "Work & Energy",
-    meta: "Physics • 10 days ago",
-  },
-];
+function toDifficulty(raw: string | null | undefined): Difficulty {
+  const value = raw?.toLowerCase();
+  return value === "hard" || value === "medium" || value === "easy" ? value : "medium";
+}
+
+type RevisionTopic = {
+  id: string;
+  taskId: string | null;
+  subjectLabel: string;
+  subjectName: string;
+  difficulty: Difficulty;
+  title: string;
+  meta: string;
+  badge: string;
+  actionLabel: string;
+};
+
+function fromTask(task: RevisionTask): RevisionTopic {
+  const subject = task.chapter?.subject;
+
+  return {
+    id: task.id,
+    taskId: task.id,
+    subjectLabel: subject?.code?.[0] ?? "R",
+    subjectName: subject?.name ?? "Revision",
+    difficulty: toDifficulty(task.chapter?.chapterMetadata?.difficulty),
+    title: task.title,
+    meta: [subject?.name, task.chapter?.name].filter(Boolean).join(" • "),
+    badge: "",
+    actionLabel: withResumeLabel("Start Revision", task.status),
+  };
+}
+
+function fromChapterProgress(entry: RevisionChapterProgress, tab: "upcoming" | "mastered"): RevisionTopic {
+  const subject = entry.chapter.subject;
+  const badge =
+    tab === "upcoming"
+      ? entry.nextRevisionAt
+        ? formatShortDate(entry.nextRevisionAt)
+        : "Scheduled"
+      : "Mastered";
+  const meta = tab === "upcoming" ? `Next revision: ${badge}` : "Mastered chapter";
+
+  return {
+    id: entry.id,
+    taskId: null,
+    subjectLabel: subject.code?.[0] ?? "R",
+    subjectName: subject.name,
+    difficulty: toDifficulty(entry.chapter.chapterMetadata?.difficulty),
+    title: entry.chapter.name,
+    meta: [subject.name, meta].filter(Boolean).join(" • "),
+    badge,
+    actionLabel: "",
+  };
+}
+
+function uniqueSubjects(list: (PlannerSubject | undefined | null)[]): PlannerSubject[] {
+  const bySubjectId = new Map<number, PlannerSubject>();
+  list.forEach((subject) => {
+    if (subject) bySubjectId.set(subject.id, subject);
+  });
+  return Array.from(bySubjectId.values());
+}
+
+type SubjectsByTab = Record<Tab, PlannerSubject[]>;
+
+function collectSubjectsByTab(data: RevisionOverview): SubjectsByTab {
+  return {
+    due: uniqueSubjects((data.todaysRevisionTasks?.tasks ?? []).map((task) => task.chapter?.subject)),
+    upcoming: uniqueSubjects((data.upcomingRevisions?.chapters ?? []).map((entry) => entry.chapter.subject)),
+    mastered: uniqueSubjects((data.masteredChapters?.chapters ?? []).map((entry) => entry.chapter.subject)),
+  };
+}
 
 export default function RevisionPage() {
-  const [filter, setFilter] = useState("All");
+  const [activeTab, setActiveTab] = useState<Tab>("due");
+  const [activeSubjectId, setActiveSubjectId] = useState<number | "all">("all");
+  const [activeStatus, setActiveStatus] = useState<TaskStatus | null>(null);
+  const [isStatusMenuOpen, setStatusMenuOpen] = useState(false);
+  const [subjectsByTab, setSubjectsByTab] = useState<SubjectsByTab>({ due: [], upcoming: [], mastered: [] });
+  const [overview, setOverview] = useState<RevisionOverview | null>(null);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
+  const statusMenuRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+
+  useEffect(() => {
+    if (!isStatusMenuOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (statusMenuRef.current && !statusMenuRef.current.contains(event.target as Node)) {
+        setStatusMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [isStatusMenuOpen]);
+
+  // Discovers the subjects present in each revision bucket — drives the per-tab filter chips.
+  useEffect(() => {
+    getRevisionOverview()
+      .then(({ data }) => setSubjectsByTab(collectSubjectsByTab(data)))
+      .catch(() => {
+        // Best-effort — chips stay empty until this succeeds.
+      });
+  }, []);
+
+  // Refetches the revision overview whenever the active subject or status filter changes.
+  useEffect(() => {
+    getRevisionOverview({
+      ...(activeSubjectId !== "all" ? { subjectId: activeSubjectId } : {}),
+      ...(activeStatus ? { status: activeStatus } : {}),
+    })
+      .then(({ data }) => setOverview(data))
+      .catch(() => setOverview(null));
+  }, [activeSubjectId, activeStatus]);
+
+  const subjects = subjectsByTab[activeTab];
+
+  const dueCount = overview?.todaysRevisionTasks?.count ?? 0;
+  const upcomingCount = overview?.upcomingRevisions?.count ?? 0;
+  const masteredCount = overview?.masteredChapters?.count ?? 0;
+  const TAB_COUNTS: Record<Tab, number> = { due: dueCount, upcoming: upcomingCount, mastered: masteredCount };
+
+  const topics = !overview
+    ? []
+    : activeTab === "due"
+      ? (overview.todaysRevisionTasks?.tasks ?? []).map(fromTask)
+      : activeTab === "upcoming"
+        ? (overview.upcomingRevisions?.chapters ?? []).map((entry) => fromChapterProgress(entry, "upcoming"))
+        : (overview.masteredChapters?.chapters ?? []).map((entry) => fromChapterProgress(entry, "mastered"));
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -105,43 +211,54 @@ export default function RevisionPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {STAT_CARDS.map((card) => (
-          <div
-            key={card.label}
-            className="flex min-h-[106px] items-center gap-4 rounded-xl border border-brand/10 bg-surface p-6 shadow-sm transition-colors"
-          >
-            {/* Icon */}
-            <div
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink [&>svg]:h-6 [&>svg]:w-6 dark:bg-[#FAF7F2]/8"
+        {TABS.map((tab) => {
+          const active = activeTab === tab.id;
+
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => {
+                setActiveTab(tab.id);
+                setActiveSubjectId("all");
+              }}
+              className={`flex min-h-[106px] items-center gap-4 rounded-xl border p-6 text-left shadow-sm transition-colors ${
+                active ? "border-brand" : "border-brand/10 hover:border-brand/30"
+              } bg-surface`}
             >
-              {card.icon}
-            </div>
+              {/* Icon */}
+              <div
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink [&>svg]:h-6 [&>svg]:w-6 dark:bg-[#FAF7F2]/8"
+              >
+                {tab.icon}
+              </div>
 
-            {/* Content */}
-            <div className="min-w-0">
-              <h3 className="font-['Plus_Jakarta_Sans'] text-[30px] font-bold leading-[36px] text-ink">
-                {card.value}
-              </h3>
+              {/* Content */}
+              <div className="min-w-0">
+                <h3 className="font-['Plus_Jakarta_Sans'] text-[30px] font-bold leading-[36px] text-ink">
+                  {TAB_COUNTS[tab.id]}
+                </h3>
 
-              <p className="mt-1 font-['Plus_Jakarta_Sans'] text-sm font-medium leading-5 text-muted">
-                {card.label}
-              </p>
-            </div>
-          </div>
-        ))}
+                <p className="mt-1 font-['Plus_Jakarta_Sans'] text-sm font-medium leading-5 text-muted">
+                  {tab.label}
+                </p>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex flex-col gap-4 pt-6 lg:flex-row lg:items-center lg:justify-between">
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4">
-          {FILTERS.map((item) => {
-            const active = filter === item;
+          {[{ id: "all" as const, name: "All" }, ...subjects].map((item) => {
+            const active = activeSubjectId === item.id;
 
             return (
               <button
-                key={item}
+                key={item.id}
                 type="button"
-                onClick={() => setFilter(item)}
+                onClick={() => setActiveSubjectId(item.id)}
                 className={`
             flex
             h-10
@@ -169,16 +286,21 @@ export default function RevisionPage() {
                   }
           `}
               >
-                {item}
+                {item.name}
               </button>
             );
           })}
         </div>
 
-        {/* Sort Button */}
-        <button
-          type="button"
-          className={`
+        {/* Status Filter */}
+        {activeTab === "due" && (
+          <div ref={statusMenuRef} className="relative w-full shrink-0 sm:w-auto">
+            <button
+              type="button"
+              aria-haspopup="menu"
+              aria-expanded={isStatusMenuOpen}
+              onClick={() => setStatusMenuOpen((value) => !value)}
+              className={`
       flex
       h-10
       sm:h-[42px]
@@ -196,17 +318,58 @@ export default function RevisionPage() {
       transition-all
       duration-200
       ${isDark
-              ? "border-white bg-white text-[#1A1A4E] hover:bg-gray-100"
-              : "border-brand/20 bg-surface text-muted hover:border-brand hover:text-ink"
-            }
+                  ? "border-white bg-white text-[#1A1A4E] hover:bg-gray-100"
+                  : "border-brand/20 bg-surface text-muted hover:border-brand hover:text-ink"
+                }
     `}
-        >
-          <span className="truncate">Sort by: Due Date</span>
+            >
+              <span className="truncate">
+                Status: {STATUS_OPTIONS.find((option) => option.id === activeStatus)?.label ?? "All"}
+              </span>
 
-          <span className="ml-3 flex shrink-0 items-center justify-center">
-            <ChevronDownIcon />
-          </span>
-        </button>
+              <span className="ml-3 flex shrink-0 items-center justify-center">
+                <ChevronDownIcon />
+              </span>
+            </button>
+
+            {isStatusMenuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-full z-40 mt-2 w-full overflow-hidden rounded-xl border border-brand/10 bg-surface py-1 shadow-modal sm:w-44"
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setActiveStatus(null);
+                    setStatusMenuOpen(false);
+                  }}
+                  className={`flex w-full items-center px-3 py-2 text-left text-sm font-medium hover:bg-tint-strong ${
+                    activeStatus === null ? "text-ink" : "text-muted"
+                  }`}
+                >
+                  All
+                </button>
+                {STATUS_OPTIONS.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setActiveStatus(option.id);
+                      setStatusMenuOpen(false);
+                    }}
+                    className={`flex w-full items-center px-3 py-2 text-left text-sm font-medium hover:bg-tint-strong ${
+                      activeStatus === option.id ? "text-ink" : "text-muted"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="rounded-xl border border-brand/10 bg-surface p-4 sm:p-6">
@@ -216,13 +379,14 @@ export default function RevisionPage() {
             className={`text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.08em] ${isDark ? "text-white" : "text-[#1A1A4E]"
               }`}
           >
-            Due Today <span className="font-medium">• 5 Topics</span>
+            {TABS.find((tab) => tab.id === activeTab)?.label}{" "}
+            <span className="font-medium">• {topics.length} Topics</span>
           </p>
         </div>
 
         {/* Topic List */}
         <div className="mt-5 sm:mt-6 flex flex-col gap-4">
-          {DUE_TODAY.map((topic) => (
+          {topics.map((topic) => (
             <div
               key={topic.id}
               className="
@@ -274,9 +438,10 @@ export default function RevisionPage() {
               </div>
 
               {/* Right Button */}
-              <Link
-                href="/revision-session"
-                className={`
+              {topic.taskId ? (
+                <Link
+                  href={`/revision-session?taskId=${topic.taskId}`}
+                  className={`
             flex
             h-[40px]
             w-full
@@ -296,13 +461,40 @@ export default function RevisionPage() {
             sm:w-auto
             sm:min-w-[150px]
             ${isDark
-                    ? "border-white text-white"
-                    : "border-brand text-brand"
-                  }
+                      ? "border-white text-white"
+                      : "border-brand text-brand"
+                    }
           `}
-              >
-                Start Revision
-              </Link>
+                >
+                  {topic.actionLabel}
+                </Link>
+              ) : (
+                <span
+                  className={`
+            flex
+            h-[40px]
+            w-full
+            items-center
+            justify-center
+            rounded-lg
+            border
+            px-4
+            text-[12px]
+            sm:text-[13px]
+            font-semibold
+            whitespace-nowrap
+            sm:ml-6
+            sm:w-auto
+            sm:min-w-[150px]
+            ${isDark
+                      ? "border-white/30 text-white/70"
+                      : "border-brand/20 text-muted"
+                    }
+          `}
+                >
+                  {topic.badge}
+                </span>
+              )}
             </div>
           ))}
         </div>

@@ -2,25 +2,28 @@
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { CrossAppSessionModal } from "@/components/home/CrossAppSessionModal";
 import { SessionCompleteModal } from "@/components/home/SessionCompleteModal";
+import { LeaveSessionModal } from "@/components/home/LeaveSessionModal";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import {
-  // ArrowLeftIcon,
-  // BellIcon,
   ClockIcon,
   CheckIcon,
-  // FileIcon,
   PauseIcon,
   PlayIcon,
 } from "@/components/ui/icons";
-import { LeftIconcon, TargetIcon ,ArrowLeftIcon,BellIcon} from "@/assets/icons";
-const TARGET_SECONDS = 60 * 60;
-const INITIAL_ELAPSED = 24 * 60 + 53;
+import { LeftIconcon, TargetIcon, ArrowLeftIcon, BellIcon } from "@/assets/icons";
+import { getTodayPlan, updatePlannerTask, type PlannerTask } from "@/lib/api/planner";
+import {
+  setActiveSessionTaskId,
+  getStoredElapsedSeconds,
+  setStoredElapsedSeconds,
+  clearStoredElapsedSeconds,
+} from "@/lib/session/activeTask";
 
 const INITIAL_CHECKLIST = [
   { id: "read-ncert", label: "Read NCERT", done: true },
@@ -37,22 +40,107 @@ function formatTime(totalSeconds: number): string {
 }
 
 export default function FocusSessionPage() {
+  return (
+    <Suspense fallback={null}>
+      <FocusSessionContent />
+    </Suspense>
+  );
+}
+
+function FocusSessionContent() {
   const router = useRouter();
-  const [elapsed, setElapsed] = useState(INITIAL_ELAPSED);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const taskId = searchParams.get("taskId");
+
+  const [task, setTask] = useState<PlannerTask | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  const [targetSeconds, setTargetSeconds] = useState(60 * 60);
   const [isPaused, setPaused] = useState(false);
   const [checklist, setChecklist] = useState(INITIAL_CHECKLIST);
   const [isCrossAppOpen, setCrossAppOpen] = useState(false);
+  const [isCrossAppActive, setCrossAppActive] = useState(false);
   const [isCompleteOpen, setCompleteOpen] = useState(false);
+  const [isLeaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [isReady, setReady] = useState(() => !taskId);
+  const resolvedRef = useRef(false);
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
   useEffect(() => {
-    if (isPaused) return;
+    if (!taskId) return;
+    getTodayPlan()
+      .then(({ data }) => {
+        const found = data.plan?.tasks.find((item) => item.id === taskId) ?? null;
+        if (!found) return;
+        setTask(found);
+        const storedElapsed = getStoredElapsedSeconds(taskId);
+        setElapsed(storedElapsed ?? found.minutesCompleted * 60);
+        setTargetSeconds(found.estimatedMinutes * 60);
+      })
+      .catch(() => {
+        // Best-effort — the page falls back to the placeholder session below.
+      })
+      .finally(() => setReady(true));
+  }, [taskId]);
+
+  useEffect(() => {
+    if (!isReady || isPaused) return;
     const timer = setInterval(() => {
-      setElapsed((value) => Math.min(value + 1, TARGET_SECONDS));
+      setElapsed((value) => value + 1);
     }, 1000);
     return () => clearInterval(timer);
-  }, [isPaused]);
+  }, [isReady, isPaused]);
+
+  // Mirror the live timer to localStorage every tick, so a refresh restores
+  // the exact elapsed seconds instead of falling back to the API's
+  // whole-minute snapshot from the last explicit save. Gated on isReady so
+  // this doesn't fire with the initial elapsed=0 before the seed value
+  // (stored seconds or minutesCompleted from the API) has been read in.
+  useEffect(() => {
+    if (!taskId || !isReady) return;
+    setStoredElapsedSeconds(taskId, elapsed);
+  }, [taskId, isReady, elapsed]);
+
+  // Intercept in-app link clicks (sidebar/bottom nav/back arrow) away from
+  // this page so we can confirm before losing an active session.
+  useEffect(() => {
+    if (!taskId) return;
+
+    const handleClick = (event: MouseEvent) => {
+      if (resolvedRef.current) return;
+      const anchor = (event.target as HTMLElement | null)?.closest("a");
+      const href = anchor?.getAttribute("href");
+      if (!href || !href.startsWith("/")) return;
+      const url = new URL(href, window.location.origin);
+      if (url.pathname === pathname) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      setPendingHref(href);
+      setLeaveConfirmOpen(true);
+    };
+
+    document.addEventListener("click", handleClick, true);
+    return () => document.removeEventListener("click", handleClick, true);
+  }, [taskId, pathname]);
+
+  // Intercept the browser back/forward buttons the same way.
+  useEffect(() => {
+    if (!taskId) return;
+
+    window.history.pushState(null, "", window.location.href);
+    const handlePopState = () => {
+      if (resolvedRef.current) return;
+      window.history.pushState(null, "", window.location.href);
+      setPendingHref("/home");
+      setLeaveConfirmOpen(true);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [taskId]);
 
   const toggleTask = (id: string) => {
     setChecklist((current) =>
@@ -62,6 +150,79 @@ export default function FocusSessionPage() {
 
   const completedCount = checklist.filter((task) => task.done).length;
   const percent = Math.round((completedCount / checklist.length) * 100);
+
+  const handleComplete = () => {
+    resolvedRef.current = true;
+    if (taskId) {
+      updatePlannerTask(taskId, {
+        minutesCompleted: Math.ceil(elapsed / 60),
+        status: "COMPLETED",
+        isStudyingCrossApp: false,
+      }).catch(() => {
+        // Best-effort — the completion modal still reflects the local session.
+      });
+      clearStoredElapsedSeconds(taskId);
+    }
+    setCompleteOpen(true);
+  };
+
+  const handleCrossAppStart = (activityLabel: string) => {
+    resolvedRef.current = true;
+    if (taskId) {
+      setActiveSessionTaskId(taskId);
+      updatePlannerTask(taskId, {
+        isStudyingCrossApp: true,
+        crossAppActivity: activityLabel,
+      }).catch(() => {
+        // Best-effort — the user is leaving the app regardless.
+      });
+      clearStoredElapsedSeconds(taskId);
+    }
+    setCrossAppOpen(false);
+    setCrossAppActive(true);
+  };
+
+  const handleStopCrossApp = () => {
+    router.push("/home/session/welcome-back");
+  };
+
+  const handleLeaveConfirm = () => {
+    resolvedRef.current = true;
+    if (taskId) {
+      updatePlannerTask(taskId, {
+        minutesCompleted: Math.ceil(elapsed / 60),
+        status: "IN_PROGRESS",
+        isStudyingCrossApp: false,
+      }).catch(() => {
+        // Best-effort — the user still leaves the session.
+      });
+      clearStoredElapsedSeconds(taskId);
+    }
+    setLeaveConfirmOpen(false);
+    router.push(pendingHref ?? "/home");
+  };
+
+  const handleLeaveCancel = () => {
+    setPendingHref(null);
+    setLeaveConfirmOpen(false);
+  };
+
+  if (isCrossAppActive) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background/90 px-4 text-center backdrop-blur-sm">
+        <p className="text-lg font-bold text-ink sm:text-xl">
+          Cross app study session is going on
+        </p>
+        <Button
+          variant="primary"
+          onClick={handleStopCrossApp}
+          className="w-full max-w-xs"
+        >
+          Stop Cross App Study Session
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -95,10 +256,10 @@ export default function FocusSessionPage() {
 
           <div className="flex flex-col items-center gap-1">
             <p className="text-2xl font-extrabold leading-none text-ink sm:text-[32px]">
-              Electrochemistry
+              {task?.title ?? "Electrochemistry"}
             </p>
             <p className={`text-sm font-semibold leading-none ${isDark ? "text-white/70" : "text-[#464650]/80"}`}>
-              Physical Chemistry
+              {task?.subject?.name ?? "Physical Chemistry"}
             </p>
           </div>
         </div>
@@ -115,7 +276,7 @@ export default function FocusSessionPage() {
               className={`ml-2 align-middle text-xl tracking-[-1px] sm:text-3xl lg:text-[40px] lg:leading-[40px] lg:tracking-[-4.2px] ${isDark ? "text-white/30" : "text-[#464650]/30"}`}
               style={{ textShadow: "0px 0px 20px #2D2E6E1A" }}
             >
-              /{formatTime(TARGET_SECONDS)}
+              /{formatTime(targetSeconds)}
             </span>
           </p>
 
@@ -210,7 +371,7 @@ export default function FocusSessionPage() {
           <div className="text-right">
             <button
               type="button"
-              onClick={() => setCompleteOpen(true)}
+              onClick={handleComplete}
               className="text-base font-bold text-muted underline sm:text-lg"
             >
               Complete session
@@ -222,19 +383,21 @@ export default function FocusSessionPage() {
       <CrossAppSessionModal
         open={isCrossAppOpen}
         onClose={() => setCrossAppOpen(false)}
-        onStart={() => {
-          setCrossAppOpen(false);
-          router.push("/home/session/welcome-back");
-        }}
+        onStart={handleCrossAppStart}
       />
       <SessionCompleteModal
         open={isCompleteOpen}
         onClose={() => setCompleteOpen(false)}
         onContinue={() => setCompleteOpen(false)}
-        topic="Electrochemistry"
-        minutesStudied={60}
-        milestonesCompleted={5}
-        milestonesTotal={5}
+        topic={task?.title ?? "Electrochemistry"}
+        minutesStudied={Math.ceil(elapsed / 60)}
+        milestonesCompleted={completedCount}
+        milestonesTotal={checklist.length}
+      />
+      <LeaveSessionModal
+        open={isLeaveConfirmOpen}
+        onClose={handleLeaveCancel}
+        onConfirm={handleLeaveConfirm}
       />
     </div>
   );

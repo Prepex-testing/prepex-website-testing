@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { ClockIcon, SunIcon, FileIcon } from "@/components/ui/icons";
+import { ClockIcon, SunIcon, FileIcon, CalendarIcon, CheckIcon } from "@/components/ui/icons";
 import { TaskEditMenu } from "@/components/home/TaskEditMenu";
-import { TYPE_STYLES, TYPE_LABELS } from "@/components/home/taskTypes";
+import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS } from "@/components/home/taskTypes";
 import type { TaskType } from "@/components/home/taskTypes";
 
 export type { TaskType };
-export { TYPE_STYLES, TYPE_LABELS };
+export { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS };
 
 export type Task = {
   id: string;
@@ -19,8 +19,10 @@ export type Task = {
   meta: string;
   duration: string;
   timeSlot: string;
+  scheduledRange?: string;
   hasResource: boolean;
   actionLabel: string;
+  isCompleted?: boolean;
 };
 
 type TaskRowProps = {
@@ -34,8 +36,8 @@ export function TaskRow({
 }: TaskRowProps) {
   const [done, setDone] = useState(false);
 
-  const isStartPractice =
-    task.actionLabel === "Start Practice";
+  const isStartPractice = task.type === "practice";
+  const displayLabel = task.isCompleted ? COMPLETED_ACTION_LABELS[task.type] : task.actionLabel;
 
   return (
     <div
@@ -95,6 +97,8 @@ export function TaskRow({
     sm:text-[10px]
     md:text-xs
     font-semibold
+    uppercase
+    tracking-[0.5px]
     leading-none
     whitespace-nowrap
     ${TYPE_STYLES[task.type]}
@@ -119,10 +123,17 @@ export function TaskRow({
                 {task.duration}
               </span>
 
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1 font-semibold text-warning">
                 <SunIcon />
                 {task.timeSlot}
               </span>
+
+              {task.scheduledRange && (
+                <span className="flex items-center gap-1">
+                  <CalendarIcon />
+                  {task.scheduledRange}
+                </span>
+              )}
 
               {task.hasResource && (
                 <span className="flex items-center gap-1">
@@ -150,30 +161,43 @@ export function TaskRow({
         >
 
           <Button
-            variant="task"
+            variant={task.isCompleted ? "secondary" : "task"}
             size="sm"
+            disabled={task.isCompleted}
+            className={task.isCompleted ? "border-transparent! bg-[#E7F9F3]! text-[#10B981]! cursor-default" : ""}
             href={
-              task.actionLabel === "Start Session"
-                ? "/home/session"
-                : task.actionLabel === "Start Revision"
-                  ? "/revision-session"
-                  : undefined
+              task.isCompleted
+                ? undefined
+                : task.type === "new-learning"
+                  ? `/home/session?taskId=${task.id}`
+                  : task.type === "revision"
+                    ? `/revision-session?taskId=${task.id}`
+                    : undefined
             }
             onClick={
-              isStartPractice
+              !task.isCompleted && isStartPractice
                 ? onStartPractice
                 : undefined
             }
           >
-            {task.actionLabel}
+            {displayLabel}
           </Button>
-          <input
-            type="checkbox"
-            checked={done}
-            onChange={() => setDone(!done)}
-            aria-label={`Mark ${task.title} complete`}
-            className="h-5 w-5 appearance-none rounded border border-[#333333] dark:border-[#8B8998] bg-transparent checked:border-brand checked:bg-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
-          />
+          {task.isCompleted ? (
+            <span
+              aria-label={`${task.title} completed`}
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#E7F9F3] text-[#10B981] dark:bg-white"
+            >
+              <CheckIcon className="h-3.5 w-3.5" />
+            </span>
+          ) : (
+            <input
+              type="checkbox"
+              checked={done}
+              onChange={() => setDone(!done)}
+              aria-label={`Mark ${task.title} complete`}
+              className="h-5 w-5 appearance-none rounded border border-[#333333] dark:border-[#8B8998] bg-transparent checked:border-brand checked:bg-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            />
+          )}
 
           <TaskEditMenu
             task={{

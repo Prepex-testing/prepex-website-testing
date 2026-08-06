@@ -2,7 +2,7 @@
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -11,9 +11,12 @@ import { useTheme } from "@/components/theme/ThemeProvider";
 import { TimeBlockSection } from "@/components/home/TimeBlockSection";
 import { PlanTaskRow } from "@/components/home/PlanTaskRow";
 import type { PlanTask } from "@/components/home/PlanTaskRow";
+import type { TaskType } from "@/components/home/TaskRow";
+import { withResumeLabel } from "@/components/home/taskTypes";
 import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
+import { getTodayPlan, type PlannerTask, type TodayPlanResponse } from "@/lib/api/planner";
 import { CheckIcon, ClockIcon, ListIcon, CalendarIcon,BellIcon ,ArrowLeftIcon} from "@/assets/icons";
 import {
   // ArrowLeftIcon,
@@ -28,6 +31,67 @@ import {
   PlusIcon,
   RefreshIcon,
 } from "@/components/ui/icons";
+
+const TASK_TYPE_STYLE: Record<string, TaskType> = {
+  PRACTICE: "practice",
+  REVISION: "revision",
+  LEARNING: "new-learning",
+  WELLNESS: "new-learning",
+};
+
+const TASK_ACTION_LABEL: Record<string, string> = {
+  PRACTICE: "Start Practice",
+  REVISION: "Start Revision",
+  LEARNING: "Start Session",
+  WELLNESS: "Start Session",
+};
+
+function formatWindow(window: string) {
+  const label = window.toLowerCase();
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+function formatDuration(minutes: number) {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) return `${mins}m`;
+  if (mins === 0) return `${hours}h`;
+  return `${hours}h ${mins}m`;
+}
+
+function toPlanTask(task: PlannerTask): PlanTask {
+  return {
+    id: task.id,
+    subjectLabel: task.subject?.code?.[0] ?? "W",
+    subjectName: task.subject?.name ?? "Wellness",
+    type: TASK_TYPE_STYLE[task.taskType] ?? "new-learning",
+    title: task.title,
+    meta: task.description ?? task.chapter?.name ?? "",
+    duration: `${task.estimatedMinutes} min`,
+    timeRange: task.scheduledStart && task.scheduledEnd
+      ? `${task.scheduledStart} - ${task.scheduledEnd}`
+      : formatWindow(task.suggestedWindow),
+    difficulty: "medium",
+    actionLabel: task.taskType === "PRACTICE" && task.questionCount
+      ? `Practice ${task.questionCount} Qs`
+      : withResumeLabel(TASK_ACTION_LABEL[task.taskType] ?? "Start Session", task.status),
+    isCompleted: task.status === "COMPLETED",
+  };
+}
+
+function groupTasksByWindow(tasks: PlannerTask[]) {
+  const morning = tasks.filter((task) => task.suggestedWindow === "MORNING");
+  const afternoon = tasks.filter((task) => task.suggestedWindow === "MIDDAY");
+  const evening = tasks.filter(
+    (task) => task.suggestedWindow === "EVENING" || task.suggestedWindow === "NIGHT",
+  );
+  return { morning, afternoon, evening };
+}
+
+function sectionMeta(tasks: PlannerTask[]) {
+  const totalMinutes = tasks.reduce((sum, task) => sum + task.estimatedMinutes, 0);
+  return `${tasks.length} Task${tasks.length === 1 ? "" : "s"} • ${formatDuration(totalMinutes)}`;
+}
 
 const STAT_TILES = [
   { label: "Completed", value: "2h 15m", icon: <CheckIcon className="h-4 w-4" /> },
@@ -110,9 +174,44 @@ export default function TodayPlanPage() {
   const [isRegenerateOpen, setRegenerateOpen] = useState(false);
   const [isPracticeModalOpen, setPracticeModalOpen] = useState(false);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
+  const [planData, setPlanData] = useState<TodayPlanResponse | null>(null);
 
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+
+  const refetchPlan = () => {
+    getTodayPlan()
+      .then(({ data }) => setPlanData(data))
+      .catch(() => {
+        // Best-effort — the page falls back to the placeholder plan below.
+      });
+  };
+
+  useEffect(refetchPlan, []);
+
+  const plan = planData?.plan;
+  const summary = planData?.summary;
+  const { morning, afternoon, evening } = groupTasksByWindow(plan?.tasks ?? []);
+  const morningTasks = plan ? morning.map(toPlanTask) : MORNING_TASKS;
+  const afternoonTasks = plan ? afternoon.map(toPlanTask) : AFTERNOON_TASKS;
+  const eveningTasks = plan ? evening.map(toPlanTask) : EVENING_TASKS;
+  const completionPercent = summary?.completionPercentage ?? 35;
+  const statTiles = summary
+    ? [
+        { label: "Completed", value: formatDuration(summary.totalTimeCompleted), icon: <CheckIcon className="h-4 w-4" /> },
+        {
+          label: "Remaining",
+          value: formatDuration(Math.max(summary.totalPlannedMinutes - summary.totalTimeCompleted, 0)),
+          icon: <ClockIcon className="h-4 w-4" />,
+        },
+        {
+          label: "Tasks Done",
+          value: `${summary.completedTaskCount} / ${summary.totalTaskCount}`,
+          icon: <ListIcon className="h-4 w-4" />,
+        },
+        { label: "Planned Study", value: formatDuration(summary.totalPlannedMinutes), icon: <CalendarIcon className="h-4 w-4" /> },
+      ]
+    : STAT_TILES;
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -144,7 +243,7 @@ export default function TodayPlanPage() {
         {/* Progress Card */}
         <div className="flex min-h-[220px] flex-col items-center justify-center rounded-2xl border border-brand/10 bg-surface p-6 text-center shadow-[0px_1px_2px_0px_#1A1A4E0F]">
           <CircularProgress
-            percent={35}
+            percent={completionPercent}
             label="Overall"
             size={110}
             progressColor={isDark ? "#FAF7F2" : undefined}
@@ -165,7 +264,7 @@ export default function TodayPlanPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          {STAT_TILES.map((tile) => (
+          {statTiles.map((tile) => (
             <div
               key={tile.label}
               className="flex min-h-[102px] flex-col justify-between rounded-2xl border border-brand/10 bg-surface p-6 shadow-[0px_1px_2px_0px_#1A1A4E0F]"
@@ -190,27 +289,45 @@ export default function TodayPlanPage() {
 
 
       <div className="flex flex-col gap-6">
-        <TimeBlockSection icon={<CloudSunIcon />} title="Morning" meta="2 Tasks • 1h 45m">
-          <div className="flex flex-col gap-3">
-            {MORNING_TASKS.map((task) => (
-              <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
-            ))}
-          </div>
-        </TimeBlockSection>
-        <TimeBlockSection icon={<SunIcon />} title="Afternoon" meta="1 Task • 1h 15m">
-          <div className="flex flex-col gap-3">
-            {AFTERNOON_TASKS.map((task) => (
-              <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
-            ))}
-          </div>
-        </TimeBlockSection>
-        <TimeBlockSection icon={<CloudMoonIcon />} title="Evening" meta="2 Tasks • 2h 00m">
-          <div className="flex flex-col gap-3">
-            {EVENING_TASKS.map((task) => (
-              <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
-            ))}
-          </div>
-        </TimeBlockSection>
+        {morningTasks.length > 0 && (
+          <TimeBlockSection
+            icon={<CloudSunIcon />}
+            title="Morning"
+            meta={plan ? sectionMeta(morning) : "2 Tasks • 1h 45m"}
+          >
+            <div className="flex flex-col gap-3">
+              {morningTasks.map((task) => (
+                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
+              ))}
+            </div>
+          </TimeBlockSection>
+        )}
+        {afternoonTasks.length > 0 && (
+          <TimeBlockSection
+            icon={<SunIcon />}
+            title="Afternoon"
+            meta={plan ? sectionMeta(afternoon) : "1 Task • 1h 15m"}
+          >
+            <div className="flex flex-col gap-3">
+              {afternoonTasks.map((task) => (
+                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
+              ))}
+            </div>
+          </TimeBlockSection>
+        )}
+        {eveningTasks.length > 0 && (
+          <TimeBlockSection
+            icon={<CloudMoonIcon />}
+            title="Evening"
+            meta={plan ? sectionMeta(evening) : "2 Tasks • 2h 00m"}
+          >
+            <div className="flex flex-col gap-3">
+              {eveningTasks.map((task) => (
+                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
+              ))}
+            </div>
+          </TimeBlockSection>
+        )}
       </div>
 
 
@@ -242,8 +359,13 @@ export default function TodayPlanPage() {
       <RegeneratePlanModal
         open={isRegenerateOpen}
         onClose={() => setRegenerateOpen(false)}
+        onRegenerated={refetchPlan}
       />
-      <AddCustomTaskModal open={isAddTaskOpen} onClose={() => setAddTaskOpen(false)} />
+      <AddCustomTaskModal
+        open={isAddTaskOpen}
+        onClose={() => setAddTaskOpen(false)}
+        onTaskAdded={refetchPlan}
+      />
       <TodaysPracticeModal
         open={isPracticeModalOpen}
         onClose={() => setPracticeModalOpen(false)}
