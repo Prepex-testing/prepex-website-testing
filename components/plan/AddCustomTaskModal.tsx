@@ -134,8 +134,10 @@ export function AddCustomTaskModal({
     setSubmitting(true);
     setError(null);
     try {
+      const topicName = chapters.find((chapter) => chapter.id === chapterId)?.name;
+      const title = topicName ? `${taskName.trim()} ${topicName}` : taskName.trim();
       await addPlannerTask({
-        title: taskName.trim(),
+        title,
         taskType: TASK_TYPE_API_VALUES[taskType] ?? "PRACTICE",
         estimatedMinutes: Number(durationValue),
         description: notes.trim() || undefined,

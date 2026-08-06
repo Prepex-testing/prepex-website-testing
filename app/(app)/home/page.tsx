@@ -152,7 +152,8 @@ const TASK_ACTION_LABEL: Record<string, string> = {
   WELLNESS: "Start Session",
 };
 
-function formatWindow(window: string) {
+function formatWindow(window: string | null | undefined) {
+  if (!window) return "";
   const label = window.toLowerCase();
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
