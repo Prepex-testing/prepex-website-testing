@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { UserIcon, LogoutIcon } from "@/components/ui/icons";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
+import { performLogout } from "@/lib/api/auth";
 
 type UserMenuProps = {
   name?: string;
@@ -115,7 +116,10 @@ export function UserMenu({ name, initial }: UserMenuProps) {
       <ConfirmModal
         open={isLogoutConfirmOpen}
         onClose={() => setLogoutConfirmOpen(false)}
-        onConfirm={() => router.push("/login")}
+        onConfirm={async () => {
+          await performLogout();
+          router.push("/login");
+        }}
         title="Log out?"
         description="Are you sure you want to logout? You'll need to sign in again to access your plan."
         confirmLabel="Yes, Logout"

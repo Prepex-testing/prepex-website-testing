@@ -12,11 +12,11 @@ import { TimeBlockSection } from "@/components/home/TimeBlockSection";
 import { PlanTaskRow } from "@/components/home/PlanTaskRow";
 import type { PlanTask } from "@/components/home/PlanTaskRow";
 import type { TaskType } from "@/components/home/TaskRow";
+import { withResumeLabel } from "@/components/home/taskTypes";
 import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { getTodayPlan, type PlannerTask, type TodayPlanResponse } from "@/lib/api/planner";
-import { formatTimeRange } from "@/lib/utils/datetime";
 import { CheckIcon, ClockIcon, ListIcon, CalendarIcon,BellIcon ,ArrowLeftIcon} from "@/assets/icons";
 import {
   // ArrowLeftIcon,
@@ -69,12 +69,12 @@ function toPlanTask(task: PlannerTask): PlanTask {
     meta: task.description ?? task.chapter?.name ?? "",
     duration: `${task.estimatedMinutes} min`,
     timeRange: task.scheduledStart && task.scheduledEnd
-      ? formatTimeRange(task.scheduledStart, task.scheduledEnd)
+      ? `${task.scheduledStart} - ${task.scheduledEnd}`
       : formatWindow(task.suggestedWindow),
     difficulty: "medium",
     actionLabel: task.taskType === "PRACTICE" && task.questionCount
       ? `Practice ${task.questionCount} Qs`
-      : TASK_ACTION_LABEL[task.taskType] ?? "Start Session",
+      : withResumeLabel(TASK_ACTION_LABEL[task.taskType] ?? "Start Session", task.status),
     isCompleted: task.status === "COMPLETED",
   };
 }

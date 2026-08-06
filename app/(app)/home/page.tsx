@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { TaskRow } from "@/components/home/TaskRow";
 import type { Task, TaskType } from "@/components/home/TaskRow";
+import { withResumeLabel } from "@/components/home/taskTypes";
 import { QuickFocusModal } from "@/components/home/QuickFocusModal";
 import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
@@ -20,7 +21,6 @@ import {
   type PlannerTask,
   type TodayPlanResponse,
 } from "@/lib/api/planner";
-import { formatTimeRange } from "@/lib/utils/datetime";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { FlameIcon, BackIcon, BookIcon, BriefcaseIcon, ChartBarIcon, LayersIcon, LoderIcon, QuickIcon, RadarIcon, RevisionIcon, TrophyIcon, UserIcon, BellIcon } from "@/assets/icons";
@@ -168,10 +168,10 @@ function toHomeTask(task: PlannerTask): Task {
     duration: `${task.estimatedMinutes} min`,
     timeSlot: formatWindow(task.suggestedWindow),
     scheduledRange: task.scheduledStart && task.scheduledEnd
-      ? formatTimeRange(task.scheduledStart, task.scheduledEnd)
+      ? `${task.scheduledStart} - ${task.scheduledEnd}`
       : undefined,
     hasResource: Boolean(task.chapter),
-    actionLabel: TASK_ACTION_LABEL[task.taskType] ?? "Start Session",
+    actionLabel: withResumeLabel(TASK_ACTION_LABEL[task.taskType] ?? "Start Session", task.status),
     isCompleted: task.status === "COMPLETED",
   };
 }
@@ -259,7 +259,7 @@ export default function HomePage() {
 
   const plan = planData?.plan;
   const summary = planData?.summary;
-  const planTasks = plan ? plan.tasks.map(toHomeTask) : TASKS;
+  const planTasks = (plan ? plan.tasks.map(toHomeTask) : TASKS).slice(0, 5);
   const completionPercent = summary?.completionPercentage ?? 22;
   const completedMinutes = summary?.totalTimeCompleted ?? 78;
   const plannedMinutes = summary?.totalPlannedMinutes ?? 360;

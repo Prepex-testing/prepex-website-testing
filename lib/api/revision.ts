@@ -2,6 +2,7 @@ import { CORE_API_BASE_URL } from "@/lib/api/config";
 import { apiRequest, ApiError } from "@/lib/api/http";
 import { refreshAccessToken } from "@/lib/api/auth";
 import { getAccessToken, getRefreshToken, saveTokens, clearSession } from "@/lib/auth/session";
+import type { PlannerSubject, TaskStatus } from "@/lib/api/planner";
 
 async function authRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = `${CORE_API_BASE_URL}/api/revision${path}`;
@@ -29,6 +30,66 @@ async function authRequest<T>(path: string, options: RequestInit = {}): Promise<
       headers: { Authorization: `Bearer ${newTokens.accessToken}`, ...options.headers },
     });
   }
+}
+
+export type RevisionChapterMetadata = {
+  category: string;
+  difficulty: string;
+  recommendedWindow: string;
+  averageLearningMinutes: number;
+  averageRevisionMinutes: number;
+  averagePracticeQuestions: number;
+};
+
+export type RevisionChapter = {
+  id: string;
+  name: string;
+  subject: PlannerSubject;
+  chapterMetadata?: RevisionChapterMetadata | null;
+};
+
+export type RevisionTask = {
+  id: string;
+  subjectId: number;
+  taskType: string;
+  title: string;
+  description: string | null;
+  estimatedMinutes: number;
+  minutesCompleted: number;
+  scheduledStart: string;
+  scheduledEnd: string;
+  suggestedWindow: string;
+  status: TaskStatus | string;
+  questionCount: number | null;
+  chapter: RevisionChapter | null;
+};
+
+export type RevisionChapterProgress = {
+  id: string;
+  chapterId: string;
+  status: string;
+  minutesCompleted: number;
+  revisionPhase: string;
+  revisionCount: number;
+  nextRevisionAt: string | null;
+  lastRevisionAt: string | null;
+  currentIntervalDays: number | null;
+  chapter: RevisionChapter;
+};
+
+export type RevisionOverview = {
+  todaysRevisionTasks: { count: number; tasks: RevisionTask[] };
+  upcomingRevisions: { count: number; chapters: RevisionChapterProgress[] };
+  masteredChapters: { count: number; chapters: RevisionChapterProgress[] };
+};
+
+export function getRevisionOverview(filters: { subjectId?: number; status?: TaskStatus } = {}) {
+  const params = new URLSearchParams();
+  if (filters.subjectId !== undefined) params.set("subjectId", String(filters.subjectId));
+  if (filters.status) params.set("status", filters.status);
+
+  const query = params.toString();
+  return authRequest<{ success: true; data: RevisionOverview }>(query ? `?${query}` : "");
 }
 
 export function updateRevisionProgress(revisionId: string, minutesCompleted: number) {

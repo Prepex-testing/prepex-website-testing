@@ -1,5 +1,6 @@
 import { AUTH_API_BASE_URL } from "@/lib/api/config";
 import { apiRequest, ApiError } from "@/lib/api/http";
+import { getAccessToken, getRefreshToken, clearSession } from "@/lib/auth/session";
 
 export { ApiError };
 
@@ -89,4 +90,31 @@ export function getProfile(accessToken: string) {
 
 export function getGoogleAuthUrl() {
   return `${AUTH_API_BASE_URL}/api/auth/google`;
+}
+
+export function logout(accessToken: string, refreshToken: string) {
+  return request<{ success: true; message?: string }>("/logout", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ refreshToken }),
+  });
+}
+
+/**
+ * Best-effort: the local session is cleared even if the server call fails,
+ * since the user's intent to log out shouldn't be blocked by a network error.
+ */
+export async function performLogout() {
+  const accessToken = getAccessToken();
+  const refreshToken = getRefreshToken();
+
+  if (accessToken && refreshToken) {
+    try {
+      await logout(accessToken, refreshToken);
+    } catch {
+      // Best-effort — fall through to clearing the local session anyway.
+    }
+  }
+
+  clearSession();
 }

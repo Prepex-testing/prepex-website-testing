@@ -22,3 +22,8 @@ export const COMPLETED_ACTION_LABELS: Record<TaskType, string> = {
   "new-learning": "Session Completed",
   practice: "Practice Completed",
 };
+
+/** Swaps a "Start X" action label for "Resume X" when the task is already in progress. */
+export function withResumeLabel(label: string, status: string): string {
+  return status === "IN_PROGRESS" ? label.replace(/^Start /, "Resume ") : label;
+}

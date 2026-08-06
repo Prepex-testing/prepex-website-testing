@@ -50,6 +50,7 @@ export type PlannerChapter = {
   id: string;
   name: string;
   subject: PlannerSubject;
+  chapterMetadata?: { difficulty?: string } | null;
 } | null;
 
 export type TaskStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "SKIPPED";

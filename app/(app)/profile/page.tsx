@@ -31,6 +31,7 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
+import { performLogout } from "@/lib/api/auth";
 import {QuickIcon,Coaching,GraduationCapIcon,UserIcons,CalendarIcons,ClockIcon,CalendarIcon,Patners,UserIcon,EditIcons,BellIcon} from "@/assets/icons";
 const PROFILE_COMPLETE = 72;
 
@@ -611,7 +612,10 @@ export default function ProfilePage() {
       <ConfirmModal
         open={isLogoutConfirmOpen}
         onClose={() => setLogoutConfirmOpen(false)}
-        onConfirm={() => router.push("/login")}
+        onConfirm={async () => {
+          await performLogout();
+          router.push("/login");
+        }}
         title="Log out?"
         description="Are you sure you want to logout? You'll need to sign in again to access your plan."
         confirmLabel="Yes, Logout"

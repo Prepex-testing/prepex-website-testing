@@ -40,7 +40,7 @@ type PlanTaskRowProps = {
 
 export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
   const [done, setDone] = useState(false);
-  const isStartPractice = task.actionLabel.toLowerCase().includes("practice");
+  const isStartPractice = task.type === "practice";
   const displayLabel = task.isCompleted ? COMPLETED_ACTION_LABELS[task.type] : task.actionLabel;
 
   return (
@@ -105,9 +105,9 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
           href={
             task.isCompleted
               ? undefined
-              : task.actionLabel === "Start Session"
+              : task.type === "new-learning"
                 ? `/home/session?taskId=${task.id}`
-                : task.actionLabel === "Start Revision"
+                : task.type === "revision"
                   ? `/revision-session?taskId=${task.id}`
                   : undefined
           }

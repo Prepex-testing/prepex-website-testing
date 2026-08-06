@@ -1,17 +1,8 @@
-const TIME_FORMAT = new Intl.DateTimeFormat("en-US", {
-  hour: "numeric",
-  minute: "2-digit",
-  hour12: true,
-});
+const SHORT_DATE_FORMAT = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
 
-/** "10:00 AM" */
-export function formatClockTime(iso: string): string {
-  return TIME_FORMAT.format(new Date(iso));
-}
-
-/** "10:00 AM - 10:30 AM" */
-export function formatTimeRange(startIso: string, endIso: string): string {
-  return `${formatClockTime(startIso)} - ${formatClockTime(endIso)}`;
+/** "Aug 12" */
+export function formatShortDate(iso: string): string {
+  return SHORT_DATE_FORMAT.format(new Date(iso));
 }
 
 /** Whole minutes elapsed between an ISO timestamp and now (never negative). */
