@@ -60,7 +60,7 @@ export default function WelcomeBackPage() {
     const taskId = getActiveSessionTaskId();
     if (taskId) {
       updatePlannerTask(taskId, {
-        minutesCompleted: elapsedMinutes,
+        secondsCompleted: elapsedMinutes * 60,
         status: OUTCOME_STATUS[outcome] ?? "IN_PROGRESS",
         isStudyingCrossApp: false,
       }).catch(() => {

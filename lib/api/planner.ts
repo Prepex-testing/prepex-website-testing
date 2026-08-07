@@ -61,7 +61,7 @@ export type PlannerTask = {
   title: string;
   description: string | null;
   estimatedMinutes: number;
-  minutesCompleted: number;
+  secondsCompleted: number;
   scheduledStart: string;
   scheduledEnd: string;
   suggestedWindow: string | null;
@@ -82,7 +82,7 @@ export type PlannerTaskDetail = {
   title: string;
   description: string | null;
   estimatedMinutes: number;
-  minutesCompleted: number;
+  secondsCompleted: number;
   scheduledStart: string;
   scheduledEnd: string;
   suggestedWindow: string | null;
@@ -120,7 +120,7 @@ export type PlannerSubjectSummary = {
   subjectId: number;
   subjectName: string;
   totalMinutes: number;
-  completedMinutes: number;
+  completedSeconds: number;
   completionPercentage: number;
 };
 
@@ -130,7 +130,7 @@ export type PlannerSummary = {
   completedTaskCount: number;
   skippedTaskCount: number;
   totalPlannedMinutes: number;
-  totalTimeCompleted: number;
+  totalTimeCompletedSeconds: number;
   completionPercentage: number;
   subjectWiseSummary: PlannerSubjectSummary[];
 };
@@ -185,7 +185,7 @@ export function addPlannerTask(input: AddPlannerTaskInput) {
 }
 
 export type UpdatePlannerTaskInput =
-  | { minutesCompleted: number; status: TaskStatus; isStudyingCrossApp: false }
+  | { secondsCompleted: number; status: TaskStatus; isStudyingCrossApp: false }
   | { isStudyingCrossApp: true; crossAppActivity: string };
 
 export function updatePlannerTask(taskId: string, input: UpdatePlannerTaskInput) {

@@ -55,7 +55,7 @@ export type RevisionTask = {
   title: string;
   description: string | null;
   estimatedMinutes: number;
-  minutesCompleted: number;
+  secondsCompleted: number;
   scheduledStart: string;
   scheduledEnd: string;
   suggestedWindow: string;
@@ -69,7 +69,7 @@ export type RevisionChapterProgress = {
   id: string;
   chapterId: string;
   status: string;
-  minutesCompleted: number;
+  secondsCompleted: number;
   revisionPhase: string;
   revisionCount: number;
   nextRevisionAt: string | null;
@@ -99,10 +99,10 @@ export function updateRevisionProgress(revisionId: string) {
   });
 }
 
-export function markRevisionDone(revisionId: string, minutesCompleted: number) {
+export function markRevisionDone(revisionId: string, secondsCompleted: number) {
   return authRequest<{ success: true; data: unknown }>(`/${revisionId}/mark-done`, {
     method: "POST",
-    body: JSON.stringify({ minutesCompleted }),
+    body: JSON.stringify({ secondsCompleted }),
   });
 }
 
@@ -118,9 +118,9 @@ export function heartbeatRevisionSession(revisionId: string) {
   });
 }
 
-export function exitRevisionSession(revisionId: string, minutesCompleted: number) {
+export function exitRevisionSession(revisionId: string, secondsCompleted: number) {
   return authRequest<{ success: true; data: unknown }>(`/${revisionId}/session/exit`, {
     method: "POST",
-    body: JSON.stringify({ minutesCompleted }),
+    body: JSON.stringify({ secondsCompleted }),
   });
 }

@@ -76,7 +76,7 @@ function FocusSessionContent() {
         if (!found) return;
         setTask(found);
         const storedElapsed = getStoredElapsedSeconds(taskId);
-        setElapsed(storedElapsed ?? found.minutesCompleted * 60);
+        setElapsed(storedElapsed ?? found.secondsCompleted);
         setTargetSeconds(found.estimatedMinutes * 60);
       })
       .catch(() => {
@@ -97,7 +97,7 @@ function FocusSessionContent() {
   // the exact elapsed seconds instead of falling back to the API's
   // whole-minute snapshot from the last explicit save. Gated on isReady so
   // this doesn't fire with the initial elapsed=0 before the seed value
-  // (stored seconds or minutesCompleted from the API) has been read in.
+  // (stored seconds or secondsCompleted from the API) has been read in.
   useEffect(() => {
     if (!taskId || !isReady) return;
     setStoredElapsedSeconds(taskId, elapsed);
@@ -155,7 +155,7 @@ function FocusSessionContent() {
     resolvedRef.current = true;
     if (taskId) {
       updatePlannerTask(taskId, {
-        minutesCompleted: Math.ceil(elapsed / 60),
+        secondsCompleted: elapsed,
         status: "COMPLETED",
         isStudyingCrossApp: false,
       }).catch(() => {
@@ -190,7 +190,7 @@ function FocusSessionContent() {
     resolvedRef.current = true;
     if (taskId) {
       updatePlannerTask(taskId, {
-        minutesCompleted: Math.ceil(elapsed / 60),
+        secondsCompleted: elapsed,
         status: "IN_PROGRESS",
         isStudyingCrossApp: false,
       }).catch(() => {
