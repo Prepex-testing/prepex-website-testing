@@ -51,7 +51,7 @@ function RevisionSessionContent() {
   const autoCompletedRef = useRef(false);
   const { isActive, taskId, elapsedSeconds, startSession, exitSession } = useRevisionSession();
 
-  // Loads the task's full detail (title, chapter/subject, status, minutesCompleted)
+  // Loads the task's full detail (title, chapter/subject, status, secondsCompleted)
   // to drive the page content and to decide how the timer should be seeded below.
   useEffect(() => {
     if (!revisionId) {
@@ -78,7 +78,7 @@ function RevisionSessionContent() {
   // Covers direct/refreshed navigation to this page — the list-page buttons already
   // start the session before routing here, so this is a no-op in that common case.
   // A task still PENDING (never started) begins at 0; one already IN_PROGRESS
-  // (e.g. resumed after a Pause) seeds the timer from its banked minutesCompleted.
+  // (e.g. resumed after a Pause) seeds the timer from its banked secondsCompleted.
   useEffect(() => {
     if (!revisionId || isTaskLoading || (isActive && taskId === revisionId)) return;
     startSession({
@@ -86,7 +86,7 @@ function RevisionSessionContent() {
       targetDuration: task?.estimatedMinutes ?? 0,
       taskTitle: task?.title,
       subjectName: task?.subject?.name,
-      initialElapsedSeconds: task?.status === "IN_PROGRESS" ? (task?.minutesCompleted ?? 0) * 60 : 0,
+      initialElapsedSeconds: task?.status === "IN_PROGRESS" ? (task?.secondsCompleted ?? 0) : 0,
     }).catch(() => {
       // Best-effort — the page still works without a tracked session.
     });
@@ -114,7 +114,7 @@ function RevisionSessionContent() {
     autoCompletedRef.current = true;
     (async () => {
       try {
-        await markRevisionDone(revisionId, minutesElapsed);
+        await markRevisionDone(revisionId, elapsedSeconds);
       } catch {
         // Best-effort — still let the user proceed to rate difficulty.
       } finally {
@@ -132,7 +132,7 @@ function RevisionSessionContent() {
     autoCompletedRef.current = true;
     setEnding(true);
     try {
-      await markRevisionDone(revisionId, Math.floor(displayedElapsedSeconds / 60));
+      await markRevisionDone(revisionId, displayedElapsedSeconds);
     } catch {
       // Best-effort — still let the user proceed to rate difficulty.
     } finally {

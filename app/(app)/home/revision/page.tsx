@@ -70,7 +70,7 @@ type RevisionTopic = {
   estimatedMinutes: number;
   isTaskCompleted: boolean;
   status: TaskStatus | string;
-  minutesCompleted: number;
+  secondsCompleted: number;
 };
 
 function fromTask(task: RevisionTask): RevisionTopic {
@@ -90,7 +90,7 @@ function fromTask(task: RevisionTask): RevisionTopic {
     isTaskCompleted: task.status === "COMPLETED",
     estimatedMinutes: task.estimatedMinutes,
     status: task.status,
-    minutesCompleted: task.minutesCompleted,
+    secondsCompleted: task.secondsCompleted,
   };
 }
 
@@ -118,7 +118,7 @@ function fromChapterProgress(entry: RevisionChapterProgress, tab: "upcoming" | "
     estimatedMinutes: 0,
     isTaskCompleted: false,
     status: "",
-    minutesCompleted: 0,
+    secondsCompleted: 0,
   };
 }
 
@@ -163,7 +163,7 @@ export default function RevisionPage() {
         taskTitle: topic.title,
         subjectName: topic.subjectName,
         subjectLabel: topic.subjectLabel,
-        initialElapsedSeconds: topic.status === "IN_PROGRESS" ? topic.minutesCompleted * 60 : 0,
+        initialElapsedSeconds: topic.status === "IN_PROGRESS" ? topic.secondsCompleted : 0,
       });
     } catch {
       // Best-effort — still let the student into the session even if tracking failed to start.

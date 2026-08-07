@@ -28,6 +28,7 @@ import {
   CloudSunIcon,
   SunIcon,
   CloudMoonIcon,
+  MoonIcon,
   PlusIcon,
   RefreshIcon,
 } from "@/components/ui/icons";
@@ -53,8 +54,9 @@ function formatWindow(window: string | null | undefined) {
 }
 
 function formatDuration(minutes: number) {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
+  const totalMinutes = Math.floor(minutes);
+  const hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
   if (hours === 0) return `${mins}m`;
   if (mins === 0) return `${hours}h`;
   return `${hours}h ${mins}m`;
@@ -85,10 +87,9 @@ function toPlanTask(task: PlannerTask): PlanTask {
 function groupTasksByWindow(tasks: PlannerTask[]) {
   const morning = tasks.filter((task) => task.suggestedWindow === "MORNING");
   const afternoon = tasks.filter((task) => task.suggestedWindow === "MIDDAY");
-  const evening = tasks.filter(
-    (task) => task.suggestedWindow === "EVENING" || task.suggestedWindow === "NIGHT",
-  );
-  return { morning, afternoon, evening };
+  const evening = tasks.filter((task) => task.suggestedWindow === "EVENING");
+  const night = tasks.filter((task) => task.suggestedWindow === "NIGHT");
+  return { morning, afternoon, evening, night };
 }
 
 function sectionMeta(tasks: PlannerTask[]) {
@@ -199,17 +200,18 @@ export default function TodayPlanPage() {
 
   const plan = planData?.plan;
   const summary = planData?.summary;
-  const { morning, afternoon, evening } = groupTasksByWindow(plan?.tasks ?? []);
+  const { morning, afternoon, evening, night } = groupTasksByWindow(plan?.tasks ?? []);
   const morningTasks = plan ? morning.map(toPlanTask) : MORNING_TASKS;
   const afternoonTasks = plan ? afternoon.map(toPlanTask) : AFTERNOON_TASKS;
   const eveningTasks = plan ? evening.map(toPlanTask) : EVENING_TASKS;
+  const nightTasks = plan ? night.map(toPlanTask) : [];
   const completionPercent = summary?.completionPercentage ?? 35;
   const statTiles = summary
     ? [
-        { label: "Completed", value: formatDuration(summary.totalTimeCompleted), icon: <CheckIcon className="h-4 w-4" /> },
+        { label: "Completed", value: formatDuration(summary.totalTimeCompletedSeconds / 60), icon: <CheckIcon className="h-4 w-4" /> },
         {
           label: "Remaining",
-          value: formatDuration(Math.max(summary.totalPlannedMinutes - summary.totalTimeCompleted, 0)),
+          value: formatDuration(Math.max(summary.totalPlannedMinutes - summary.totalTimeCompletedSeconds / 60, 0)),
           icon: <ClockIcon className="h-4 w-4" />,
         },
         {
@@ -332,6 +334,19 @@ export default function TodayPlanPage() {
           >
             <div className="flex flex-col gap-3">
               {eveningTasks.map((task) => (
+                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
+              ))}
+            </div>
+          </TimeBlockSection>
+        )}
+        {nightTasks.length > 0 && (
+          <TimeBlockSection
+            icon={<MoonIcon className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />}
+            title="Night"
+            meta={sectionMeta(night)}
+          >
+            <div className="flex flex-col gap-3">
+              {nightTasks.map((task) => (
                 <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
               ))}
             </div>

@@ -285,7 +285,7 @@ export default function HomePage() {
   const summary = planData?.summary;
   const planTasks = (plan ? plan.tasks.map(toHomeTask) : TASKS).slice(0, 5);
   const completionPercent = summary?.completionPercentage ?? 22;
-  const completedMinutes = summary?.totalTimeCompleted ?? 78;
+  const completedMinutes = summary ? summary.totalTimeCompletedSeconds / 60 : 78;
   const plannedMinutes = summary?.totalPlannedMinutes ?? 360;
 
   return (

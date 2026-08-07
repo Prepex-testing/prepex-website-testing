@@ -51,7 +51,7 @@ type StartSessionInput = {
   taskTitle?: string;
   subjectName?: string;
   subjectLabel?: string;
-  /** Seconds to seed the timer with — e.g. a PENDING task's already-banked minutesCompleted. */
+  /** Seconds to seed the timer with — e.g. a task's already-banked secondsCompleted. */
   initialElapsedSeconds?: number;
 };
 
@@ -197,12 +197,12 @@ export function RevisionSessionProvider({ children }: { children: ReactNode }) {
 
   const exitSession = useCallback(async () => {
     const taskId = state.taskId;
-    const minutesCompleted = Math.floor(state.elapsedSeconds / 60);
+    const secondsCompleted = state.elapsedSeconds;
     clearStoredSession();
     setState(INITIAL_STATE);
     if (taskId) {
       try {
-        await exitRevisionSession(taskId, minutesCompleted);
+        await exitRevisionSession(taskId, secondsCompleted);
       } catch {
         // Best-effort — local state is already cleared.
       }
