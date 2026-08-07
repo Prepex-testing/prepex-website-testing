@@ -16,3 +16,10 @@ export function secondsSince(iso: string): number {
   const elapsedMs = Date.now() - new Date(iso).getTime();
   return Math.max(Math.floor(elapsedMs / 1000), 0);
 }
+
+/** "MM:SS" */
+export function formatClock(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}

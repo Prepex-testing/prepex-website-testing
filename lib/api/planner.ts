@@ -72,6 +72,38 @@ export type PlannerTask = {
   isAnchor?: boolean;
 };
 
+export type PlannerTaskDetail = {
+  id: string;
+  dailyPlanId: string;
+  userId: string;
+  chapterId: string | null;
+  subjectId: number;
+  taskType: "WELLNESS" | "PRACTICE" | "REVISION" | "NEW_LEARNING" | string;
+  title: string;
+  description: string | null;
+  estimatedMinutes: number;
+  minutesCompleted: number;
+  scheduledStart: string;
+  scheduledEnd: string;
+  suggestedWindow: string | null;
+  priorityScore?: string;
+  aiGenerated?: boolean;
+  isAnchor?: boolean;
+  isStudyingCrossApp?: boolean;
+  taskOrder?: number;
+  status: TaskStatus | string;
+  completedAt: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  questionCount: number | null;
+  chapter: PlannerChapter;
+  subject: PlannerSubject | null;
+};
+
+export function getPlannerTask(taskId: string) {
+  return authRequest<{ success: true; data: PlannerTaskDetail }>(`/task/${taskId}`);
+}
+
 export type DailyPlan = {
   id: string;
   planDate: string;

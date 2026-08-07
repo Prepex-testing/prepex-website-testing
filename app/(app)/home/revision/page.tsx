@@ -5,8 +5,9 @@ import { useTheme } from "@/components/theme/ThemeProvider";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { AddRevisionTaskModal } from "@/components/home/AddRevisionTaskModal";
+import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { Container ,BellIcon,ArrowLeftIcon} from "@/assets/icons";
 import {
   // ArrowLeftIcon,
@@ -24,8 +25,9 @@ import {
   type RevisionOverview,
   type RevisionTask,
 } from "@/lib/api/revision";
-import { withResumeLabel } from "@/components/home/taskTypes";
+import { withResumeLabel, CUSTOM_BADGE_STYLE } from "@/components/home/taskTypes";
 import { formatShortDate } from "@/lib/utils/datetime";
+import { useRevisionSession } from "@/components/session/RevisionSessionProvider";
 
 type Tab = "due" | "upcoming" | "mastered";
 
@@ -64,6 +66,11 @@ type RevisionTopic = {
   meta: string;
   badge: string;
   actionLabel: string;
+  isCustom: boolean;
+  estimatedMinutes: number;
+  isTaskCompleted: boolean;
+  status: TaskStatus | string;
+  minutesCompleted: number;
 };
 
 function fromTask(task: RevisionTask): RevisionTopic {
@@ -79,6 +86,11 @@ function fromTask(task: RevisionTask): RevisionTopic {
     meta: [subject?.name, task.chapter?.name].filter(Boolean).join(" • "),
     badge: "",
     actionLabel: withResumeLabel("Start Revision", task.status),
+    isCustom: Boolean(task.isAnchor),
+    isTaskCompleted: task.status === "COMPLETED",
+    estimatedMinutes: task.estimatedMinutes,
+    status: task.status,
+    minutesCompleted: task.minutesCompleted,
   };
 }
 
@@ -102,6 +114,11 @@ function fromChapterProgress(entry: RevisionChapterProgress, tab: "upcoming" | "
     meta: [subject.name, meta].filter(Boolean).join(" • "),
     badge,
     actionLabel: "",
+    isCustom: false,
+    estimatedMinutes: 0,
+    isTaskCompleted: false,
+    status: "",
+    minutesCompleted: 0,
   };
 }
 
@@ -124,6 +141,8 @@ function collectSubjectsByTab(data: RevisionOverview): SubjectsByTab {
 }
 
 export default function RevisionPage() {
+  const router = useRouter();
+  const { startSession } = useRevisionSession();
   const [activeTab, setActiveTab] = useState<Tab>("due");
   const [activeSubjectId, setActiveSubjectId] = useState<number | "all">("all");
   const [activeStatus, setActiveStatus] = useState<TaskStatus | null>(null);
@@ -134,6 +153,24 @@ export default function RevisionPage() {
   const statusMenuRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+
+  const handleStartRevision = async (topic: RevisionTopic) => {
+    if (!topic.taskId) return;
+    try {
+      await startSession({
+        taskId: topic.taskId,
+        targetDuration: topic.estimatedMinutes,
+        taskTitle: topic.title,
+        subjectName: topic.subjectName,
+        subjectLabel: topic.subjectLabel,
+        initialElapsedSeconds: topic.status === "IN_PROGRESS" ? topic.minutesCompleted * 60 : 0,
+      });
+    } catch {
+      // Best-effort — still let the student into the session even if tracking failed to start.
+    } finally {
+      router.push(`/revision-session?taskId=${topic.taskId}`);
+    }
+  };
 
   useEffect(() => {
     if (!isStatusMenuOpen) return;
@@ -157,15 +194,17 @@ export default function RevisionPage() {
       });
   }, []);
 
-  // Refetches the revision overview whenever the active subject or status filter changes.
-  useEffect(() => {
+  const refetchOverview = () => {
     getRevisionOverview({
       ...(activeSubjectId !== "all" ? { subjectId: activeSubjectId } : {}),
       ...(activeStatus ? { status: activeStatus } : {}),
     })
       .then(({ data }) => setOverview(data))
       .catch(() => setOverview(null));
-  }, [activeSubjectId, activeStatus]);
+  };
+
+  // Refetches the revision overview whenever the active subject or status filter changes.
+  useEffect(refetchOverview, [activeSubjectId, activeStatus]);
 
   const subjects = subjectsByTab[activeTab];
 
@@ -427,6 +466,14 @@ export default function RevisionPage() {
                     {topic.difficulty}
                   </span>
 
+                  {topic.isCustom && (
+                    <span
+                      className={`ml-2 inline-flex rounded-sm px-2 py-1 text-[9px] sm:text-[10px] font-bold uppercase ${CUSTOM_BADGE_STYLE}`}
+                    >
+                      Custom
+                    </span>
+                  )}
+
                   <h3 className="mt-2 break-words text-[15px] sm:text-[16px] font-bold leading-6 text-ink">
                     {topic.title}
                   </h3>
@@ -439,8 +486,10 @@ export default function RevisionPage() {
 
               {/* Right Button */}
               {topic.taskId ? (
-                <Link
-                  href={`/revision-session?taskId=${topic.taskId}`}
+                <button
+                  type="button"
+                  onClick={() => handleStartRevision(topic)}
+                  disabled={topic.isTaskCompleted}
                   className={`
             flex
             h-[40px]
@@ -455,19 +504,17 @@ export default function RevisionPage() {
             font-semibold
             whitespace-nowrap
             transition-all
-            hover:bg-[#FF7A59]
-            hover:text-white
             sm:ml-6
             sm:w-auto
             sm:min-w-[150px]
-            ${isDark
-                      ? "border-white text-white"
-                      : "border-brand text-brand"
+            ${topic.isTaskCompleted
+                      ? "cursor-not-allowed border-brand/20 text-muted"
+                      : `hover:bg-[#FF7A59] hover:text-white ${isDark ? "border-white text-white" : "border-brand text-brand"}`
                     }
           `}
                 >
-                  {topic.actionLabel}
-                </Link>
+                  {topic.isTaskCompleted ? "Revision Completed" : topic.actionLabel}
+                </button>
               ) : (
                 <span
                   className={`
@@ -511,7 +558,12 @@ export default function RevisionPage() {
         </Button>
       </div>
 
-      <AddRevisionTaskModal open={isAddTaskOpen} onClose={() => setAddTaskOpen(false)} />
+      <AddCustomTaskModal
+        open={isAddTaskOpen}
+        onClose={() => setAddTaskOpen(false)}
+        onTaskAdded={refetchOverview}
+        lockedTaskType="Revision"
+      />
     </div>
   );
 }

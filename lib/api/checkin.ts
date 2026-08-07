@@ -69,6 +69,7 @@ export type CheckInStatus = {
     longestStreak: number;
     missingDays: number;
     isInRecoveryMode?: boolean;
+    isActiveSession?: boolean;
   } | null;
   isInBurnout: boolean;
   burnoutStatus: { isInBurnout: boolean; message: string };
