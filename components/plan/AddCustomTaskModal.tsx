@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
 import { MinusIcon, PencilIcon, PlusIcon, XIcon } from "@/components/ui/icons";
-import { addPlannerTask, type SuggestedWindow } from "@/lib/api/planner";
+import { addPlannerTask, editPlannerTask, type SuggestedWindow } from "@/lib/api/planner";
 import {
   getSubjectsChapters,
   type SubjectWithChapters,
@@ -54,18 +54,36 @@ type AddCustomTaskModalProps = {
   open: boolean;
   onClose: () => void;
   mode?: "add" | "edit";
+  /** Task being edited — required in edit mode, used as the PATCH target. */
+  taskId?: string;
   initialValues?: TaskFormInitialValues;
   onTaskAdded?: () => void;
+  onTaskUpdated?: () => void;
   /** Locks Task Type to this value and hides the picker — used by the revision page. */
   lockedTaskType?: string;
 };
+
+/** Read-only stand-in for a Select, styled to match — used in edit mode where
+ * Subject/Topic reflect the task's existing values instead of being pickable. */
+function StaticField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-[14px] font-semibold leading-[20px] text-ink">{label}</label>
+      <div className="flex h-[46px] items-center rounded-xl border border-brand/15 bg-surface px-4 text-sm text-body-text">
+        {value || "—"}
+      </div>
+    </div>
+  );
+}
 
 export function AddCustomTaskModal({
   open,
   onClose,
   mode = "add",
+  taskId,
   initialValues,
   onTaskAdded,
+  onTaskUpdated,
   lockedTaskType,
 }: AddCustomTaskModalProps) {
   const [taskType, setTaskType] = useState(lockedTaskType ?? initialValues?.taskType ?? "Practice");
@@ -85,9 +103,10 @@ export function AddCustomTaskModal({
 
   // The API returns every subject with its own chapters nested — fetched once
   // per open, then subject selection filters the already-loaded chapters
-  // locally instead of refetching.
+  // locally instead of refetching. Edit mode shows Subject/Topic as static
+  // text (see below), so it has no need for this list.
   useEffect(() => {
-    if (!open) return;
+    if (!open || isEdit) return;
 
     async function loadSubjectsChapters() {
       setLoadingChapters(true);
@@ -97,7 +116,7 @@ export function AddCustomTaskModal({
         setSubjectId((current) => {
           if (current != null) return current;
           const matched = initialValues?.subjectValue
-            ? data.subjects.find((s) => s.name.toLowerCase() === initialValues.subjectValue)
+            ? data.subjects.find((s) => s.name.toLowerCase() === initialValues.subjectValue?.toLowerCase())
             : undefined;
           return matched?.id ?? null;
         });
@@ -110,7 +129,7 @@ export function AddCustomTaskModal({
 
     loadSubjectsChapters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, isEdit]);
 
   const chapters = subjects.find((subject) => subject.id === subjectId)?.chapters ?? [];
 
@@ -128,7 +147,24 @@ export function AddCustomTaskModal({
 
   const handleSubmit = async () => {
     if (isEdit) {
-      onClose();
+      if (!taskId || !taskName.trim()) return;
+
+      setSubmitting(true);
+      setError(null);
+      try {
+        await editPlannerTask(taskId, {
+          title: taskName.trim(),
+          estimatedMinutes: Number(durationValue),
+          description: notes.trim() || undefined,
+          suggestedWindow: SUGGESTED_WINDOW_VALUES[timePreferenceValue],
+        });
+        onTaskUpdated?.();
+        onClose();
+      } catch {
+        setError("Couldn't save changes. Please try again.");
+      } finally {
+        setSubmitting(false);
+      }
       return;
     }
 
@@ -199,44 +235,63 @@ export function AddCustomTaskModal({
           onChange={(event) => setTaskName(event.target.value)}
         />
 
-        {!lockedTaskType && (
+        {isEdit ? (
           <div>
             <p className="text-sm font-semibold text-ink">Task Type</p>
-            <div className="mt-1 flex flex-wrap gap-2">
-              {TASK_TYPES.map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => setTaskType(type)}
-                  aria-pressed={taskType === type}
-                  className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
-                    taskType === type
-                      ? "border-brand bg-brand text-white"
-                      : "border-brand/15 text-body-text hover:bg-tint-strong"
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
+            <div className="mt-1">
+              <span className="inline-flex rounded-full border border-brand bg-brand px-4 py-2 text-sm font-semibold text-white">
+                {taskType}
+              </span>
             </div>
           </div>
+        ) : (
+          !lockedTaskType && (
+            <div>
+              <p className="text-sm font-semibold text-ink">Task Type</p>
+              <div className="mt-1 flex flex-wrap gap-2">
+                {TASK_TYPES.map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setTaskType(type)}
+                    aria-pressed={taskType === type}
+                    className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                      taskType === type
+                        ? "border-brand bg-brand text-white"
+                        : "border-brand/15 text-body-text hover:bg-tint-strong"
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )
         )}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Select
-            label="Subject"
-            options={subjects.map((subject) => ({ value: String(subject.id), label: subject.name }))}
-            value={subjectId != null ? String(subjectId) : ""}
-            onChange={(event) => setSubjectId(Number(event.target.value))}
-            placeholder="Subject"
-          />
-          <Select
-            label="Topic"
-            options={chapters.map((chapter) => ({ value: chapter.id, label: chapter.name }))}
-            value={chapterId}
-            onChange={(event) => setChapterId(event.target.value)}
-            placeholder={isLoadingChapters ? "Loading chapters..." : "Topic"}
-          />
+          {isEdit ? (
+            <StaticField label="Subject" value={initialValues?.subjectValue ?? ""} />
+          ) : (
+            <Select
+              label="Subject"
+              options={subjects.map((subject) => ({ value: String(subject.id), label: subject.name }))}
+              value={subjectId != null ? String(subjectId) : ""}
+              onChange={(event) => setSubjectId(Number(event.target.value))}
+              placeholder="Subject"
+            />
+          )}
+          {isEdit ? (
+            <StaticField label="Topic" value={initialValues?.topicValue ?? ""} />
+          ) : (
+            <Select
+              label="Topic"
+              options={chapters.map((chapter) => ({ value: chapter.id, label: chapter.name }))}
+              value={chapterId}
+              onChange={(event) => setChapterId(event.target.value)}
+              placeholder={isLoadingChapters ? "Loading chapters..." : "Topic"}
+            />
+          )}
           <div className="flex flex-col gap-1">
             <label className="text-[14px] font-semibold leading-[20px] text-ink">Duration</label>
             <div className="flex h-[46px] items-center justify-between rounded-xl border border-brand/15 bg-surface px-3">
@@ -295,9 +350,9 @@ export function AddCustomTaskModal({
           variant="primary"
           size="sm"
           onClick={handleSubmit}
-          disabled={isSubmitting || (!isEdit && !taskName.trim())}
+          disabled={isSubmitting || !taskName.trim()}
         >
-          {isSubmitting ? "Adding..." : isEdit ? "Save Changes" : "Add Task"}
+          {isSubmitting ? (isEdit ? "Saving..." : "Adding...") : isEdit ? "Save Changes" : "Add Task"}
         </Button>
       </div>
     </Modal>

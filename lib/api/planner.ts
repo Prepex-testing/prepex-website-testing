@@ -140,6 +140,17 @@ export type TodayPlanResponse = {
   summary: PlannerSummary | null;
 };
 
+export type StudyConsistencyDay = {
+  date: string;
+  dayCompletionPercentage: number;
+};
+
+export type StudyConsistency = {
+  year: number;
+  month: number;
+  days: StudyConsistencyDay[];
+};
+
 export function generatePlan(reason: PlanGenerationReason) {
   return authRequest<{ success: true; data: unknown }>("/generate", {
     method: "POST",
@@ -149,6 +160,10 @@ export function generatePlan(reason: PlanGenerationReason) {
 
 export function getTodayPlan() {
   return authRequest<{ success: true; data: TodayPlanResponse }>("/today");
+}
+
+export function getStudyConsistency() {
+  return authRequest<{ success: true; data: StudyConsistency }>("/consistency");
 }
 
 export type RegenReason =
@@ -192,6 +207,26 @@ export function updatePlannerTask(taskId: string, input: UpdatePlannerTaskInput)
   return authRequest<{ success: true; data: unknown }>(`/${taskId}`, {
     method: "PATCH",
     body: JSON.stringify(input),
+  });
+}
+
+export type EditPlannerTaskInput = {
+  title: string;
+  estimatedMinutes: number;
+  description?: string;
+  suggestedWindow?: SuggestedWindow;
+};
+
+export function editPlannerTask(taskId: string, input: EditPlannerTaskInput) {
+  return authRequest<{ success: true; data: unknown }>(`/${taskId}/edit`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export function deletePlannerTask(taskId: string) {
+  return authRequest<{ success: true; data: unknown }>(`/${taskId}`, {
+    method: "DELETE",
   });
 }
 
