@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
-import { Container ,BellIcon,ArrowLeftIcon} from "@/assets/icons";
+import { Container, BellIcon, ArrowLeftIcon } from "@/assets/icons";
 import {
   // ArrowLeftIcon,
   // BellIcon,
@@ -168,13 +168,15 @@ export default function RevisionPage() {
   }, [isStatusMenuOpen]);
 
   // Discovers the subjects present in each revision bucket — drives the per-tab filter chips.
-  useEffect(() => {
+  const refetchSubjects = () => {
     getRevisionOverview()
       .then(({ data }) => setSubjectsByTab(collectSubjectsByTab(data)))
       .catch(() => {
         // Best-effort — chips stay empty until this succeeds.
       });
-  }, []);
+  };
+
+  useEffect(refetchSubjects, []);
 
   const refetchOverview = () => {
     getRevisionOverview({
@@ -187,6 +189,13 @@ export default function RevisionPage() {
 
   // Refetches the revision overview whenever the active subject or status filter changes.
   useEffect(refetchOverview, [activeSubjectId, activeStatus]);
+
+  // A newly added custom task can introduce a subject/status bucket that wasn't
+  // present at initial load, so the filter chips need a refetch too — not just topics.
+  const handleTaskAdded = () => {
+    refetchOverview();
+    refetchSubjects();
+  };
 
   const subjects = subjectsByTab[activeTab];
 
@@ -212,7 +221,7 @@ export default function RevisionPage() {
           </Link>
           <div>
             <h1 className="text-h1 text-ink">Revision</h1>
-            <p className="text-sm text-muted">
+            <p className="max-w-xs text-sm leading-6 text-muted sm:max-w-none">
               Review topics using spaced repetition. Consistent revision builds long-term
               mastery.
             </p>
@@ -243,9 +252,8 @@ export default function RevisionPage() {
                 setActiveTab(tab.id);
                 setActiveSubjectId("all");
               }}
-              className={`flex min-h-[106px] items-center gap-4 rounded-xl border p-6 text-left shadow-sm transition-colors ${
-                active ? "border-brand" : "border-brand/10 hover:border-brand/30"
-              } bg-surface`}
+              className={`flex min-h-[106px] items-center gap-4 rounded-xl border p-6 text-left shadow-sm transition-colors ${active ? "border-brand" : "border-brand/10 hover:border-brand/30"
+                } bg-surface`}
             >
               {/* Icon */}
               <div
@@ -260,7 +268,7 @@ export default function RevisionPage() {
                   {TAB_COUNTS[tab.id]}
                 </h3>
 
-                <p className="mt-1 font-['Plus_Jakarta_Sans'] text-sm font-medium leading-5 text-muted">
+                <p className="mt-1 font-['Plus_Jakarta_Sans'] text-sm font-medium leading-5 text-[#444655] dark:text-secondary!">
                   {tab.label}
                 </p>
               </div>
@@ -302,8 +310,8 @@ export default function RevisionPage() {
                       ? "border-white bg-white text-[#1A1A4E]"
                       : "border-brand bg-brand text-white"
                     : isDark
-                      ? "border-white/30 bg-transparent text-white hover:border-white"
-                      : "border-brand/20 bg-surface text-muted hover:border-brand hover:text-ink"
+                      ? "border-secondary bg-transparent text-secondary hover:border-white"
+                      : "border-brand bg-surface text-[#444655] hover:text-ink"
                   }
           `}
               >
@@ -339,8 +347,8 @@ export default function RevisionPage() {
       transition-all
       duration-200
       ${isDark
-                  ? "border-white bg-white text-[#1A1A4E] hover:bg-gray-100"
-                  : "border-brand/20 bg-surface text-muted hover:border-brand hover:text-ink"
+                  ? "border-primary bg-primary text-card hover:bg-primary/90"
+                  : "border-[#C4C5D8] bg-white text-[#444655] hover:text-ink"
                 }
     `}
             >
@@ -365,9 +373,8 @@ export default function RevisionPage() {
                     setActiveStatus(null);
                     setStatusMenuOpen(false);
                   }}
-                  className={`flex w-full items-center px-3 py-2 text-left text-sm font-medium hover:bg-tint-strong ${
-                    activeStatus === null ? "text-ink" : "text-muted"
-                  }`}
+                  className={`flex w-full items-center px-3 py-2 text-left text-sm font-medium hover:bg-tint-strong ${activeStatus === null ? "text-ink" : "text-muted"
+                    }`}
                 >
                   All
                 </button>
@@ -380,9 +387,8 @@ export default function RevisionPage() {
                       setActiveStatus(option.id);
                       setStatusMenuOpen(false);
                     }}
-                    className={`flex w-full items-center px-3 py-2 text-left text-sm font-medium hover:bg-tint-strong ${
-                      activeStatus === option.id ? "text-ink" : "text-muted"
-                    }`}
+                    className={`flex w-full items-center px-3 py-2 text-left text-sm font-medium hover:bg-tint-strong ${activeStatus === option.id ? "text-ink" : "text-muted"
+                      }`}
                   >
                     {option.label}
                   </button>
@@ -438,29 +444,32 @@ export default function RevisionPage() {
                 </div>
 
                 {/* Content */}
+                {/* Content */}
                 <div className="min-w-0 flex-1">
-                  <span
-                    className={`inline-flex rounded-sm px-2 py-1 text-[9px] sm:text-[10px] font-bold uppercase ${isDark
-                      ? "bg-white/10 text-white"
-                      : DIFFICULTY_STYLES[topic.difficulty]
-                      }`}
-                  >
-                    {topic.difficulty}
-                  </span>
-
-                  {topic.isCustom && (
+                  <div className="flex items-center gap-1.5">
                     <span
-                      className={`ml-2 inline-flex rounded-sm px-2 py-1 text-[9px] sm:text-[10px] font-bold uppercase ${CUSTOM_BADGE_STYLE}`}
+                      className={`inline-flex h-5 items-center rounded-[4px] px-2 text-[9px] font-bold uppercase leading-none ${isDark
+                          ? "bg-white/10 text-white"
+                          : DIFFICULTY_STYLES[topic.difficulty]
+                        }`}
                     >
-                      Custom
+                      {topic.difficulty}
                     </span>
-                  )}
 
-                  <h3 className="mt-2 break-words text-[15px] sm:text-[16px] font-bold leading-6 text-ink">
+                    {topic.isCustom && (
+                      <span
+                        className={`inline-flex h-5 items-center rounded-[4px] px-2 text-[9px] font-bold uppercase leading-none ${CUSTOM_BADGE_STYLE}`}
+                      >
+                        Custom
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 className="mt-1 text-[16px] font-bold leading-5 text-ink">
                     {topic.title}
                   </h3>
 
-                  <p className="mt-1 break-words text-[12px] sm:text-[13px] text-muted">
+                  <p className="mt-0.5 text-[11px] leading-4 text-muted">
                     {topic.meta}
                   </p>
                 </div>
@@ -468,35 +477,18 @@ export default function RevisionPage() {
 
               {/* Right Button */}
               {topic.taskId ? (
-                <button
-                  type="button"
-                  onClick={() => handleStartRevision(topic)}
+                <Button
+                  variant="outline"
                   disabled={topic.isTaskCompleted}
-                  className={`
-            flex
-            h-[40px]
-            w-full
-            items-center
-            justify-center
-            rounded-lg
-            border
-            px-4
-            text-[12px]
-            sm:text-[13px]
-            font-semibold
-            whitespace-nowrap
-            transition-all
-            sm:ml-6
-            sm:w-auto
-            sm:min-w-[150px]
-            ${topic.isTaskCompleted
-                      ? "cursor-not-allowed border-brand/20 text-muted"
-                      : `hover:bg-[#FF7A59] hover:text-white ${isDark ? "border-white text-white" : "border-brand text-brand"}`
-                    }
-          `}
+                  onClick={() => handleStartRevision(topic)}
+                  className={
+                    topic.isTaskCompleted
+                      ? "h-10! w-full! sm:ml-6! sm:w-auto! sm:min-w-37.5! justify-center px-4! text-caption! sm:text-[13px]! font-semibold! whitespace-nowrap! cursor-not-allowed! border-brand/20! text-muted! hover:border-brand/20! hover:bg-transparent! hover:text-muted!"
+                      : "h-10! w-full! sm:ml-6! sm:w-auto! sm:min-w-37.5! justify-center px-4! text-caption! sm:text-[13px]! font-semibold! whitespace-nowrap!"
+                  }
                 >
                   {topic.isTaskCompleted ? "Revision Completed" : topic.actionLabel}
-                </button>
+                </Button>
               ) : (
                 <span
                   className={`
@@ -532,7 +524,10 @@ export default function RevisionPage() {
       <div className="flex justify-center">
         <Button
           variant="primary"
-          onClick={() => setAddTaskOpen(true)}
+          onClick={() => {
+            setStatusMenuOpen(false);
+            setAddTaskOpen(true);
+          }}
           className="h-[60px]! w-[323px]! rounded-[12px] px-8 py-4 font-['Plus_Jakarta_Sans'] text-[18px] font-bold leading-7 transition-all duration-300 ease-out"
         >
           <PlusIcon />
@@ -543,7 +538,7 @@ export default function RevisionPage() {
       <AddCustomTaskModal
         open={isAddTaskOpen}
         onClose={() => setAddTaskOpen(false)}
-        onTaskAdded={refetchOverview}
+        onTaskAdded={handleTaskAdded}
         lockedTaskType="Revision"
       />
     </div>

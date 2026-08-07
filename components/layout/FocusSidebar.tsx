@@ -8,27 +8,28 @@ export function FocusSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-16 shrink-0 flex-col items-center gap-6 border-r border-brand/10 bg-surface py-6 lg:flex">
-      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">
+    <aside className="hidden w-24.25 flex-col items-center self-stretch border-r border-sidebar-border bg-surface px-6 py-8 lg:flex">
+      <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">
         R
-      </span>
+      </div>
 
-      <nav className="flex flex-col gap-2">
+      <nav className="flex w-12 flex-col gap-2 py-6">
         {NAV_ITEMS.map((item) => {
           const active =
             item.label === "Practice"
               ? pathname?.startsWith("/practice")
-              : pathname === item.href || pathname?.startsWith(`${item.href}/`);
+              : pathname === item.href ||
+                pathname?.startsWith(`${item.href}/`);
 
           return (
             <Link
               key={item.href}
               href={item.href}
               aria-label={item.label}
-              className={`flex h-10 w-10 items-center justify-center rounded-xl transition-colors ${
+              className={`flex w-12 items-center justify-center transition-colors duration-200 ${
                 active
-                  ? "bg-tint-strong text-ink"
-                  : "text-muted hover:bg-tint-strong/60"
+                  ? "h-12 rounded-xl bg-sidebar-active-bg text-sidebar-active-fg"
+                  : "h-10 rounded-2xl px-4 py-3 text-sidebar-inactive-fg hover:bg-sidebar-active-bg hover:text-sidebar-active-fg"
               }`}
             >
               {item.icon}

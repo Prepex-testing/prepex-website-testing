@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
-import { TargetIcon, TrendingUpIcon, CalendarIcon, ClockIcon, LayersIcon ,ArrowLeftIcon} from "@/assets/icons";
+import { TargetIcon, TrendingUpIcon, CalendarIcon, ClockIcon, LayersIcon, ArrowLeftIcon } from "@/assets/icons";
 import { submitRevisionFeedback, type RevisionFeedback } from "@/lib/api/revision";
 import { getPlannerTask, type PlannerTaskDetail } from "@/lib/api/planner";
 import { formatClock } from "@/lib/utils/datetime";
@@ -168,15 +168,19 @@ function RevisionCompleteContent() {
                   type="button"
                   onClick={() => handleSelectDifficulty(option)}
                   disabled={isSubmittingFeedback}
-                  aria-pressed={selected}
-                  className={`flex h-16 items-center justify-center rounded-xl border-2 p-2 transition-all disabled:cursor-not-allowed disabled:opacity-60 sm:h-20 sm:rounded-2xl sm:p-4 lg:h-[104px] ${selected
-                    ? "border-brand bg-surface text-ink"
-                    : isDark
-                      ? "border-white/20 bg-surface text-ink hover:border-white/40"
-                      : "border-brand/15 bg-surface text-ink hover:border-brand/30"
-                    }`}
+                  className={`
+          flex h-16 items-center justify-center
+          rounded-xl border-2 bg-surface
+          sm:h-20 lg:h-[104px]
+          ${selected
+                      ? "border-brand"
+                      : isDark
+                        ? "border-white/20"
+                        : "border-brand/15"
+                    }
+        `}
                 >
-                  <span className="text-sm font-bold leading-none sm:text-lg lg:text-[22px]">
+                  <span className="text-sm font-bold sm:text-lg lg:text-[22px]">
                     {option}
                   </span>
                 </button>
