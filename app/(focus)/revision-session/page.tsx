@@ -7,6 +7,9 @@ import { ClockIcon, CheckIcon } from "@/components/ui/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { FileIcon, PlayIcon, Open, ArrowLeftIcon, LightbulbIcon } from "@/assets/icons";
 import { updateRevisionProgress, markRevisionDone } from "@/lib/api/revision";
+import { getPlannerTask, type PlannerTaskDetail } from "@/lib/api/planner";
+import { useRevisionSession } from "@/components/session/RevisionSessionProvider";
+import { formatClock } from "@/lib/utils/datetime";
 
 const QUESTIONS = [
   "What is Newton's First Law of Motion?",
@@ -22,12 +25,6 @@ const REFERENCES = [
   { label: "Lecture Slides", meta: "PDF • 24 Slides", icon: <PlayIcon className="h-6 w-6" /> },
 ];
 
-function formatTime(totalSeconds: number): string {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-}
-
 export default function RevisionSessionPage() {
   return (
     <Suspense fallback={null}>
@@ -42,42 +39,123 @@ function RevisionSessionContent() {
   const revisionId = searchParams.get("taskId");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [recalled, setRecalled] = useState(false);
-  const [seconds, setSeconds] = useState(0);
   const [isEnding, setEnding] = useState(false);
+  const [isPausing, setPausing] = useState(false);
+  const [isPaused, setPaused] = useState(false);
+  const [pausedElapsedSeconds, setPausedElapsedSeconds] = useState(0);
+  const [task, setTask] = useState<PlannerTaskDetail | null>(null);
+  const [isTaskLoading, setTaskLoading] = useState(true);
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const savedMinutesRef = useRef(0);
+  const autoCompletedRef = useRef(false);
+  const { isActive, taskId, elapsedSeconds, startSession, exitSession } = useRevisionSession();
 
+  // Loads the task's full detail (title, chapter/subject, status, minutesCompleted)
+  // to drive the page content and to decide how the timer should be seeded below.
   useEffect(() => {
-    const timer = setInterval(() => setSeconds((value) => value + 1), 1000);
-    return () => clearInterval(timer);
-  }, []);
+    if (!revisionId) {
+      setTaskLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setTaskLoading(true);
+    getPlannerTask(revisionId)
+      .then(({ data }) => {
+        if (!cancelled) setTask(data);
+      })
+      .catch(() => {
+        // Best-effort — the page falls back to placeholder content below.
+      })
+      .finally(() => {
+        if (!cancelled) setTaskLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [revisionId]);
+
+  // Covers direct/refreshed navigation to this page — the list-page buttons already
+  // start the session before routing here, so this is a no-op in that common case.
+  // A task still PENDING (never started) begins at 0; one already IN_PROGRESS
+  // (e.g. resumed after a Pause) seeds the timer from its banked minutesCompleted.
+  useEffect(() => {
+    if (!revisionId || isTaskLoading || (isActive && taskId === revisionId)) return;
+    startSession({
+      taskId: revisionId,
+      targetDuration: task?.estimatedMinutes ?? 0,
+      taskTitle: task?.title,
+      subjectName: task?.subject?.name,
+      initialElapsedSeconds: task?.status === "IN_PROGRESS" ? (task?.minutesCompleted ?? 0) * 60 : 0,
+    }).catch(() => {
+      // Best-effort — the page still works without a tracked session.
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revisionId, isTaskLoading]);
 
   useEffect(() => {
     if (!revisionId) return;
-    const minutesElapsed = Math.floor(seconds / 60);
+    const minutesElapsed = Math.floor(elapsedSeconds / 60);
     if (minutesElapsed === 0 || minutesElapsed === savedMinutesRef.current) return;
     savedMinutesRef.current = minutesElapsed;
-    updateRevisionProgress(revisionId, minutesElapsed).catch(() => {
+    updateRevisionProgress(revisionId).catch(() => {
       // Best-effort — progress will be retried on the next minute tick.
     });
-  }, [seconds, revisionId]);
+  }, [elapsedSeconds, revisionId]);
+
+  const estimatedMinutes = task?.estimatedMinutes ?? 0;
+
+  // Auto-completes once tracked minutes catch up with the task's estimate,
+  // sending the student straight to the rate-difficulty screen.
+  useEffect(() => {
+    if (!revisionId || autoCompletedRef.current || estimatedMinutes <= 0) return;
+    const minutesElapsed = Math.floor(elapsedSeconds / 60);
+    if (minutesElapsed < estimatedMinutes) return;
+    autoCompletedRef.current = true;
+    (async () => {
+      try {
+        await markRevisionDone(revisionId, minutesElapsed);
+      } catch {
+        // Best-effort — still let the user proceed to rate difficulty.
+      } finally {
+        await exitSession();
+        router.push("/revision-session/complete");
+      }
+    })();
+  }, [elapsedSeconds, estimatedMinutes, revisionId, exitSession, router]);
 
   const handleEndSession = async () => {
     if (!revisionId) {
       router.push("/revision-session/complete");
       return;
     }
+    autoCompletedRef.current = true;
     setEnding(true);
     try {
-      await markRevisionDone(revisionId);
+      await markRevisionDone(revisionId, Math.floor(displayedElapsedSeconds / 60));
     } catch {
       // Best-effort — still let the user proceed to rate difficulty.
     } finally {
+      await exitSession();
       setEnding(false);
       router.push("/revision-session/complete");
     }
   };
+
+  const handlePauseSession = async () => {
+    if (!revisionId) return;
+    setPausing(true);
+    const frozenSeconds = elapsedSeconds;
+    try {
+      await exitSession();
+    } finally {
+      setPausedElapsedSeconds(frozenSeconds);
+      setPaused(true);
+      setPausing(false);
+    }
+  };
+
+  const displayedElapsedSeconds = isPaused ? pausedElapsedSeconds : elapsedSeconds;
 
   const goTo = (index: number) => {
     setQuestionIndex(Math.min(Math.max(index, 0), QUESTIONS.length - 1));
@@ -104,16 +182,18 @@ function RevisionSessionContent() {
       {/* Title */}
       <div>
         <h1 className="text-[28px] font-bold leading-[36px] text-ink sm:text-[32px] sm:leading-[40px]">
-          Newton&apos;s Laws
+          {task?.title ?? "Revision Session"}
         </h1>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-          <span
-            className={`rounded px-3 py-1 text-[10px] font-extrabold uppercase leading-[15px] ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
-          >
-            Physics
-          </span>
+          {task?.subject?.name && (
+            <span
+              className={`rounded px-3 py-1 text-[10px] font-extrabold uppercase leading-[15px] ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+            >
+              {task.subject.name}
+            </span>
+          )}
           <span className="text-[14px] font-medium leading-5 text-muted">
-            Concept Video • NCERT Chapter • Class 11
+            {[task?.chapter?.name, task?.subject?.name].filter(Boolean).join(" • ")}
           </span>
         </div>
         <div className="mt-3 h-px w-full bg-brand/10" />
@@ -142,7 +222,10 @@ function RevisionSessionContent() {
           </span>
           <div className="flex flex-col items-start">
             <span className="text-[32px] font-bold leading-[38px] text-ink dark:text-[#111145]">
-              {formatTime(seconds)}
+              {formatClock(displayedElapsedSeconds)}
+              {estimatedMinutes > 0 && (
+                <span className="text-muted dark:text-[#111145]/70">/{estimatedMinutes}</span>
+              )}
             </span>
             <span className="text-[10px] font-semibold  leading-5 tracking-wide text-muted dark:text-[#111145]/70">
               focus time
@@ -151,8 +234,14 @@ function RevisionSessionContent() {
         </div>
       </div>
 
-      {/* Question card */}
       <div className="rounded-3xl border border-brand/10 bg-surface p-6 text-center shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] sm:p-8">
+        <p className="mt-2 flex items-center justify-center gap-2 text-sm font-semibold leading-5 text-body-text">
+          Revision Questions Not Available.
+        </p>
+      </div>
+
+      {/* Question card */}
+      {/* <div className="rounded-3xl border border-brand/10 bg-surface p-6 text-center shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] sm:p-8">
         <h2 className="mx-auto max-w-[606px] text-[22px] font-extrabold leading-[28px] text-ink sm:text-[30px] sm:leading-[36px]">
           {QUESTIONS[questionIndex]}
         </h2>
@@ -181,11 +270,10 @@ function RevisionSessionContent() {
             ? "Great — tap Next to continue."
             : "Tap Next when you're ready to continue."}
         </p>
-      </div>
+      </div> */}
 
       {/* Previous / Skip / Next */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-brand/10 bg-surface px-4 py-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] sm:flex-row sm:items-center sm:justify-between">
-        {/* Previous */}
+      {/* <div className="flex flex-col gap-3 rounded-2xl border border-brand/10 bg-surface px-4 py-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] sm:flex-row sm:items-center sm:justify-between">
         <button
           type="button"
           onClick={() => goTo(questionIndex - 1)}
@@ -196,7 +284,6 @@ function RevisionSessionContent() {
           <span>Previous</span>
         </button>
 
-        {/* Skip */}
         <button
           type="button"
           onClick={() => goTo(questionIndex + 1)}
@@ -205,7 +292,6 @@ function RevisionSessionContent() {
           Skip Question »
         </button>
 
-        {/* Next */}
         <button
           type="button"
           onClick={() => goTo(questionIndex + 1)}
@@ -217,7 +303,7 @@ function RevisionSessionContent() {
             <ArrowLeftIcon />
           </span>
         </button>
-      </div>
+      </div> */}
 
       {/* Reference Review */}
       <div>
@@ -276,9 +362,11 @@ function RevisionSessionContent() {
         </button>
         <button
           type="button"
-          className="flex h-[72px] items-center justify-center text-lg font-bold text-body-text transition-colors hover:text-ink"
+          onClick={handlePauseSession}
+          disabled={isPausing || isPaused || isEnding}
+          className="flex h-[72px] items-center justify-center text-lg font-bold text-body-text transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Pause Session
+          {isPaused ? "Session Paused" : isPausing ? "Pausing..." : "Pause Session"}
         </button>
       </div>
     </div>

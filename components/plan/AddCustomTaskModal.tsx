@@ -56,6 +56,8 @@ type AddCustomTaskModalProps = {
   mode?: "add" | "edit";
   initialValues?: TaskFormInitialValues;
   onTaskAdded?: () => void;
+  /** Locks Task Type to this value and hides the picker — used by the revision page. */
+  lockedTaskType?: string;
 };
 
 export function AddCustomTaskModal({
@@ -64,8 +66,9 @@ export function AddCustomTaskModal({
   mode = "add",
   initialValues,
   onTaskAdded,
+  lockedTaskType,
 }: AddCustomTaskModalProps) {
-  const [taskType, setTaskType] = useState(initialValues?.taskType ?? "Practice");
+  const [taskType, setTaskType] = useState(lockedTaskType ?? initialValues?.taskType ?? "Practice");
   const [taskName, setTaskName] = useState(initialValues?.taskName ?? "");
   const [durationValue, setDurationValue] = useState(initialValues?.durationValue ?? "30");
   const [timePreferenceValue, setTimePreferenceValue] = useState(
@@ -135,7 +138,7 @@ export function AddCustomTaskModal({
     setError(null);
     try {
       const topicName = chapters.find((chapter) => chapter.id === chapterId)?.name;
-      const title = topicName ? `${taskName.trim()} ${topicName}` : taskName.trim();
+      const title = topicName ? `${taskName.trim()} . ${topicName}` : taskName.trim();
       await addPlannerTask({
         title,
         taskType: TASK_TYPE_API_VALUES[taskType] ?? "PRACTICE",
@@ -170,7 +173,7 @@ export function AddCustomTaskModal({
           </span>
           <div className="min-w-0">
             <h2 className="text-h2 text-ink">
-              {isEdit ? "Edit Task" : "Add to today, tomorrow, or any future day"}
+              {isEdit ? "Edit Task" : "Add Custom Task"}
             </h2>
             <p className="text-sm text-muted">
               {isEdit ? "Update the details for this task" : "Structure your study plan with precision"}
@@ -196,26 +199,28 @@ export function AddCustomTaskModal({
           onChange={(event) => setTaskName(event.target.value)}
         />
 
-        <div>
-          <p className="text-sm font-semibold text-ink">Task Type</p>
-          <div className="mt-1 flex flex-wrap gap-2">
-            {TASK_TYPES.map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setTaskType(type)}
-                aria-pressed={taskType === type}
-                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
-                  taskType === type
-                    ? "border-brand bg-brand text-white"
-                    : "border-brand/15 text-body-text hover:bg-tint-strong"
-                }`}
-              >
-                {type}
-              </button>
-            ))}
+        {!lockedTaskType && (
+          <div>
+            <p className="text-sm font-semibold text-ink">Task Type</p>
+            <div className="mt-1 flex flex-wrap gap-2">
+              {TASK_TYPES.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setTaskType(type)}
+                  aria-pressed={taskType === type}
+                  className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                    taskType === type
+                      ? "border-brand bg-brand text-white"
+                      : "border-brand/15 text-body-text hover:bg-tint-strong"
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Select

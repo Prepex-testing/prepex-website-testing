@@ -17,6 +17,7 @@ const SESSIONS: PlanTask[] = Array.from({ length: 5 }, (_, index) => ({
   title: "Calculus Practice",
   meta: "NCERT Ex. 7.1 • PYQ Sets",
   duration: "75 min",
+  estimatedMinutes: 75,
   timeRange: "12:00 - 1:15 PM",
   difficulty: "medium",
   actionLabel: "Start Practice",
