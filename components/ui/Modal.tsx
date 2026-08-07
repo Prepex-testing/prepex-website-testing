@@ -8,12 +8,13 @@ type ModalProps = {
   onClose: () => void;
   ariaLabel: string;
   children: ReactNode;
-  size?: "md" | "lg";
+  size?: "md" | "lg" | "xl";
 };
 
 const SIZE_CLASSES: Record<NonNullable<ModalProps["size"]>, string> = {
   md: "sm:max-w-md",
   lg: "sm:max-w-2xl",
+  xl: "sm:max-w-4xl",
 };
 
 export function Modal({ open, onClose, ariaLabel, children, size = "md" }: ModalProps) {
@@ -39,7 +40,7 @@ export function Modal({ open, onClose, ariaLabel, children, size = "md" }: Modal
       onClick={onClose}
     >
       <div
-        className={`modal-scroll-panel max-h-[85vh] w-full overflow-y-auto rounded-t-3xl bg-background p-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-modal sm:rounded-3xl sm:p-8 sm:pb-10 ${SIZE_CLASSES[size]}`}
+       className={`modal-scroll-panel w-[calc(100vw-2rem)] max-h-[85vh] overflow-y-auto rounded-t-3xl bg-background p-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-modal sm:w-full sm:rounded-3xl sm:p-8 sm:pb-10 ${SIZE_CLASSES[size]}`}
         onClick={(event) => event.stopPropagation()}
       >
         {children}
