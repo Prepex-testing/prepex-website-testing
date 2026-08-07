@@ -23,11 +23,11 @@ import {
 } from "@/lib/api/planner";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
-import { FlameIcon, BackIcon, BookIcon, BriefcaseIcon, ChartBarIcon, LayersIcon, LoderIcon, QuickIcon, RadarIcon, RevisionIcon, TrophyIcon, UserIcon, BellIcon } from "@/assets/icons";
+import { FlameIcon, BackIcon, BookIcon, BriefcaseIcon, ChartBarIcon, LayersIcon, LoderIcon, QuickIcon, RadarIcon, RevisionIcon, TrophyIcon, UserIcon, BellIcon, SparkleIcon} from "@/assets/icons";
 import {
-  SparkleIcon,
+  // SparkleIcon,
   RefreshIcon,
-  PlusIcon,
+  PlusIcon1 as PlusIcon,
   ClockIcon,
   InfoIcon,
   PencilIcon,
@@ -37,7 +37,6 @@ import {
   XIcon,
 } from "@/components/ui/icons";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { useTheme } from "@/components/theme/ThemeProvider";
 
 const TASKS: Task[] = [
   {
@@ -136,9 +135,9 @@ const CONSISTENCY_DATA: ConsistencyStatus[][] = [
 ];
 
 const CONSISTENCY_STYLES: Record<ConsistencyStatus, string> = {
-  completed: "bg-brand",
-  partial: "bg-brand/40",
-  missed: "bg-tint-strong",
+  completed: "bg-ink",
+  partial: "bg-consistency-partial",
+  missed: "bg-consistency-missed",
 };
 
 const TASK_TYPE_STYLE: Record<string, TaskType> = {
@@ -277,9 +276,6 @@ export default function HomePage() {
     }
   };
 
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-
   const plan = planData?.plan;
   const summary = planData?.summary;
   const planTasks = (plan ? plan.tasks.map(toHomeTask) : TASKS).slice(0, 5);
@@ -329,85 +325,98 @@ export default function HomePage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-brand/10 bg-surface p-6">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-15 w-15 shrink-0 items-center justify-center rounded-xl bg-tint">
-                <span className="text-[32px] leading-none">
-                  {energyMood?.emoji ?? ""}
-                </span>
+      <div className="@container">
+        <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-3">
+          {/* Today's Energy Card */}
+          <div className="relative rounded-2xl border border-brand/10 bg-surface p-4 @4xl:p-6">
+            <div className="flex flex-row items-center justify-between gap-3 @4xl:gap-4">
+              <div className="flex flex-row items-center gap-3 @4xl:gap-4">
+                <div className="flex h-15 w-15 shrink-0 items-center justify-center rounded-md bg-[#EEF0F8] dark:bg-[#13133D]">
+                  <span className="text-[34px] leading-none">
+                    {energyMood?.emoji ?? ""}
+                  </span>
+                </div>
+                <div className="flex min-w-0 flex-col items-start">
+                  <p className="text-[11px] font-medium leading-none tracking-normal text-muted @4xl:text-[12px]">
+                    Today&apos;s Energy
+                  </p>
+                  <h3 className="mt-1 truncate text-[18px] font-bold leading-none tracking-normal text-ink @4xl:text-[22px]">
+                    {energyMood?.label ?? "—"}
+                  </h3>
+                  <p className="mt-1 line-clamp-1 text-[12px] font-semibold leading-none tracking-normal text-muted @4xl:text-[14px]">
+                    Plan optimized for you
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-muted">Today's Energy</p>
-                <h3 className="text-3xl font-bold leading-none text-ink">
-                  {energyMood?.label ?? "—"}
-                </h3>
-                <p className="text-sm text-muted">Plan optimized for you</p>
-              </div>
+              <button
+                type="button"
+                onClick={() => setCheckInOpen(true)}
+                className="shrink-0 text-[11px] font-bold leading-[15px] tracking-normal text-ink hover:underline @4xl:text-[12px]"
+              >
+                Change
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setCheckInOpen(true)}
-              className="self-start text-sm font-semibold text-ink hover:underline xl:self-center"
-            >
-              Change
-            </button>
           </div>
-        </div>
 
-        <Link
-          href="/home/streak"
-          className="block rounded-2xl border border-brand/10 bg-surface p-6 transition-colors hover:border-brand/30"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-cta/10 text-cta">
-                <FlameIcon className="h-[30px] w-[26.67px]" />
+          {/* Streak Card */}
+          <Link
+            href="/home/streak"
+            className="block rounded-2xl border border-brand/10 bg-surface p-4 transition-colors hover:border-brand/30 @4xl:p-6"
+          >
+            <div className="flex flex-row items-center justify-between gap-3 @4xl:gap-4">
+              <div className="flex min-w-0 flex-row items-center gap-3 @4xl:gap-4">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-md bg-[#FFF5F3] text-cta dark:bg-[#13133D]">
+                  <FlameIcon className="h-7.5 w-[26.67px]" />
+                </div>
+                <div className="flex min-w-0 flex-col items-start gap-0.5 @4xl:gap-1">
+                  <h3 className="truncate text-[16px] font-bold leading-[24px] text-ink @4xl:text-[18px] @4xl:leading-[28px]">
+                    {streakCount !== null ? `${streakCount} Day Streak` : "—"}
+                  </h3>
+                  <p className="text-[12px] font-semibold leading-[16px] tracking-normal text-muted @4xl:text-[14px] @4xl:leading-[20px]">
+                    Keep going.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-2xl font-bold leading-none text-ink">
-                  {streakCount !== null ? `${streakCount} Day Streak` : "—"}
-                </h3>
-                <p className="mt-2 text-sm text-muted">Keep going.</p>
-              </div>
+              <BackIcon className="h-[12px] w-[7.4px] shrink-0 text-muted" />
             </div>
-            <BackIcon className="h-[12px] w-[7.4px] text-muted" />
-          </div>
-        </Link>
+          </Link>
 
-        <div className="rounded-2xl border border-brand/10 bg-surface px-6 pt-4 pb-6">
-          <div className="flex justify-end">
-            <span className="text-[11px] leading-none text-muted">
-              Friday 5 June
-            </span>
-          </div>
-          <div className="-mt-1 flex items-center gap-4">
-            <CircularProgress percent={completionPercent} size={64} />
-            <div className="flex h-12 flex-col justify-between">
-              <h3 className="text-2xl font-bold leading-none text-ink">
-                Today's Progress
-              </h3>
-              <p className="text-sm leading-none text-muted">
-                {formatHours(completedMinutes)} / {formatHours(plannedMinutes)} completed
-              </p>
+          {/* Today's Progress Card */}
+          <div className="rounded-2xl border border-brand/10 bg-surface px-4 pt-3 pb-4 @4xl:px-6 @4xl:pt-4 @4xl:pb-6">
+            <div className="flex justify-end">
+              <span className="whitespace-nowrap text-[10px] leading-none text-muted @4xl:text-[11px]">
+                Friday 5 June
+              </span>
+            </div>
+            <div className="-mt-1 flex flex-row items-center gap-3 @4xl:gap-4">
+              <div className="shrink-0">
+                <CircularProgress percent={completionPercent} size={64} />
+              </div>
+              <div className="flex h-12 min-w-0 flex-col items-start justify-between">
+                <h3 className="truncate text-[16px] font-bold leading-[24px] tracking-normal text-ink @4xl:text-[18px] @4xl:leading-[28px]">
+                  Today&apos;s Progress
+                </h3>
+                <p className="whitespace-nowrap text-[12px] font-semibold leading-[18px] tracking-normal text-muted @4xl:text-[14px] @4xl:leading-[20px]">
+                  {formatHours(completedMinutes)} / {formatHours(plannedMinutes)} completed
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[2fr_1fr]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[2.2fr_1.1fr]">
         <div className="flex min-w-0 flex-col gap-6">
           {isFriday && (
             <div className="rounded-[24px] border border-brand/10 bg-surface p-6 shadow-[0px_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0px_2px_8px_rgba(0,0,0,0.2)]">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-xl font-bold leading-7 text-ink">Weekly Win Journal</p>
+                  <p className="text-xl font-bold leading-7 text-[#0D0E2B] dark:text-[#FAF7F2]!">Weekly Win Journal</p>
                   <p className="text-xs font-medium text-muted">
                     Weekly progress reflection & insights
                   </p>
                 </div>
-                <span className="flex shrink-0 items-center gap-2 rounded-full bg-tint-strong px-3 py-1.5 text-xs font-bold text-ink">
+                <span className="flex shrink-0 items-center gap-2 rounded-full border border-tint-strong bg-tint-strong px-3 py-1.5 text-xs font-bold text-ink shadow-[0px_1px_2px_0px_#0000000D] dark:border-[#242453]! dark:bg-[#242453]!">
                   <CheckCircleIcon className="h-4 w-4 shrink-0 sm:h-[18px] sm:w-[18px] lg:h-5 lg:w-5" />
                   3% Ahead of Timeline
                 </span>
@@ -416,7 +425,7 @@ export default function HomePage() {
               <div className="mt-4 grid grid-cols-3 gap-6 divide-x divide-brand/10 text-center">
                 {JOURNAL_STATS.map((stat) => (
                   <div key={stat.label} className="flex flex-col items-center gap-2">
-                    <p className="text-3xl font-extrabold leading-none text-ink">
+                    <p className="text-3xl font-extrabold leading-none text-[#0D0E2B] dark:text-[#FAF7F2]!">
                       {stat.value}
                     </p>
                     <p className="text-[10px] font-bold uppercase tracking-[1px] text-muted">
@@ -433,7 +442,7 @@ export default function HomePage() {
                 >
                   Explore Full Weekly Summary
                 </Link>
-                <span className="flex items-center gap-1 text-[10px] font-medium text-ink">
+                <span className="flex items-center gap-1 text-[10px] font-medium text-[#333333] dark:text-[#FAF7F2]!">
                   Click to view details
                   <ArrowRightIcon />
                 </span>
@@ -441,55 +450,59 @@ export default function HomePage() {
             </div>
           )}
 
-          <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="rounded-2xl border border-brand/10 bg-surface">
+            <div className="flex flex-col items-start gap-3 border-b border-[#F3F4F6] pt-4 pr-6 pb-6 pl-6 sm:flex-row sm:items-center sm:justify-between dark:border-[#FAF7F214]">
               <div className="flex min-w-0 items-start gap-2">
-                <span className="mt-0.5 shrink-0 text-ink">
-                  <SparkleIcon />
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#EEF2FF] text-[#6366F1] dark:bg-[#FAF7F2] dark:text-[#111145]">
+                  <SparkleIcon className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-base font-bold text-ink">AI Plan for Today</p>
-                  <p className="text-xs text-muted">
+                  <p className="text-[18px] leading-[18px] font-bold text-[#333333] dark:text-[#FAF7F2]">
+                    AI Plan for Today
+                  </p>
+                  <p className="mt-1.5 text-[10px] leading-[15px] text-muted">
                     {plan?.aiSummary ?? "Generated at 6:00 AM • Based on your energy, backlog & revision schedule"}
                   </p>
                 </div>
               </div>
-              <div className="flex shrink-0 flex-wrap items-center gap-3 text-xs font-semibold text-ink">
+              <div className="flex shrink-0 items-center gap-3">
                 <button
                   type="button"
                   onClick={() => setRegenerateOpen(true)}
-                  className="flex h-9 items-center gap-2 rounded-lg border border-button-border bg-surface px-3 text-xs font-medium text-ink transition-colors hover:bg-tint"
+                  className="flex h-8.5 items-center gap-1 whitespace-nowrap rounded-lg border border-[#E5E7EB] bg-surface px-4 py-2 text-xs font-bold text-[#333333] transition-colors hover:bg-tint dark:border-[#FAF7F2] dark:text-[#FAF7F2]"
                 >
-                  <RefreshIcon />
+                  <RefreshIcon width={15} height={15} />
                   <span>Regenerate Plan</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setAddTaskOpen(true)}
-                  className="flex h-9 items-center gap-2 rounded-lg border border-button-border bg-surface px-3 text-xs font-medium text-ink transition-colors hover:bg-tint"
+                  className="flex h-8.5 items-center gap-1 whitespace-nowrap rounded-lg border border-[#E5E7EB] bg-surface px-4 py-2 text-xs font-bold text-[#333333] transition-colors hover:bg-tint dark:border-[#FAF7F2] dark:text-[#FAF7F2]"
                 >
-                  <PlusIcon />
+                  <PlusIcon className="h-3.5 w-3.5 shrink-0" />
                   <span>Add task</span>
                 </button>
               </div>
             </div>
 
-            <div className="mt-4 flex flex-col gap-3">
-              {planTasks.map((task) => (
-                <TaskRow
-                  key={task.id}
-                  task={task}
-                  onStartPractice={() => setPracticeModalOpen(true)}
-                />
-              ))}
-            </div>
+            <div className="p-5">
+              <div className="flex flex-col gap-3">
+                {planTasks.map((task) => (
+                  <TaskRow
+                    key={task.id}
+                    task={task}
+                    onStartPractice={() => setPracticeModalOpen(true)}
+                  />
+                ))}
+              </div>
 
-            <Link
-              href="/home/today-plan"
-              className="mt-4 block w-full text-center text-sm font-semibold text-ink underline"
-            >
-              View all
-            </Link>
+              <Link
+                href="/home/today-plan"
+                className="mt-4 block w-full text-center text-sm font-semibold text-ink underline"
+              >
+                View all
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -505,7 +518,7 @@ export default function HomePage() {
                         {item.icon}
                       </span>
                       <div className="flex flex-col">
-                        <p className="text-sm font-semibold text-ink">
+                        <p className="text-sm font-bold text-primary">
                           {item.label}
                         </p>
                         {item.subtitle && (
@@ -515,12 +528,12 @@ export default function HomePage() {
                         )}
                       </div>
                     </div>
-                    <span className="text-xl text-muted">›</span>
+                    <BackIcon className="h-[10px] w-[6px] shrink-0 text-secondary sm:h-[12px] sm:w-[7.4px]" />
                   </>
                 );
 
                 const classes =
-                  "flex h-15 items-center justify-between rounded-xl border border-brand/10 bg-surface px-4 transition-colors hover:bg-tint";
+                  "flex h-15 items-center justify-between rounded-xl border border-quick-access-border bg-card px-4 shadow-quick-access transition-colors hover:bg-tint";
 
                 if (item.isModal) {
                   return (
@@ -548,53 +561,61 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-brand/10 bg-surface p-4 sm:p-5">
-            <h3 className="text-base font-bold text-ink">Study Consistency</h3>
-            <div className="mt-5">
-              <div className="grid grid-cols-[36px_repeat(7,1fr)] items-center gap-x-1.5 sm:grid-cols-[48px_repeat(7,1fr)] sm:gap-x-2.5">
-                <div />
-                {CONSISTENCY_DAYS.map((day, index) => (
-                  <span
-                    key={`${day}-${index}`}
-                    className="text-center text-[10px] font-semibold text-muted"
-                  >
-                    {day}
-                  </span>
-                ))}
-              </div>
+          <div className="rounded-3xl bg-surface p-5 shadow-card">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-(--oc-heading1)">
+                Study Consistency
+              </h3>
 
-              <div className="mt-3 flex flex-col gap-2 sm:gap-2.5">
-                {CONSISTENCY_DATA.map((week, weekIndex) => (
-                  <div
-                    key={weekIndex}
-                    className="grid grid-cols-[36px_repeat(7,1fr)] items-center gap-x-1.5 sm:grid-cols-[48px_repeat(7,1fr)] sm:gap-x-2.5"
-                  >
-                    <span className="text-caption text-muted">
-                      Week {weekIndex + 1}
+              <BackIcon className="h-[10px] w-[6px] shrink-0 text-secondary sm:h-[12px] sm:w-[7.4px]" />
+            </div>
+
+            <div className="mt-4 grid grid-cols-[36px_repeat(7,1fr)] items-center gap-x-1.5 sm:grid-cols-[48px_repeat(7,1fr)] sm:gap-x-2.5">
+              <span />
+              {CONSISTENCY_DAYS.map((day, dayIndex) => (
+                <span
+                  key={dayIndex}
+                  className="text-center text-caption text-[#94A3B8]"
+                >
+                  {day}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-2 flex flex-col gap-2 sm:gap-2.5">
+              {CONSISTENCY_DATA.map((week, weekIndex) => (
+                <div
+                  key={weekIndex}
+                  className="grid grid-cols-[36px_repeat(7,1fr)] items-center gap-x-1.5 sm:grid-cols-[48px_repeat(7,1fr)] sm:gap-x-2.5"
+                >
+                  <span className="text-caption text-[#94A3B8]">
+                    Week {weekIndex + 1}
+                  </span>
+
+                  {week.map((status, dayIndex) => (
+                    <span key={dayIndex} className="flex justify-center">
+                      <span
+                        className={`aspect-square w-full max-w-[26px] rounded-lg ${CONSISTENCY_STYLES[status]}`}
+                      />
                     </span>
-                    {week.map((status, dayIndex) => (
-                      <span key={dayIndex} className="flex justify-center">
-                        <span
-                          className={`aspect-square w-full max-w-[26px] rounded-lg ${CONSISTENCY_STYLES[status]}`}
-                        />
-                      </span>
-                    ))}
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ))}
             </div>
 
             <div className="mt-6 flex items-center justify-between text-xs text-muted">
               <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-brand" />
+                <span className="h-2.5 w-2.5 rounded-full bg-ink" />
                 Complete
               </span>
+
               <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-brand/40" />
+                <span className="h-2.5 w-2.5 rounded-full bg-consistency-partial" />
                 Partial
               </span>
+
               <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-tint-strong" />
+                <span className="h-2.5 w-2.5 rounded-full bg-consistency-missed" />
                 Missed
               </span>
             </div>
@@ -602,30 +623,21 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-2xl border border-warning/30 bg-warning/10 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+      <div className="flex flex-col gap-4 rounded-2xl border border-[#F59E0B] bg-[#FFFBEB] p-6 dark:border-transparent! dark:bg-[#111145] sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-warning/20 text-warning">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-[#F59E0B] shadow-[0px_1px_2px_0px_#0000000D]">
             <InfoIcon />
           </span>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-warning">Backlog Alert</p>
-            <p className="text-xs text-muted">Thermodynamics • Pending for 3 days</p>
+            <p className="text-sm font-bold text-[#F59E0B]">Backlog Alert</p>
+            <p className="text-xs text-[rgba(70,70,80,0.7)] dark:text-[#FAF7F2]!">Thermodynamics • Pending for 3 days</p>
           </div>
         </div>
         <Button
           href="/home/backlog"
           variant="secondary"
           size="sm"
-          className={`
-            w-full
-            sm:w-auto
-            sm:shrink-0
-            justify-center
-            ${isDark
-              ? "border-transparent! bg-white! text-[#1B245A]! hover:bg-white/90!"
-              : ""
-            }
-          `}
+          className="w-full sm:w-auto sm:shrink-0 justify-center border! border-[#1A1A4E]! bg-white! text-[#1A1A4E]! shadow-[0px_1px_2px_0px_#0000000D] hover:bg-white! dark:border-transparent!"
         >
           Review Now
         </Button>

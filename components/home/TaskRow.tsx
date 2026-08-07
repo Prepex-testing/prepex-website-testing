@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ClockIcon, SunIcon, FileIcon, CalendarIcon, CheckIcon } from "@/components/ui/icons";
 import { TaskEditMenu } from "@/components/home/TaskEditMenu";
@@ -9,7 +8,7 @@ import type { TaskType } from "@/components/home/taskTypes";
 
 export type { TaskType };
 export { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE };
-
+import { Book, Time } from "@/assets/icons";
 export type Task = {
   id: string;
   subjectLabel: string;
@@ -35,8 +34,6 @@ export function TaskRow({
   task,
   onStartPractice,
 }: TaskRowProps) {
-  const [done, setDone] = useState(false);
-
   const isStartPractice = task.type === "practice";
   const displayLabel = task.isCompleted ? COMPLETED_ACTION_LABELS[task.type] : task.actionLabel;
 
@@ -44,15 +41,18 @@ export function TaskRow({
     <div
       className="
         w-full
-        rounded-2xl
+        rounded-md
         border
-        border-brand/10
-        bg-surface
-        px-3
-        py-4
+        border-[#EEF0F8]
+        bg-white
+        p-6
+        shadow-[0px_2px_18px_0px_#1A1A4E0A]
+        dark:border-[#242453]
+        dark:bg-[#1A1A4E]
+        dark:shadow-[0px_2px_6px_0px_#FFFFFF0A]
       "
     >
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-6">
 
         {/* LEFT */}
         <div className="flex min-w-0 flex-1 items-center gap-6">
@@ -71,6 +71,7 @@ export function TaskRow({
   border-[#D6E4FF]
   dark:border-transparent
   bg-subject-bg
+  dark:bg-[#FAF7F214]
   text-[18px]
   font-bold
   text-subject-text
@@ -84,7 +85,7 @@ export function TaskRow({
 
             <div className="mb-1 flex items-center gap-2">
 
-              <span className="text-[10px] font-bold uppercase tracking-wide text-muted">
+              <span className="text-[10px] font-bold uppercase tracking-wide text-ink">
                 {task.subjectName}
               </span>
 
@@ -121,32 +122,32 @@ export function TaskRow({
               {task.title}
             </h3>
 
-            <p className="mt-1 text-sm text-muted">
+            <p className="mt-1 text-[12px] font-normal leading-[16px] tracking-normal text-[#666666] dark:text-[#8B8998]">
               {task.meta}
             </p>
 
-            <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted">
+            <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-[#8B8998]">
 
               <span className="flex items-center gap-1">
-                <ClockIcon />
+                <ClockIcon className="h-4 w-4 shrink-0" />
                 {task.duration}
               </span>
 
-              <span className="flex items-center gap-1 font-semibold text-warning">
-                <SunIcon />
+              <span className="flex items-center gap-1 font-semibold text-[#FFAE1A]">
+                <SunIcon className="h-4 w-4 shrink-0" />
                 {task.timeSlot}
               </span>
 
               {task.scheduledRange && (
                 <span className="flex items-center gap-1">
-                  <CalendarIcon />
+                  <Time className="h-4 w-4 shrink-0" />
                   {task.scheduledRange}
                 </span>
               )}
 
               {task.hasResource && (
                 <span className="flex items-center gap-1">
-                  <FileIcon />
+                  <Book className="h-4 w-4 shrink-0" />
                   Resource
                 </span>
               )}
@@ -168,12 +169,15 @@ export function TaskRow({
             sm:justify-end
           "
         >
-
           <Button
-            variant={task.isCompleted ? "secondary" : "task"}
+            variant={task.isCompleted ? "secondary" : "outline"}
             size="sm"
             disabled={task.isCompleted}
-            className={task.isCompleted ? "border-transparent! bg-[#E7F9F3]! text-[#10B981]! cursor-default" : ""}
+            className={
+              task.isCompleted
+                ? "h-9! w-auto! min-w-[138px]! justify-center px-4! text-[12px]! leading-none! font-semibold! whitespace-nowrap! cursor-not-allowed! opacity-60! hover:bg-transparent! hover:border-current! hover:text-current! hover:shadow-none!"
+                : "h-9! w-auto! min-w-[138px]! justify-center gap-2.5! px-4! text-[14px]! leading-none! font-semibold! whitespace-nowrap!"
+            }
             href={
               task.isCompleted
                 ? undefined
@@ -191,20 +195,22 @@ export function TaskRow({
           >
             {displayLabel}
           </Button>
+
           {task.isCompleted ? (
             <span
               aria-label={`${task.title} completed`}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#E7F9F3] text-[#10B981] dark:bg-white"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#EAF2FF] text-[#1A1A4E] dark:bg-[#FFFFFF14] dark:text-white"
             >
               <CheckIcon className="h-3.5 w-3.5" />
             </span>
           ) : (
             <input
               type="checkbox"
-              checked={done}
-              onChange={() => setDone(!done)}
-              aria-label={`Mark ${task.title} complete`}
-              className="h-5 w-5 appearance-none rounded border border-[#333333] dark:border-[#8B8998] bg-transparent checked:border-brand checked:bg-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+              checked={false}
+              disabled
+              readOnly
+              aria-label={`${task.title} not yet complete`}
+              className="h-5 w-5 shrink-0 cursor-not-allowed appearance-none rounded border border-[#333333] dark:border-[#8B8998] bg-transparent"
             />
           )}
 

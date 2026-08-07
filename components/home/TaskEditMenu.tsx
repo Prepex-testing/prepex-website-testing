@@ -75,11 +75,9 @@ export function TaskEditMenu({ task }: TaskEditMenuProps) {
         aria-label="Task options"
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+        className="flex h-5 w-[33px] shrink-0 items-center justify-center border-l border-[#C7C5D14D] pl-3 text-[#9CA3AF] hover:text-ink dark:border-[#FAF7F240] dark:text-[#8B8998]"
       >
-        <span className="inline-block rotate-90">
-          <MoreIcon />
-        </span>
+        <MoreIcon className="h-4 w-4" />
       </button>
 
       {open && (

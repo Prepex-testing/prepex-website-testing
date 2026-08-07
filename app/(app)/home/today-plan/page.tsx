@@ -252,9 +252,10 @@ export default function TodayPlanPage() {
             progressGradient={
               isDark ? undefined : { from: "#1A1A4E", to: "#4C1D95" }
             }
+            valueClassName={isDark ? "text-[#FAF7F2]" : "text-[#171658]"}
           />
 
-          <p className="mt-6 text-xl font-semibold text-ink">
+          <p className={`mt-6 text-xl font-semibold ${isDark ? "text-[#8B8998]" : "text-[#111827]"}`}>
             Daily Goal Progress
           </p>
 
@@ -281,7 +282,7 @@ export default function TodayPlanPage() {
                 </span>
               </div>
 
-              <p className="mt-5 text-[32px] font-extrabold leading-none text-ink">
+              <p className={`mt-5 text-[32px] font-extrabold leading-none ${isDark ? "text-[#FAF7F2]" : "text-[#111827]"}`}>
                 {tile.value}
               </p>
             </div>
@@ -306,7 +307,7 @@ export default function TodayPlanPage() {
         )}
         {afternoonTasks.length > 0 && (
           <TimeBlockSection
-            icon={<SunIcon />}
+            icon={<SunIcon className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />}
             title="Afternoon"
             meta={plan ? sectionMeta(afternoon) : "1 Task • 1h 15m"}
           >
@@ -352,7 +353,7 @@ export default function TodayPlanPage() {
             onClick={() => setRegenerateOpen(true)}
             className="h-[50px] w-full text-[14px] font-bold"
           >
-            <RefreshIcon />
+           <RefreshIcon className="h-3.5 w-3.5 shrink-0 sm:h-3.5 sm:w-3.5 md:h-[13.33px] md:w-[13.33px]" />
             Regenerate Today&apos;s Plan
           </Button>
 
