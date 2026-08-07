@@ -205,9 +205,9 @@ function RevisionSessionContent() {
         <button
           type="button"
           onClick={handleExitSession}
-          className={`flex w-fit shrink-0 items-center gap-1 text-sm font-bold ${isDark ? "text-muted" : "text-ink"}`}
+          className={`flex w-fit shrink-0 items-center gap-1 text-sm font-bold ${isDark ? "text-secondary" : "text-[#334155]"}`}
         >
-          <ArrowLeftIcon />
+          <ArrowLeftIcon className="h-[8px] w-[10px] shrink-0 sm:h-[9.33px] sm:w-[12px]" />
           Exit Session
         </button>
         <p className="flex-1 truncate text-center text-[14px] font-extrabold uppercase tracking-[2.8px] text-ink">
@@ -229,8 +229,14 @@ function RevisionSessionContent() {
               {task.subject.name}
             </span>
           )}
-          <span className="text-[14px] font-medium leading-5 text-muted">
-            {[task?.chapter?.name, task?.subject?.name].filter(Boolean).join(" • ")}
+          <span className="flex items-center text-[14px] font-medium leading-5 text-[#6B7280] dark:text-primary!">
+            {task?.chapter?.name}
+            {task?.chapter?.name && task?.subject?.name && (
+              <span className="flex h-5 w-[24.08px] shrink-0 items-center justify-center px-2 text-[#D1D5DB] dark:text-secondary!">
+                •
+              </span>
+            )}
+            {task?.subject?.name}
           </span>
         </div>
         <div className="mt-3 h-px w-full bg-brand/10" />
@@ -255,7 +261,7 @@ function RevisionSessionContent() {
         </div>
         <div className="flex items-center gap-4 rounded-2xl border border-brand/10 bg-surface px-5 py-4 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] dark:bg-ink">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#EEF0F8] text-[#1A1A4E] dark:bg-transparent dark:text-[#111145]">
-            <ClockIcon />
+           <ClockIcon className="h-[28px] w-[28px] shrink-0 sm:h-[33.54px] sm:w-[33.54px]" />
           </span>
           <div className="flex flex-col items-start">
             <span className="text-[32px] font-bold leading-[38px] text-ink dark:text-[#111145]">

@@ -121,6 +121,7 @@
   --sidebar-active-bg: #EEF0F8;
   --sidebar-active-fg: #1A1A4E;
   --sidebar-inactive-fg: #7E7E85;
+  --sidebar-border: rgb(225 227 228 / 0.3);
 
   /* Generic surface/text aliases (reused across cards, e.g. Quick Access rows) */
   --bg-card: var(--surface);
@@ -250,6 +251,7 @@
   --sidebar-active-bg: #FAF7F2;
   --sidebar-active-fg: #1A1A4E;
   --sidebar-inactive-fg: #8B8998;
+  --sidebar-border: rgb(225 227 228 / 0.3);
 
   /* Generic surface/text aliases (reused across cards, e.g. Quick Access rows) */
   --bg-card: var(--surface);
@@ -361,10 +363,11 @@
   --color-sidebar-active-bg: var(--sidebar-active-bg);
   --color-sidebar-active-fg: var(--sidebar-active-fg);
   --color-sidebar-inactive-fg: var(--sidebar-inactive-fg);
+  --color-sidebar-border: var(--sidebar-border);
 
-  --color-bg-card: var(--bg-card);
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
+  --color-card: var(--bg-card);
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
 
   --color-quick-access-border: var(--quick-access-border);
   --shadow-quick-access: var(--quick-access-shadow);
