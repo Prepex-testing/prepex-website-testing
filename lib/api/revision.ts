@@ -124,3 +124,12 @@ export function exitRevisionSession(revisionId: string, secondsCompleted: number
     body: JSON.stringify({ secondsCompleted }),
   });
 }
+
+export type RevisionFeedback = "HARD" | "MEDIUM" | "EASY";
+
+export function submitRevisionFeedback(revisionId: string, feedback: RevisionFeedback) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/feedback`, {
+    method: "POST",
+    body: JSON.stringify({ feedback }),
+  });
+}

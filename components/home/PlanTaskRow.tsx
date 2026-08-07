@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ClockIcon, CalendarIcon, GripVerticalIcon, CheckIcon } from "@/components/ui/icons";
 import { TaskEditMenu } from "@/components/home/TaskEditMenu";
 import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE } from "@/components/home/TaskRow";
 import type { TaskType } from "@/components/home/TaskRow";
-import { useRevisionSession } from "@/components/session/RevisionSessionProvider";
 
 type Difficulty = "high" | "medium";
 
@@ -44,27 +42,9 @@ type PlanTaskRowProps = {
 
 export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
   const [done, setDone] = useState(false);
-  const router = useRouter();
-  const { startSession } = useRevisionSession();
   const isStartPractice = task.type === "practice";
   const isStartRevision = task.type === "revision";
   const displayLabel = task.isCompleted ? COMPLETED_ACTION_LABELS[task.type] : task.actionLabel;
-
-  const handleStartRevision = async () => {
-    try {
-      await startSession({
-        taskId: task.id,
-        targetDuration: task.estimatedMinutes,
-        taskTitle: task.title,
-        subjectName: task.subjectName,
-        subjectLabel: task.subjectLabel,
-      });
-    } catch {
-      // Best-effort — still let the student into the session even if tracking failed to start.
-    } finally {
-      router.push(`/revision-session?taskId=${task.id}`);
-    }
-  };
 
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-xl border border-brand/10 bg-surface p-4 sm:gap-4">
@@ -133,22 +113,15 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
               : "h-[38px]! w-auto! min-w-[138px]! justify-center gap-2.5! px-5! text-[14px]! leading-none! font-semibold! whitespace-nowrap!"
           }
           href={
-            task.isCompleted || isStartRevision
-              ? undefined
-              : task.type === "new-learning"
-                ? `/home/session?taskId=${task.id}`
-                : undefined
-          }
-          onClick={
             task.isCompleted
               ? undefined
-              : isStartPractice
-                ? onStartPractice
-                : isStartRevision
-                  ? handleStartRevision
+              : isStartRevision
+                ? `/revision-session?taskId=${task.id}`
+                : task.type === "new-learning"
+                  ? `/home/session?taskId=${task.id}`
                   : undefined
           }
-          onClick={!task.isCompleted && isStartPractice ? onStartPractice : undefined}
+          onClick={task.isCompleted ? undefined : isStartPractice ? onStartPractice : undefined}
         >
           {displayLabel}
         </Button>

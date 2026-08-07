@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   // ArrowLeftIcon,
   // CalendarIcon,
@@ -14,22 +15,71 @@ import {
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { TargetIcon, TrendingUpIcon, CalendarIcon, ClockIcon, LayersIcon ,ArrowLeftIcon} from "@/assets/icons";
+import { submitRevisionFeedback, type RevisionFeedback } from "@/lib/api/revision";
+import { getPlannerTask, type PlannerTaskDetail } from "@/lib/api/planner";
+import { formatClock } from "@/lib/utils/datetime";
 type Difficulty = "Low" | "Medium" | "High";
 
 const DIFFICULTIES: Difficulty[] = ["Low", "Medium", "High"];
 
-const STATS = [
-  { icon: <ClockIcon />, value: "24:53", label: "Focus time" },
-  { icon: <LayersIcon />, value: "5 / 5", label: "Recall prompts" },
-  { icon: <TrendingUpIcon />, value: "Good", label: "Performance" },
-];
+const DIFFICULTY_FEEDBACK: Record<Difficulty, RevisionFeedback> = {
+  Low: "EASY",
+  Medium: "MEDIUM",
+  High: "HARD",
+};
 
 export default function RevisionCompletePage() {
+  return (
+    <Suspense fallback={null}>
+      <RevisionCompleteContent />
+    </Suspense>
+  );
+}
+
+function RevisionCompleteContent() {
+  const searchParams = useSearchParams();
+  const taskId = searchParams.get("taskId");
   const [difficulty, setDifficulty] = useState<Difficulty>("Medium");
+  const [isSubmittingFeedback, setSubmittingFeedback] = useState(false);
+  const [task, setTask] = useState<PlannerTaskDetail | null>(null);
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const storedFullName = useStoredFullName();
   const firstName = storedFullName.trim().split(/\s+/)[0] || "there";
+
+  // Loads the just-completed task so this screen can show its real title and
+  // the focus time actually banked (secondsCompleted) instead of placeholders.
+  useEffect(() => {
+    if (!taskId) return;
+    let cancelled = false;
+    getPlannerTask(taskId)
+      .then(({ data }) => {
+        if (!cancelled) setTask(data);
+      })
+      .catch(() => {
+        // Best-effort — the page falls back to placeholder content below.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [taskId]);
+
+  const handleSelectDifficulty = (option: Difficulty) => {
+    setDifficulty(option);
+    if (!taskId) return;
+    setSubmittingFeedback(true);
+    submitRevisionFeedback(taskId, DIFFICULTY_FEEDBACK[option])
+      .catch(() => {
+        // Best-effort — the selection still reflects locally.
+      })
+      .finally(() => setSubmittingFeedback(false));
+  };
+
+  const STATS = [
+    { icon: <ClockIcon />, value: task ? formatClock(task.secondsCompleted) : "24:53", label: "Focus time" },
+    { icon: <LayersIcon />, value: "5 / 5", label: "Recall prompts" },
+    { icon: <TrendingUpIcon />, value: "Good", label: "Performance" },
+  ];
 
   return (
     <div className="mx-auto flex w-full max-w-[1083px] flex-col gap-4 p-4 sm:gap-6 sm:p-6 lg:p-8">
@@ -116,9 +166,10 @@ export default function RevisionCompletePage() {
                 <button
                   key={option}
                   type="button"
-                  onClick={() => setDifficulty(option)}
+                  onClick={() => handleSelectDifficulty(option)}
+                  disabled={isSubmittingFeedback}
                   aria-pressed={selected}
-                  className={`flex h-16 items-center justify-center rounded-xl border-2 p-2 transition-all sm:h-20 sm:rounded-2xl sm:p-4 lg:h-[104px] ${selected
+                  className={`flex h-16 items-center justify-center rounded-xl border-2 p-2 transition-all disabled:cursor-not-allowed disabled:opacity-60 sm:h-20 sm:rounded-2xl sm:p-4 lg:h-[104px] ${selected
                     ? "border-brand bg-surface text-ink"
                     : isDark
                       ? "border-white/20 bg-surface text-ink hover:border-white/40"
@@ -161,7 +212,7 @@ export default function RevisionCompletePage() {
 
               <div className="min-w-0 flex-1">
                 <p className="break-words text-[15px] sm:text-[18px] font-extrabold leading-6 sm:leading-7 text-ink">
-                  Newton&apos;s Laws
+                  {task?.title ?? "Newton's Laws"}
                 </p>
 
                 <p className="mt-1 break-words text-xs sm:text-sm font-medium leading-5 text-muted">

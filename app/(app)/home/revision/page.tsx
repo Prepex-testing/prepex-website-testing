@@ -27,7 +27,6 @@ import {
 } from "@/lib/api/revision";
 import { withResumeLabel, CUSTOM_BADGE_STYLE } from "@/components/home/taskTypes";
 import { formatShortDate } from "@/lib/utils/datetime";
-import { useRevisionSession } from "@/components/session/RevisionSessionProvider";
 
 type Tab = "due" | "upcoming" | "mastered";
 
@@ -69,8 +68,6 @@ type RevisionTopic = {
   isCustom: boolean;
   estimatedMinutes: number;
   isTaskCompleted: boolean;
-  status: TaskStatus | string;
-  secondsCompleted: number;
 };
 
 function fromTask(task: RevisionTask): RevisionTopic {
@@ -89,8 +86,6 @@ function fromTask(task: RevisionTask): RevisionTopic {
     isCustom: Boolean(task.isAnchor),
     isTaskCompleted: task.status === "COMPLETED",
     estimatedMinutes: task.estimatedMinutes,
-    status: task.status,
-    secondsCompleted: task.secondsCompleted,
   };
 }
 
@@ -117,8 +112,6 @@ function fromChapterProgress(entry: RevisionChapterProgress, tab: "upcoming" | "
     isCustom: false,
     estimatedMinutes: 0,
     isTaskCompleted: false,
-    status: "",
-    secondsCompleted: 0,
   };
 }
 
@@ -142,7 +135,6 @@ function collectSubjectsByTab(data: RevisionOverview): SubjectsByTab {
 
 export default function RevisionPage() {
   const router = useRouter();
-  const { startSession } = useRevisionSession();
   const [activeTab, setActiveTab] = useState<Tab>("due");
   const [activeSubjectId, setActiveSubjectId] = useState<number | "all">("all");
   const [activeStatus, setActiveStatus] = useState<TaskStatus | null>(null);
@@ -154,22 +146,12 @@ export default function RevisionPage() {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
-  const handleStartRevision = async (topic: RevisionTopic) => {
+  // The /revision-session page itself fetches the task (GET /planner/task/:taskId) and
+  // starts the tracked session (POST /revision/:taskId/session/start) on mount, seeding
+  // the timer from secondsCompleted — kept in one place so every entry point behaves the same.
+  const handleStartRevision = (topic: RevisionTopic) => {
     if (!topic.taskId) return;
-    try {
-      await startSession({
-        taskId: topic.taskId,
-        targetDuration: topic.estimatedMinutes,
-        taskTitle: topic.title,
-        subjectName: topic.subjectName,
-        subjectLabel: topic.subjectLabel,
-        initialElapsedSeconds: topic.status === "IN_PROGRESS" ? topic.secondsCompleted : 0,
-      });
-    } catch {
-      // Best-effort — still let the student into the session even if tracking failed to start.
-    } finally {
-      router.push(`/revision-session?taskId=${topic.taskId}`);
-    }
+    router.push(`/revision-session?taskId=${topic.taskId}`);
   };
 
   useEffect(() => {
