@@ -17,7 +17,7 @@ export const TYPE_LABELS: Record<TaskType, string> = {
   practice: "Practice",
 };
 
-export const CUSTOM_BADGE_STYLE = "bg-warning/10 text-warning";
+export const CUSTOM_BADGE_STYLE = "bg-cta/10 text-cta";
 
 export const COMPLETED_ACTION_LABELS: Record<TaskType, string> = {
   revision: "Revision Completed",

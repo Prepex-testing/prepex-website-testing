@@ -15,6 +15,7 @@ import {
   CheckIcon,
   PauseIcon,
   PlayIcon,
+  ClockIconss,
 } from "@/components/ui/icons";
 import { LeftIconcon, TargetIcon, ArrowLeftIcon, BellIcon } from "@/assets/icons";
 import { getTodayPlan, updatePlannerTask, type PlannerTask } from "@/lib/api/planner";
@@ -249,8 +250,8 @@ function FocusSessionContent() {
       <div className="w-full rounded-2xl border border-brand/10 bg-surface p-6">
 
         <div className="mx-auto flex max-w-[984px] flex-col items-center gap-2 text-center">
-          <p className="flex items-center justify-center gap-2 text-lg font-semibold uppercase tracking-[1.5px] text-body-text sm:text-2xl sm:leading-[31.2px] sm:tracking-[2.4px]">
-            <ClockIcon />
+          <p className="flex items-center justify-center gap-2 text-center text-[18px] font-semibold uppercase leading-[24px] tracking-[1.8px] text-body-text dark:text-ink sm:text-[24px] sm:leading-[31.2px] sm:tracking-[2.4px]">
+            <ClockIconss className="h-[16px] w-[14px] shrink-0 sm:h-[21px] sm:w-[18px]" />
             Focus Session
           </p>
 
