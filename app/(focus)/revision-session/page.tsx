@@ -1,7 +1,6 @@
 "use client";
 
 import { Suspense, useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ClockIcon, CheckIcon } from "@/components/ui/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -42,6 +41,7 @@ function RevisionSessionContent() {
   const [isEnding, setEnding] = useState(false);
   const [isPausing, setPausing] = useState(false);
   const [isPaused, setPaused] = useState(false);
+  const [isResuming, setResuming] = useState(false);
   const [pausedElapsedSeconds, setPausedElapsedSeconds] = useState(0);
   const [task, setTask] = useState<PlannerTaskDetail | null>(null);
   const [isTaskLoading, setTaskLoading] = useState(true);
@@ -49,7 +49,7 @@ function RevisionSessionContent() {
   const isDark = resolvedTheme === "dark";
   const savedMinutesRef = useRef(0);
   const autoCompletedRef = useRef(false);
-  const { isActive, taskId, elapsedSeconds, startSession, exitSession } = useRevisionSession();
+  const { isActive, taskId, elapsedSeconds, startSession, exitSession, clearSession } = useRevisionSession();
 
   // Loads the task's full detail (title, chapter/subject, status, secondsCompleted)
   // to drive the page content and to decide how the timer should be seeded below.
@@ -75,8 +75,9 @@ function RevisionSessionContent() {
     };
   }, [revisionId]);
 
-  // Covers direct/refreshed navigation to this page — the list-page buttons already
-  // start the session before routing here, so this is a no-op in that common case.
+  // Single canonical place that starts the tracked session (POST /session/start),
+  // regardless of which page's Start/Resume Revision button routed here — /home,
+  // /home/today-plan, /home/revision, or a direct/refreshed URL all land here first.
   // A task still PENDING (never started) begins at 0; one already IN_PROGRESS
   // (e.g. resumed after a Pause) seeds the timer from its banked secondsCompleted.
   useEffect(() => {
@@ -118,11 +119,13 @@ function RevisionSessionContent() {
       } catch {
         // Best-effort — still let the user proceed to rate difficulty.
       } finally {
-        await exitSession();
-        router.push("/revision-session/complete");
+        // mark-done already told the backend the session ended — no active
+        // session is left to exit, so just clear local state (no API call).
+        clearSession();
+        router.push(`/revision-session/complete?taskId=${revisionId}`);
       }
     })();
-  }, [elapsedSeconds, estimatedMinutes, revisionId, exitSession, router]);
+  }, [elapsedSeconds, estimatedMinutes, revisionId, clearSession, router]);
 
   const handleEndSession = async () => {
     if (!revisionId) {
@@ -136,9 +139,11 @@ function RevisionSessionContent() {
     } catch {
       // Best-effort — still let the user proceed to rate difficulty.
     } finally {
-      await exitSession();
+      // mark-done already told the backend the session ended — no active
+      // session is left to exit, so just clear local state (no API call).
+      clearSession();
       setEnding(false);
-      router.push("/revision-session/complete");
+      router.push(`/revision-session/complete?taskId=${revisionId}`);
     }
   };
 
@@ -155,7 +160,38 @@ function RevisionSessionContent() {
     }
   };
 
+  // Re-fetches the task so the resumed timer is seeded from the server's
+  // current secondsCompleted, then calls POST /session/start via startSession.
+  const handleResumeSession = async () => {
+    if (!revisionId) return;
+    setResuming(true);
+    try {
+      const { data } = await getPlannerTask(revisionId);
+      setTask(data);
+      await startSession({
+        taskId: revisionId,
+        targetDuration: data.estimatedMinutes,
+        taskTitle: data.title,
+        subjectName: data.subject?.name,
+        initialElapsedSeconds: data.secondsCompleted,
+      });
+      setPaused(false);
+    } catch {
+      // Best-effort — the session stays paused so the user can retry.
+    } finally {
+      setResuming(false);
+    }
+  };
+
   const displayedElapsedSeconds = isPaused ? pausedElapsedSeconds : elapsedSeconds;
+
+  const handleExitSession = async () => {
+    try {
+      await exitSession();
+    } finally {
+      router.push("/home/revision");
+    }
+  };
 
   const goTo = (index: number) => {
     setQuestionIndex(Math.min(Math.max(index, 0), QUESTIONS.length - 1));
@@ -166,13 +202,14 @@ function RevisionSessionContent() {
     <div className="mx-auto flex max-w-[1213px] flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
-        <Link
-          href="/home/revision"
+        <button
+          type="button"
+          onClick={handleExitSession}
           className={`flex w-fit shrink-0 items-center gap-1 text-sm font-bold ${isDark ? "text-muted" : "text-ink"}`}
         >
           <ArrowLeftIcon />
           Exit Session
-        </Link>
+        </button>
         <p className="flex-1 truncate text-center text-[14px] font-extrabold uppercase tracking-[2.8px] text-ink">
           Revision Session
         </p>
@@ -362,11 +399,17 @@ function RevisionSessionContent() {
         </button>
         <button
           type="button"
-          onClick={handlePauseSession}
-          disabled={isPausing || isPaused || isEnding}
+          onClick={isPaused ? handleResumeSession : handlePauseSession}
+          disabled={isPausing || isResuming || isEnding}
           className="flex h-[72px] items-center justify-center text-lg font-bold text-body-text transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isPaused ? "Session Paused" : isPausing ? "Pausing..." : "Pause Session"}
+          {isPaused
+            ? isResuming
+              ? "Resuming..."
+              : "Resume Session"
+            : isPausing
+              ? "Pausing..."
+              : "Pause Session"}
         </button>
       </div>
     </div>

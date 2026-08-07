@@ -35,13 +35,13 @@ export function RevisionSessionBanner() {
     if (!taskId) return;
     setCompleting(true);
     try {
-      await markRevisionDone(taskId, Math.floor(elapsedSeconds / 60));
+      await markRevisionDone(taskId, elapsedSeconds);
     } catch {
       // Best-effort — still let the student proceed to the completion screen.
     } finally {
       clearSession();
       setCompleting(false);
-      router.push("/revision-session/complete");
+      router.push(`/revision-session/complete?taskId=${taskId}`);
     }
   };
 
