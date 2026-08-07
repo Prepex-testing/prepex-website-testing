@@ -259,18 +259,14 @@ export function GraduationCapIcon() {
   );
 }
 
-export function RefreshIcon({
-  className = "h-4 w-4",
-}: {
-  className?: string;
-}) {
+export function RefreshIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
-      className={className}
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
+      {...props}
     >
       <path
         d="M20 11A8 8 0 0 0 6.34 5.34L4 7.67"
@@ -304,9 +300,9 @@ export function RefreshIcon({
   );
 }
 
-export function MoreIcon() {
+export function MoreIcon({ className = "h-4 w-4" }: { className?: string } = {}) {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <circle cx="4" cy="8" r="1.2" fill="currentColor" />
       <circle cx="8" cy="8" r="1.2" fill="currentColor" />
       <circle cx="12" cy="8" r="1.2" fill="currentColor" />
@@ -1238,9 +1234,9 @@ export function NoStudyIcon() {
   );
 }
 
-export function ClockIcon() {
+export function ClockIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" {...props}>
       <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.4" />
       <path
         d="M9 5.5V9L11.8 10.8"

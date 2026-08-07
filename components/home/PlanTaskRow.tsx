@@ -124,13 +124,13 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
       {/* Actions — 16px gap between button and checkbox/menu group */}
       <div className="flex w-full shrink-0 items-center gap-4 sm:w-auto">
         <Button
-          variant="task"
+          variant="outline"
           size="sm"
           disabled={task.isCompleted}
           className={
             task.isCompleted
-              ? "h-[38px] rounded-lg border-transparent! bg-[#E7F9F3]! px-3 sm:px-5 py-2 text-xs sm:text-sm font-bold leading-5 text-[#10B981]! cursor-default whitespace-nowrap"
-              : "h-[38px] rounded-lg border border-[#1A1A4E] px-3 sm:px-5 py-2 text-xs sm:text-sm font-bold leading-5 text-[#1A1A4E] whitespace-nowrap"
+              ? "h-[38px]! w-auto! min-w-[138px]! justify-center px-5! text-[12px]! leading-none! font-semibold! whitespace-nowrap! cursor-not-allowed! opacity-60! hover:bg-transparent! hover:border-current! hover:text-current! hover:shadow-none!"
+              : "h-[38px]! w-auto! min-w-[138px]! justify-center gap-2.5! px-5! text-[14px]! leading-none! font-semibold! whitespace-nowrap!"
           }
           href={
             task.isCompleted || isStartRevision
@@ -148,6 +148,7 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
                   ? handleStartRevision
                   : undefined
           }
+          onClick={!task.isCompleted && isStartPractice ? onStartPractice : undefined}
         >
           {displayLabel}
         </Button>
@@ -156,7 +157,7 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
           {task.isCompleted ? (
             <span
               aria-label={`${task.title} completed`}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#E7F9F3] text-[#10B981] dark:bg-white"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#EAF2FF] text-[#1A1A4E] dark:bg-[#FFFFFF14] dark:text-white"
             >
               <CheckIcon className="h-3.5 w-3.5" />
             </span>
@@ -166,9 +167,10 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
               checked={done}
               onChange={() => setDone((value) => !value)}
               aria-label={`Mark "${task.title}" complete`}
-              className="h-5 w-5 rounded border border-[#333333] dark:border-[#8B8998]"
+              className="h-5 w-5 shrink-0 appearance-none rounded border border-[#333333] bg-transparent checked:border-[#1A1A4E] checked:bg-[#1A1A4E] dark:border-[#8B8998]"
             />
           )}
+
           <TaskEditMenu
             task={{
               title: task.title,

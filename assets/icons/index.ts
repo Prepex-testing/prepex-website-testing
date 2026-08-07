@@ -87,6 +87,8 @@ export { default as CalendarIcons } from "./CalendarIcons.svg";
 export { default as Chart} from "./Chart.svg";
 export { default as StatsIcon} from "./StatsIcon.svg";
 export { default as PracticeIcon} from "./PracticeIcon.svg";
+export { default as Book} from "./book.svg";
+export { default as Time} from "./Time.svg";
 
 
 
