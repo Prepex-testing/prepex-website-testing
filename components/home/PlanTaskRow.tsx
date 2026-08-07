@@ -8,12 +8,15 @@ import { TaskEditMenu } from "@/components/home/TaskEditMenu";
 import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE } from "@/components/home/TaskRow";
 import type { TaskType } from "@/components/home/TaskRow";
 import { useRevisionSession } from "@/components/session/RevisionSessionProvider";
+import { Book, Time } from "@/assets/icons";
 
 type Difficulty = "high" | "medium";
 
 const DIFFICULTY_STYLES: Record<Difficulty, string> = {
-  high: "bg-danger-bg text-danger",
-  medium: "bg-warning/10 text-warning",
+  high:
+    " bg-[#EEF0F8] text-[#1A1A4E] dark:border-transparent dark:bg-[#242453] dark:text-white",
+  medium:
+    " bg-[#EEF0F8] text-[#1A1A4E] dark:border-transparent dark:bg-[#242453] dark:text-white",
 };
 
 const DIFFICULTY_LABELS: Record<Difficulty, string> = {
@@ -81,17 +84,17 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
       {/* Content column */}
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] font-bold uppercase leading-[15px] tracking-[1px] text-muted">
+          <span className="text-[10px] font-bold uppercase leading-[15px] tracking-[1px] text-ink">
             {task.subjectName}
           </span>
           <span
-            className={`rounded-full px-2 py-0.5 text-[10px] font-bold leading-[15px] ${TYPE_STYLES[task.type]}`}
+            className={`rounded-sm px-2 py-0.5 text-[10px] font-bold leading-[15px] ${TYPE_STYLES[task.type]}`}
           >
             {TYPE_LABELS[task.type]}
           </span>
           {task.isCustom && (
             <span
-              className={`rounded-full px-2 py-0.5 text-[10px] font-bold leading-[15px] ${CUSTOM_BADGE_STYLE}`}
+              className={`rounded-sm px-2 py-0.5 text-[10px] font-bold leading-[15px] ${CUSTOM_BADGE_STYLE}`}
             >
               Custom
             </span>
@@ -106,12 +109,16 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
 
         <div className="mt-1 flex flex-wrap items-center gap-3 text-xs font-medium leading-4 text-[#6B7280]">
           <span className="flex items-center gap-1">
-            <ClockIcon />
+           <ClockIcon className="h-4 w-4 shrink-0" />
             {task.duration}
           </span>
           <span className="flex items-center gap-1">
-            <CalendarIcon />
+            <Time className="h-4 w-4 shrink-0" />
             {task.timeRange}
+          </span>
+          <span className="flex items-center gap-1">
+            <Book className="h-4 w-4 shrink-0" />
+            Resource
           </span>
           <span
             className={`rounded-sm px-2 py-0.5 text-[10px] font-semibold ${DIFFICULTY_STYLES[task.difficulty]}`}
