@@ -172,8 +172,11 @@ function toHomeTask(task: PlannerTask): Task {
     type: TASK_TYPE_STYLE[task.taskType] ?? "new-learning",
     title: task.title,
     meta: task.description ?? task.chapter?.name ?? "",
+    description: task.description ?? "",
+    chapterName: task.chapter?.name ?? "",
     duration: `${task.estimatedMinutes} min`,
     estimatedMinutes: task.estimatedMinutes,
+    secondsCompleted: task.secondsCompleted,
     timeSlot: formatWindow(task.suggestedWindow),
     scheduledRange: task.scheduledStart && task.scheduledEnd
       ? `${task.scheduledStart} - ${task.scheduledEnd}`
@@ -497,6 +500,7 @@ export default function HomePage() {
                     key={task.id}
                     task={task}
                     onStartPractice={() => setPracticeModalOpen(true)}
+                    onTaskChanged={refetchPlan}
                   />
                 ))}
               </div>

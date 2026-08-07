@@ -70,8 +70,11 @@ function toPlanTask(task: PlannerTask): PlanTask {
     type: TASK_TYPE_STYLE[task.taskType] ?? "new-learning",
     title: task.title,
     meta: task.description ?? task.chapter?.name ?? "",
+    description: task.description ?? "",
+    chapterName: task.chapter?.name ?? "",
     duration: `${task.estimatedMinutes} min`,
     estimatedMinutes: task.estimatedMinutes,
+    secondsCompleted: task.secondsCompleted,
     timeRange: task.scheduledStart && task.scheduledEnd
       ? `${task.scheduledStart} - ${task.scheduledEnd}`
       : formatWindow(task.suggestedWindow),
@@ -308,7 +311,7 @@ export default function TodayPlanPage() {
           >
             <div className="flex flex-col gap-3">
               {morningTasks.map((task) => (
-                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
+                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} onTaskChanged={refetchPlan} />
               ))}
             </div>
           </TimeBlockSection>
@@ -321,7 +324,7 @@ export default function TodayPlanPage() {
           >
             <div className="flex flex-col gap-3">
               {afternoonTasks.map((task) => (
-                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
+                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} onTaskChanged={refetchPlan} />
               ))}
             </div>
           </TimeBlockSection>
@@ -334,7 +337,7 @@ export default function TodayPlanPage() {
           >
             <div className="flex flex-col gap-3">
               {eveningTasks.map((task) => (
-                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
+                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} onTaskChanged={refetchPlan} />
               ))}
             </div>
           </TimeBlockSection>
@@ -347,7 +350,7 @@ export default function TodayPlanPage() {
           >
             <div className="flex flex-col gap-3">
               {nightTasks.map((task) => (
-                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
+                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} onTaskChanged={refetchPlan} />
               ))}
             </div>
           </TimeBlockSection>
