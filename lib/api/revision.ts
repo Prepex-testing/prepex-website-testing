@@ -62,6 +62,7 @@ export type RevisionTask = {
   status: TaskStatus | string;
   questionCount: number | null;
   chapter: RevisionChapter | null;
+  isAnchor?: boolean;
 };
 
 export type RevisionChapterProgress = {
@@ -92,15 +93,34 @@ export function getRevisionOverview(filters: { subjectId?: number; status?: Task
   return authRequest<{ success: true; data: RevisionOverview }>(query ? `?${query}` : "");
 }
 
-export function updateRevisionProgress(revisionId: string, minutesCompleted: number) {
+export function updateRevisionProgress(revisionId: string) {
   return authRequest<{ success: true; data: unknown }>(`/${revisionId}/progress`, {
     method: "PATCH",
+  });
+}
+
+export function markRevisionDone(revisionId: string, minutesCompleted: number) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/mark-done`, {
+    method: "POST",
     body: JSON.stringify({ minutesCompleted }),
   });
 }
 
-export function markRevisionDone(revisionId: string) {
-  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/mark-done`, {
+export function startRevisionSession(revisionId: string) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/session/start`, {
     method: "POST",
+  });
+}
+
+export function heartbeatRevisionSession(revisionId: string) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/session/heartbeat`, {
+    method: "POST",
+  });
+}
+
+export function exitRevisionSession(revisionId: string, minutesCompleted: number) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/session/exit`, {
+    method: "POST",
+    body: JSON.stringify({ minutesCompleted }),
   });
 }

@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ClockIcon, SunIcon, FileIcon, CalendarIcon, CheckIcon } from "@/components/ui/icons";
 import { TaskEditMenu } from "@/components/home/TaskEditMenu";
 import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE } from "@/components/home/taskTypes";
 import type { TaskType } from "@/components/home/taskTypes";
+import { useRevisionSession } from "@/components/session/RevisionSessionProvider";
 
 export type { TaskType };
 export { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE };
@@ -17,6 +20,7 @@ export type Task = {
   title: string;
   meta: string;
   duration: string;
+  estimatedMinutes: number;
   timeSlot: string;
   scheduledRange?: string;
   hasResource: boolean;
@@ -34,8 +38,29 @@ export function TaskRow({
   task,
   onStartPractice,
 }: TaskRowProps) {
+  const [done, setDone] = useState(false);
+  const router = useRouter();
+  const { startSession } = useRevisionSession();
+
   const isStartPractice = task.type === "practice";
+  const isStartRevision = task.type === "revision";
   const displayLabel = task.isCompleted ? COMPLETED_ACTION_LABELS[task.type] : task.actionLabel;
+
+  const handleStartRevision = async () => {
+    try {
+      await startSession({
+        taskId: task.id,
+        targetDuration: task.estimatedMinutes,
+        taskTitle: task.title,
+        subjectName: task.subjectName,
+        subjectLabel: task.subjectLabel,
+      });
+    } catch {
+      // Best-effort — still let the student into the session even if tracking failed to start.
+    } finally {
+      router.push(`/revision-session?taskId=${task.id}`);
+    }
+  };
 
   return (
     <div
@@ -179,18 +204,20 @@ export function TaskRow({
                 : "h-9! w-auto! min-w-[138px]! justify-center gap-2.5! px-4! text-[14px]! leading-none! font-semibold! whitespace-nowrap!"
             }
             href={
-              task.isCompleted
+              task.isCompleted || isStartRevision
                 ? undefined
                 : task.type === "new-learning"
                   ? `/home/session?taskId=${task.id}`
-                  : task.type === "revision"
-                    ? `/revision-session?taskId=${task.id}`
-                    : undefined
+                  : undefined
             }
             onClick={
-              !task.isCompleted && isStartPractice
-                ? onStartPractice
-                : undefined
+              task.isCompleted
+                ? undefined
+                : isStartPractice
+                  ? onStartPractice
+                  : isStartRevision
+                    ? handleStartRevision
+                    : undefined
             }
           >
             {displayLabel}
