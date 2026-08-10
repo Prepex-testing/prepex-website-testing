@@ -36,6 +36,7 @@ export type PlanTask = {
   estimatedMinutes: number;
   secondsCompleted?: number;
   taskOrder?: number;
+  status?: string;
   timeRange: string;
   difficulty: Difficulty;
   actionLabel: string;
@@ -70,7 +71,13 @@ export function PlanTaskRow({
   const beginExit = useBeginPageTransition();
   const isStartPractice = task.type === "practice";
   const isStartRevision = task.type === "revision";
-  const displayLabel = task.isCompleted ? COMPLETED_ACTION_LABELS[task.type] : task.actionLabel;
+  const isSkipped = task.status === "SKIPPED";
+  const isActionDisabled = task.isCompleted || isSkipped;
+  const displayLabel = task.isCompleted
+    ? COMPLETED_ACTION_LABELS[task.type]
+    : isSkipped
+      ? "Skipped"
+      : task.actionLabel;
 
   return (
     <div
@@ -151,14 +158,14 @@ export function PlanTaskRow({
         <Button
           variant="outline"
           size="sm"
-          disabled={task.isCompleted}
+          disabled={isActionDisabled}
           className={
-            task.isCompleted
+            isActionDisabled
               ? "h-[38px]! w-auto! min-w-[138px]! justify-center px-5! text-[12px]! leading-none! font-semibold! whitespace-nowrap! cursor-not-allowed! opacity-60! hover:bg-transparent! hover:border-current! hover:text-current! hover:shadow-none!"
               : "h-[38px]! w-auto! min-w-[138px]! justify-center gap-2.5! px-5! text-[14px]! leading-none! font-semibold! whitespace-nowrap!"
           }
           href={
-            task.isCompleted
+            isActionDisabled
               ? undefined
               : isStartRevision
                 ? `/revision-session?taskId=${task.id}`
@@ -167,7 +174,7 @@ export function PlanTaskRow({
                   : undefined
           }
           onClick={
-            task.isCompleted
+            isActionDisabled
               ? undefined
               : isStartPractice
                 ? onStartPractice
@@ -183,6 +190,7 @@ export function PlanTaskRow({
             title={task.title}
             secondsCompleted={task.secondsCompleted ?? 0}
             isCompleted={task.isCompleted}
+            disabled={isSkipped}
             onCompleted={onTaskChanged}
           />
 
@@ -194,11 +202,12 @@ export function PlanTaskRow({
               subjectName: task.subjectName,
               chapterName: task.chapterName,
               type: task.type,
+              status: task.status,
               duration: task.duration,
             }}
             onTaskChanged={onTaskChanged}
             onReorder={onReorder}
-            disabled={task.isCompleted}
+            disabled={isActionDisabled}
           />
         </div>
       </div>
