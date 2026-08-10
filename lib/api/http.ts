@@ -13,6 +13,10 @@ export async function apiRequest<T>(url: string, options: RequestInit = {}): Pro
   const isFormData = options.body instanceof FormData;
 
   const response = await fetch(url, {
+    // Always hit the network — GET responses (e.g. today's plan) must reflect
+    // mutations (skip/complete/edit/delete/reorder) immediately, without
+    // requiring a hard page reload to bypass a stale cached response.
+    cache: "no-store",
     ...options,
     headers: isFormData
       ? { "ngrok-skip-browser-warning": "true", ...options.headers }

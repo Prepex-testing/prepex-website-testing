@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { PencilIcon, ListIcon, TrashIcon, MoreIcon } from "@/components/ui/icons";
+import { PencilIcon, ListIcon, TrashIcon, MoreIcon, ArrowRightIcon } from "@/components/ui/icons";
 import type { TaskType } from "@/components/home/taskTypes";
 import { TYPE_LABELS } from "@/components/home/taskTypes";
 import { deletePlannerTask } from "@/lib/api/planner";
+import { skipRevisionTask } from "@/lib/api/revision";
 
 const MENU_ITEMS = [
   { icon: <PencilIcon />, label: "Edit Task" },
@@ -33,6 +34,7 @@ export type EditableTask = {
   subjectName: string;
   chapterName?: string;
   type: TaskType;
+  status?: string;
   duration: string;
   timeSlot?: string;
 };
@@ -52,7 +54,9 @@ export function TaskEditMenu({ task, onTaskChanged, onReorder, disabled }: TaskE
   const [isEditOpen, setEditOpen] = useState(false);
   const [isDeleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [isDeleting, setDeleting] = useState(false);
+  const [isSkipping, setSkipping] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const canSkipRevision = task.type === "revision" && task.status === "PENDING";
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -64,6 +68,18 @@ export function TaskEditMenu({ task, onTaskChanged, onReorder, disabled }: TaskE
       // Best-effort — the confirm modal stays open so the user can retry.
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleSkip = async () => {
+    setSkipping(true);
+    try {
+      await skipRevisionTask(task.id);
+      onTaskChanged?.();
+    } catch {
+      // Best-effort — the menu still works so the user can retry.
+    } finally {
+      setSkipping(false);
     }
   };
 
@@ -122,6 +138,21 @@ export function TaskEditMenu({ task, onTaskChanged, onReorder, disabled }: TaskE
               {item.label}
             </button>
           ))}
+          {canSkipRevision && (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                handleSkip();
+              }}
+              disabled={isSkipping}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-ink hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <ArrowRightIcon />
+              {isSkipping ? "Skipping..." : "Skip Revision"}
+            </button>
+          )}
           <div className="my-1 h-px bg-brand/10" />
           <button
             type="button"

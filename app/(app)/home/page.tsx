@@ -208,6 +208,7 @@ function toHomeTask(task: PlannerTask): Task {
     duration: `${task.estimatedMinutes} min`,
     estimatedMinutes: task.estimatedMinutes,
     secondsCompleted: task.secondsCompleted,
+    status: task.status,
     timeSlot: formatWindow(task.suggestedWindow),
     scheduledRange: task.scheduledStart && task.scheduledEnd
       ? `${task.scheduledStart} - ${task.scheduledEnd}`

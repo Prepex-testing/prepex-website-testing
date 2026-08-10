@@ -55,6 +55,15 @@ export type PlannerChapter = {
 
 export type TaskStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "SKIPPED";
 
+/** Focus-session task checklist — persisted via PATCH /planner/:taskId. */
+export type TaskChecklist = {
+  readNCRT?: boolean;
+  watchLecture?: boolean;
+  solveExample?: boolean;
+  attemptProblems?: boolean;
+  selfQuiz?: boolean;
+};
+
 export type PlannerTask = {
   id: string;
   taskType: "WELLNESS" | "PRACTICE" | "REVISION" | "NEW_LEARNING" | string;
@@ -71,7 +80,7 @@ export type PlannerTask = {
   chapter: PlannerChapter;
   isAnchor?: boolean;
   taskOrder?: number;
-};
+} & TaskChecklist;
 
 export type PlannerTaskDetail = {
   id: string;
@@ -201,7 +210,7 @@ export function addPlannerTask(input: AddPlannerTaskInput) {
 }
 
 export type UpdatePlannerTaskInput =
-  | { secondsCompleted: number; status: TaskStatus; isStudyingCrossApp: false }
+  | ({ secondsCompleted: number; status: TaskStatus; isStudyingCrossApp: false } & TaskChecklist)
   | { isStudyingCrossApp: true; crossAppActivity: string };
 
 export function updatePlannerTask(taskId: string, input: UpdatePlannerTaskInput) {
