@@ -3,11 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/components/layout/Sidebar";
-import { useBeginPageTransition } from "@/components/layout/PageTransition";
 
 export function FocusSidebar() {
   const pathname = usePathname();
-  const beginExit = useBeginPageTransition();
 
   return (
     <aside className="hidden w-24.25 flex-col items-center self-stretch border-r border-sidebar-border bg-surface px-6 py-8 lg:flex">
@@ -27,9 +25,6 @@ export function FocusSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              onClick={() => {
-                if (!active) beginExit();
-              }}
               aria-label={item.label}
               className={`flex w-12 items-center justify-center transition-colors duration-200 ${
                 active

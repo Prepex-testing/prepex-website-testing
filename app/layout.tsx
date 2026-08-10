@@ -6,7 +6,6 @@ import { InlineThemeScript } from "@/components/theme/InlineThemeScript";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { RevisionSessionProvider } from "@/components/session/RevisionSessionProvider";
 import { RevisionSessionBanner } from "@/components/session/RevisionSessionBanner";
-import { PageTransitionProvider } from "@/components/layout/PageTransition";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -55,13 +54,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
           <RevisionSessionProvider>
-            <PageTransitionProvider>
-              <AuthGate>
-                <RevisionSessionBanner />
-                {children}
-              </AuthGate>
-              <RegisterServiceWorker />
-            </PageTransitionProvider>
+            <AuthGate>
+              <RevisionSessionBanner />
+              {children}
+            </AuthGate>
+            <RegisterServiceWorker />
           </RevisionSessionProvider>
         </ThemeProvider>
       </body>

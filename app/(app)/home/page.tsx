@@ -26,8 +26,7 @@ import {
 } from "@/lib/api/planner";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
-import { useBeginPageTransition } from "@/components/layout/PageTransition";
-import { FlameIcon, BackIcon, BookIcon, BriefcaseIcon, ChartBarIcon, LayersIcon, LoderIcon, QuickIcon, RadarIcon, RevisionIcon, TrophyIcon, UserIcon, BellIcon, SparkleIcon} from "@/assets/icons";
+import { FlameIcon, BackIcon, BookIcon, BriefcaseIcon, ChartBarIcon, LayersIcon, LoderIcon, QuickIcon, RadarIcon, RevisionIcon, TrophyIcon, UserIcon, BellIcon, SparkleIcon } from "@/assets/icons";
 import {
   // SparkleIcon,
   RefreshIcon,
@@ -212,7 +211,7 @@ function toHomeTask(task: PlannerTask): Task {
     scheduledRange: task.scheduledStart && task.scheduledEnd
       ? `${task.scheduledStart} - ${task.scheduledEnd}`
       : undefined,
-      hasResource: Boolean(task.chapter),
+    hasResource: Boolean(task.chapter),
     actionLabel: withResumeLabel(TASK_ACTION_LABEL[task.taskType] ?? "Start Session", task.status),
     isCompleted: task.status === "COMPLETED",
     isCustom: Boolean(task.isAnchor),
@@ -237,7 +236,6 @@ function getIsFridayServerSnapshot() {
 
 export default function HomePage() {
   const router = useRouter();
-  const beginExit = useBeginPageTransition();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const storedFullName = useStoredFullName();
@@ -259,15 +257,15 @@ export default function HomePage() {
     getIsFridaySnapshot,
     getIsFridayServerSnapshot,
   );
-  
+
   const refetchPlan = () => {
     getTodayPlan()
-    .then(({ data }) => setPlanData(data))
-    .catch(() => {
-      // Best-effort — the page falls back to the placeholder plan below.
-    });
+      .then(({ data }) => setPlanData(data))
+      .catch(() => {
+        // Best-effort — the page falls back to the placeholder plan below.
+      });
   };
-  
+
   const [consistency, setConsistency] = useState<StudyConsistency | null>(null);
 
   useEffect(() => {
@@ -415,7 +413,6 @@ export default function HomePage() {
           {/* Streak Card */}
           <Link
             href="/home/streak"
-            onClick={beginExit}
             className="block rounded-2xl border border-brand/10 bg-surface p-4 transition-colors hover:border-brand/30 @4xl:p-6"
           >
             <div className="flex flex-row items-center justify-between gap-3 @4xl:gap-4">
@@ -493,7 +490,6 @@ export default function HomePage() {
               <div className="mt-4 flex items-center justify-between border-t border-brand/10 pt-3">
                 <Link
                   href="/home/journal"
-                  onClick={beginExit}
                   className="text-sm font-bold text-ink"
                 >
                   Explore Full Weekly Summary
@@ -555,7 +551,6 @@ export default function HomePage() {
 
               <Link
                 href="/home/today-plan"
-                onClick={beginExit}
                 className="mt-4 block w-full text-center text-sm font-semibold text-ink underline"
               >
                 View all
@@ -610,7 +605,6 @@ export default function HomePage() {
                   <Link
                     key={item.label}
                     href={item.href as string}
-                    onClick={beginExit}
                     className={classes}
                   >
                     {content}
@@ -620,46 +614,91 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="rounded-3xl bg-surface p-5 shadow-card">
+          <div className="rounded-3xl bg-surface p-4 border border-brand/10 sm:p-5">
+            {/* Header */}
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-(--oc-heading1)">
                 Study Consistency
               </h3>
 
-              <BackIcon className="h-[10px] w-[6px] shrink-0 text-secondary sm:h-[12px] sm:w-[7.4px]" />
+              <BackIcon
+                className="h-[10px] w-[6px] shrink-0 text-secondary sm:h-[12px] sm:w-[7.4px]"
+              />
             </div>
 
             {consistency ? (
               <>
-                <div className="mt-3 grid grid-cols-7 gap-1">
+                {/* Weekday labels */}
+                <div
+                  className="
+          mx-auto
+          mt-3
+          grid
+          w-full
+          max-w-[300px]
+          grid-cols-7
+        "
+                >
                   {CONSISTENCY_WEEKDAY_LABELS.map((day, index) => (
                     <span
                       key={index}
-                      className="text-center text-caption text-[#94A3B8]"
+                      className="
+              flex
+              items-center
+              justify-center
+              text-[10px]
+              font-medium
+              leading-[15px]
+              text-[#94A3B8]
+              sm:text-xs
+            "
                     >
                       {day}
                     </span>
                   ))}
                 </div>
 
-                <div className="mt-1.5 flex flex-col gap-1">
+                {/* Consistency boxes */}
+                <div
+                  className="
+          mx-auto
+          mt-1.5
+          flex
+          w-full
+          max-w-[300px]
+          flex-col
+          gap-y-1
+        "
+                >
                   {consistencyWeeks.map((week, weekIndex) => (
                     <div
                       key={weekIndex}
-                      className="grid grid-cols-7 gap-1"
+                      className="grid w-full grid-cols-7"
                     >
                       {week.map((day, dayIndex) => (
-                        <span key={dayIndex} className="flex justify-center">
+                        <span
+                          key={dayIndex}
+                          className="flex items-center justify-center"
+                        >
                           <span
                             title={
                               day
                                 ? `${day.dayCompletionPercentage}% completed on ${day.date}`
                                 : undefined
                             }
-                            className="aspect-square w-full max-w-4.5 rounded-md"
+                            className="
+                    aspect-square
+                    w-[14px]
+                    rounded-[3px]
+                    sm:w-4
+                  "
                             style={{
                               backgroundColor: day
-                                ? consistencyColors[toActivityLevel(day.dayCompletionPercentage)]
+                                ? consistencyColors[
+                                toActivityLevel(
+                                  day.dayCompletionPercentage
+                                )
+                                ]
                                 : "transparent",
                             }}
                           />
@@ -669,18 +708,48 @@ export default function HomePage() {
                   ))}
                 </div>
 
-                <div className="mt-3 flex items-center justify-between text-xs text-muted">
-                  <span>{consistencyMonthName}</span>
-                  <span className="flex items-center gap-1.5">
-                    Less
-                    {consistencyColors.map((color, index) => (
-                      <span
-                        key={index}
-                        className="h-2.5 w-2.5 rounded-sm"
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
-                    More
+                {/* Legend */}
+                <div
+                  className="
+          mt-3
+          flex
+          items-center
+          justify-between
+          gap-2
+          text-[10px]
+          leading-[15px]
+          text-muted
+          sm:text-xs
+        "
+                >
+                  <span className="shrink-0">
+                    {consistencyMonthName}
+                  </span>
+
+                  <span className="flex shrink-0 items-center gap-1">
+                    <span>Less</span>
+
+                    <span className="flex items-center gap-1">
+                      {consistencyColors.map((color, index) => (
+                        <span
+                          key={index}
+                          className="
+                  h-2
+                  w-2
+                  shrink-0
+                  rounded-[2px]
+                  sm:h-2.5
+                  sm:w-2.5
+                  sm:rounded-sm
+                "
+                          style={{
+                            backgroundColor: color,
+                          }}
+                        />
+                      ))}
+                    </span>
+
+                    <span>More</span>
                   </span>
                 </div>
               </>
@@ -705,7 +774,6 @@ export default function HomePage() {
         </div>
         <Button
           href="/home/backlog"
-          onClick={beginExit}
           variant="secondary"
           size="sm"
           className="w-full sm:w-auto sm:shrink-0 justify-center border! border-[#1A1A4E]! bg-white! text-[#1A1A4E]! shadow-[0px_1px_2px_0px_#0000000D] hover:bg-white! dark:border-transparent!"
