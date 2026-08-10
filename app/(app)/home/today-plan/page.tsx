@@ -2,9 +2,9 @@
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState, type DragEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -16,7 +16,7 @@ import { withResumeLabel } from "@/components/home/taskTypes";
 import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
-import { getTodayPlan, type PlannerTask, type TodayPlanResponse } from "@/lib/api/planner";
+import { getTodayPlan, reorderPlannerTask, type PlannerTask, type TodayPlanResponse } from "@/lib/api/planner";
 import { CheckIcon, ClockIcon, ListIcon, CalendarIcon,BellIcon ,ArrowLeftIcon} from "@/assets/icons";
 import {
   // ArrowLeftIcon,
@@ -70,8 +70,12 @@ function toPlanTask(task: PlannerTask): PlanTask {
     type: TASK_TYPE_STYLE[task.taskType] ?? "new-learning",
     title: task.title,
     meta: task.description ?? task.chapter?.name ?? "",
+    description: task.description ?? "",
+    chapterName: task.chapter?.name ?? "",
     duration: `${task.estimatedMinutes} min`,
     estimatedMinutes: task.estimatedMinutes,
+    secondsCompleted: task.secondsCompleted,
+    taskOrder: task.taskOrder,
     timeRange: task.scheduledStart && task.scheduledEnd
       ? `${task.scheduledStart} - ${task.scheduledEnd}`
       : formatWindow(task.suggestedWindow),
@@ -179,11 +183,22 @@ const EVENING_TASKS: PlanTask[] = [
 ];
 
 export default function TodayPlanPage() {
+  return (
+    <Suspense fallback={null}>
+      <TodayPlanContent />
+    </Suspense>
+  );
+}
+
+function TodayPlanContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const reorderTaskIdParam = searchParams.get("reorderTaskId");
   const [isRegenerateOpen, setRegenerateOpen] = useState(false);
   const [isPracticeModalOpen, setPracticeModalOpen] = useState(false);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
   const [planData, setPlanData] = useState<TodayPlanResponse | null>(null);
+  const [reorderTaskId, setReorderTaskId] = useState<string | null>(null);
 
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
@@ -205,6 +220,53 @@ export default function TodayPlanPage() {
   const afternoonTasks = plan ? afternoon.map(toPlanTask) : AFTERNOON_TASKS;
   const eveningTasks = plan ? evening.map(toPlanTask) : EVENING_TASKS;
   const nightTasks = plan ? night.map(toPlanTask) : [];
+
+  // Arms the task named by ?reorderTaskId= (e.g. routed here from /home's
+  // Reorder menu item) once the plan has loaded and the task is found in it.
+  useEffect(() => {
+    if (!reorderTaskIdParam || !plan || reorderTaskId === reorderTaskIdParam) return;
+    const allTasks = [...morningTasks, ...afternoonTasks, ...eveningTasks, ...nightTasks];
+    if (allTasks.some((task) => task.id === reorderTaskIdParam)) setReorderTaskId(reorderTaskIdParam);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reorderTaskIdParam, plan]);
+
+  const handleReorderSelect = (taskId: string) => {
+    setReorderTaskId((current) => (current === taskId ? null : taskId));
+  };
+
+  const handleDragStart = (event: DragEvent<HTMLDivElement>, taskId: string) => {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", taskId);
+  };
+
+  const handleDrop = async (event: DragEvent<HTMLDivElement>, targetTask: PlanTask) => {
+    event.preventDefault();
+    const draggedTaskId = reorderTaskId;
+    setReorderTaskId(null);
+    if (!draggedTaskId || draggedTaskId === targetTask.id || targetTask.taskOrder == null) return;
+    try {
+      await reorderPlannerTask(draggedTaskId, targetTask.taskOrder);
+    } catch {
+      // Best-effort — the list still reflects the previous order until the user retries.
+    } finally {
+      refetchPlan();
+    }
+  };
+
+  const renderTaskRow = (task: PlanTask) => (
+    <PlanTaskRow
+      key={task.id}
+      task={task}
+      onStartPractice={() => setPracticeModalOpen(true)}
+      onTaskChanged={refetchPlan}
+      onReorder={() => handleReorderSelect(task.id)}
+      isDragArmed={reorderTaskId === task.id}
+      isDropTarget={reorderTaskId !== null && reorderTaskId !== task.id}
+      onDragStart={(event) => handleDragStart(event, task.id)}
+      onDrop={(event) => handleDrop(event, task)}
+    />
+  );
+
   const completionPercent = summary?.completionPercentage ?? 35;
   const statTiles = summary
     ? [
@@ -299,6 +361,19 @@ export default function TodayPlanPage() {
       </div>
 
 
+      {reorderTaskId && (
+        <div className="flex items-center justify-between gap-3 rounded-2xl border border-brand/20 bg-tint px-4 py-3 text-sm text-ink">
+          <span>Drag the highlighted task and drop it on another task to move it there.</span>
+          <button
+            type="button"
+            onClick={() => setReorderTaskId(null)}
+            className="shrink-0 font-bold underline"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-col gap-6">
         {morningTasks.length > 0 && (
           <TimeBlockSection
@@ -307,9 +382,7 @@ export default function TodayPlanPage() {
             meta={plan ? sectionMeta(morning) : "2 Tasks • 1h 45m"}
           >
             <div className="flex flex-col gap-3">
-              {morningTasks.map((task) => (
-                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
-              ))}
+              {morningTasks.map((task) => renderTaskRow(task))}
             </div>
           </TimeBlockSection>
         )}
@@ -320,9 +393,7 @@ export default function TodayPlanPage() {
             meta={plan ? sectionMeta(afternoon) : "1 Task • 1h 15m"}
           >
             <div className="flex flex-col gap-3">
-              {afternoonTasks.map((task) => (
-                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
-              ))}
+              {afternoonTasks.map((task) => renderTaskRow(task))}
             </div>
           </TimeBlockSection>
         )}
@@ -333,9 +404,7 @@ export default function TodayPlanPage() {
             meta={plan ? sectionMeta(evening) : "2 Tasks • 2h 00m"}
           >
             <div className="flex flex-col gap-3">
-              {eveningTasks.map((task) => (
-                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
-              ))}
+              {eveningTasks.map((task) => renderTaskRow(task))}
             </div>
           </TimeBlockSection>
         )}
@@ -346,9 +415,7 @@ export default function TodayPlanPage() {
             meta={sectionMeta(night)}
           >
             <div className="flex flex-col gap-3">
-              {nightTasks.map((task) => (
-                <PlanTaskRow key={task.id} task={task} onStartPractice={() => setPracticeModalOpen(true)} />
-              ))}
+              {nightTasks.map((task) => renderTaskRow(task))}
             </div>
           </TimeBlockSection>
         )}

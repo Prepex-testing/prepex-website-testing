@@ -1,16 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { useBeginPageTransition } from "@/components/layout/PageTransition";
-import { ClockIcon, SunIcon, FileIcon, CalendarIcon, CheckIcon } from "@/components/ui/icons";
+import { ClockIcon, SunIcon, FileIcon, CalendarIcon } from "@/components/ui/icons";
 import { TaskEditMenu } from "@/components/home/TaskEditMenu";
+import { CompleteTaskCheckbox } from "@/components/home/CompleteTaskCheckbox";
 import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE } from "@/components/home/taskTypes";
 import type { TaskType } from "@/components/home/taskTypes";
 
 export type { TaskType };
 export { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE };
 import { Book, Time } from "@/assets/icons";
+import { useState } from "react";
 export type Task = {
   id: string;
   subjectLabel: string;
@@ -18,8 +20,11 @@ export type Task = {
   type: TaskType;
   title: string;
   meta: string;
+  description?: string;
+  chapterName?: string;
   duration: string;
   estimatedMinutes: number;
+  secondsCompleted?: number;
   timeSlot: string;
   scheduledRange?: string;
   hasResource: boolean;
@@ -31,19 +36,20 @@ export type Task = {
 type TaskRowProps = {
   task: Task;
   onStartPractice?: () => void;
+  onTaskChanged?: () => void;
 };
 
 export function TaskRow({
   task,
   onStartPractice,
+  onTaskChanged,
 }: TaskRowProps) {
   const [done, setDone] = useState(false);
   const beginExit = useBeginPageTransition();
-
   const isStartPractice = task.type === "practice";
   const isStartRevision = task.type === "revision";
   const displayLabel = task.isCompleted ? COMPLETED_ACTION_LABELS[task.type] : task.actionLabel;
-
+  const router = useRouter();
   return (
     <div
       className="
@@ -205,32 +211,28 @@ export function TaskRow({
             {displayLabel}
           </Button>
 
-          {task.isCompleted ? (
-            <span
-              aria-label={`${task.title} completed`}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#EAF2FF] text-[#1A1A4E] dark:bg-[#FFFFFF14] dark:text-white"
-            >
-              <CheckIcon className="h-3.5 w-3.5" />
-            </span>
-          ) : (
-            <input
-              type="checkbox"
-              checked={false}
-              disabled
-              readOnly
-              aria-label={`${task.title} not yet complete`}
-              className="h-5 w-5 shrink-0 cursor-not-allowed appearance-none rounded border border-[#333333] dark:border-[#8B8998] bg-transparent"
-            />
-          )}
+          <CompleteTaskCheckbox
+            taskId={task.id}
+            title={task.title}
+            secondsCompleted={task.secondsCompleted ?? 0}
+            isCompleted={task.isCompleted}
+            onCompleted={onTaskChanged}
+          />
 
           <TaskEditMenu
             task={{
+              id: task.id,
               title: task.title,
+              description: task.description,
               subjectName: task.subjectName,
+              chapterName: task.chapterName,
               type: task.type,
               duration: task.duration,
               timeSlot: task.timeSlot,
             }}
+            onTaskChanged={onTaskChanged}
+            onReorder={() => router.push(`/home/today-plan?reorderTaskId=${task.id}`)}
+            disabled={task.isCompleted}
           />
 
         </div>
