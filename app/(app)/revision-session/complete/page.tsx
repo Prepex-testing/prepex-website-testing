@@ -13,6 +13,7 @@ import {
   ChevronDownIcon,
 } from "@/components/ui/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { useBeginPageTransition } from "@/components/layout/PageTransition";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { TargetIcon, TrendingUpIcon, CalendarIcon, ClockIcon, LayersIcon, ArrowLeftIcon } from "@/assets/icons";
 import { submitRevisionFeedback, type RevisionFeedback } from "@/lib/api/revision";
@@ -38,6 +39,7 @@ export default function RevisionCompletePage() {
 
 function RevisionCompleteContent() {
   const searchParams = useSearchParams();
+  const beginExit = useBeginPageTransition();
   const taskId = searchParams.get("taskId");
   const [difficulty, setDifficulty] = useState<Difficulty>("Medium");
   const [isSubmittingFeedback, setSubmittingFeedback] = useState(false);
@@ -82,15 +84,16 @@ function RevisionCompleteContent() {
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-[1083px] flex-col gap-4 p-4 sm:gap-6 sm:p-6 lg:p-8">
+    <div className="flex w-full flex-col gap-4 p-4 sm:gap-6 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <Link
           href="/home/revision"
-          className="flex shrink-0 items-center gap-1 text-sm font-semibold leading-5 text-ink"
+          onClick={beginExit}
+          className="flex shrink-0 items-center gap-1 text-xs font-semibold leading-5 text-ink sm:text-sm"
         >
-          <ArrowLeftIcon />
-          Exit Session
+          <ArrowLeftIcon className="h-[9.33px] w-3 shrink-0" />
+          <span>Exit Session</span>
         </Link>
 
         <p className="order-3 w-full text-center text-xs font-extrabold uppercase leading-5 tracking-[2.8px] text-ink sm:order-none sm:w-auto sm:flex-1 sm:text-sm sm:tracking-[2.8px]">
@@ -104,7 +107,7 @@ function RevisionCompleteContent() {
       </div>
 
       {/* Card */}
-      <div className="w-full max-w-[1083px] rounded-2xl border border-brand/10 bg-surface px-5 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10">
+      <div className="w-full rounded-2xl border border-brand/10 bg-surface px-5 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10">
         {/* Success header */}
         <div className="flex w-full flex-col items-center gap-2 text-center sm:gap-3">
           <span
@@ -280,6 +283,7 @@ function RevisionCompleteContent() {
         <div className="mt-6 grid w-full grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-[2fr_3fr] lg:gap-8">
           <Link
             href="/revision-session"
+            onClick={beginExit}
             className="flex h-14 items-center justify-center rounded-2xl border-2 border-brand bg-surface text-sm font-semibold leading-6 text-ink transition-colors hover:bg-tint-strong sm:text-base lg:h-[60px]"
           >
             Review another topic
@@ -287,6 +291,7 @@ function RevisionCompleteContent() {
 
           <Link
             href="/home/revision"
+            onClick={beginExit}
             className="flex h-14 items-center justify-center rounded-2xl bg-cta text-sm font-semibold leading-6 text-white transition hover:bg-cta/90 sm:text-base lg:h-[60px]"
           >
             Back to Revision Dashboard

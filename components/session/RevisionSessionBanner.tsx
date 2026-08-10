@@ -4,6 +4,7 @@ import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { ClockIcon } from "@/components/ui/icons";
+import { useBeginPageTransition } from "@/components/layout/PageTransition";
 import { useRevisionSession } from "@/components/session/RevisionSessionProvider";
 import { formatClock } from "@/lib/utils/datetime";
 import { markRevisionDone } from "@/lib/api/revision";
@@ -11,6 +12,7 @@ import { markRevisionDone } from "@/lib/api/revision";
 export function RevisionSessionBanner() {
   const pathname = usePathname();
   const router = useRouter();
+  const beginExit = useBeginPageTransition();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const {
@@ -41,12 +43,15 @@ export function RevisionSessionBanner() {
     } finally {
       clearSession();
       setCompleting(false);
+      beginExit();
       router.push(`/revision-session/complete?taskId=${taskId}`);
     }
   };
 
   const handleResume = () => {
-    if (taskId) router.push(`/revision-session?taskId=${taskId}`);
+    if (!taskId) return;
+    beginExit();
+    router.push(`/revision-session?taskId=${taskId}`);
   };
 
   return (

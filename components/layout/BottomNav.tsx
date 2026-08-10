@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/components/layout/Sidebar";
+import { useBeginPageTransition } from "@/components/layout/PageTransition";
 
 export function BottomNav() {
   const pathname = usePathname();
+  const beginExit = useBeginPageTransition();
 
   return (
     <nav
@@ -22,6 +24,9 @@ export function BottomNav() {
           <Link
             key={item.href}
             href={item.href}
+            onClick={() => {
+              if (!active) beginExit();
+            }}
             aria-current={active ? "page" : undefined}
             className={`flex min-h-[56px] flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-semibold transition-colors ${
               active ? "text-ink" : "text-muted"

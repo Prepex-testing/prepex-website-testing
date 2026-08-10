@@ -26,6 +26,7 @@ import {
 } from "@/lib/api/planner";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { useBeginPageTransition } from "@/components/layout/PageTransition";
 import { FlameIcon, BackIcon, BookIcon, BriefcaseIcon, ChartBarIcon, LayersIcon, LoderIcon, QuickIcon, RadarIcon, RevisionIcon, TrophyIcon, UserIcon, BellIcon, SparkleIcon} from "@/assets/icons";
 import {
   // SparkleIcon,
@@ -236,6 +237,7 @@ function getIsFridayServerSnapshot() {
 
 export default function HomePage() {
   const router = useRouter();
+  const beginExit = useBeginPageTransition();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const storedFullName = useStoredFullName();
@@ -413,6 +415,7 @@ export default function HomePage() {
           {/* Streak Card */}
           <Link
             href="/home/streak"
+            onClick={beginExit}
             className="block rounded-2xl border border-brand/10 bg-surface p-4 transition-colors hover:border-brand/30 @4xl:p-6"
           >
             <div className="flex flex-row items-center justify-between gap-3 @4xl:gap-4">
@@ -490,6 +493,7 @@ export default function HomePage() {
               <div className="mt-4 flex items-center justify-between border-t border-brand/10 pt-3">
                 <Link
                   href="/home/journal"
+                  onClick={beginExit}
                   className="text-sm font-bold text-ink"
                 >
                   Explore Full Weekly Summary
@@ -551,6 +555,7 @@ export default function HomePage() {
 
               <Link
                 href="/home/today-plan"
+                onClick={beginExit}
                 className="mt-4 block w-full text-center text-sm font-semibold text-ink underline"
               >
                 View all
@@ -602,13 +607,14 @@ export default function HomePage() {
                 }
 
                 return (
-                  <a
+                  <Link
                     key={item.label}
-                    href={item.href}
+                    href={item.href as string}
+                    onClick={beginExit}
                     className={classes}
                   >
                     {content}
-                  </a>
+                  </Link>
                 );
               })}
             </div>
@@ -699,6 +705,7 @@ export default function HomePage() {
         </div>
         <Button
           href="/home/backlog"
+          onClick={beginExit}
           variant="secondary"
           size="sm"
           className="w-full sm:w-auto sm:shrink-0 justify-center border! border-[#1A1A4E]! bg-white! text-[#1A1A4E]! shadow-[0px_1px_2px_0px_#0000000D] hover:bg-white! dark:border-transparent!"
