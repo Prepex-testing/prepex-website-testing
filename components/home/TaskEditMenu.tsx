@@ -41,11 +41,13 @@ type TaskEditMenuProps = {
   task: EditableTask;
   /** Called after a successful edit or delete so the parent list can refetch. */
   onTaskChanged?: () => void;
+  /** Called when "Reorder" is clicked — arms this task for drag-and-drop. */
+  onReorder?: () => void;
   /** Disables the trigger — used once a task is COMPLETED. */
   disabled?: boolean;
 };
 
-export function TaskEditMenu({ task, onTaskChanged, disabled }: TaskEditMenuProps) {
+export function TaskEditMenu({ task, onTaskChanged, onReorder, disabled }: TaskEditMenuProps) {
   const [open, setOpen] = useState(false);
   const [isEditOpen, setEditOpen] = useState(false);
   const [isDeleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -112,6 +114,7 @@ export function TaskEditMenu({ task, onTaskChanged, disabled }: TaskEditMenuProp
               onClick={() => {
                 setOpen(false);
                 if (item.label === "Edit Task") setEditOpen(true);
+                else if (item.label === "Reorder") onReorder?.();
               }}
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-ink hover:bg-tint-strong"
             >

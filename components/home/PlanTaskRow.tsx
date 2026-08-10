@@ -34,6 +34,7 @@ export type PlanTask = {
   duration: string;
   estimatedMinutes: number;
   secondsCompleted?: number;
+  taskOrder?: number;
   timeRange: string;
   difficulty: Difficulty;
   actionLabel: string;
@@ -45,17 +46,49 @@ type PlanTaskRowProps = {
   task: PlanTask;
   onStartPractice?: () => void;
   onTaskChanged?: () => void;
+  /** Called when "Reorder" is clicked — arms this task for drag-and-drop. */
+  onReorder?: () => void;
+  /** True while this task is the one armed for dragging. */
+  isDragArmed?: boolean;
+  /** True while another task in this list is armed — this row accepts drops. */
+  isDropTarget?: boolean;
+  onDragStart?: (event: React.DragEvent<HTMLDivElement>) => void;
+  onDrop?: (event: React.DragEvent<HTMLDivElement>) => void;
 };
 
-export function PlanTaskRow({ task, onStartPractice, onTaskChanged }: PlanTaskRowProps) {
+export function PlanTaskRow({
+  task,
+  onStartPractice,
+  onTaskChanged,
+  onReorder,
+  isDragArmed,
+  isDropTarget,
+  onDragStart,
+  onDrop,
+}: PlanTaskRowProps) {
   const isStartPractice = task.type === "practice";
   const isStartRevision = task.type === "revision";
   const displayLabel = task.isCompleted ? COMPLETED_ACTION_LABELS[task.type] : task.actionLabel;
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-brand/10 bg-surface p-4 sm:gap-4">
+    <div
+      draggable={isDragArmed}
+      onDragStart={isDragArmed ? onDragStart : undefined}
+      onDragOver={isDropTarget ? (event) => event.preventDefault() : undefined}
+      onDrop={isDropTarget ? onDrop : undefined}
+      className={`flex flex-wrap items-center gap-3 rounded-xl border p-4 sm:gap-4 ${
+        isDragArmed
+          ? "cursor-grabbing border-brand bg-surface ring-2 ring-brand"
+          : isDropTarget
+            ? "border-dashed border-brand/40 bg-surface"
+            : "border-brand/10 bg-surface"
+      }`}
+    >
       {/* Drag handle — 18x18 per spec */}
-      <span className="shrink-0 cursor-grab text-muted" aria-hidden="true">
+      <span
+        className={`shrink-0 text-muted ${isDragArmed ? "cursor-grabbing text-ink" : "cursor-grab"}`}
+        aria-hidden="true"
+      >
         <GripVerticalIcon />
       </span>
 
@@ -156,6 +189,7 @@ export function PlanTaskRow({ task, onStartPractice, onTaskChanged }: PlanTaskRo
               duration: task.duration,
             }}
             onTaskChanged={onTaskChanged}
+            onReorder={onReorder}
             disabled={task.isCompleted}
           />
         </div>

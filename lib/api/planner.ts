@@ -70,6 +70,7 @@ export type PlannerTask = {
   subject: PlannerSubject | null;
   chapter: PlannerChapter;
   isAnchor?: boolean;
+  taskOrder?: number;
 };
 
 export type PlannerTaskDetail = {
@@ -227,6 +228,13 @@ export function editPlannerTask(taskId: string, input: EditPlannerTaskInput) {
 export function deletePlannerTask(taskId: string) {
   return authRequest<{ success: true; data: unknown }>(`/${taskId}`, {
     method: "DELETE",
+  });
+}
+
+export function reorderPlannerTask(taskId: string, newPosition: number) {
+  return authRequest<{ success: true; data: unknown }>(`/${taskId}/reorder`, {
+    method: "PATCH",
+    body: JSON.stringify({ newPosition }),
   });
 }
 
