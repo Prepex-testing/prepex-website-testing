@@ -125,6 +125,12 @@ export function exitRevisionSession(revisionId: string, secondsCompleted: number
   });
 }
 
+export function skipRevisionTask(revisionId: string) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/skip`, {
+    method: "POST",
+  });
+}
+
 export type RevisionFeedback = "HARD" | "MEDIUM" | "EASY";
 
 export function submitRevisionFeedback(revisionId: string, feedback: RevisionFeedback) {

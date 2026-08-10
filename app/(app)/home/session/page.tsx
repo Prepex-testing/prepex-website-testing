@@ -18,7 +18,7 @@ import {
   ClockIconss,
 } from "@/components/ui/icons";
 import { LeftIconcon, TargetIcon, ArrowLeftIcon, BellIcon } from "@/assets/icons";
-import { getTodayPlan, updatePlannerTask, type PlannerTask } from "@/lib/api/planner";
+import { getTodayPlan, updatePlannerTask, type PlannerTask, type TaskChecklist } from "@/lib/api/planner";
 import {
   setActiveSessionTaskId,
   getStoredElapsedSeconds,
@@ -26,13 +26,21 @@ import {
   clearStoredElapsedSeconds,
 } from "@/lib/session/activeTask";
 
-const INITIAL_CHECKLIST = [
-  { id: "read-ncert", label: "Read NCERT", done: true },
-  { id: "watch-lecture", label: "Watch Lecture", done: true },
-  { id: "solve-examples", label: "Solve Examples", done: true },
-  { id: "attempt-problems", label: "Attempt Problems", done: false },
-  { id: "self-quiz", label: "Self Quiz", done: false },
+const CHECKLIST_ITEMS: { field: keyof TaskChecklist; label: string }[] = [
+  { field: "readNCRT", label: "Read NCERT" },
+  { field: "watchLecture", label: "Watch Lecture" },
+  { field: "solveExample", label: "Solve Examples" },
+  { field: "attemptProblems", label: "Attempt Problems" },
+  { field: "selfQuiz", label: "Self Quiz" },
 ];
+
+const EMPTY_CHECKLIST: Required<TaskChecklist> = {
+  readNCRT: false,
+  watchLecture: false,
+  solveExample: false,
+  attemptProblems: false,
+  selfQuiz: false,
+};
 
 function formatTime(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60);
@@ -58,7 +66,7 @@ function FocusSessionContent() {
   const [elapsed, setElapsed] = useState(0);
   const [targetSeconds, setTargetSeconds] = useState(60 * 60);
   const [isPaused, setPaused] = useState(false);
-  const [checklist, setChecklist] = useState(INITIAL_CHECKLIST);
+  const [checklist, setChecklist] = useState<Required<TaskChecklist>>(EMPTY_CHECKLIST);
   const [isCrossAppOpen, setCrossAppOpen] = useState(false);
   const [isCrossAppActive, setCrossAppActive] = useState(false);
   const [isCompleteOpen, setCompleteOpen] = useState(false);
@@ -79,6 +87,13 @@ function FocusSessionContent() {
         const storedElapsed = getStoredElapsedSeconds(taskId);
         setElapsed(storedElapsed ?? found.secondsCompleted);
         setTargetSeconds(found.estimatedMinutes * 60);
+        setChecklist({
+          readNCRT: found.readNCRT ?? false,
+          watchLecture: found.watchLecture ?? false,
+          solveExample: found.solveExample ?? false,
+          attemptProblems: found.attemptProblems ?? false,
+          selfQuiz: found.selfQuiz ?? false,
+        });
       })
       .catch(() => {
         // Best-effort — the page falls back to the placeholder session below.
@@ -143,14 +158,22 @@ function FocusSessionContent() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [taskId]);
 
-  const toggleTask = (id: string) => {
-    setChecklist((current) =>
-      current.map((task) => (task.id === id ? { ...task, done: !task.done } : task)),
-    );
+  const toggleTask = (field: keyof TaskChecklist) => {
+    const nextChecklist = { ...checklist, [field]: !checklist[field] };
+    setChecklist(nextChecklist);
+    if (!taskId) return;
+    updatePlannerTask(taskId, {
+      secondsCompleted: elapsed,
+      status: "IN_PROGRESS",
+      isStudyingCrossApp: false,
+      ...nextChecklist,
+    }).catch(() => {
+      // Best-effort — the checklist still reflects the local toggle.
+    });
   };
 
-  const completedCount = checklist.filter((task) => task.done).length;
-  const percent = Math.round((completedCount / checklist.length) * 100);
+  const completedCount = Object.values(checklist).filter(Boolean).length;
+  const percent = Math.round((completedCount / CHECKLIST_ITEMS.length) * 100);
 
   const handleComplete = () => {
     resolvedRef.current = true;
@@ -159,6 +182,7 @@ function FocusSessionContent() {
         secondsCompleted: elapsed,
         status: "COMPLETED",
         isStudyingCrossApp: false,
+        ...checklist,
       }).catch(() => {
         // Best-effort — the completion modal still reflects the local session.
       });
@@ -194,6 +218,7 @@ function FocusSessionContent() {
         secondsCompleted: elapsed,
         status: "IN_PROGRESS",
         isStudyingCrossApp: false,
+        ...checklist,
       }).catch(() => {
         // Best-effort — the user still leaves the session.
       });
@@ -282,10 +307,10 @@ function FocusSessionContent() {
           </p>
 
           <div className="mt-4 flex justify-center gap-2">
-            {checklist.map((task) => (
+            {CHECKLIST_ITEMS.map((item) => (
               <span
-                key={task.id}
-                className={`h-4 w-4 rounded-full ${task.done
+                key={item.field}
+                className={`h-4 w-4 rounded-full ${checklist[item.field]
                   ? "bg-[#10B981] shadow-[0_0_8.6px_0_#FD786358]"
                   : isDark
                     ? "bg-white/20"
@@ -296,7 +321,7 @@ function FocusSessionContent() {
           </div>
 
           <p className="mt-3 text-xs font-semibold uppercase leading-[14.4px] tracking-[0.6px] text-muted">
-            {completedCount} of {checklist.length} completed
+            {completedCount} of {CHECKLIST_ITEMS.length} completed
           </p>
         </div>
 
@@ -310,35 +335,38 @@ function FocusSessionContent() {
         </div>
 
         <div className="mt-4 flex flex-col gap-4">
-          {checklist.map((task) => (
-            <button
-              key={task.id}
-              type="button"
-              onClick={() => toggleTask(task.id)}
-              aria-pressed={task.done}
-              className={`flex items-center gap-4 rounded-xl border p-4 text-left transition-opacity ${task.done ? "opacity-70" : "opacity-100"
-                } ${isDark ? "border-white/10 bg-tint" : "border-[#C7C5D1]/30 bg-white"}`}
-            >
-              <span
-                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-[4px] ${task.done
-                  ? isDark
-                    ? "border border-white bg-white text-[#10B981]"
-                    : "bg-[#E7F9F3] text-[#10B981]"
-                  : isDark
-                    ? "border border-white bg-white"
-                    : "border border-[#C7C5D1]"
-                  }`}
+          {CHECKLIST_ITEMS.map((item) => {
+            const done = checklist[item.field];
+            return (
+              <button
+                key={item.field}
+                type="button"
+                onClick={() => toggleTask(item.field)}
+                aria-pressed={done}
+                className={`flex items-center gap-4 rounded-xl border p-4 text-left transition-opacity ${done ? "opacity-70" : "opacity-100"
+                  } ${isDark ? "border-white/10 bg-tint" : "border-[#C7C5D1]/30 bg-white"}`}
               >
-                {task.done && <CheckIcon />}
-              </span>
-              <span
-                className={`text-sm font-medium leading-[21px] text-body-text ${task.done ? "line-through" : ""
-                  }`}
-              >
-                {task.label}
-              </span>
-            </button>
-          ))}
+                <span
+                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-[4px] ${done
+                    ? isDark
+                      ? "border border-white bg-white text-[#10B981]"
+                      : "bg-[#E7F9F3] text-[#10B981]"
+                    : isDark
+                      ? "border border-white bg-white"
+                      : "border border-[#C7C5D1]"
+                    }`}
+                >
+                  {done && <CheckIcon />}
+                </span>
+                <span
+                  className={`text-sm font-medium leading-[21px] text-body-text ${done ? "line-through" : ""
+                    }`}
+                >
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         <div className="mt-6 flex flex-col gap-6">
@@ -393,7 +421,7 @@ function FocusSessionContent() {
         topic={task?.title ?? "Electrochemistry"}
         minutesStudied={Math.ceil(elapsed / 60)}
         milestonesCompleted={completedCount}
-        milestonesTotal={checklist.length}
+        milestonesTotal={CHECKLIST_ITEMS.length}
       />
       <LeaveSessionModal
         open={isLeaveConfirmOpen}

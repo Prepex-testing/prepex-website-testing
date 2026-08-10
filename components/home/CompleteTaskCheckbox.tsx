@@ -10,6 +10,8 @@ type CompleteTaskCheckboxProps = {
   title: string;
   secondsCompleted: number;
   isCompleted?: boolean;
+  /** Disables the (non-completed) checkbox — used once a task is SKIPPED. */
+  disabled?: boolean;
   /** Called after the task is successfully marked complete, so the parent list can refetch. */
   onCompleted?: () => void;
 };
@@ -20,6 +22,7 @@ export function CompleteTaskCheckbox({
   title,
   secondsCompleted,
   isCompleted,
+  disabled,
   onCompleted,
 }: CompleteTaskCheckboxProps) {
   const [isConfirmOpen, setConfirmOpen] = useState(false);
@@ -33,6 +36,18 @@ export function CompleteTaskCheckbox({
       >
         <CheckIcon className="h-3.5 w-3.5" />
       </span>
+    );
+  }
+
+  if (disabled) {
+    return (
+      <input
+        type="checkbox"
+        checked={false}
+        disabled
+        aria-label={`${title} skipped`}
+        className="h-5 w-5 shrink-0 cursor-not-allowed appearance-none rounded border border-[#333333] bg-transparent opacity-40 dark:border-[#8B8998]"
+      />
     );
   }
 

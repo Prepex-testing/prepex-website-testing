@@ -24,6 +24,7 @@ export type Task = {
   duration: string;
   estimatedMinutes: number;
   secondsCompleted?: number;
+  status?: string;
   timeSlot: string;
   scheduledRange?: string;
   hasResource: boolean;
@@ -46,7 +47,13 @@ export function TaskRow({
   const [done, setDone] = useState(false);
   const isStartPractice = task.type === "practice";
   const isStartRevision = task.type === "revision";
-  const displayLabel = task.isCompleted ? COMPLETED_ACTION_LABELS[task.type] : task.actionLabel;
+  const isSkipped = task.status === "SKIPPED";
+  const isActionDisabled = task.isCompleted || isSkipped;
+  const displayLabel = task.isCompleted
+    ? COMPLETED_ACTION_LABELS[task.type]
+    : isSkipped
+      ? "Skipped"
+      : task.actionLabel;
   const router = useRouter();
   return (
     <div
@@ -181,16 +188,16 @@ export function TaskRow({
           "
         >
           <Button
-            variant={task.isCompleted ? "secondary" : "outline"}
+            variant={isActionDisabled ? "secondary" : "outline"}
             size="sm"
-            disabled={task.isCompleted}
+            disabled={isActionDisabled}
             className={
-              task.isCompleted
+              isActionDisabled
                 ? "h-9! w-auto! min-w-[138px]! justify-center px-4! text-[12px]! leading-none! font-semibold! whitespace-nowrap! cursor-not-allowed! opacity-60! hover:bg-transparent! hover:border-current! hover:text-current! hover:shadow-none!"
                 : "h-9! w-auto! min-w-[138px]! justify-center gap-2.5! px-4! text-[14px]! leading-none! font-semibold! whitespace-nowrap!"
             }
             href={
-              task.isCompleted
+              isActionDisabled
                 ? undefined
                 : isStartRevision
                   ? `/revision-session?taskId=${task.id}`
@@ -208,6 +215,7 @@ export function TaskRow({
             title={task.title}
             secondsCompleted={task.secondsCompleted ?? 0}
             isCompleted={task.isCompleted}
+            disabled={isSkipped}
             onCompleted={onTaskChanged}
           />
 
@@ -219,12 +227,13 @@ export function TaskRow({
               subjectName: task.subjectName,
               chapterName: task.chapterName,
               type: task.type,
+              status: task.status,
               duration: task.duration,
               timeSlot: task.timeSlot,
             }}
             onTaskChanged={onTaskChanged}
             onReorder={() => router.push(`/home/today-plan?reorderTaskId=${task.id}`)}
-            disabled={task.isCompleted}
+            disabled={isActionDisabled}
           />
 
         </div>

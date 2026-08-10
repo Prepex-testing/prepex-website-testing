@@ -76,6 +76,7 @@ function toPlanTask(task: PlannerTask): PlanTask {
     estimatedMinutes: task.estimatedMinutes,
     secondsCompleted: task.secondsCompleted,
     taskOrder: task.taskOrder,
+    status: task.status,
     timeRange: task.scheduledStart && task.scheduledEnd
       ? `${task.scheduledStart} - ${task.scheduledEnd}`
       : formatWindow(task.suggestedWindow),
