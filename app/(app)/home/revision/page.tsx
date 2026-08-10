@@ -7,7 +7,6 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { useBeginPageTransition } from "@/components/layout/PageTransition";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { Container, BellIcon, ArrowLeftIcon } from "@/assets/icons";
 import {
@@ -136,7 +135,6 @@ function collectSubjectsByTab(data: RevisionOverview): SubjectsByTab {
 
 export default function RevisionPage() {
   const router = useRouter();
-  const beginExit = useBeginPageTransition();
   const [activeTab, setActiveTab] = useState<Tab>("due");
   const [activeSubjectId, setActiveSubjectId] = useState<number | "all">("all");
   const [activeStatus, setActiveStatus] = useState<TaskStatus | null>(null);
@@ -153,7 +151,6 @@ export default function RevisionPage() {
   // the timer from secondsCompleted — kept in one place so every entry point behaves the same.
   const handleStartRevision = (topic: RevisionTopic) => {
     if (!topic.taskId) return;
-    beginExit();
     router.push(`/revision-session?taskId=${topic.taskId}`);
   };
 

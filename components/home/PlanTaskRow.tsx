@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { useBeginPageTransition } from "@/components/layout/PageTransition";
 import { ClockIcon, CalendarIcon, GripVerticalIcon } from "@/components/ui/icons";
 import { TaskEditMenu } from "@/components/home/TaskEditMenu";
 import { CompleteTaskCheckbox } from "@/components/home/CompleteTaskCheckbox";
@@ -68,7 +67,6 @@ export function PlanTaskRow({
   onDragStart,
   onDrop,
 }: PlanTaskRowProps) {
-  const beginExit = useBeginPageTransition();
   const isStartPractice = task.type === "practice";
   const isStartRevision = task.type === "revision";
   const isSkipped = task.status === "SKIPPED";
@@ -178,7 +176,7 @@ export function PlanTaskRow({
               ? undefined
               : isStartPractice
                 ? onStartPractice
-                : beginExit
+                : undefined
           }
         >
           {displayLabel}
