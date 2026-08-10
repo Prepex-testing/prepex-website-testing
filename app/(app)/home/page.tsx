@@ -20,6 +20,9 @@ import {
   getTodayPlan,
   type PlannerTask,
   type TodayPlanResponse,
+  type StudyConsistency,
+  type StudyConsistencyDay,
+  getStudyConsistency,
 } from "@/lib/api/planner";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
@@ -37,6 +40,7 @@ import {
   XIcon,
 } from "@/components/ui/icons";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { useTheme } from "@/components/theme/ThemeProvider";
 
 const TASKS: Task[] = [
   {
@@ -127,22 +131,47 @@ const QUICK_ACCESS = [
   },
 ];
 
-type ConsistencyStatus = "completed" | "partial" | "missed";
+const CONSISTENCY_THEME = {
+  light: ["#eef0f8", "#c7cbe8", "#9aa0d1", "#5b62a8", "#1a1a4e"],
+  dark: ["#1c1c4a", "#2c2c66", "#4141a0", "#6d6dc4", "#a5a5e8"],
+};
 
-const CONSISTENCY_DAYS = ["M", "T", "W", "T", "F", "S", "S"];
+const CONSISTENCY_WEEKDAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
 
-const CONSISTENCY_DATA: ConsistencyStatus[][] = [
-  ["completed", "completed", "partial", "missed", "completed", "missed", "missed"],
-  ["completed", "completed", "completed", "partial", "completed", "missed", "missed"],
-  ["partial", "completed", "completed", "completed", "partial", "missed", "missed"],
-  ["completed", "partial", "completed", "completed", "completed", "missed", "missed"],
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
 ];
 
-const CONSISTENCY_STYLES: Record<ConsistencyStatus, string> = {
-  completed: "bg-ink",
-  partial: "bg-consistency-partial",
-  missed: "bg-consistency-missed",
-};
+/** Buckets a 0-100 daily completion percentage into the calendar's 5 activity levels. */
+function toActivityLevel(percentage: number): number {
+  if (percentage <= 0) return 0;
+  if (percentage < 25) return 1;
+  if (percentage < 50) return 2;
+  if (percentage < 75) return 3;
+  return 4;
+}
+
+/**
+ * Chunks days into Monday-start week rows, padding the first/last week with
+ * nulls so each date lands under the correct weekday column.
+ */
+function groupConsistencyByWeek(days: StudyConsistencyDay[]): (StudyConsistencyDay | null)[][] {
+  if (days.length === 0) return [];
+
+  const [firstYear, firstMonth, firstDate] = days[0].date.split("-").map(Number);
+  const firstWeekday = (new Date(firstYear, firstMonth - 1, firstDate).getDay() + 6) % 7; // Mon=0..Sun=6
+
+  const cells: (StudyConsistencyDay | null)[] = [
+    ...Array<null>(firstWeekday).fill(null),
+    ...days,
+  ];
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const weeks: (StudyConsistencyDay | null)[][] = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+  return weeks;
+}
 
 const TASK_TYPE_STYLE: Record<string, TaskType> = {
   PRACTICE: "practice",
@@ -157,6 +186,7 @@ const TASK_ACTION_LABEL: Record<string, string> = {
   LEARNING: "Start Session",
   WELLNESS: "Start Session",
 };
+
 
 function formatWindow(window: string | null | undefined) {
   if (!window) return "";
@@ -181,7 +211,7 @@ function toHomeTask(task: PlannerTask): Task {
     scheduledRange: task.scheduledStart && task.scheduledEnd
       ? `${task.scheduledStart} - ${task.scheduledEnd}`
       : undefined,
-    hasResource: Boolean(task.chapter),
+      hasResource: Boolean(task.chapter),
     actionLabel: withResumeLabel(TASK_ACTION_LABEL[task.taskType] ?? "Start Session", task.status),
     isCompleted: task.status === "COMPLETED",
     isCustom: Boolean(task.isAnchor),
@@ -206,6 +236,8 @@ function getIsFridayServerSnapshot() {
 
 export default function HomePage() {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const storedFullName = useStoredFullName();
   const firstName = storedFullName.trim().split(/\s+/)[0] || "there";
   const [isQuickFocusOpen, setQuickFocusOpen] = useState(false);
@@ -225,14 +257,26 @@ export default function HomePage() {
     getIsFridaySnapshot,
     getIsFridayServerSnapshot,
   );
-
+  
   const refetchPlan = () => {
     getTodayPlan()
-      .then(({ data }) => setPlanData(data))
-      .catch(() => {
-        // Best-effort — the page falls back to the placeholder plan below.
-      });
+    .then(({ data }) => setPlanData(data))
+    .catch(() => {
+      // Best-effort — the page falls back to the placeholder plan below.
+    });
   };
+  
+  const [consistency, setConsistency] = useState<StudyConsistency | null>(null);
+
+  useEffect(() => {
+    getStudyConsistency()
+      .then(({ data }) => setConsistency(data))
+      .catch(console.error);
+  }, []);
+
+  const consistencyWeeks = groupConsistencyByWeek(consistency?.days ?? []);
+  const consistencyMonthName = consistency ? MONTH_NAMES[consistency.month - 1] ?? "" : "";
+  const consistencyColors = CONSISTENCY_THEME[isDark ? "dark" : "light"];
 
   const refetchCheckInStatus = () => {
     getCheckInStatus()
@@ -579,55 +623,66 @@ export default function HomePage() {
               <BackIcon className="h-[10px] w-[6px] shrink-0 text-secondary sm:h-[12px] sm:w-[7.4px]" />
             </div>
 
-            <div className="mt-4 grid grid-cols-[36px_repeat(7,1fr)] items-center gap-x-1.5 sm:grid-cols-[48px_repeat(7,1fr)] sm:gap-x-2.5">
-              <span />
-              {CONSISTENCY_DAYS.map((day, dayIndex) => (
-                <span
-                  key={dayIndex}
-                  className="text-center text-caption text-[#94A3B8]"
-                >
-                  {day}
-                </span>
-              ))}
-            </div>
-
-            <div className="mt-2 flex flex-col gap-2 sm:gap-2.5">
-              {CONSISTENCY_DATA.map((week, weekIndex) => (
-                <div
-                  key={weekIndex}
-                  className="grid grid-cols-[36px_repeat(7,1fr)] items-center gap-x-1.5 sm:grid-cols-[48px_repeat(7,1fr)] sm:gap-x-2.5"
-                >
-                  <span className="text-caption text-[#94A3B8]">
-                    Week {weekIndex + 1}
-                  </span>
-
-                  {week.map((status, dayIndex) => (
-                    <span key={dayIndex} className="flex justify-center">
-                      <span
-                        className={`aspect-square w-full max-w-[26px] rounded-lg ${CONSISTENCY_STYLES[status]}`}
-                      />
+            {consistency ? (
+              <>
+                <div className="mt-3 grid grid-cols-7 gap-1">
+                  {CONSISTENCY_WEEKDAY_LABELS.map((day, index) => (
+                    <span
+                      key={index}
+                      className="text-center text-caption text-[#94A3B8]"
+                    >
+                      {day}
                     </span>
                   ))}
                 </div>
-              ))}
-            </div>
 
-            <div className="mt-6 flex items-center justify-between text-xs text-muted">
-              <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-ink" />
-                Complete
-              </span>
+                <div className="mt-1.5 flex flex-col gap-1">
+                  {consistencyWeeks.map((week, weekIndex) => (
+                    <div
+                      key={weekIndex}
+                      className="grid grid-cols-7 gap-1"
+                    >
+                      {week.map((day, dayIndex) => (
+                        <span key={dayIndex} className="flex justify-center">
+                          <span
+                            title={
+                              day
+                                ? `${day.dayCompletionPercentage}% completed on ${day.date}`
+                                : undefined
+                            }
+                            className="aspect-square w-full max-w-4.5 rounded-md"
+                            style={{
+                              backgroundColor: day
+                                ? consistencyColors[toActivityLevel(day.dayCompletionPercentage)]
+                                : "transparent",
+                            }}
+                          />
+                        </span>
+                      ))}
+                    </div>
+                  ))}
+                </div>
 
-              <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-consistency-partial" />
-                Partial
-              </span>
-
-              <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-consistency-missed" />
-                Missed
-              </span>
-            </div>
+                <div className="mt-3 flex items-center justify-between text-xs text-muted">
+                  <span>{consistencyMonthName}</span>
+                  <span className="flex items-center gap-1.5">
+                    Less
+                    {consistencyColors.map((color, index) => (
+                      <span
+                        key={index}
+                        className="h-2.5 w-2.5 rounded-sm"
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                    More
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="mt-4 flex h-32 items-center justify-center text-xs text-muted">
+                Loading...
+              </div>
+            )}
           </div>
         </div>
       </div>

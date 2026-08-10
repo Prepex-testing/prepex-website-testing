@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ClockIcon, SunIcon, FileIcon, CalendarIcon } from "@/components/ui/icons";
 import { TaskEditMenu } from "@/components/home/TaskEditMenu";
@@ -41,6 +42,7 @@ export function TaskRow({
   onStartPractice,
   onTaskChanged,
 }: TaskRowProps) {
+  const router = useRouter();
   const isStartPractice = task.type === "practice";
   const isStartRevision = task.type === "revision";
   const displayLabel = task.isCompleted ? COMPLETED_ACTION_LABELS[task.type] : task.actionLabel;
@@ -220,6 +222,7 @@ export function TaskRow({
               timeSlot: task.timeSlot,
             }}
             onTaskChanged={onTaskChanged}
+            onReorder={() => router.push(`/home/today-plan?reorderTaskId=${task.id}`)}
             disabled={task.isCompleted}
           />
 
