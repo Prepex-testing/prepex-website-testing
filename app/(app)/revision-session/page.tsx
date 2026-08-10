@@ -7,6 +7,7 @@ import { useTheme } from "@/components/theme/ThemeProvider";
 import { FileIcon, PlayIcon, Open, ArrowLeftIcon, LightbulbIcon } from "@/assets/icons";
 import { updateRevisionProgress, markRevisionDone } from "@/lib/api/revision";
 import { getPlannerTask, type PlannerTaskDetail } from "@/lib/api/planner";
+import { useBeginPageTransition } from "@/components/layout/PageTransition";
 import { useRevisionSession } from "@/components/session/RevisionSessionProvider";
 import { formatClock } from "@/lib/utils/datetime";
 
@@ -34,6 +35,7 @@ export default function RevisionSessionPage() {
 
 function RevisionSessionContent() {
   const router = useRouter();
+  const beginExit = useBeginPageTransition();
   const searchParams = useSearchParams();
   const revisionId = searchParams.get("taskId");
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -122,13 +124,15 @@ function RevisionSessionContent() {
         // mark-done already told the backend the session ended — no active
         // session is left to exit, so just clear local state (no API call).
         clearSession();
+        beginExit();
         router.push(`/revision-session/complete?taskId=${revisionId}`);
       }
     })();
-  }, [elapsedSeconds, estimatedMinutes, revisionId, clearSession, router]);
+  }, [elapsedSeconds, estimatedMinutes, revisionId, clearSession, router, beginExit]);
 
   const handleEndSession = async () => {
     if (!revisionId) {
+      beginExit();
       router.push("/revision-session/complete");
       return;
     }
@@ -143,6 +147,7 @@ function RevisionSessionContent() {
       // session is left to exit, so just clear local state (no API call).
       clearSession();
       setEnding(false);
+      beginExit();
       router.push(`/revision-session/complete?taskId=${revisionId}`);
     }
   };
@@ -189,6 +194,7 @@ function RevisionSessionContent() {
     try {
       await exitSession();
     } finally {
+      beginExit();
       router.push("/home/revision");
     }
   };

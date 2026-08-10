@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, MouseEventHandler, ReactNode } from "react";
 
 type Variant = "primary" | "secondary" | "task" | "outline";
 type Size = "sm" | "md";
@@ -36,20 +36,25 @@ export function Button({
   href,
   children,
   className = "",
+  onClick,
   ...props
 }: ButtonProps) {
   const classes = `${BASE_CLASSES} ${SIZE_CLASSES[size]} ${VARIANT_CLASSES[variant]} ${className}`;
 
   if (href) {
     return (
-      <Link href={href} className={classes}>
+      <Link
+        href={href}
+        className={classes}
+        onClick={onClick as unknown as MouseEventHandler<HTMLAnchorElement>}
+      >
         {children}
       </Link>
     );
   }
 
   return (
-    <button type="button" className={classes} {...props}>
+    <button type="button" className={classes} onClick={onClick} {...props}>
       {children}
     </button>
   );

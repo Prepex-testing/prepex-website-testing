@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useBeginPageTransition } from "@/components/layout/PageTransition";
 import { Logo } from "@/components/ui/Logo";
 import {
   HomeIcon,
@@ -66,6 +67,7 @@ export const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const beginExit = useBeginPageTransition();
 
   return (
     <aside className="hidden w-56 shrink-0 flex-col gap-8 border-r border-brand/10 bg-surface px-4 py-6 lg:flex">
@@ -84,6 +86,9 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => {
+                if (!active) beginExit();
+              }}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                 active
                   ? "bg-sidebar-active-bg text-sidebar-active-fg"

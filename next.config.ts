@@ -12,6 +12,15 @@ const svgrOptions = {
 };
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/stats",
+        destination: "/stats/effort",
+        permanent: false,
+      },
+    ];
+  },
   turbopack: {
     rules: {
       "*.svg": {

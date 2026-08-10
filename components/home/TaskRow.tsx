@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { useBeginPageTransition } from "@/components/layout/PageTransition";
 import { ClockIcon, SunIcon, FileIcon, CalendarIcon, CheckIcon } from "@/components/ui/icons";
 import { TaskEditMenu } from "@/components/home/TaskEditMenu";
 import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE } from "@/components/home/taskTypes";
@@ -37,6 +38,7 @@ export function TaskRow({
   onStartPractice,
 }: TaskRowProps) {
   const [done, setDone] = useState(false);
+  const beginExit = useBeginPageTransition();
 
   const isStartPractice = task.type === "practice";
   const isStartRevision = task.type === "revision";
@@ -192,7 +194,13 @@ export function TaskRow({
                     ? `/home/session?taskId=${task.id}`
                     : undefined
             }
-            onClick={task.isCompleted ? undefined : isStartPractice ? onStartPractice : undefined}
+            onClick={
+              task.isCompleted
+                ? undefined
+                : isStartPractice
+                  ? onStartPractice
+                  : beginExit
+            }
           >
             {displayLabel}
           </Button>

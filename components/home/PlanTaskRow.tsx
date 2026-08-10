@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { useBeginPageTransition } from "@/components/layout/PageTransition";
 import { ClockIcon, CalendarIcon, GripVerticalIcon, CheckIcon } from "@/components/ui/icons";
 import { TaskEditMenu } from "@/components/home/TaskEditMenu";
 import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE } from "@/components/home/TaskRow";
@@ -46,6 +47,7 @@ type PlanTaskRowProps = {
 
 export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
   const [done, setDone] = useState(false);
+  const beginExit = useBeginPageTransition();
   const isStartPractice = task.type === "practice";
   const isStartRevision = task.type === "revision";
   const displayLabel = task.isCompleted ? COMPLETED_ACTION_LABELS[task.type] : task.actionLabel;
@@ -129,7 +131,13 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
                   ? `/home/session?taskId=${task.id}`
                   : undefined
           }
-          onClick={task.isCompleted ? undefined : isStartPractice ? onStartPractice : undefined}
+          onClick={
+            task.isCompleted
+              ? undefined
+              : isStartPractice
+                ? onStartPractice
+                : beginExit
+          }
         >
           {displayLabel}
         </Button>
