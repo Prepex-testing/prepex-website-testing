@@ -527,3 +527,34 @@ input:is(
   caret-color: var(--ink);
   transition: background-color 9999s ease-in-out 0s;
 }
+
+/*
+ * WhiteModal's scroll panel (components/ui/WhiteModal.tsx): reserves a
+ * constant scrollbar gutter at all times so content never shifts when it
+ * fades in — only its color transitions, slowly, on hover/focus.
+ */
+.white-modal-scroll-panel {
+  scrollbar-gutter: stable both-edges;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 500ms ease;
+}
+.white-modal-scroll-panel:hover,
+.white-modal-scroll-panel:focus-within {
+  scrollbar-color: color-mix(in srgb, var(--muted) 55%, transparent) transparent;
+}
+.white-modal-scroll-panel::-webkit-scrollbar {
+  width: 6px;
+}
+.white-modal-scroll-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+.white-modal-scroll-panel::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 9999px;
+  transition: background-color 500ms ease;
+}
+.white-modal-scroll-panel:hover::-webkit-scrollbar-thumb,
+.white-modal-scroll-panel:focus-within::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--muted) 55%, transparent);
+}
