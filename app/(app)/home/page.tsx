@@ -103,28 +103,66 @@ const JOURNAL_STATS = [
   { value: "19", label: "Study Hours" },
 ];
 
+// TEMPORARY (current sprint): every Quick Access item except "Revision"
+// redirects to /development-in-progress while development focuses on Home.
+// Each overridden item's original `href` (or `isModal` trigger, for Quick
+// Focus) is commented alongside the override so it can be restored later.
 const QUICK_ACCESS = [
-  { href: "/practice/sessions", label: "Practice", subtitle: "Solve Questions", icon: <PencilIcon /> },
   {
-    href: "/home/mock-analysis",
+    // href: "/practice/sessions",
+    href: "/development-in-progress",
+    label: "Practice", subtitle: "Solve Questions", icon: <PencilIcon />
+  },
+  {
+    // href: "/home/mock-analysis",
+    href: "/development-in-progress",
     label: "Mock Test Analysis",
     subtitle: "Analyze & Improve",
     icon: <ChartBarIcon className="h-5 w-5" />,
   },
-  { href: "/home/mistake-notebook", label: "Mistake Notebook", icon: <BookIcon className="h-5 w-5" /> },
   {
-    href: "/home/focus-topic",
+    // href: "/home/mistake-notebook",
+    href: "/development-in-progress",
+    label: "Mistake Notebook", icon: <BookIcon className="h-5 w-5" />
+  },
+  {
+    // href: "/home/focus-topic",
+    href: "/development-in-progress",
     label: "This Week's Focus Topic",
     icon: <LayersIcon className="h-5 w-5" />,
   },
-  { href: "/home/focus-next", label: "Where to focus next", icon: <RadarIcon className="h-5 w-5" /> },
-  { href: "/home/partner", label: "Partner", icon: <UserIcon className="h-5 w-5" /> },
-  { href: "/home/leaderboard", label: "Leader Board", icon: <TrophyIcon className="h-5 w-5" /> },
-  { href: "/home/resource-library", label: "Resource Library", icon: <BriefcaseIcon className="h-5 w-5" /> },
-  { href: "/home/revision", label: "Revision", icon: <RevisionIcon className="h-5 w-5" /> },
-  { label: "Quick Focus", icon: <QuickIcon className="h-5 w-5" />, isModal: true },
   {
-    href: "/home/journal",
+    // href: "/home/focus-next",
+    href: "/development-in-progress",
+    label: "Where to focus next", icon: <RadarIcon className="h-5 w-5" />
+  },
+  {
+    // href: "/home/partner",
+    href: "/development-in-progress",
+    label: "Partner", icon: <UserIcon className="h-5 w-5" />
+  },
+  {
+    // href: "/home/leaderboard",
+    href: "/development-in-progress",
+    label: "Leader Board", icon: <TrophyIcon className="h-5 w-5" />
+  },
+  {
+    // href: "/home/resource-library",
+    href: "/development-in-progress",
+    label: "Resource Library", icon: <BriefcaseIcon className="h-5 w-5" />
+  },
+  { href: "/home/revision", label: "Revision", icon: <RevisionIcon className="h-5 w-5" /> },
+  {
+    // TEMPORARY: originally isModal: true (no href) — opened QuickFocusModal
+    // instead of navigating. Restore by removing href/isModal:false below
+    // and uncommenting isModal: true.
+    href: "/development-in-progress",
+    label: "Quick Focus", icon: <QuickIcon className="h-5 w-5" />,
+    isModal: false,
+  },
+  {
+    // href: "/home/journal",
+    href: "/development-in-progress",
     label: "Weekly Win Journal",
     subtitle: "Reflect & celebrate wins",
     icon: <PencilIcon />,
@@ -418,7 +456,8 @@ export default function HomePage() {
 
           {/* Streak Card */}
           <Link
-            href="/home/streak"
+            // href="/home/streak"
+            href="/development-in-progress"
             className="block rounded-2xl border border-brand/10 bg-surface p-4 transition-colors hover:border-brand/30 @4xl:p-6"
           >
             <div className="flex flex-row items-center justify-between gap-3 @4xl:gap-4">
@@ -785,7 +824,8 @@ export default function HomePage() {
           </div>
         </div>
         <Button
-          href="/home/backlog"
+          // href="/home/backlog"
+          href="/development-in-progress"
           variant="secondary"
           size="sm"
           className="w-full sm:w-auto sm:shrink-0 justify-center border! border-[#1A1A4E]! bg-white! text-[#1A1A4E]! shadow-[0px_1px_2px_0px_#0000000D] hover:bg-white! dark:border-transparent!"

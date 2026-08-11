@@ -89,7 +89,8 @@ export function UserMenu({ name, initial }: UserMenuProps) {
       "
         >
           <Link
-            href="/profile"
+            // href="/profile"
+            href="/development-in-progress"
             role="menuitem"
             onClick={() => setOpen(false)}
             className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-ink hover:bg-tint-strong"
