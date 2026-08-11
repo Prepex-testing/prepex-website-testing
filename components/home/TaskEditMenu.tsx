@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
-import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { PencilIcon, ListIcon, TrashIcon, MoreIcon, ArrowRightIcon } from "@/components/ui/icons";
 import type { TaskType } from "@/components/home/taskTypes";
 import { TYPE_LABELS } from "@/components/home/taskTypes";
 import { deletePlannerTask } from "@/lib/api/planner";
 import { skipRevisionTask } from "@/lib/api/revision";
+import { TaskConfirmModal } from "./TaskConfirmModal";
 
 const MENU_ITEMS = [
   { icon: <PencilIcon />, label: "Edit Task" },
@@ -186,11 +186,12 @@ export function TaskEditMenu({ task, onTaskChanged, onReorder, disabled }: TaskE
         }}
       />
 
-      <ConfirmModal
+      <TaskConfirmModal
         open={isDeleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
         onConfirm={handleDelete}
         title="Delete this task?"
+        subtitle={task.title}
         description="Are you sure you want to delete this task? This action cannot be undone."
         confirmLabel={isDeleting ? "Deleting..." : "Yes, Delete"}
       />
