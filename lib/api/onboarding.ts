@@ -1,7 +1,5 @@
 import { CORE_API_BASE_URL } from "@/lib/api/config";
-import { apiRequest, ApiError } from "@/lib/api/http";
-import { refreshAccessToken } from "@/lib/api/auth";
-import { getAccessToken, getRefreshToken, saveTokens, clearSession } from "@/lib/auth/session";
+import { authenticatedRequest } from "@/lib/api/authRequest";
 import type { SubjectChapters } from "@/lib/api/dashboard";
 
 export type OnboardingProgress = {
@@ -62,36 +60,12 @@ export function getOnboardingStepPath(step: number): string {
   return STEP_PATHS[step] ?? "/onboarding/preparing-for";
 }
 
-async function authRequest<T>(
+function authRequest<T>(
   path: string,
   options: RequestInit = {},
   basePath = "/api/onboarding",
 ): Promise<T> {
-  const url = `${CORE_API_BASE_URL}${basePath}${path}`;
-  const accessToken = getAccessToken();
-
-  try {
-    return await apiRequest<T>(url, {
-      ...options,
-      headers: { Authorization: `Bearer ${accessToken}`, ...options.headers },
-    });
-  } catch (err) {
-    if (!(err instanceof ApiError) || err.status !== 401) throw err;
-
-    const refreshToken = getRefreshToken();
-    if (!refreshToken) {
-      clearSession();
-      throw err;
-    }
-
-    const { data: newTokens } = await refreshAccessToken(refreshToken);
-    saveTokens(newTokens);
-
-    return apiRequest<T>(url, {
-      ...options,
-      headers: { Authorization: `Bearer ${newTokens.accessToken}`, ...options.headers },
-    });
-  }
+  return authenticatedRequest<T>(`${CORE_API_BASE_URL}${basePath}${path}`, options);
 }
 
 export function getOnboardingProgress() {
