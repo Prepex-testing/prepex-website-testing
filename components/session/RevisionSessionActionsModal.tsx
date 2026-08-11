@@ -67,7 +67,7 @@ export function RevisionSessionActionsModal({ open, onClose, onExited }: Revisio
         </Button>
         <Button
           variant="secondary"
-          className="gap-2 border-danger! text-danger! hover:bg-danger-bg!"
+          className="gap-2 border-[#F59E0B]! text-[#F59E0B]! hover:bg-[#F59E0B33]!"
           onClick={handleExit}
           disabled={isExiting || isCompleting}
         >

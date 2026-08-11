@@ -18,13 +18,13 @@ const SIZE_CLASSES: Record<NonNullable<WhiteModalProps["size"]>, string> = {
 };
 
 /**
- * Same behavior as `Modal`, but the panel (`.white-modal-panel` in
- * app/globals.css) carries its own pinned copy of the theme tokens (light
- * values by default, dark values under [data-theme="dark"]) instead of
- * inheriting whatever `<html>` currently has — so it stays visually
- * consistent (flat white in light mode, dark surface in dark mode) regardless
- * of any ancestor override. `CheckInModal` and `GoalSettingModal` are
- * intentionally excluded and keep using `Modal`.
+ * Same behavior as `Modal`, but with a 16px panel radius at every breakpoint.
+ * The panel's colors (`bg-surface` etc.) resolve through the same light/dark
+ * tokens already defined in app/globals.css (`:root` / `[data-theme="dark"]`)
+ * via normal CSS inheritance — no separate token copy needed here. Scrollbar
+ * styling for `.white-modal-scroll-panel` also lives in app/globals.css.
+ * `CheckInModal` and `GoalSettingModal` are intentionally excluded and keep
+ * using `Modal`.
  */
 export function WhiteModal({ open, onClose, ariaLabel, children, size = "md" }: WhiteModalProps) {
   useEffect(() => {
@@ -49,7 +49,7 @@ export function WhiteModal({ open, onClose, ariaLabel, children, size = "md" }: 
       onClick={onClose}
     >
       <div
-        className={`white-modal-panel white-modal-scroll-panel w-[calc(100vw-2rem)] max-h-[85vh] overflow-y-auto rounded-2xl bg-surface p-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-modal sm:w-full sm:rounded-3xl sm:p-8 sm:pb-10 ${SIZE_CLASSES[size]}`}
+        className={`white-modal-scroll-panel w-[calc(100vw-2rem)] max-h-[85vh] overflow-y-auto rounded-2xl bg-surface p-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-modal sm:w-full sm:p-8 sm:pb-10 ${SIZE_CLASSES[size]}`}
         onClick={(event) => event.stopPropagation()}
       >
         {children}
