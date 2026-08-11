@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { MinusIcon, PencilIcon, PlusIcon, XIcon } from "@/components/ui/icons";
 import { addPlannerTask, editPlannerTask, type SuggestedWindow } from "@/lib/api/planner";
+import { getCheckInStatus } from "@/lib/api/checkin";
 import {
   getSubjectsChapters,
   type SubjectWithChapters,
@@ -31,7 +33,7 @@ const SUGGESTED_WINDOW_VALUES: Record<string, SuggestedWindow> = {
 
 const DURATION_STEP_MINUTES = 5;
 const MIN_DURATION_MINUTES = 5;
-const MAX_DURATION_MINUTES = 300;
+const MAX_DURATION_MINUTES = 1400;
 
 const TIME_PREFERENCE_OPTIONS = [
   { value: "morning", label: "Morning (5-11 AM)" },
@@ -99,7 +101,20 @@ export function AddCustomTaskModal({
   const [isLoadingChapters, setLoadingChapters] = useState(false);
   const [isSubmitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dailyTargetMinutes, setDailyTargetMinutes] = useState<number | null>(null);
+  const [isDurationConfirmOpen, setDurationConfirmOpen] = useState(false);
   const isEdit = mode === "edit";
+
+  // Daily target study hours, used to warn when this task's duration alone
+  // would exceed the student's whole-day target.
+  useEffect(() => {
+    if (!open) return;
+    getCheckInStatus()
+      .then(({ data }) => setDailyTargetMinutes(data.dailyHours != null ? data.dailyHours * 60 : null))
+      .catch(() => {
+        // Best-effort — the duration warning just won't show if this fails.
+      });
+  }, [open]);
 
   // The API returns every subject with its own chapters nested — fetched once
   // per open, then subject selection filters the already-loaded chapters
@@ -145,7 +160,21 @@ export function AddCustomTaskModal({
     });
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
+    const exceedsDailyTarget = dailyTargetMinutes != null && Number(durationValue) > dailyTargetMinutes;
+    if (exceedsDailyTarget) {
+      setDurationConfirmOpen(true);
+      return;
+    }
+    performSubmit();
+  };
+
+  const handleProceedAnyway = () => {
+    setDurationConfirmOpen(false);
+    performSubmit();
+  };
+
+  const performSubmit = async () => {
     if (isEdit) {
       if (!taskId || !taskName.trim()) return;
 
@@ -308,7 +337,6 @@ export function AddCustomTaskModal({
               <button
                 type="button"
                 onClick={() => adjustDuration(DURATION_STEP_MINUTES)}
-                disabled={Number(durationValue) >= MAX_DURATION_MINUTES}
                 aria-label="Increase duration"
                 className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30"
               >
@@ -355,6 +383,16 @@ export function AddCustomTaskModal({
           {isSubmitting ? (isEdit ? "Saving..." : "Adding...") : isEdit ? "Save Changes" : "Add Task"}
         </Button>
       </div>
+
+      <ConfirmModal
+        open={isDurationConfirmOpen}
+        onClose={() => setDurationConfirmOpen(false)}
+        onConfirm={handleProceedAnyway}
+        title="Exceeds daily target"
+        description="Task duration is exceeding your daily target study hours."
+        confirmLabel="Proceed"
+        cancelLabel="Reduce Duration"
+      />
     </Modal>
   );
 }
