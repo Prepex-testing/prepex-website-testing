@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ButtonHTMLAttributes, MouseEventHandler, ReactNode } from "react";
 
-type Variant = "primary" | "secondary" | "task" | "outline";
+type Variant = "primary" | "secondary" | "task" | "outline" | "danger";
 type Size = "sm" | "md";
 
 const BASE_CLASSES =
@@ -20,6 +20,8 @@ const VARIANT_CLASSES: Record<Variant, string> = {
   task: "border border-[var(--button-border)] bg-surface text-body-text hover:border-cta hover:bg-cta hover:text-white active:border-cta active:bg-cta active:text-white",
   outline:
   "border border-[#1A1A4E] bg-surface text-[#1A1A4E] hover:border-[#FF7A59] hover:bg-[#FF7A59] hover:text-white dark:border-[#FAF7F2] dark:text-[#FAF7F2] dark:hover:border-[#FF7A59] dark:hover:bg-[#FF7A59] dark:hover:text-white",
+  danger:
+  "border border-[#F59E0B] bg-surface text-[#F59E0B] hover:bg-[#F59E0B] hover:text-white",
 };
 
 type ButtonProps = {

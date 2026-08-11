@@ -50,10 +50,13 @@ export function Modal({ open, onClose, ariaLabel, children, size = "md" }: Modal
         Panel scrollbar reserves a constant width at all times (never toggled
         on/off), so text/content never shifts when it fades in — only its
         color transitions, slowly, on hover/focus. Scrolling always works.
+        `both-edges` reserves that gutter symmetrically on left and right so
+        full-bleed children (e.g. AddCustomTaskModal's header/footer) don't
+        end up lopsided from the scrollbar-side inset alone.
       */}
       <style>{`
         .modal-scroll-panel {
-          scrollbar-gutter: stable;
+          scrollbar-gutter: stable both-edges;
           scrollbar-width: thin;
           scrollbar-color: transparent transparent;
           transition: scrollbar-color 500ms ease;

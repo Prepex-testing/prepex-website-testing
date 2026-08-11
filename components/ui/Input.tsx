@@ -33,10 +33,9 @@ export function Input({
       <label
         htmlFor={inputId}
         className="
-          text-[15px] font-bold leading-none
+          text-body-lg font-medium leading-none
           text-body-text
           dark:text-ink
-          sm:text-[16px]
         "
       >
         {label}
@@ -53,8 +52,8 @@ export function Input({
       {/* Input Box */}
       <div
         className="
-    flex h-14 w-full min-w-0 items-center gap-3
-    rounded-2xl
+    flex h-12.25 w-full min-w-0 items-center gap-3
+    rounded-xl
     border
     border-input-border
     bg-surface
@@ -74,7 +73,7 @@ export function Input({
           type={resolvedType}
           required={required}
           spellCheck={false}
-          className="min-w-0 flex-1 bg-transparent text-[16px] font-semibold leading-none text-ink outline-none placeholder:font-normal placeholder:text-[#666666]"
+          className="min-w-0 flex-1 bg-transparent text-body-lg font-semibold leading-none text-ink outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-5.25 placeholder:text-body-text dark:placeholder:text-ink"
           {...props}
         />
 

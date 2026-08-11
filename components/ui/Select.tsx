@@ -23,7 +23,7 @@ export function Select({
   id,
   value,
   defaultValue,
-  labelClassName = "text-[14px] font-semibold leading-[20px] text-ink",
+  labelClassName = "text-body-lg font-medium leading-5 text-body-text dark:text-ink",
   ...props
 }: SelectProps) {
   const generatedId = useId();
@@ -43,7 +43,7 @@ export function Select({
         <select
           id={selectId}
           {...uncontrolledProps}
-          className="w-full appearance-none rounded-xl border border-brand/15 bg-surface px-4 py-3 pr-9 text-sm text-body-text outline-none focus:border-focus-ring"
+          className="h-11.75 w-full appearance-none rounded-xl border border-input-border bg-surface px-4 py-3 pr-9 text-sm text-primary outline-none focus:border-focus-ring"
           {...props}
         >
           {placeholder && (
@@ -57,7 +57,7 @@ export function Select({
             </option>
           ))}
         </select>
-        <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+        <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 h-6 w-3 -translate-y-1/2 text-muted" />
       </div>
     </div>
   );
