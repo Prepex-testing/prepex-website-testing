@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { MinusIcon, PencilIcon, PlusIcon, XIcon } from "@/components/ui/icons";
+import { EditIcon, MinusIcon, PencilIcon, PlusIcon, XIcon } from "@/components/ui/icons";
 import { addPlannerTask, editPlannerTask, type SuggestedWindow } from "@/lib/api/planner";
 import { getCheckInStatus } from "@/lib/api/checkin";
 import {
@@ -231,72 +231,107 @@ export function AddCustomTaskModal({
       ariaLabel={isEdit ? "Edit task" : "Add custom task"}
       size="lg"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-white">
-            {isEdit ? <PencilIcon /> : <PlusIcon />}
-          </span>
-          <div className="min-w-0">
-            <h2 className="text-h2 text-ink">
-              {isEdit ? "Edit Task" : "Add Custom Task"}
+      {/* HEADER */}
+      <div className="-mx-5 -mt-5 flex w-[calc(100%+2.5rem)] shrink-0 items-start justify-between gap-3 border-b border-brand/10 px-4 py-4 sm:-mx-8 sm:-mt-8 sm:w-[calc(100%+4rem)] sm:px-6 sm:py-5 lg:px-8 lg:py-6">
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand sm:size-11">
+            {isEdit ? <EditIcon /> : <PlusIcon />}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-base font-bold leading-5 text-ink sm:text-lg sm:leading-[22px] lg:text-[22px] lg:leading-[22px]">
+              {isEdit ? "Edit Task" : "Add to today, tomorrow, or any future day"}
             </h2>
-            <p className="text-sm text-muted">
+
+            <p className="mt-1 truncate text-[11px] font-normal leading-4 text-muted sm:text-xs sm:leading-[18px] lg:text-sm">
               {isEdit ? "Update the details for this task" : "Structure your study plan with precision"}
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
-        >
-          <XIcon />
+
+        <button type="button" onClick={onClose} aria-label="Close" className="flex size-10 shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-tint-strong">
+          <XIcon className="size-3.5 sm:size-4" />
         </button>
       </div>
 
-      <div className="mt-5 flex flex-col gap-4">
-        <Input
-          label="Task Name"
-          name="taskName"
-          placeholder="e.g. Watch PW lecture on Friction"
-          value={taskName}
-          onChange={(event) => setTaskName(event.target.value)}
-        />
+      {/* BODY */}
+      <div className="-mx-5 w-[calc(100%+2.5rem)] px-4 py-5 sm:-mx-8 sm:w-[calc(100%+4rem)] sm:px-6 sm:py-6 lg:px-8 lg:py-6">
+        <div className="flex w-full flex-col gap-4">
+          <Input
+            label="Task Name"
+            name="taskName"
+            placeholder="e.g. Watch PW lecture on Friction"
+            value={taskName}
+            onChange={(event) => setTaskName(event.target.value)}
+          />
 
-        {isEdit ? (
-          <div>
-            <p className="text-sm font-semibold text-ink">Task Type</p>
-            <div className="mt-1">
-              <span className="inline-flex rounded-full border border-brand bg-brand px-4 py-2 text-sm font-semibold text-white">
-                {taskType}
-              </span>
-            </div>
+          {/* Subject + Topic */}
+          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+            {isEdit ? (
+              <StaticField label="Subject" value={initialValues?.subjectValue ?? ""} />
+            ) : (
+              <Select
+                label="Subject"
+                options={subjects.map((subject) => ({ value: String(subject.id), label: subject.name }))}
+                value={subjectId != null ? String(subjectId) : ""}
+                onChange={(event) => setSubjectId(Number(event.target.value))}
+                placeholder="Subject"
+              />
+            )}
+
+            {isEdit ? (
+              <div className="flex w-full min-w-0 flex-col gap-1">
+                <label className="text-[14px] font-semibold leading-[20px] text-ink">Topic</label>
+
+                <div className="flex min-h-[46px] w-full min-w-0 items-center rounded-xl border border-brand/15 bg-surface px-3 py-2" title={initialValues?.topicValue ?? ""}>
+                  <span className="min-w-0 break-words line-clamp-2 text-sm font-medium leading-5 text-body-text">
+                    {initialValues?.topicValue || "—"}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <Select
+                label="Topic"
+                options={chapters.map((chapter) => ({ value: chapter.id, label: chapter.name }))}
+                value={chapterId}
+                onChange={(event) => setChapterId(event.target.value)}
+                placeholder={isLoadingChapters ? "Loading chapters..." : "Topic"}
+              />
+            )}
           </div>
-        ) : (
-          !lockedTaskType && (
+
+          {/* Task Type */}
+          {isEdit ? (
             <div>
               <p className="text-sm font-semibold text-ink">Task Type</p>
-              <div className="mt-1 flex flex-wrap gap-2">
-                {TASK_TYPES.map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => setTaskType(type)}
-                    aria-pressed={taskType === type}
-                    className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
-                      taskType === type
-                        ? "border-brand bg-brand text-white"
-                        : "border-brand/15 text-body-text hover:bg-tint-strong"
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
+
+              <div className="mt-1">
+                <span className="inline-flex rounded-full border border-brand bg-brand px-4 py-2 text-sm font-semibold text-white">
+                  {taskType}
+                </span>
               </div>
             </div>
-          )
-        )}
+          ) : (
+            !lockedTaskType && (
+              <div>
+                <p className="text-sm font-semibold text-ink">Task Type</p>
+
+                <div className="mt-1 flex flex-wrap gap-2">
+                  {TASK_TYPES.map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setTaskType(type)}
+                      aria-pressed={taskType === type}
+                      className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${taskType === type ? "border-brand bg-brand text-white" : "border-brand/15 text-body-text hover:bg-tint-strong"}`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )
+          )}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {isEdit ? (
@@ -337,6 +372,7 @@ export function AddCustomTaskModal({
               <button
                 type="button"
                 onClick={() => adjustDuration(DURATION_STEP_MINUTES)}
+                disabled={Number(durationValue) >= MAX_DURATION_MINUTES}
                 aria-label="Increase duration"
                 className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30"
               >
@@ -353,33 +389,33 @@ export function AddCustomTaskModal({
           />
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label htmlFor="task-notes" className="text-sm font-semibold text-ink">
-            Additional Notes <span className="font-normal text-muted">(optional)</span>
-          </label>
-          <textarea
-            id="task-notes"
-            rows={3}
-            placeholder="Specific focus areas, resources to use..."
-            value={notes}
-            onChange={(event) => setNotes(event.target.value)}
-            className="mt-1 w-full resize-none rounded-xl border border-brand/15 bg-surface px-4 py-3 text-sm text-body-text outline-none placeholder:text-muted/70 focus:border-focus-ring"
-          />
-        </div>
+          {/* Additional Notes */}
+          <div className="flex w-full flex-col gap-1">
+            <label htmlFor="task-notes" className="text-sm font-semibold text-ink">
+              Additional Notes <span className="font-normal text-muted">(optional)</span>
+            </label>
 
-        {error && <p className="text-sm text-danger">{error}</p>}
+            <textarea
+              id="task-notes"
+              rows={3}
+              placeholder="Specific focus areas, resources to use..."
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+              className="mt-1 w-full resize-none rounded-xl border border-brand/15 bg-surface px-4 py-3 text-sm text-body-text outline-none placeholder:text-muted/70 focus:border-focus-ring"
+            />
+          </div>
+
+          {error && <p className="text-sm text-danger">{error}</p>}
+        </div>
       </div>
 
-      <div className="mt-6 flex items-center justify-end gap-3">
-        <Button variant="secondary" size="sm" onClick={onClose}>
+      {/* FOOTER */}
+      <div className="-mx-5 -mb-5 flex min-h-[103px] w-[calc(100%+2.5rem)] shrink-0 flex-col-reverse gap-3 border-t border-brand/10 px-4 py-5 sm:-mx-8 sm:-mb-8 sm:w-[calc(100%+4rem)] sm:flex-row sm:items-center sm:justify-end sm:gap-4 sm:px-6 sm:py-6 lg:px-8">
+        <Button variant="secondary" size="sm" onClick={onClose} className="w-full sm:w-auto">
           Cancel
         </Button>
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={handleSubmit}
-          disabled={isSubmitting || !taskName.trim()}
-        >
+
+        <Button variant="primary" size="sm" onClick={handleSubmit} disabled={isSubmitting || !taskName.trim()} className="w-full sm:w-auto">
           {isSubmitting ? (isEdit ? "Saving..." : "Adding...") : isEdit ? "Save Changes" : "Add Task"}
         </Button>
       </div>

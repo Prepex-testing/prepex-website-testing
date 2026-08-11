@@ -14,6 +14,7 @@
   --brand: #1a1a4e;
   --body-text: #333333;
   --muted: #94A3B8;
+  --muteds:#333333;
   --cta: #FF7A59;
   --tint: #eff2fe;
   --tint-strong: #eef0f8;
@@ -144,6 +145,7 @@
   --brand: #6d6dc4;
   --body-text: #e4e5f1;
   --muted: #8b8998;
+  --muteds: #8B8998;
   --cta: #FF7A59;
   --tint: #23234f;
   --tint-strong: #2b2b63;
@@ -274,6 +276,7 @@
   --color-brand: var(--brand);
   --color-body-text: var(--body-text);
   --color-muted: var(--muted);
+   --color-muteds: var(--muteds);
   --color-cta: var(--cta);
   --color-tint: var(--tint);
   --color-tint-strong: var(--tint-strong);

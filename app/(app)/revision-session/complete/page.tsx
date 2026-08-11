@@ -175,12 +175,12 @@ function RevisionCompleteContent() {
               How was this session?
             </h3>
 
-            <p className="w-full text-center text-sm font-medium leading-5 text-muted">
+            <p className="w-full text-center text-sm font-medium leading-5 text-[#666666]">
               Select the difficulty level to help us optimize your next revision
             </p>
           </div>
 
-          <div className="mt-4 grid w-full grid-cols-3 gap-2 sm:mt-6 sm:gap-4">
+          <div className="mt-4 grid w-full grid-cols-3 gap-1 sm:mt-5 sm:gap-3 md:gap-4">
             {DIFFICULTIES.map((option) => {
               const selected = difficulty === option;
 
@@ -190,19 +190,17 @@ function RevisionCompleteContent() {
                   type="button"
                   onClick={() => handleSelectDifficulty(option)}
                   disabled={isSubmittingFeedback}
-                  className={`
-          flex h-16 items-center justify-center
-          rounded-xl border-2 bg-surface
-          sm:h-20 lg:h-[104px]
-          ${selected
+                  className={`flex min-w-0 flex-1 items-center justify-center rounded-xl border-2 bg-surface px-1 py-2.5 text-center transition-all duration-300 min-[360px]:px-2 sm:min-h-16 sm:px-3 lg:min-h-20 ${selected
                       ? "border-brand"
                       : isDark
-                        ? "border-white/20"
-                        : "border-brand/15"
-                    }
-        `}
+                        ? "border-muted"
+                        : "border-[#F3F4F6]"
+                    }`}
                 >
-                  <span className="text-center text-lg font-bold leading-[22px] sm:text-[22px] sm:leading-[22px]">
+                  <span
+                    className={`whitespace-nowrap text-[14px] font-bold leading-5 min-[360px]:text-[15px] sm:text-lg sm:leading-6 lg:text-[22px] lg:leading-[22px] ${isDark ? "text-ink" : "text-[#1E293B]"
+                      }`}
+                  >
                     {option}
                   </span>
                 </button>
@@ -213,7 +211,9 @@ function RevisionCompleteContent() {
 
         {/* Topics revised */}
         <div className="mt-6 flex w-full flex-col gap-4 sm:mt-10 sm:gap-6">
-          <p className="text-xs font-extrabold uppercase tracking-[1.6px] text-muted">
+          <p
+            className={`text-xs font-extrabold uppercase tracking-[1.6px] ${isDark ? "text-ink" : "text-[#1F2937]"}`}
+          >
             Topics Revised
           </p>
 
@@ -222,9 +222,10 @@ function RevisionCompleteContent() {
             className="
       flex flex-col gap-4
       rounded-2xl
-      border border-brand/10 dark:border-[#FAF7F240]
+      border border-[#F3F4F6] dark:border-[#FAF7F240]
       bg-surface
-      p-4
+      p-5
+      shadow-[0px_1px_2px_0px_#F9FAFB] dark:shadow-none
       sm:flex-row
       sm:items-center
       sm:justify-between
@@ -241,7 +242,7 @@ function RevisionCompleteContent() {
                   {task?.title ?? "Newton's Laws"}
                 </p>
 
-                <p className="mt-1 break-words text-xs sm:text-sm font-medium leading-5 text-muted">
+                <p className="mt-1 break-words text-xs sm:text-sm font-medium leading-5 text-[#6B7280]">
                   Physics • Concept Video • NCERT Chapter
                 </p>
               </div>
@@ -253,17 +254,10 @@ function RevisionCompleteContent() {
           </div>
         </div>
         {/* Actions */}
-        <div className="mt-6 grid w-full grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-[2fr_3fr] lg:gap-8">
-          <Link
-            href="/revision-session"
-            className="flex h-14 items-center justify-center rounded-2xl border-2 border-brand bg-surface text-sm font-semibold leading-6 text-ink transition-colors hover:bg-tint-strong sm:text-base lg:h-[60px]"
-          >
-            Review another topic
-          </Link>
-
+        <div className="mt-6 w-full sm:mt-8">
           <Link
             href="/home/revision"
-            className="flex h-14 items-center justify-center rounded-2xl bg-cta text-sm font-semibold leading-6 text-white transition hover:bg-cta/90 sm:text-base lg:h-[60px]"
+            className="flex h-14 w-full items-center justify-center rounded-2xl bg-cta text-sm font-semibold leading-6 text-white transition-colors hover:bg-cta/90 sm:h-[60px] sm:text-base"
           >
             Back to Revision Dashboard
           </Link>
