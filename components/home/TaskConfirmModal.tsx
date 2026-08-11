@@ -1,6 +1,7 @@
 "use client";
 
-import { Modal } from "@/components/ui/Modal";
+import { useEffect, useState } from "react";
+import { WhiteModal } from "@/components/ui/WhiteModal";
 import { Button } from "@/components/ui/Button";
 import { AlertTriangleIcon } from "@/components/ui/icons";
 import {ConfirmIcon} from "@/assets/icons";
@@ -28,11 +29,24 @@ export function TaskConfirmModal({
     cancelLabel = "Cancel",
     subtitle,
     showBacklogCheckbox = false,
-    moveToBacklog = false,
+    moveToBacklog: moveToBacklogProp = false,
     onMoveToBacklogChange,
 }: ConfirmModalProps) {
+    const [moveToBacklog, setMoveToBacklog] = useState(moveToBacklogProp);
+
+    // Resets the checkbox each time the modal reopens instead of carrying
+    // over the previous confirmation's tick.
+    useEffect(() => {
+        if (open) setMoveToBacklog(moveToBacklogProp);
+    }, [open, moveToBacklogProp]);
+
+    const handleMoveToBacklogChange = (checked: boolean) => {
+        setMoveToBacklog(checked);
+        onMoveToBacklogChange?.(checked);
+    };
+
     return (
-        <Modal open={open} onClose={onClose} ariaLabel={title}>
+        <WhiteModal open={open} onClose={onClose} ariaLabel={title}>
             <div className="mx-auto flex w-full max-w-[340px] flex-col items-center gap-2 text-center">
                 {/* Header icon */}
                 <div className="flex h-16 w-full items-center justify-center">
@@ -71,9 +85,9 @@ export function TaskConfirmModal({
                             type="checkbox"
                             checked={moveToBacklog}
                             onChange={(event) =>
-                                onMoveToBacklogChange?.(event.target.checked)
+                                handleMoveToBacklogChange(event.target.checked)
                             }
-                            className="h-4 w-4 shrink-0 cursor-pointer rounded border border-[#CBD5E1] bg-white accent-brand disabled:cursor-not-allowed disabled:opacity-40 dark:border-(--text-secondary,#8B8998) dark:bg-[#111145]"
+                            className="h-4 w-4 shrink-0 cursor-pointer rounded border border-[#CBD5E1] bg-white checked:border-brand checked:bg-brand disabled:cursor-not-allowed disabled:opacity-40 dark:border-(--text-secondary,#8B8998) dark:bg-[#111145] dark:checked:border-brand dark:checked:bg-brand"
                         />
 
                         <span className="w-[166px] text-center text-[12px] font-semibold leading-4 text-[#475569] dark:text-(--text-secondary,#8B8998) sm:text-[14px] sm:leading-5">
@@ -102,6 +116,6 @@ export function TaskConfirmModal({
                     </Button>
                 </div>
             </div>
-        </Modal>
+        </WhiteModal>
     );
 }

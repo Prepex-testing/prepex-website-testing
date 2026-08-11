@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
+import { WhiteModal } from "@/components/ui/WhiteModal";
 import {
   BookIcon,
   ClockIcon,
@@ -33,7 +33,7 @@ type TodaysPracticeModalProps = {
 
 export function TodaysPracticeModal({ open, onClose, onStart }: TodaysPracticeModalProps) {
   return (
-    <Modal open={open} onClose={onClose} ariaLabel="Today's Practice">
+    <WhiteModal open={open} onClose={onClose} ariaLabel="Today's Practice">
       <div className="text-center">
         <h2 className="text-xl font-bold text-ink sm:text-2xl md:text-h1">
           Today&apos;s Practice
@@ -98,6 +98,6 @@ export function TodaysPracticeModal({ open, onClose, onStart }: TodaysPracticeMo
       >
         Not Now
       </button>
-    </Modal>
+    </WhiteModal>
   );
 }

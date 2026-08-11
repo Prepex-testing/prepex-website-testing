@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Modal } from "@/components/ui/Modal";
+import { WhiteModal } from "@/components/ui/WhiteModal";
 import { Select } from "@/components/ui/Select";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { EditIcon, MinusIcon, PencilIcon, PlusIcon, XIcon } from "@/components/ui/icons";
@@ -234,7 +234,7 @@ export function AddCustomTaskModal({
   };
 
   return (
-    <Modal
+    <WhiteModal
       open={open}
       onClose={onClose}
       ariaLabel={isEdit ? "Edit task" : "Add custom task"}
@@ -440,6 +440,6 @@ export function AddCustomTaskModal({
         confirmLabel="Proceed"
         cancelLabel="Reduce Duration"
       />
-    </Modal>
+    </WhiteModal>
   );
 }

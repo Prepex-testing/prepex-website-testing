@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
+import { WhiteModal } from "@/components/ui/WhiteModal";
 import { RadioOption } from "@/components/ui/RadioOption";
 import { Select } from "@/components/ui/Select";
 import { XIcon } from "@/components/ui/icons";
@@ -33,7 +33,7 @@ export function CrossAppSessionModal({ open, onClose, onStart }: CrossAppSession
   const activityLabel = ACTIVITIES.find((item) => item.id === activity)?.label ?? activity;
 
   return (
-    <Modal open={open} onClose={onClose} ariaLabel="Study outside prepex">
+    <WhiteModal open={open} onClose={onClose} ariaLabel="Study outside prepex">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-h2 text-ink">Study outside prepex.</h2>
@@ -72,6 +72,6 @@ export function CrossAppSessionModal({ open, onClose, onStart }: CrossAppSession
       <p className="mt-2 text-center text-xs text-muted">
         When you&apos;re done, return to prepex and confirm. Counts as focus time.
       </p>
-    </Modal>
+    </WhiteModal>
   );
 }

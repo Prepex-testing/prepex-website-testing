@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Modal } from "@/components/ui/Modal";
+import { WhiteModal } from "@/components/ui/WhiteModal";
 import { Button } from "@/components/ui/Button";
 import { CheckIcon, LogoutIcon } from "@/components/ui/icons";
 import { useRevisionSession } from "@/components/session/RevisionSessionProvider";
@@ -50,7 +50,7 @@ export function RevisionSessionActionsModal({ open, onClose, onExited }: Revisio
   };
 
   return (
-    <Modal open={open} onClose={onClose} ariaLabel="Session options">
+    <WhiteModal open={open} onClose={onClose} ariaLabel="Session options">
       <div className="flex flex-col items-center gap-2 text-center">
         <h2 className="text-h2 text-ink">{taskTitle || "Revision session"}</h2>
         <p className="text-sm text-muted">What would you like to do with this session?</p>
@@ -84,6 +84,6 @@ export function RevisionSessionActionsModal({ open, onClose, onExited }: Revisio
       >
         Cancel
       </button>
-    </Modal>
+    </WhiteModal>
   );
 }

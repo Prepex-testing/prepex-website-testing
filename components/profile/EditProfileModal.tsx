@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
+import { WhiteModal } from "@/components/ui/WhiteModal";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { XIcon, PencilIcon } from "@/components/ui/icons";
@@ -22,7 +22,7 @@ export function EditProfileModal({ open, onClose }: EditProfileModalProps) {
   const initial = fullName[0]?.toUpperCase() ?? "S";
 
   return (
-    <Modal open={open} onClose={onClose} ariaLabel="Edit Profile">
+    <WhiteModal open={open} onClose={onClose} ariaLabel="Edit Profile">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-bold text-ink">Profile Photo</h2>
         <button
@@ -98,6 +98,6 @@ export function EditProfileModal({ open, onClose }: EditProfileModalProps) {
           Save Changes
         </Button>
       </div>
-    </Modal>
+    </WhiteModal>
   );
 }
