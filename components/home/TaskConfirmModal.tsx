@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { WhiteModal } from "@/components/ui/WhiteModal";
 import { Button } from "@/components/ui/Button";
 import { AlertTriangleIcon } from "@/components/ui/icons";
-import {ConfirmIcon} from "@/assets/icons";
+import { ConfirmIcon } from "@/assets/icons";
 type ConfirmModalProps = {
     open: boolean;
     onClose: () => void;
@@ -50,8 +50,8 @@ export function TaskConfirmModal({
             <div className="mx-auto flex w-full max-w-[340px] flex-col items-center gap-2 text-center">
                 {/* Header icon */}
                 <div className="flex h-16 w-full items-center justify-center">
-                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-[#F59E0B1A] text-[#F59E0B] dark:bg-(--border-card,#FAF7F214)">
-                        <ConfirmIcon/>
+                    <div className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-[#F59E0B1A] text-[#F59E0B]">
+                        <ConfirmIcon />
                     </div>
                 </div>
 
