@@ -27,6 +27,7 @@ import {
 } from "@/lib/api/revision";
 import { withResumeLabel, CUSTOM_BADGE_STYLE } from "@/components/home/taskTypes";
 import { formatShortDate } from "@/lib/utils/datetime";
+import { getChapterTitle } from "@/lib/utils/text";
 
 type Tab = "due" | "upcoming" | "mastered";
 
@@ -79,7 +80,7 @@ function fromTask(task: RevisionTask): RevisionTopic {
     subjectLabel: subject?.code?.[0] ?? "R",
     subjectName: subject?.name ?? "Revision",
     difficulty: toDifficulty(task.chapter?.chapterMetadata?.difficulty),
-    title: task.title,
+    title: getChapterTitle(task.title),
     meta: [subject?.name, task.chapter?.name].filter(Boolean).join(" • "),
     badge: "",
     actionLabel: withResumeLabel("Start Revision", task.status),

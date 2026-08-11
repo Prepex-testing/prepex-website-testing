@@ -7,6 +7,7 @@ import { CompleteTaskCheckbox } from "@/components/home/CompleteTaskCheckbox";
 import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE } from "@/components/home/TaskRow";
 import type { TaskType } from "@/components/home/TaskRow";
 import { Book, Time } from "@/assets/icons";
+import { getChapterTitle } from "@/lib/utils/text";
 
 type Difficulty = "high" | "medium";
 
@@ -130,7 +131,7 @@ export function PlanTaskRow({
         </div>
 
         <p className="mt-0.5 text-base font-bold leading-6 text-ink">
-          {task.title}
+          {getChapterTitle(task.title)}
         </p>
 
         <p className="text-xs font-normal leading-4 text-[#9CA3AF]">{task.meta}</p>
@@ -190,7 +191,7 @@ export function PlanTaskRow({
         <div className="flex items-center gap-2">
           <CompleteTaskCheckbox
             taskId={task.id}
-            title={task.title}
+            title={getChapterTitle(task.title)}
             secondsCompleted={task.secondsCompleted ?? 0}
             isCompleted={task.isCompleted}
             disabled={isSkipped}

@@ -10,6 +10,7 @@ import { getPlannerTask, type PlannerTaskDetail } from "@/lib/api/planner";
 import { useRevisionSession } from "@/components/session/RevisionSessionProvider";
 import { RevisionSessionActionsModal } from "@/components/session/RevisionSessionActionsModal";
 import { formatClock } from "@/lib/utils/datetime";
+import { getChapterTitle } from "@/lib/utils/text";
 
 // The one destination a "leave this page" click is allowed to go to directly
 // — everything else is intercepted and routed through the session options
@@ -94,7 +95,7 @@ function RevisionSessionContent() {
     startSession({
       taskId: revisionId,
       targetDuration: task?.estimatedMinutes ?? 0,
-      taskTitle: task?.title,
+      taskTitle: task?.title ? getChapterTitle(task.title) : undefined,
       subjectName: task?.subject?.name,
       initialElapsedSeconds: task?.status === "IN_PROGRESS" ? (task?.secondsCompleted ?? 0) : 0,
     }).catch(() => {
@@ -222,7 +223,7 @@ function RevisionSessionContent() {
       await startSession({
         taskId: revisionId,
         targetDuration: data.estimatedMinutes,
-        taskTitle: data.title,
+        taskTitle: getChapterTitle(data.title),
         subjectName: data.subject?.name,
         initialElapsedSeconds: data.secondsCompleted,
       });
@@ -272,7 +273,7 @@ function RevisionSessionContent() {
       {/* Title */}
       <div>
         <h1 className="text-[28px] font-bold leading-[36px] text-ink sm:text-[32px] sm:leading-[40px]">
-          {task?.title ?? "Revision Session"}
+          {task?.title ? getChapterTitle(task.title) : "Revision Session"}
         </h1>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
           {task?.subject?.name && (

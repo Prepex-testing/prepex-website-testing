@@ -8,6 +8,7 @@ import { TYPE_LABELS } from "@/components/home/taskTypes";
 import { deletePlannerTask } from "@/lib/api/planner";
 import { skipRevisionTask } from "@/lib/api/revision";
 import { TaskConfirmModal } from "./TaskConfirmModal";
+import { getChapterTitle } from "@/lib/utils/text";
 
 const MENU_ITEMS = [
   { icon: <PencilIcon />, label: "Edit Task" },
@@ -191,7 +192,7 @@ export function TaskEditMenu({ task, onTaskChanged, onReorder, disabled }: TaskE
         onClose={() => setDeleteConfirmOpen(false)}
         onConfirm={handleDelete}
         title="Delete this task?"
-        subtitle={task.title}
+        subtitle={getChapterTitle(task.title)}
         description="This task will be removed from today’s plan."
         confirmLabel={isDeleting ? "Deleting..." : "Remove"}
       />
