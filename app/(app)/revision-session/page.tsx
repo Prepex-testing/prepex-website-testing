@@ -253,17 +253,7 @@ function RevisionSessionContent() {
     <div className="mx-auto flex max-w-[1213px] flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
-        <button
-          type="button"
-          onClick={() => {
-            setPendingHref(null);
-            setActionsOpen(true);
-          }}
-          className={`flex w-fit shrink-0 items-center gap-1 text-sm font-bold ${isDark ? "text-secondary" : "text-[#334155]"}`}
-        >
-          <ArrowLeftIcon className="h-[8px] w-[10px] shrink-0 sm:h-[9.33px] sm:w-[12px]" />
-          Exit Session
-        </button>
+      
         <p className="flex-1 truncate text-center text-[14px] font-extrabold uppercase tracking-[2.8px] text-ink">
           Revision Session
         </p>
