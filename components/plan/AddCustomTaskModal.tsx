@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { EditIcon, MinusIcon, PencilIcon, PlusIcon, XIcon } from "@/components/ui/icons";
 import { addPlannerTask, editPlannerTask, type SuggestedWindow } from "@/lib/api/planner";
+import { getCheckInStatus } from "@/lib/api/checkin";
 import {
   getSubjectsChapters,
   type SubjectWithChapters,
@@ -31,7 +33,7 @@ const SUGGESTED_WINDOW_VALUES: Record<string, SuggestedWindow> = {
 
 const DURATION_STEP_MINUTES = 5;
 const MIN_DURATION_MINUTES = 5;
-const MAX_DURATION_MINUTES = 300;
+const MAX_DURATION_MINUTES = 1400;
 
 const TIME_PREFERENCE_OPTIONS = [
   { value: "morning", label: "Morning (5-11 AM)" },
@@ -99,7 +101,20 @@ export function AddCustomTaskModal({
   const [isLoadingChapters, setLoadingChapters] = useState(false);
   const [isSubmitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dailyTargetMinutes, setDailyTargetMinutes] = useState<number | null>(null);
+  const [isDurationConfirmOpen, setDurationConfirmOpen] = useState(false);
   const isEdit = mode === "edit";
+
+  // Daily target study hours, used to warn when this task's duration alone
+  // would exceed the student's whole-day target.
+  useEffect(() => {
+    if (!open) return;
+    getCheckInStatus()
+      .then(({ data }) => setDailyTargetMinutes(data.dailyHours != null ? data.dailyHours * 60 : null))
+      .catch(() => {
+        // Best-effort — the duration warning just won't show if this fails.
+      });
+  }, [open]);
 
   // The API returns every subject with its own chapters nested — fetched once
   // per open, then subject selection filters the already-loaded chapters
@@ -145,7 +160,21 @@ export function AddCustomTaskModal({
     });
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
+    const exceedsDailyTarget = dailyTargetMinutes != null && Number(durationValue) > dailyTargetMinutes;
+    if (exceedsDailyTarget) {
+      setDurationConfirmOpen(true);
+      return;
+    }
+    performSubmit();
+  };
+
+  const handleProceedAnyway = () => {
+    setDurationConfirmOpen(false);
+    performSubmit();
+  };
+
+  const performSubmit = async () => {
     if (isEdit) {
       if (!taskId || !taskName.trim()) return;
 
@@ -304,46 +333,61 @@ export function AddCustomTaskModal({
             )
           )}
 
-          {/* Duration + Time Preference */}
-          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex w-full flex-col gap-1">
-              <label className="text-[14px] font-semibold leading-[20px] text-ink">Duration</label>
-
-              <div className="flex h-[46px] w-full items-center justify-between rounded-xl border border-brand/15 bg-surface px-3">
-                <button
-                  type="button"
-                  onClick={() => adjustDuration(-DURATION_STEP_MINUTES)}
-                  disabled={Number(durationValue) <= MIN_DURATION_MINUTES}
-                  aria-label="Decrease duration"
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  <MinusIcon />
-                </button>
-
-                <span className="text-sm font-semibold text-body-text">{durationValue} min</span>
-
-                <button
-                  type="button"
-                  onClick={() => adjustDuration(DURATION_STEP_MINUTES)}
-                  disabled={Number(durationValue) >= MAX_DURATION_MINUTES}
-                  aria-label="Increase duration"
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  <PlusIcon />
-                </button>
-              </div>
-            </div>
-
-            <div className="w-full min-w-0">
-              <Select
-                label="Time Preference"
-                options={TIME_PREFERENCE_OPTIONS}
-                value={timePreferenceValue}
-                onChange={(event) => setTimePreferenceValue(event.target.value)}
-                placeholder="Morning (5-11 AM)"
-              />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {isEdit ? (
+            <StaticField label="Subject" value={initialValues?.subjectValue ?? ""} />
+          ) : (
+            <Select
+              label="Subject"
+              options={subjects.map((subject) => ({ value: String(subject.id), label: subject.name }))}
+              value={subjectId != null ? String(subjectId) : ""}
+              onChange={(event) => setSubjectId(Number(event.target.value))}
+              placeholder="Subject"
+            />
+          )}
+          {isEdit ? (
+            <StaticField label="Topic" value={initialValues?.topicValue ?? ""} />
+          ) : (
+            <Select
+              label="Topic"
+              options={chapters.map((chapter) => ({ value: chapter.id, label: chapter.name }))}
+              value={chapterId}
+              onChange={(event) => setChapterId(event.target.value)}
+              placeholder={isLoadingChapters ? "Loading chapters..." : "Topic"}
+            />
+          )}
+          <div className="flex flex-col gap-1">
+            <label className="text-[14px] font-semibold leading-[20px] text-ink">Duration</label>
+            <div className="flex h-[46px] items-center justify-between rounded-xl border border-brand/15 bg-surface px-3">
+              <button
+                type="button"
+                onClick={() => adjustDuration(-DURATION_STEP_MINUTES)}
+                disabled={Number(durationValue) <= MIN_DURATION_MINUTES}
+                aria-label="Decrease duration"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                <MinusIcon />
+              </button>
+              <span className="text-sm font-semibold text-body-text">{durationValue} min</span>
+              <button
+                type="button"
+                onClick={() => adjustDuration(DURATION_STEP_MINUTES)}
+                disabled={Number(durationValue) >= MAX_DURATION_MINUTES}
+                aria-label="Increase duration"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                <PlusIcon />
+              </button>
             </div>
           </div>
+          <Select
+            label="Time Preference"
+            options={TIME_PREFERENCE_OPTIONS}
+            value={timePreferenceValue}
+            onChange={(event) => setTimePreferenceValue(event.target.value)}
+            placeholder="Morning (5-11 AM)"
+          />
+        </div>
 
           {/* Additional Notes */}
           <div className="flex w-full flex-col gap-1">
@@ -375,6 +419,16 @@ export function AddCustomTaskModal({
           {isSubmitting ? (isEdit ? "Saving..." : "Adding...") : isEdit ? "Save Changes" : "Add Task"}
         </Button>
       </div>
+
+      <ConfirmModal
+        open={isDurationConfirmOpen}
+        onClose={() => setDurationConfirmOpen(false)}
+        onConfirm={handleProceedAnyway}
+        title="Exceeds daily target"
+        description="Task duration is exceeding your daily target study hours."
+        confirmLabel="Proceed"
+        cancelLabel="Reduce Duration"
+      />
     </Modal>
   );
 }
