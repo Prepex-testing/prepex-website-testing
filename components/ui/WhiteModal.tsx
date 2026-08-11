@@ -18,10 +18,12 @@ const SIZE_CLASSES: Record<NonNullable<WhiteModalProps["size"]>, string> = {
 };
 
 /**
- * Same behavior as `Modal`, but the panel always renders on a flat white
- * (#ffffff) surface with light-theme tokens — regardless of the app's
- * current dark/light setting. `CheckInModal` and `GoalSettingModal` are
- * intentionally excluded and keep using `Modal` (theme-aware background).
+ * Same behavior as `Modal`, but the panel carries its own pinned copy of the
+ * theme tokens (light values by default, dark values under [data-theme="dark"])
+ * instead of inheriting whatever `<html>` currently has — so it stays visually
+ * consistent (flat white in light mode, dark surface in dark mode) regardless
+ * of any ancestor override. `CheckInModal` and `GoalSettingModal` are
+ * intentionally excluded and keep using `Modal`.
  */
 export function WhiteModal({ open, onClose, ariaLabel, children, size = "md" }: WhiteModalProps) {
   useEffect(() => {
@@ -46,17 +48,17 @@ export function WhiteModal({ open, onClose, ariaLabel, children, size = "md" }: 
       onClick={onClose}
     >
       <div
-        className={`white-modal-panel white-modal-scroll-panel w-[calc(100vw-2rem)] max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-modal sm:w-full sm:rounded-3xl sm:p-8 sm:pb-10 ${SIZE_CLASSES[size]}`}
+        className={`white-modal-panel white-modal-scroll-panel w-[calc(100vw-2rem)] max-h-[85vh] overflow-y-auto rounded-2xl bg-surface p-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-modal sm:w-full sm:rounded-3xl sm:p-8 sm:pb-10 ${SIZE_CLASSES[size]}`}
         onClick={(event) => event.stopPropagation()}
       >
         {children}
       </div>
 
       {/*
-        The panel is pinned to the light theme's token values so it always
-        renders as a flat white surface, even when the app is in dark mode —
-        [data-theme="dark"] on <html> would otherwise cascade its variable
-        overrides down into the panel via normal CSS inheritance.
+        The panel carries its own copy of both the light and dark token
+        sets (mirroring app/globals.css) so it renders consistently even if
+        an ancestor's variables ever drift, and switches to the dark surface
+        color under [data-theme="dark"] instead of staying pinned to white.
       */}
       <style>{`
         .white-modal-panel {
@@ -182,6 +184,133 @@ export function WhiteModal({ open, onClose, ariaLabel, children, size = "md" }: 
           --task-type-border: rgb(116 116 128 / 0.08);
           --task-type-bg: #1a1a4e;
           --task-type-text: #333333;
+          --task-type-selected-text: #faf7f2;
+          --task-type-shadow: 0px 2px 8px 0px rgb(26 26 78 / 0.08);
+        }
+
+        [data-theme="dark"] .white-modal-panel {
+          --background: #0D0D2B;
+          --surface: #111145;
+          --ink: #faf7f2;
+          --brand: #6d6dc4;
+          --body-text: #e4e5f1;
+          --muted: #8b8998;
+          --muteds: #8B8998;
+          --cta: #FF7A59;
+          --tint: #23234f;
+          --tint-strong: #2b2b63;
+          --warning: #f2b84d;
+          --warning-bg: rgb(242 184 77 / 0.15);
+          --success: #4ade80;
+          --success-bg: rgb(74 222 128 / 0.12);
+          --danger: #f87171;
+          --danger-bg: rgb(248 113 113 / 0.12);
+          --info: #d8b4fe;
+          --info-bg: rgb(216 180 254 / 0.15);
+          --chart-1: #aeb0f0;
+          --chart-2: #a5b4fc;
+          --chart-3: #7dd3fc;
+          --chart-recovery: #fdba74;
+          --focus-ring: rgb(255 138 107 / 0.6);
+
+          --subject-bg: #1a1a4e;
+          --subject-text: #faf7f2;
+          --icon-chip-bg: #ffffff;
+          --plan-avatar-bg: #1a1a4e;
+
+          --subject-physics: #FAF7F2;
+          --subject-chemistry: #4C1D95;
+          --subject-maths: #8B8998;
+
+          --shadow-hover: 0 2px 8px rgb(0 0 0 / 0.35);
+          --shadow-modal: 0 8px 24px rgb(0 0 0 / 0.5);
+
+          --question-dot-active: #FAF7F2;
+          --question-dot-inactive: rgba(250, 247, 242, 0.25);
+
+          --toggle-on: #ffffff;
+          --score-ring-from: #ffffff;
+          --score-ring-to: #ffffff;
+
+          --sub: #242453;
+          --button-border: #FAF7F2;
+
+          --icon-action-bg: #242453;
+          --icon-action-text: var(--border-card, #FAF7F214);
+          --border-card: #faf7f2;
+
+          --oc-card-bg: conic-gradient(from 90deg at 100% 0%,
+              #111145 -181.73deg,
+              #0d0d2b 102.12deg,
+              #111145 178.27deg,
+              #0d0d2b 462.12deg);
+
+          --oc-icon-bg: var(--ink);
+          --oc-icon-ring: #1a1a4e;
+          --oc-icon-color: #1a1a4e;
+
+          --oc-heading1: #faf7f2;
+          --oc-subtext: #d6d6d6;
+          --oc-heading2: #ffffff;
+          --oc-body: #ffffff;
+
+          --oc-button-bg: #ff7a59;
+          --oc-button-text: #ffffff;
+
+          --accordion-open-bg: #13133D;
+          --accordion-row-bg: #FAF7F240;
+
+          --chapter-box-bg: #13133D;
+          --chapter-box-border: rgb(250 247 242 / 0.06);
+          --processing-text: #FAF7F2;
+
+          --badge-partial-bg: #FAF7F240;
+
+          --mood-card-bg: #2A2A6E;
+          --mood-chip-bg: #232C6B;
+          --modal-bg: #111145;
+
+          --logo-tagline: #F0EDE5;
+
+          --preview-card-bg: #13133D;
+          --preview-card-border: #242453;
+
+          --input-border: #8B8998;
+          --input-shadow: 0px 1px 2px 0px #1A1A4E0F;
+
+          --primary-button-border: #8B8998;
+
+          --weekly-title: #FAF7F2;
+          --weekly-label: #FAF7F2;
+
+          --loader-dot: #FFFFFF;
+
+          --stats-card-bg: #13133D;
+          --stats-card-border: #242453;
+
+          --task-card-border: #242453;
+
+          --secondary-button-border: #8B8998;
+          --outline-chip-border: #D6D6D6;
+
+          --sidebar-active-bg: #FAF7F2;
+          --sidebar-active-fg: #1A1A4E;
+          --sidebar-inactive-fg: #8B8998;
+          --sidebar-border: rgb(225 227 228 / 0.3);
+
+          --bg-card: var(--surface);
+          --text-primary: var(--ink);
+          --text-secondary: var(--muted);
+
+          --quick-access-border: #242453;
+          --quick-access-shadow: 0px 2px 6px 0px rgb(255 255 255 / 0.04);
+
+          --consistency-partial: #8282F9;
+          --consistency-missed: #A8A8A8;
+
+          --task-type-border: #8b8998;
+          --task-type-bg: #1a1a4e;
+          --task-type-text: #faf7f2;
           --task-type-selected-text: #faf7f2;
           --task-type-shadow: 0px 2px 8px 0px rgb(26 26 78 / 0.08);
         }

@@ -12,6 +12,7 @@ export type { TaskType };
 export { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE };
 import { Book, Time } from "@/assets/icons";
 import { useState } from "react";
+import { getChapterTitle } from "@/lib/utils/text";
 export type Task = {
   id: string;
   subjectLabel: string;
@@ -142,7 +143,7 @@ export function TaskRow({
             </div>
 
             <h3 className="truncate text-lg font-bold text-ink">
-              {task.title}
+              {getChapterTitle(task.title)}
             </h3>
 
             <p className="mt-1 text-[12px] font-normal leading-[16px] tracking-normal text-[#666666] dark:text-[#8B8998]">
@@ -217,7 +218,7 @@ export function TaskRow({
 
           <CompleteTaskCheckbox
             taskId={task.id}
-            title={task.title}
+            title={getChapterTitle(task.title)}
             secondsCompleted={task.secondsCompleted ?? 0}
             isCompleted={task.isCompleted}
             disabled={isSkipped}

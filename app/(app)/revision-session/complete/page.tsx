@@ -18,6 +18,7 @@ import { TargetIcon, TrendingUpIcon, CalendarIcon, ClockIcon, LayersIcon, ArrowL
 import { submitRevisionFeedback, demoteRevisionChapter, type RevisionFeedback } from "@/lib/api/revision";
 import { getPlannerTask, type PlannerTaskDetail } from "@/lib/api/planner";
 import { formatClock } from "@/lib/utils/datetime";
+import { getChapterTitle } from "@/lib/utils/text";
 type Difficulty = "Easy" | "Medium" | "Hard";
 
 const DIFFICULTIES: Difficulty[] = ["Easy", "Medium", "Hard"];
@@ -261,7 +262,7 @@ function RevisionCompleteContent() {
 
               <div className="min-w-0 flex-1">
                 <p className="break-words text-[15px] sm:text-[18px] font-extrabold leading-6 sm:leading-7 text-ink">
-                  {task?.title ?? "Newton's Laws"}
+                  {task?.title ? getChapterTitle(task.title) : "Newton's Laws"}
                 </p>
 
                 <p className="mt-1 break-words text-xs sm:text-sm font-medium leading-5 text-[#6B7280]">

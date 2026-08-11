@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/icons";
 import { LeftIconcon, TargetIcon, ArrowLeftIcon, BellIcon } from "@/assets/icons";
 import { getTodayPlan, updatePlannerTask, type PlannerTask, type TaskChecklist } from "@/lib/api/planner";
+import { getChapterTitle } from "@/lib/utils/text";
 import {
   setActiveSessionTaskId,
   getStoredElapsedSeconds,
@@ -282,7 +283,7 @@ function FocusSessionContent() {
 
           <div className="flex flex-col items-center gap-1">
             <p className="text-2xl font-extrabold leading-none text-ink sm:text-[32px]">
-              {task?.title ?? "Electrochemistry"}
+              {task?.title ? getChapterTitle(task.title) : "Electrochemistry"}
             </p>
             <p className={`text-sm font-semibold leading-none ${isDark ? "text-white/70" : "text-[#464650]/80"}`}>
               {task?.subject?.name ?? "Physical Chemistry"}
@@ -418,7 +419,7 @@ function FocusSessionContent() {
         open={isCompleteOpen}
         onClose={() => setCompleteOpen(false)}
         onContinue={() => setCompleteOpen(false)}
-        topic={task?.title ?? "Electrochemistry"}
+        topic={task?.title ? getChapterTitle(task.title) : "Electrochemistry"}
         minutesStudied={Math.ceil(elapsed / 60)}
         milestonesCompleted={completedCount}
         milestonesTotal={CHECKLIST_ITEMS.length}
