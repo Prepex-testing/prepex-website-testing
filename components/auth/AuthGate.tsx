@@ -28,20 +28,32 @@ function isPublicPath(pathname: string) {
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [authorized, setAuthorized] = useState(() => isPublicPath(pathname));
+  const isPublic = isPublicPath(pathname);
+
+  // Keyed by pathname, not just a bare boolean: on a client-side navigation
+  // to a new protected route, `pathname` updates in this render immediately,
+  // but the effect below (which reads localStorage) only runs after that
+  // render commits. A bare `authorized` boolean would keep its stale `true`
+  // value from the *previous* page for that one render, flashing the new
+  // page's content before the effect has had a chance to check it. Comparing
+  // `state.pathname` to the current `pathname` below makes that stale state
+  // read as unauthorized instead, closing the gap.
+  const [state, setState] = useState(() => ({ pathname, authorized: isPublic }));
 
   useEffect(() => {
-    if (isPublicPath(pathname)) {
-      setAuthorized(true);
+    if (isPublic) {
+      setState({ pathname, authorized: true });
       return;
     }
     if (getAccessToken()) {
-      setAuthorized(true);
+      setState({ pathname, authorized: true });
     } else {
-      setAuthorized(false);
+      setState({ pathname, authorized: false });
       router.replace("/login");
     }
-  }, [pathname, router]);
+  }, [pathname, isPublic, router]);
+
+  const authorized = state.pathname === pathname && state.authorized;
 
   if (!authorized) return null;
   return <>{children}</>;

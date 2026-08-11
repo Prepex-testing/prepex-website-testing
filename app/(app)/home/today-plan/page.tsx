@@ -81,11 +81,14 @@ function toPlanTask(task: PlannerTask): PlanTask {
       ? `${task.scheduledStart} - ${task.scheduledEnd}`
       : formatWindow(task.suggestedWindow),
     difficulty: "medium",
-    actionLabel: task.taskType === "PRACTICE" && task.questionCount
-      ? `Practice ${task.questionCount} Qs`
-      : withResumeLabel(TASK_ACTION_LABEL[task.taskType] ?? "Start Session", task.status),
+    actionLabel: task.taskType === "WELLNESS"
+      ? "Wellness"
+      : task.taskType === "PRACTICE" && task.questionCount
+        ? `Practice ${task.questionCount} Qs`
+        : withResumeLabel(TASK_ACTION_LABEL[task.taskType] ?? "Start Session", task.status),
     isCompleted: task.status === "COMPLETED",
     isCustom: Boolean(task.isAnchor),
+    isWellness: task.taskType === "WELLNESS",
   };
 }
 
@@ -199,6 +202,7 @@ function TodayPlanContent() {
   const [isPracticeModalOpen, setPracticeModalOpen] = useState(false);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
   const [planData, setPlanData] = useState<TodayPlanResponse | null>(null);
+  const [planLoadFailed, setPlanLoadFailed] = useState(false);
   const [reorderTaskId, setReorderTaskId] = useState<string | null>(null);
 
   const { resolvedTheme } = useTheme();
@@ -206,9 +210,12 @@ function TodayPlanContent() {
 
   const refetchPlan = () => {
     getTodayPlan()
-      .then(({ data }) => setPlanData(data))
+      .then(({ data }) => {
+        setPlanData(data);
+        setPlanLoadFailed(false);
+      })
       .catch(() => {
-        // Best-effort — the page falls back to the placeholder plan below.
+        setPlanLoadFailed(true);
       });
   };
 
@@ -217,10 +224,10 @@ function TodayPlanContent() {
   const plan = planData?.plan;
   const summary = planData?.summary;
   const { morning, afternoon, evening, night } = groupTasksByWindow(plan?.tasks ?? []);
-  const morningTasks = plan ? morning.map(toPlanTask) : MORNING_TASKS;
-  const afternoonTasks = plan ? afternoon.map(toPlanTask) : AFTERNOON_TASKS;
-  const eveningTasks = plan ? evening.map(toPlanTask) : EVENING_TASKS;
-  const nightTasks = plan ? night.map(toPlanTask) : [];
+  const morningTasks = planLoadFailed ? [] : plan ? morning.map(toPlanTask) : MORNING_TASKS;
+  const afternoonTasks = planLoadFailed ? [] : plan ? afternoon.map(toPlanTask) : AFTERNOON_TASKS;
+  const eveningTasks = planLoadFailed ? [] : plan ? evening.map(toPlanTask) : EVENING_TASKS;
+  const nightTasks = planLoadFailed ? [] : plan ? night.map(toPlanTask) : [];
 
   // Arms the task named by ?reorderTaskId= (e.g. routed here from /home's
   // Reorder menu item) once the plan has loaded and the task is found in it.
@@ -375,6 +382,11 @@ function TodayPlanContent() {
         </div>
       )}
 
+      {planLoadFailed ? (
+        <div className="rounded-2xl border border-brand/10 bg-surface py-12 text-center text-sm text-muted">
+          No plan available
+        </div>
+      ) : (
       <div className="flex flex-col gap-6">
         {morningTasks.length > 0 && (
           <TimeBlockSection
@@ -421,6 +433,7 @@ function TodayPlanContent() {
           </TimeBlockSection>
         )}
       </div>
+      )}
 
 
       <div className="py-6">

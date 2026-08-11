@@ -213,9 +213,10 @@ function toHomeTask(task: PlannerTask): Task {
       ? `${task.scheduledStart} - ${task.scheduledEnd}`
       : undefined,
     hasResource: Boolean(task.chapter),
-    actionLabel: withResumeLabel(TASK_ACTION_LABEL[task.taskType] ?? "Start Session", task.status),
+    actionLabel: task.taskType === "WELLNESS" ? "Wellness" : withResumeLabel(TASK_ACTION_LABEL[task.taskType] ?? "Start Session", task.status),
     isCompleted: task.status === "COMPLETED",
     isCustom: Boolean(task.isAnchor),
+    isWellness: task.taskType === "WELLNESS",
   };
 }
 
@@ -248,6 +249,7 @@ export default function HomePage() {
   const [isCheckInOpen, setCheckInOpen] = useState(false);
   const [energyMood, setEnergyMood] = useState<Mood | null>(null);
   const [planData, setPlanData] = useState<TodayPlanResponse | null>(null);
+  const [planLoadFailed, setPlanLoadFailed] = useState(false);
   const [isGeneratingPlan, setGeneratingPlan] = useState(false);
   const [streakCount, setStreakCount] = useState<number | null>(null);
   const [isInRecoveryMode, setInRecoveryMode] = useState(false);
@@ -261,9 +263,12 @@ export default function HomePage() {
 
   const refetchPlan = () => {
     getTodayPlan()
-      .then(({ data }) => setPlanData(data))
+      .then(({ data }) => {
+        setPlanData(data);
+        setPlanLoadFailed(false);
+      })
       .catch(() => {
-        // Best-effort — the page falls back to the placeholder plan below.
+        setPlanLoadFailed(true);
       });
   };
 
@@ -331,7 +336,7 @@ export default function HomePage() {
 
   const plan = planData?.plan;
   const summary = planData?.summary;
-  const planTasks = (plan ? plan.tasks.map(toHomeTask) : TASKS).slice(0, 5);
+  const planTasks = planLoadFailed ? [] : (plan ? plan.tasks.map(toHomeTask) : TASKS).slice(0, 5);
   const completionPercent = summary?.completionPercentage ?? 22;
   const completedMinutes = summary ? summary.totalTimeCompletedSeconds / 60 : 78;
   const plannedMinutes = summary?.totalPlannedMinutes ?? 360;
@@ -539,23 +544,29 @@ export default function HomePage() {
             </div>
 
             <div className="p-5">
-              <div className="flex flex-col gap-3">
-                {planTasks.map((task) => (
-                  <TaskRow
-                    key={task.id}
-                    task={task}
-                    onStartPractice={() => setPracticeModalOpen(true)}
-                    onTaskChanged={refetchPlan}
-                  />
-                ))}
-              </div>
+              {planLoadFailed ? (
+                <p className="py-8 text-center text-sm text-muted">No plan available</p>
+              ) : (
+                <>
+                  <div className="flex flex-col gap-3">
+                    {planTasks.map((task) => (
+                      <TaskRow
+                        key={task.id}
+                        task={task}
+                        onStartPractice={() => setPracticeModalOpen(true)}
+                        onTaskChanged={refetchPlan}
+                      />
+                    ))}
+                  </div>
 
-              <Link
-                href="/home/today-plan"
-                className="mt-4 block w-full text-center text-sm font-semibold text-ink underline"
-              >
-                View all
-              </Link>
+                  <Link
+                    href="/home/today-plan"
+                    className="mt-4 block w-full text-center text-sm font-semibold text-ink underline"
+                  >
+                    View all
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

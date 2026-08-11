@@ -57,7 +57,7 @@ export default function ResourceLibraryPage() {
         <div>
           <h1 className="text-h1 text-ink">Library</h1>
           <p className="text-sm text-muted">
-            Notes, formula sheets, key points, and concept maps. Bookmarkable. Searchable.
+            Notes, formula sheets, key points, and concept maps.
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-4">
