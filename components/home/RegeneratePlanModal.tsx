@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
+import { WhiteModal } from "@/components/ui/WhiteModal";
 import { RadioOption } from "@/components/ui/RadioOption";
 import { XIcon } from "@/components/ui/icons";
 import { regeneratePlan, type RegenReason } from "@/lib/api/planner";
@@ -44,7 +44,7 @@ export function RegeneratePlanModal({ open, onClose, onRegenerated }: Regenerate
   };
 
   return (
-    <Modal open={open} onClose={onClose} ariaLabel="Regenerate today's plan">
+    <WhiteModal open={open} onClose={onClose} ariaLabel="Regenerate today's plan">
       <div className="flex items-start justify-between gap-3">
         <h2 className="text-h2 text-ink">Regenerate today&apos;s plan?</h2>
         <button
@@ -81,6 +81,6 @@ export function RegeneratePlanModal({ open, onClose, onRegenerated }: Regenerate
           {isSubmitting ? "Regenerating..." : "Regenerate"}
         </Button>
       </div>
-    </Modal>
+    </WhiteModal>
   );
 }

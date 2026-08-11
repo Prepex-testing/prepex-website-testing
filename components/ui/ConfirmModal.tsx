@@ -1,6 +1,6 @@
 "use client";
 
-import { Modal } from "@/components/ui/Modal";
+import { WhiteModal } from "@/components/ui/WhiteModal";
 import { Button } from "@/components/ui/Button";
 import { AlertTriangleIcon } from "@/components/ui/icons";
 
@@ -24,7 +24,7 @@ export function ConfirmModal({
   cancelLabel = "Cancel",
 }: ConfirmModalProps) {
   return (
-    <Modal open={open} onClose={onClose} ariaLabel={title}>
+    <WhiteModal open={open} onClose={onClose} ariaLabel={title}>
       <div className="flex flex-col items-center gap-2 text-center">
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-danger-bg text-danger">
           <AlertTriangleIcon />
@@ -44,6 +44,6 @@ export function ConfirmModal({
           {confirmLabel}
         </Button>
       </div>
-    </Modal>
+    </WhiteModal>
   );
 }

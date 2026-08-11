@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
+import { WhiteModal } from "@/components/ui/WhiteModal";
 import { XIcon } from "@/components/ui/icons";
 
 type LeaveSessionModalProps = {
@@ -12,7 +12,7 @@ type LeaveSessionModalProps = {
 
 export function LeaveSessionModal({ open, onClose, onConfirm }: LeaveSessionModalProps) {
   return (
-    <Modal open={open} onClose={onClose} ariaLabel="Leave focus session">
+    <WhiteModal open={open} onClose={onClose} ariaLabel="Leave focus session">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-h2 text-ink">Leave this session?</h2>
@@ -38,6 +38,6 @@ export function LeaveSessionModal({ open, onClose, onConfirm }: LeaveSessionModa
           Stay on this page
         </Button>
       </div>
-    </Modal>
+    </WhiteModal>
   );
 }

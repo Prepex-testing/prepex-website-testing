@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
+import { WhiteModal } from "@/components/ui/WhiteModal";
 import { CheckCircleIcon, ChevronDownIcon, XIcon } from "@/components/ui/icons";
 
 const MATCH_REASONS = [
@@ -21,7 +21,7 @@ export function PartnerMatchModal({ open, onClose, onAccept }: PartnerMatchModal
   const [showReasons, setShowReasons] = useState(true);
 
   return (
-    <Modal open={open} onClose={onClose} ariaLabel="We found a partner for you">
+    <WhiteModal open={open} onClose={onClose} ariaLabel="We found a partner for you">
       <div className="flex items-start justify-between gap-3">
         <p className="text-xs font-semibold text-muted">We found a partner for you</p>
         <button
@@ -114,6 +114,6 @@ export function PartnerMatchModal({ open, onClose, onAccept }: PartnerMatchModal
         <br />
         This keeps the pool fair for everyone.
       </p>
-    </Modal>
+    </WhiteModal>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
+import { WhiteModal } from "@/components/ui/WhiteModal";
 import { RefreshIcon, InfoIcon, PlusIcon, XIcon } from "@/components/ui/icons";
 
 const ALLOCATIONS = [
@@ -17,7 +17,7 @@ type RecoveryModeModalProps = {
 
 export function RecoveryModeModal({ open, onClose }: RecoveryModeModalProps) {
   return (
-    <Modal open={open} onClose={onClose} ariaLabel="Recovery Mode">
+    <WhiteModal open={open} onClose={onClose} ariaLabel="Recovery Mode">
       <div className="flex items-start justify-between gap-3">
         <span className="flex items-center gap-1 rounded-full bg-tint-strong px-3 py-1 text-[10px] font-bold uppercase text-ink">
           <RefreshIcon />
@@ -86,6 +86,6 @@ export function RecoveryModeModal({ open, onClose }: RecoveryModeModalProps) {
       <p className="mt-3 text-center text-xs text-muted">
         You can exit recovery mode anytime.
       </p>
-    </Modal>
+    </WhiteModal>
   );
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
+import { WhiteModal } from "@/components/ui/WhiteModal";
 import { CheckIcon, ClockIcon, CheckCircleIcon, StarIcon, XIcon } from "@/components/ui/icons";
 
 type SessionCompleteModalProps = {
@@ -25,7 +25,7 @@ export function SessionCompleteModal({
   milestonesTotal,
 }: SessionCompleteModalProps) {
   return (
-    <Modal open={open} onClose={onClose} ariaLabel="Session Complete">
+    <WhiteModal open={open} onClose={onClose} ariaLabel="Session Complete">
       <div className="relative text-center">
         <button
           type="button"
@@ -89,6 +89,6 @@ export function SessionCompleteModal({
           Back To Planner
         </Link>
       </div>
-    </Modal>
+    </WhiteModal>
   );
 }
