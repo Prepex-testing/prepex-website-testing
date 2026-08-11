@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useSyncExternalStore } from "react";
+import { createContext, useCallback, useContext, useLayoutEffect, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 import { THEME_STORAGE_KEY } from "@/components/theme/constants";
 import type { ResolvedTheme, Theme } from "@/components/theme/constants";
@@ -81,7 +81,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const resolvedTheme: ResolvedTheme =
     theme === "system" ? (systemPrefersDark ? "dark" : "light") : theme;
 
-  useEffect(() => {
+  // useLayoutEffect (not useEffect) so this attribute flip lands in the same
+  // pre-paint commit as consumers' own isDark-driven className changes —
+  // otherwise data-theme (and everything keyed off it via CSS variables /
+  // `dark:`) updates one frame after JS-driven colors, and the two halves of
+  // the page visibly desync during a theme toggle.
+  useLayoutEffect(() => {
     document.documentElement.setAttribute("data-theme", resolvedTheme);
 
     // Next's viewport.themeColor only follows OS-level prefers-color-scheme,

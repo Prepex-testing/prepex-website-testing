@@ -464,7 +464,7 @@ export function MoonIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-export function XIcon() {
+export function XIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       width="12"
@@ -472,6 +472,7 @@ export function XIcon() {
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
+      {...props}
     >
       <path
         d="M6 6L18 18"

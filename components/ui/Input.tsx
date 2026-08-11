@@ -45,7 +45,7 @@ export function Input({
 
       {/* Helper */}
       {helperText && (
-        <p className="text-[12px] leading-none text-muted">
+        <p className="text-[12px] leading-none text-muteds">
           {helperText}
         </p>
       )}
