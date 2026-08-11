@@ -259,18 +259,14 @@ export function GraduationCapIcon() {
   );
 }
 
-export function RefreshIcon({
-  className = "h-4 w-4",
-}: {
-  className?: string;
-}) {
+export function RefreshIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
-      className={className}
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
+      {...props}
     >
       <path
         d="M20 11A8 8 0 0 0 6.34 5.34L4 7.67"
@@ -304,9 +300,9 @@ export function RefreshIcon({
   );
 }
 
-export function MoreIcon() {
+export function MoreIcon({ className = "h-4 w-4" }: { className?: string } = {}) {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <circle cx="4" cy="8" r="1.2" fill="currentColor" />
       <circle cx="8" cy="8" r="1.2" fill="currentColor" />
       <circle cx="12" cy="8" r="1.2" fill="currentColor" />
@@ -314,12 +310,12 @@ export function MoreIcon() {
   );
 }
 
-export function CalendarIcon() {
+export function CalendarIcon({ className = "h-4 w-4" }: { className?: string } = {}) {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <rect x="2" y="3.5" width="12" height="10.5" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M2 6.5h12" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M5 2v3M11 2v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="2" y="3.5" width="12" height="10.5" rx="1.5" stroke="currentColor" strokeWidth="1.78" />
+      <path d="M2 6.5h12" stroke="currentColor" strokeWidth="1.78" />
+      <path d="M5 2v3M11 2v3" stroke="currentColor" strokeWidth="1.78" strokeLinecap="round" />
     </svg>
   );
 }
@@ -468,7 +464,7 @@ export function MoonIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-export function XIcon() {
+export function XIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       width="12"
@@ -476,6 +472,7 @@ export function XIcon() {
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
+      {...props}
     >
       <path
         d="M6 6L18 18"
@@ -537,16 +534,16 @@ export function ClockIcons() {
   );
 }
 
-export function HomeIcon() {
+export function HomeIcon({ className = "h-4 w-4" }: { className?: string } = {}) {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path
         d="M2 7 8 2l6 5v6.5A1.5 1.5 0 0 1 12.5 15h-9A1.5 1.5 0 0 1 2 13.5V7Z"
         stroke="currentColor"
-        strokeWidth="1.4"
+        strokeWidth="1.78"
         strokeLinejoin="round"
       />
-      <path d="M6 15v-4.5h4V15" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+      <path d="M6 15v-4.5h4V15" stroke="currentColor" strokeWidth="1.78" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -1238,9 +1235,9 @@ export function NoStudyIcon() {
   );
 }
 
-export function ClockIcon() {
+export function ClockIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" {...props}>
       <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.4" />
       <path
         d="M9 5.5V9L11.8 10.8"

@@ -7,6 +7,8 @@ export type RankedItem = {
   subtitle?: string;
   value?: string;
   valueClassName?: string;
+  titleClassName?: string;
+  subtitleClassName?: string;
   icon: ReactNode;
 };
 
@@ -51,12 +53,16 @@ export function RankedList({ items }: RankedListProps) {
             </div>
 
             <div>
-              <h4 className="text-sm font-bold text-ink">
+              <h4 className={`text-sm font-bold ${item.titleClassName ?? "text-ink"}`}>
                 {item.title}
               </h4>
 
               {item.subtitle && (
-                <p className="mt-0.5 text-[10px] leading-[15px] text-muted">
+                <p
+                  className={`mt-0.5 text-[10px] leading-[15px] ${
+                    item.subtitleClassName ?? "text-muted"
+                  }`}
+                >
                   {item.subtitle}
                 </p>
               )}

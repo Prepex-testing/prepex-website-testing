@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { Modal } from "@/components/ui/Modal";
+import { WhiteModal } from "@/components/ui/WhiteModal";
 import {
   TargetIcon,
   BookIcon,
@@ -28,7 +28,7 @@ type QuickFocusModalProps = {
 
 export function QuickFocusModal({ open, onClose }: QuickFocusModalProps) {
   return (
-    <Modal open={open} onClose={onClose} ariaLabel="Quick Focus">
+    <WhiteModal open={open} onClose={onClose} ariaLabel="Quick Focus">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-4">
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
@@ -70,7 +70,7 @@ export function QuickFocusModal({ open, onClose }: QuickFocusModalProps) {
         You&apos;ll get a focused practice session with targeted questions and instant
         feedback.
       </p>
-    </Modal>
+    </WhiteModal>
   );
 }
 

@@ -22,6 +22,7 @@ export { default as UploadIcon } from "./UploadIcon.svg";
 export { default as SparkleIcon } from "./SparkleIcon.svg";
 export { default as Container } from "./Container.svg";
 export { default as ArrowLeftIcon } from "./ArrowLeftIcon.svg";
+export { default as LightbulbIcon } from "./LightbulbIcon.svg";
 export { default as PlayIcon } from "./PlayIcon.svg";
 export { default as Open } from "./Open.svg";
 export { default as Check } from "./Check.svg";
@@ -84,6 +85,12 @@ export { default as Patners } from "./Patners.svg";
 export { default as Coaching } from "./Coaching.svg";
 export { default as CalendarIcons } from "./CalendarIcons.svg";
 export { default as Chart} from "./Chart.svg";
+export { default as StatsIcon} from "./StatsIcon.svg";
+export { default as PracticeIcon} from "./PracticeIcon.svg";
+export { default as Book} from "./book.svg";
+export { default as Time} from "./Time.svg";
+export { default as ConfirmIcon} from "./ConfirmIcon.svg";
+
 
 
 

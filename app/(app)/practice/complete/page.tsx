@@ -15,7 +15,7 @@ import {
   AlertTriangleIcon,
   // BoltIcon,
 } from "@/components/ui/icons";
-import { LayersIcon,ClockIcon, VectorIcon } from "@/assets/icons";
+import { LayersIcon, ClockIcon, VectorIcon } from "@/assets/icons";
 type Mastery = "mastered" | "on-track" | "needs-work" | "critical";
 
 const MASTERY_STYLES: Record<
@@ -77,12 +77,12 @@ function PracticeCompleteContent() {
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-h1 text-ink">Practice Complete</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>

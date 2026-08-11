@@ -16,7 +16,7 @@ type CheckInModalProps = {
 
 export function CheckInModal({ open, onClose, name, onSave }: CheckInModalProps) {
   return (
-    <Modal open={open} onClose={onClose} ariaLabel="Daily check-in">
+    <Modal open={open} onClose={onClose} ariaLabel="Daily check-in" size="lg">
       <CheckInBody
         name={name}
         mode="update"

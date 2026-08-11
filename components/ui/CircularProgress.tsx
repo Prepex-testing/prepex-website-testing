@@ -10,6 +10,8 @@ type CircularProgressProps = {
   progressColor?: string;
   /** Vertical (top-to-bottom) gradient stops; overrides progressColor when set. */
   progressGradient?: { from: string; to: string };
+  labelClassName?: string;
+  valueClassName?: string;
 };
 
 export function CircularProgress({
@@ -21,6 +23,8 @@ export function CircularProgress({
   trackColor = "var(--tint-strong)",
   progressColor = "var(--ink)",
   progressGradient,
+  labelClassName = "text-muted",
+  valueClassName = "text-ink",
 }: CircularProgressProps) {
   const strokeWidth = 8;
   const radius = (size - strokeWidth) / 2;
@@ -77,7 +81,7 @@ export function CircularProgress({
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span
-          className="font-extrabold text-ink"
+          className={`font-extrabold ${valueClassName}`}
           style={{ fontSize: Math.round(size * 0.2) }}
         >
           {displayValue ?? percent}
@@ -85,7 +89,7 @@ export function CircularProgress({
         </span>
         {label && (
           <span
-            className="font-bold uppercase tracking-wide text-muted"
+            className={`font-bold uppercase tracking-wide ${labelClassName}`}
             style={{ fontSize: Math.max(8, Math.round(size * 0.083)) }}
           >
             {label}

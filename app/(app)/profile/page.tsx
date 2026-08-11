@@ -23,6 +23,7 @@ import {
   RefreshIcon,
 } from "@/components/ui/icons";
 import { Button } from "@/components/ui/Button";
+import { AvatarProgressRing } from "@/components/ui/AvatarProgressRing";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { SettingRow } from "@/components/profile/SettingRow";
 import { ToggleRow } from "@/components/profile/ToggleRow";
@@ -30,7 +31,9 @@ import { EditProfileModal } from "@/components/profile/EditProfileModal";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { UserMenu } from "@/components/layout/UserMenu";
-import {QuickIcon,Coaching,GraduationCapIcon,UserIcons,CalendarIcons,ClockIcon,CalendarIcon,Patners,UserIcon,EditIcons,BellIcon} from "@/assets/icons";
+import { useStoredFullName } from "@/lib/auth/useStoredFullName";
+import { performLogout } from "@/lib/api/auth";
+import { QuickIcon, Coaching, GraduationCapIcon, UserIcons, CalendarIcons, ClockIcon, CalendarIcon, Patners, UserIcon, EditIcons, BellIcon } from "@/assets/icons";
 const PROFILE_COMPLETE = 72;
 
 const DETAILS = [
@@ -89,6 +92,9 @@ const NOTIFICATION_ITEMS = [
 
 export default function ProfilePage() {
   const router = useRouter();
+  const storedFullName = useStoredFullName();
+  const fullName = storedFullName || "Student";
+  const initial = fullName[0]?.toUpperCase() ?? "S";
   const [isEditOpen, setEditOpen] = useState(false);
   const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -110,12 +116,12 @@ export default function ProfilePage() {
             Manage your account, preferences and connection
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
@@ -125,65 +131,24 @@ export default function ProfilePage() {
 
 
       <div className="w-full rounded-3xl border border-brand/10 bg-surface p-6">
-        <div className="flex flex-col gap-10 lg:flex-row lg:items-center">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-40">
 
           {/* LEFT SECTION */}
-          <div className="flex w-full shrink-0 flex-col items-center border-b border-brand/10 pb-8 lg:w-[277px] lg:border-b-0 lg:border-r lg:pb-0 lg:pr-10">
+          <div className="flex w-full shrink-0 flex-col items-center border-b border-brand/10 pb-8 lg:w-[277px] lg:border-b-0 lg:border-r lg:pb-0 lg:pl-10 lg:pr-10">
 
             {/* Progress */}
-            <div className="relative flex h-[109px] w-[93px] items-center justify-center">
-              <svg
-                viewBox="0 0 88 88"
-                className="absolute h-[88px] w-[88px] -rotate-90"
-              >
-                <circle
-                  cx="44"
-                  cy="44"
-                  r="40"
-                  fill="none"
-                  stroke="var(--color-tint)"
-                  strokeWidth="5"
-                />
-
-                <circle
-                  cx="44"
-                  cy="44"
-                  r="40"
-                  fill="none"
-                  stroke="url(#profileGradient)"
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                  strokeDasharray={2 * Math.PI * 40}
-                  strokeDashoffset={
-                    2 * Math.PI * 40 * (1 - PROFILE_COMPLETE / 100)
-                  }
-                />
-
-                <defs>
-                  <linearGradient
-                    id="profileGradient"
-                    x1="0%"
-                    y1="0%"
-                    x2="0%"
-                    y2="100%"
-                  >
-                    <stop offset="0%" stopColor="#1A1A4E" />
-                    <stop offset="100%" stopColor="#4C1D95" />
-                  </linearGradient>
-                </defs>
-              </svg>
-
-              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-brand text-2xl font-bold text-white">
-                R
-              </span>
-            </div>
+            <AvatarProgressRing
+              percent={PROFILE_COMPLETE}
+              initials="R"
+              onCameraClick={() => setEditOpen(true)}
+            />
 
             <p className="mt-2 text-[10px] font-medium text-muted">
               {PROFILE_COMPLETE}% Profile complete
             </p>
 
             <h2 className="mt-4 text-center text-2xl font-bold text-ink">
-              Rohan
+              {fullName}
             </h2>
 
             <div className="mt-3 flex flex-col items-center gap-2">
@@ -273,7 +238,7 @@ export default function ProfilePage() {
             transition-all
             ${active
                     ? "border-brand bg-tint"
-                    : "border-white/25 bg-transparent hover:bg-tint/40"
+                    : "border-[#E2E8F0] dark:border-white/25 bg-transparent hover:bg-tint/40"
                   }
           `}
               >
@@ -607,9 +572,12 @@ export default function ProfilePage() {
       <ConfirmModal
         open={isLogoutConfirmOpen}
         onClose={() => setLogoutConfirmOpen(false)}
-        onConfirm={() => router.push("/login")}
-        title="Log out?"
-        description="Are you sure you want to logout? You'll need to sign in again to access your plan."
+        onConfirm={async () => {
+          await performLogout();
+          router.push("/login");
+        }}
+        title="Log out"
+        description="Are you sure you want to logout?"
         confirmLabel="Yes, Logout"
       />
     </div>

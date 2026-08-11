@@ -13,7 +13,8 @@
   --ink: #1a1a4e;
   --brand: #1a1a4e;
   --body-text: #333333;
-  --muted: #666666;
+  --muted: #94A3B8;
+  --muteds:#333333;
   --cta: #FF7A59;
   --tint: #eff2fe;
   --tint-strong: #eef0f8;
@@ -35,6 +36,10 @@
   --subject-text: #1a1a4e;
   --icon-chip-bg: #eef0f8;
   --plan-avatar-bg: #eef2ff;
+
+  --subject-physics: #2D2E6E;
+  --subject-chemistry: #818CF8;
+  --subject-maths: #C7D2FE;
 
   --shadow-hover: 0 2px 8px rgb(26 26 78 / 0.08);
   --shadow-modal: 0 8px 24px rgb(26 26 78 / 0.12);
@@ -94,7 +99,7 @@
   --preview-card-border: #EEF0F8;
 
   /* Input */
-  --input-border: #E4E4E6;
+  --input-border: #E5E7EB;
   --input-shadow: 0px 1px 2px 0px #1A1A4E0F;
 
   --primary-button-border: #D6D6D6;
@@ -112,6 +117,31 @@
 
   --secondary-button-border: #D6D6D6;
   --outline-chip-border: #D6D6D6;
+
+  /* Sidebar nav item states */
+  --sidebar-active-bg: #EEF0F8;
+  --sidebar-active-fg: #1A1A4E;
+  --sidebar-inactive-fg: #7E7E85;
+  --sidebar-border: rgb(225 227 228 / 0.3);
+
+  /* Generic surface/text aliases (reused across cards, e.g. Quick Access rows) */
+  --bg-card: var(--surface);
+  --text-primary: var(--body-text);
+  --text-secondary: #E1E3E499;
+
+  /* Quick Access row (home page) */
+  --quick-access-border: transparent;
+  --quick-access-shadow: 0px 2px 8px 0px rgb(26 26 78 / 0.08);
+
+  /* Study Consistency grid cells / legend dots (home page) */
+  --consistency-partial: var(--tint);
+  --consistency-missed: var(--tint-strong);
+
+    --task-type-border: rgb(116 116 128 / 0.08);
+  --task-type-bg: #1a1a4e;
+  --task-type-text: #333333;
+  --task-type-selected-text: #faf7f2;
+  --task-type-shadow: 0px 2px 8px 0px rgb(26 26 78 / 0.08);
 }
 
 [data-theme="dark"] {
@@ -121,6 +151,7 @@
   --brand: #6d6dc4;
   --body-text: #e4e5f1;
   --muted: #8b8998;
+  --muteds: #8B8998;
   --cta: #FF7A59;
   --tint: #23234f;
   --tint-strong: #2b2b63;
@@ -142,6 +173,10 @@
   --subject-text: #faf7f2;
   --icon-chip-bg: #ffffff;
   --plan-avatar-bg: #1a1a4e;
+
+  --subject-physics: #FAF7F2;
+  --subject-chemistry: #4C1D95;
+  --subject-maths: #8B8998;
 
   --shadow-hover: 0 2px 8px rgb(0 0 0 / 0.35);
   --shadow-modal: 0 8px 24px rgb(0 0 0 / 0.5);
@@ -220,6 +255,30 @@
   --secondary-button-border: #8B8998;
   --outline-chip-border: #D6D6D6;
 
+  /* Sidebar nav item states */
+  --sidebar-active-bg: #FAF7F2;
+  --sidebar-active-fg: #1A1A4E;
+  --sidebar-inactive-fg: #8B8998;
+  --sidebar-border: rgb(225 227 228 / 0.3);
+
+  /* Generic surface/text aliases (reused across cards, e.g. Quick Access rows) */
+  --bg-card: var(--surface);
+  --text-primary: var(--ink);
+  --text-secondary: var(--muted);
+
+  /* Quick Access row (home page) */
+  --quick-access-border: #242453;
+  --quick-access-shadow: 0px 2px 6px 0px rgb(255 255 255 / 0.04);
+
+  /* Study Consistency grid cells / legend dots (home page) */
+  --consistency-partial: #8282F9;
+  --consistency-missed: #A8A8A8;
+
+    --task-type-border: #8b8998;
+  --task-type-bg: #1a1a4e;
+  --task-type-text: #faf7f2;
+  --task-type-selected-text: #faf7f2;
+  --task-type-shadow: 0px 2px 8px 0px rgb(26 26 78 / 0.08);
 }
 
 @theme inline {
@@ -229,6 +288,7 @@
   --color-brand: var(--brand);
   --color-body-text: var(--body-text);
   --color-muted: var(--muted);
+   --color-muteds: var(--muteds);
   --color-cta: var(--cta);
   --color-tint: var(--tint);
   --color-tint-strong: var(--tint-strong);
@@ -315,9 +375,30 @@
   --color-secondary-button-border: var(--secondary-button-border);
   --color-outline-chip-border: var(--outline-chip-border);
 
+  --color-sidebar-active-bg: var(--sidebar-active-bg);
+  --color-sidebar-active-fg: var(--sidebar-active-fg);
+  --color-sidebar-inactive-fg: var(--sidebar-inactive-fg);
+  --color-sidebar-border: var(--sidebar-border);
+
+  --color-card: var(--bg-card);
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+
+  --color-quick-access-border: var(--quick-access-border);
+  --shadow-quick-access: var(--quick-access-shadow);
+
+  --color-consistency-partial: var(--consistency-partial);
+  --color-consistency-missed: var(--consistency-missed);
+
   --animate-float-slow: float 7s ease-in-out infinite;
   --animate-float-medium: float 5.5s ease-in-out infinite;
   --animate-float-fast: float 4s ease-in-out infinite;
+
+    --color-task-type-border: var(--task-type-border);
+  --color-task-type-bg: var(--task-type-bg);
+  --color-task-type-text: var(--task-type-text);
+  --color-task-type-selected-text: var(--task-type-selected-text);
+  --shadow-task-type: var(--task-type-shadow);
 }
 
 /*
@@ -445,4 +526,35 @@ input:is(
   -webkit-text-fill-color: var(--ink) !important;
   caret-color: var(--ink);
   transition: background-color 9999s ease-in-out 0s;
+}
+
+/*
+ * WhiteModal's scroll panel (components/ui/WhiteModal.tsx): reserves a
+ * constant scrollbar gutter at all times so content never shifts when it
+ * fades in — only its color transitions, slowly, on hover/focus.
+ */
+.white-modal-scroll-panel {
+  scrollbar-gutter: stable both-edges;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 500ms ease;
+}
+.white-modal-scroll-panel:hover,
+.white-modal-scroll-panel:focus-within {
+  scrollbar-color: color-mix(in srgb, var(--muted) 55%, transparent) transparent;
+}
+.white-modal-scroll-panel::-webkit-scrollbar {
+  width: 6px;
+}
+.white-modal-scroll-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+.white-modal-scroll-panel::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 9999px;
+  transition: background-color 500ms ease;
+}
+.white-modal-scroll-panel:hover::-webkit-scrollbar-thumb,
+.white-modal-scroll-panel:focus-within::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--muted) 55%, transparent);
 }

@@ -197,8 +197,8 @@ export default function ParentConnectionSettingsPage() {
                 Verification status <span className="font-normal text-muted">(preview)</span>
               </p>
 
-              <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex min-w-0 flex-1 items-center rounded-xl border border-muted bg-ink/[0.08] p-4">
+              <div className="flex flex-col items-stretch gap-4 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+                <div className="flex min-w-0 items-center rounded-xl border border-muted bg-ink/8 p-4">
                   <span className="flex h-12 w-16 shrink-0 items-center pr-4">
                     <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-tint-strong text-ink">
                       <ClockIcon />
@@ -212,7 +212,7 @@ export default function ParentConnectionSettingsPage() {
 
                 <span className="hidden shrink-0 px-8 text-muted sm:inline">┄┄┄┄┄</span>
 
-                <div className="flex min-w-0 flex-1 items-center rounded-xl border border-success/30 bg-success-bg p-4">
+                <div className="flex min-w-0 items-center rounded-xl border border-success/30 bg-success-bg p-4">
                   <span className="flex h-12 w-16 shrink-0 items-center pr-4">
                     <span className="flex h-9 w-9 items-center justify-center rounded-lg text-success">
                       <CheckCircleIcon />

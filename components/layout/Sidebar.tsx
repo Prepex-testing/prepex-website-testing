@@ -8,15 +8,79 @@ import {
   CalendarIcon,
   TargetIcon,
   ChartBarIcon,
-  UserIcon,
+  // UserIcon,
 } from "@/components/ui/icons";
+import {UserIcons,PracticeIcon,StatsIcon} from "@/assets/icons";
+
+// Figma: 20x20 icon slot containing a 16x16 glyph (1.78px stroke).
+const ICON_BOX_CLASS = "flex h-5 w-5 shrink-0 items-center justify-center";
+const ICON_CLASS = "h-4 w-4";
 
 export const NAV_ITEMS = [
-  { href: "/home", label: "Home", icon: <HomeIcon /> },
-  { href: "/plan", label: "Plan", icon: <CalendarIcon /> },
-  { href: "/practice/sessions", label: "Practice", icon: <TargetIcon /> },
-  { href: "/stats", label: "Stats", icon: <ChartBarIcon /> },
-  { href: "/profile", label: "Profile", icon: <UserIcon /> },
+  {
+    href: "/home",
+    label: "Home",
+    icon: (
+      <span className={ICON_BOX_CLASS}>
+        <HomeIcon className={ICON_CLASS} />
+      </span>
+    ),
+  },
+  {
+    // TEMPORARY (current sprint): original destination, restore by
+    // uncommenting the line below and removing the override under it.
+    // href: "/plan",
+    href: "/development-in-progress",
+    // TEMPORARY: keeps this item from highlighting as "active" while on the
+    // shared /development-in-progress placeholder — remove once href above
+    // is restored.
+    activeMatch: "/plan",
+    label: "Plan",
+    icon: (
+      <span className={ICON_BOX_CLASS}>
+        <CalendarIcon className={ICON_CLASS} />
+      </span>
+    ),
+  },
+  {
+    // TEMPORARY (current sprint): original destination, restore by
+    // uncommenting the line below and removing the override under it.
+    // href: "/practice/sessions",
+    href: "/development-in-progress",
+    activeMatch: "/practice",
+    label: "Practice",
+    icon: (
+      <span className={ICON_BOX_CLASS}>
+        <PracticeIcon className={ICON_CLASS} />
+      </span>
+    ),
+  },
+  {
+    // TEMPORARY (current sprint): original destination, restore by
+    // uncommenting the line below and removing the override under it.
+    // href: "/stats",
+    href: "/development-in-progress",
+    activeMatch: "/stats",
+    label: "Stats",
+    icon: (
+      <span className={ICON_BOX_CLASS}>
+        <StatsIcon className={ICON_CLASS} />
+      </span>
+    ),
+  },
+  {
+    // TEMPORARY (current sprint): original destination, restore by
+    // uncommenting the line below and removing the override under it.
+    // href: "/profile",
+    href: "/development-in-progress",
+    activeMatch: "/profile",
+    label: "Profile",
+    icon: (
+      <span className={ICON_BOX_CLASS}>
+        <UserIcons className={ICON_CLASS} />
+      </span>
+    ),
+  },
 ];
 
 export function Sidebar() {
@@ -30,19 +94,20 @@ export function Sidebar() {
 
       <nav className="flex flex-col gap-1">
         {NAV_ITEMS.map((item) => {
+          const matchPath = item.activeMatch ?? item.href;
           const active =
             item.label === "Practice"
               ? pathname?.startsWith("/practice")
-              : pathname === item.href || pathname?.startsWith(`${item.href}/`);
+              : pathname === matchPath || pathname?.startsWith(`${matchPath}/`);
 
           return (
             <Link
-              key={item.href}
+              key={item.label}
               href={item.href}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                 active
-                  ? "bg-tint-strong text-ink"
-                  : "text-muted hover:bg-tint-strong/60"
+                  ? "bg-sidebar-active-bg text-sidebar-active-fg"
+                  : "text-sidebar-inactive-fg"
               }`}
             >
               {item.icon}

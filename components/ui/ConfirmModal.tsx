@@ -1,8 +1,8 @@
 "use client";
 
-import { Modal } from "@/components/ui/Modal";
+import { WhiteModal } from "@/components/ui/WhiteModal";
 import { Button } from "@/components/ui/Button";
-import { AlertTriangleIcon } from "@/components/ui/icons";
+import { ConfirmIcon } from "@/assets/icons";
 
 type ConfirmModalProps = {
   open: boolean;
@@ -24,26 +24,54 @@ export function ConfirmModal({
   cancelLabel = "Cancel",
 }: ConfirmModalProps) {
   return (
-    <Modal open={open} onClose={onClose} ariaLabel={title}>
-      <div className="flex flex-col items-center gap-2 text-center">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-danger-bg text-danger">
-          <AlertTriangleIcon />
-        </span>
-        <h2 className="text-h2 text-ink">{title}</h2>
-        <p className="text-sm text-muted">{description}</p>
+    <WhiteModal open={open} onClose={onClose} ariaLabel={title}>
+      <div className="mx-auto flex w-full max-w-[340px] flex-col items-center text-center">
+        {/* Header Icon — 340 × 64 */}
+        <div className="flex h-16 w-full shrink-0 items-center justify-center">
+          <div className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-[#F59E0B1A] text-[#F59E0B]">
+            <ConfirmIcon />
+          </div>
+        </div>
+
+        {/* Title — 340 × auto */}
+        <div className="flex min-h-8 w-full items-start justify-center pt-4">
+          <h2 className="w-full max-w-[340px] text-[24px] font-extrabold leading-8 text-ink">
+            {title}
+          </h2>
+        </div>
+
+        {/* Description — 340 × auto */}
+        <div className="flex w-full items-start justify-center px-4 pt-2">
+          <p className="w-full max-w-[284px] text-center text-[12px] font-semibold leading-[14.4px] tracking-[0.24px] text-[#64748B] dark:text-[var(--text-secondary)]">
+            {description}
+          </p>
+        </div>
+
+        {/* Buttons — 340 × 90 */}
+        <div className="flex h-[90px] w-full shrink-0 items-start gap-4 pt-8 max-[399px]:h-auto max-[399px]:flex-col">
+          {/* Cancel */}
+          <Button variant="secondary" className="sm:flex-1" onClick={onClose}>
+
+            {cancelLabel}
+
+          </Button>
+
+          {/* Confirm */}
+          <Button
+
+            variant="secondary"
+
+            className="border-danger sm:flex-1"
+
+            onClick={onConfirm}
+
+          >
+
+            {confirmLabel}
+
+          </Button>
+        </div>
       </div>
-      <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row">
-        <Button variant="secondary" className="sm:flex-1" onClick={onClose}>
-          {cancelLabel}
-        </Button>
-        <Button
-          variant="secondary"
-          className="border-danger text-danger sm:flex-1"
-          onClick={onConfirm}
-        >
-          {confirmLabel}
-        </Button>
-      </div>
-    </Modal>
+    </WhiteModal>
   );
 }

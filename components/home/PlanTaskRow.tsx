@@ -1,17 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ClockIcon, CalendarIcon, GripVerticalIcon } from "@/components/ui/icons";
 import { TaskEditMenu } from "@/components/home/TaskEditMenu";
-import { TYPE_STYLES, TYPE_LABELS } from "@/components/home/TaskRow";
+import { CompleteTaskCheckbox } from "@/components/home/CompleteTaskCheckbox";
+import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE } from "@/components/home/TaskRow";
 import type { TaskType } from "@/components/home/TaskRow";
+import { Book, Time } from "@/assets/icons";
+import { getChapterTitle } from "@/lib/utils/text";
 
 type Difficulty = "high" | "medium";
 
 const DIFFICULTY_STYLES: Record<Difficulty, string> = {
-  high: "bg-danger-bg text-danger",
-  medium: "bg-warning/10 text-warning",
+  high:
+    " bg-[#EEF0F8] text-[#1A1A4E] dark:border-transparent dark:bg-[#242453] dark:text-white",
+  medium:
+    " bg-[#EEF0F8] text-[#1A1A4E] dark:border-transparent dark:bg-[#242453] dark:text-white",
 };
 
 const DIFFICULTY_LABELS: Record<Difficulty, string> = {
@@ -26,25 +30,78 @@ export type PlanTask = {
   type: TaskType;
   title: string;
   meta: string;
+  description?: string;
+  chapterName?: string;
   duration: string;
+  estimatedMinutes: number;
+  secondsCompleted?: number;
+  taskOrder?: number;
+  status?: string;
   timeRange: string;
   difficulty: Difficulty;
   actionLabel: string;
+  isCompleted?: boolean;
+  isCustom?: boolean;
+  isWellness?: boolean;
 };
 
 type PlanTaskRowProps = {
   task: PlanTask;
   onStartPractice?: () => void;
+  onTaskChanged?: () => void;
+  /** Called when "Reorder" is clicked — arms this task for drag-and-drop. */
+  onReorder?: () => void;
+  /** True while this task is the one armed for dragging. */
+  isDragArmed?: boolean;
+  /** True while another task in this list is armed — this row accepts drops. */
+  isDropTarget?: boolean;
+  onDragStart?: (event: React.DragEvent<HTMLDivElement>) => void;
+  onDrop?: (event: React.DragEvent<HTMLDivElement>) => void;
 };
 
-export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
-  const [done, setDone] = useState(false);
-  const isStartPractice = task.actionLabel.toLowerCase().includes("practice");
+export function PlanTaskRow({
+  task,
+  onStartPractice,
+  onTaskChanged,
+  onReorder,
+  isDragArmed,
+  isDropTarget,
+  onDragStart,
+  onDrop,
+}: PlanTaskRowProps) {
+  const isStartPractice = task.type === "practice";
+  const isStartRevision = task.type === "revision";
+  const isSkipped = task.status === "SKIPPED";
+  const isWellnessTask = task.isWellness;
+  const isActionDisabled = task.isCompleted || isSkipped;
+  const isPrimaryActionDisabled = isActionDisabled || isWellnessTask;
+  const displayLabel = task.isCompleted
+    ? COMPLETED_ACTION_LABELS[task.type]
+    : isSkipped
+      ? "Skipped"
+      : isWellnessTask
+        ? "Wellness"
+        : task.actionLabel;
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-brand/10 bg-surface p-4 sm:gap-4">
+    <div
+      draggable={isDragArmed}
+      onDragStart={isDragArmed ? onDragStart : undefined}
+      onDragOver={isDropTarget ? (event) => event.preventDefault() : undefined}
+      onDrop={isDropTarget ? onDrop : undefined}
+      className={`flex flex-wrap items-center gap-3 rounded-xl border p-4 sm:gap-4 ${
+        isDragArmed
+          ? "cursor-grabbing border-brand bg-surface ring-2 ring-brand"
+          : isDropTarget
+            ? "border-dashed border-brand/40 bg-surface"
+            : "border-brand/10 bg-surface"
+      }`}
+    >
       {/* Drag handle — 18x18 per spec */}
-      <span className="shrink-0 cursor-grab text-muted" aria-hidden="true">
+      <span
+        className={`shrink-0 text-muted ${isDragArmed ? "cursor-grabbing text-ink" : "cursor-grab"}`}
+        aria-hidden="true"
+      >
         <GripVerticalIcon />
       </span>
 
@@ -56,30 +113,41 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
       {/* Content column */}
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] font-bold uppercase leading-[15px] tracking-[1px] text-muted">
+          <span className="text-[10px] font-bold uppercase leading-[15px] tracking-[1px] text-ink">
             {task.subjectName}
           </span>
           <span
-            className={`rounded-full px-2 py-0.5 text-[10px] font-bold leading-[15px] ${TYPE_STYLES[task.type]}`}
+            className={`rounded-sm px-2 py-0.5 text-[10px] font-bold leading-[15px] ${TYPE_STYLES[task.type]}`}
           >
             {TYPE_LABELS[task.type]}
           </span>
+          {task.isCustom && (
+            <span
+              className={`rounded-sm px-2 py-0.5 text-[10px] font-bold leading-[15px] ${CUSTOM_BADGE_STYLE}`}
+            >
+              Custom
+            </span>
+          )}
         </div>
 
         <p className="mt-0.5 text-base font-bold leading-6 text-ink">
-          {task.title}
+          {getChapterTitle(task.title)}
         </p>
 
         <p className="text-xs font-normal leading-4 text-[#9CA3AF]">{task.meta}</p>
 
         <div className="mt-1 flex flex-wrap items-center gap-3 text-xs font-medium leading-4 text-[#6B7280]">
           <span className="flex items-center gap-1">
-            <ClockIcon />
+           <ClockIcon className="h-4 w-4 shrink-0" />
             {task.duration}
           </span>
           <span className="flex items-center gap-1">
-            <CalendarIcon />
+            <Time className="h-4 w-4 shrink-0" />
             {task.timeRange}
+          </span>
+          <span className="flex items-center gap-1">
+            <Book className="h-4 w-4 shrink-0" />
+            Resource
           </span>
           <span
             className={`rounded-sm px-2 py-0.5 text-[10px] font-semibold ${DIFFICULTY_STYLES[task.difficulty]}`}
@@ -92,36 +160,58 @@ export function PlanTaskRow({ task, onStartPractice }: PlanTaskRowProps) {
       {/* Actions — 16px gap between button and checkbox/menu group */}
       <div className="flex w-full shrink-0 items-center gap-4 sm:w-auto">
         <Button
-          variant="task"
+          variant="outline"
           size="sm"
-          className="h-[38px] rounded-lg border border-[#1A1A4E] px-3 sm:px-5 py-2 text-xs sm:text-sm font-bold leading-5 text-[#1A1A4E] whitespace-nowrap"
+          disabled={isPrimaryActionDisabled}
+          className={
+            isPrimaryActionDisabled
+              ? "h-[38px]! w-auto! min-w-[138px]! justify-center px-5! text-[12px]! leading-none! font-semibold! whitespace-nowrap! cursor-not-allowed! opacity-60! hover:bg-transparent! hover:border-current! hover:text-current! hover:shadow-none!"
+              : "h-[38px]! w-auto! min-w-[138px]! justify-center gap-2.5! px-5! text-[14px]! leading-none! font-semibold! whitespace-nowrap!"
+          }
           href={
-            task.actionLabel === "Start Session"
-              ? "/home/session"
-              : task.actionLabel === "Start Revision"
-                ? "/revision-session"
+            isPrimaryActionDisabled
+              ? undefined
+              : isStartRevision
+                ? `/revision-session?taskId=${task.id}`
+                : task.type === "new-learning"
+                  ? `/home/session?taskId=${task.id}`
+                  : undefined
+          }
+          onClick={
+            isPrimaryActionDisabled
+              ? undefined
+              : isStartPractice
+                ? onStartPractice
                 : undefined
           }
-          onClick={isStartPractice ? onStartPractice : undefined}
         >
-          {task.actionLabel}
+          {displayLabel}
         </Button>
 
         <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={done}
-            onChange={() => setDone((value) => !value)}
-            aria-label={`Mark "${task.title}" complete`}
-            className="h-5 w-5 rounded border border-[#333333] dark:border-[#8B8998]"
+          <CompleteTaskCheckbox
+            taskId={task.id}
+            title={getChapterTitle(task.title)}
+            secondsCompleted={task.secondsCompleted ?? 0}
+            isCompleted={task.isCompleted}
+            disabled={isSkipped}
+            onCompleted={onTaskChanged}
           />
+
           <TaskEditMenu
             task={{
+              id: task.id,
               title: task.title,
+              description: task.description,
               subjectName: task.subjectName,
+              chapterName: task.chapterName,
               type: task.type,
+              status: task.status,
               duration: task.duration,
             }}
+            onTaskChanged={onTaskChanged}
+            onReorder={onReorder}
+            disabled={isActionDisabled}
           />
         </div>
       </div>

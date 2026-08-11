@@ -1,0 +1,122 @@
+import { CORE_API_BASE_URL } from "@/lib/api/config";
+import { authenticatedRequest } from "@/lib/api/authRequest";
+import type { PlannerSubject, TaskStatus } from "@/lib/api/planner";
+
+function authRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+  return authenticatedRequest<T>(`${CORE_API_BASE_URL}/api/revision${path}`, options);
+}
+
+export type RevisionChapterMetadata = {
+  category: string;
+  difficulty: string;
+  recommendedWindow: string;
+  averageLearningMinutes: number;
+  averageRevisionMinutes: number;
+  averagePracticeQuestions: number;
+};
+
+export type RevisionChapter = {
+  id: string;
+  name: string;
+  subject: PlannerSubject;
+  chapterMetadata?: RevisionChapterMetadata | null;
+};
+
+export type RevisionTask = {
+  id: string;
+  subjectId: number;
+  taskType: string;
+  title: string;
+  description: string | null;
+  estimatedMinutes: number;
+  secondsCompleted: number;
+  scheduledStart: string;
+  scheduledEnd: string;
+  suggestedWindow: string;
+  status: TaskStatus | string;
+  questionCount: number | null;
+  chapter: RevisionChapter | null;
+  isAnchor?: boolean;
+};
+
+export type RevisionChapterProgress = {
+  id: string;
+  chapterId: string;
+  status: string;
+  secondsCompleted: number;
+  revisionPhase: string;
+  revisionCount: number;
+  nextRevisionAt: string | null;
+  lastRevisionAt: string | null;
+  currentIntervalDays: number | null;
+  chapter: RevisionChapter;
+};
+
+export type RevisionOverview = {
+  todaysRevisionTasks: { count: number; tasks: RevisionTask[] };
+  upcomingRevisions: { count: number; chapters: RevisionChapterProgress[] };
+  masteredChapters: { count: number; chapters: RevisionChapterProgress[] };
+};
+
+export function getRevisionOverview(filters: { subjectId?: number; status?: TaskStatus } = {}) {
+  const params = new URLSearchParams();
+  if (filters.subjectId !== undefined) params.set("subjectId", String(filters.subjectId));
+  if (filters.status) params.set("status", filters.status);
+
+  const query = params.toString();
+  return authRequest<{ success: true; data: RevisionOverview }>(query ? `?${query}` : "");
+}
+
+export function updateRevisionProgress(revisionId: string) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/progress`, {
+    method: "PATCH",
+  });
+}
+
+export function markRevisionDone(revisionId: string, secondsCompleted: number) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/mark-done`, {
+    method: "POST",
+    body: JSON.stringify({ secondsCompleted }),
+  });
+}
+
+export function startRevisionSession(revisionId: string) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/session/start`, {
+    method: "POST",
+  });
+}
+
+export function heartbeatRevisionSession(revisionId: string) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/session/heartbeat`, {
+    method: "POST",
+  });
+}
+
+export function exitRevisionSession(revisionId: string, secondsCompleted: number) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/session/exit`, {
+    method: "POST",
+    body: JSON.stringify({ secondsCompleted }),
+  });
+}
+
+export function skipRevisionTask(revisionId: string) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/skip`, {
+    method: "POST",
+  });
+}
+
+export type RevisionFeedback = "HARD" | "MEDIUM" | "EASY";
+
+export function submitRevisionFeedback(revisionId: string, feedback: RevisionFeedback) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/feedback`, {
+    method: "POST",
+    body: JSON.stringify({ feedback }),
+  });
+}
+
+/** Demotes a chapter back to the learning stage, e.g. when a first revision reveals gaps. */
+export function demoteRevisionChapter(revisionId: string) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/demote`, {
+    method: "POST",
+  });
+}

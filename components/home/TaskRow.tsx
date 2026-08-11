@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { ClockIcon, SunIcon, FileIcon } from "@/components/ui/icons";
+import { ClockIcon, SunIcon, FileIcon, CalendarIcon } from "@/components/ui/icons";
 import { TaskEditMenu } from "@/components/home/TaskEditMenu";
-import { TYPE_STYLES, TYPE_LABELS } from "@/components/home/taskTypes";
+import { CompleteTaskCheckbox } from "@/components/home/CompleteTaskCheckbox";
+import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE } from "@/components/home/taskTypes";
 import type { TaskType } from "@/components/home/taskTypes";
 
 export type { TaskType };
-export { TYPE_STYLES, TYPE_LABELS };
-
+export { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE };
+import { Book, Time } from "@/assets/icons";
+import { useState } from "react";
+import { getChapterTitle } from "@/lib/utils/text";
 export type Task = {
   id: string;
   subjectLabel: string;
@@ -17,39 +20,63 @@ export type Task = {
   type: TaskType;
   title: string;
   meta: string;
+  description?: string;
+  chapterName?: string;
   duration: string;
+  estimatedMinutes: number;
+  secondsCompleted?: number;
+  status?: string;
   timeSlot: string;
+  scheduledRange?: string;
   hasResource: boolean;
   actionLabel: string;
+  isCompleted?: boolean;
+  isCustom?: boolean;
+  isWellness?: boolean;
 };
 
 type TaskRowProps = {
   task: Task;
   onStartPractice?: () => void;
+  onTaskChanged?: () => void;
 };
 
 export function TaskRow({
   task,
   onStartPractice,
+  onTaskChanged,
 }: TaskRowProps) {
   const [done, setDone] = useState(false);
-
-  const isStartPractice =
-    task.actionLabel === "Start Practice";
-
+  const isStartPractice = task.type === "practice";
+  const isStartRevision = task.type === "revision";
+  const isSkipped = task.status === "SKIPPED";
+  const isWellnessTask = task.isWellness;
+  const isActionDisabled = task.isCompleted || isSkipped;
+  const isPrimaryActionDisabled = isActionDisabled || isWellnessTask;
+  const displayLabel = task.isCompleted
+    ? COMPLETED_ACTION_LABELS[task.type]
+    : isSkipped
+      ? "Skipped"
+      : isWellnessTask
+        ? "Wellness"
+        : task.actionLabel;
+  const router = useRouter();
   return (
     <div
       className="
         w-full
-        rounded-2xl
+        rounded-md
         border
-        border-brand/10
-        bg-surface
-        px-3
-        py-4
+        border-[#EEF0F8]
+        bg-white
+        p-6
+        shadow-[0px_2px_18px_0px_#1A1A4E0A]
+        dark:border-[#242453]
+        dark:bg-[#1A1A4E]
+        dark:shadow-[0px_2px_6px_0px_#FFFFFF0A]
       "
     >
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-6">
 
         {/* LEFT */}
         <div className="flex min-w-0 flex-1 items-center gap-6">
@@ -68,6 +95,7 @@ export function TaskRow({
   border-[#D6E4FF]
   dark:border-transparent
   bg-subject-bg
+  dark:bg-[#FAF7F214]
   text-[18px]
   font-bold
   text-subject-text
@@ -81,7 +109,7 @@ export function TaskRow({
 
             <div className="mb-1 flex items-center gap-2">
 
-              <span className="text-[10px] font-bold uppercase tracking-wide text-muted">
+              <span className="text-[10px] font-bold uppercase tracking-wide text-ink">
                 {task.subjectName}
               </span>
 
@@ -95,6 +123,8 @@ export function TaskRow({
     sm:text-[10px]
     md:text-xs
     font-semibold
+    uppercase
+    tracking-[0.5px]
     leading-none
     whitespace-nowrap
     ${TYPE_STYLES[task.type]}
@@ -102,31 +132,46 @@ export function TaskRow({
               >
                 {TYPE_LABELS[task.type]}
               </span>
+
+              {task.isCustom && (
+                <span
+                  className={`rounded-sm border-0 px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] md:text-xs font-semibold uppercase tracking-[0.5px] leading-none whitespace-nowrap ${CUSTOM_BADGE_STYLE}`}
+                >
+                  Custom
+                </span>
+              )}
             </div>
 
             <h3 className="truncate text-lg font-bold text-ink">
-              {task.title}
+              {getChapterTitle(task.title)}
             </h3>
 
-            <p className="mt-1 text-sm text-muted">
+            <p className="mt-1 text-[12px] font-normal leading-[16px] tracking-normal text-[#666666] dark:text-[#8B8998]">
               {task.meta}
             </p>
 
-            <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted">
+            <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-[#8B8998]">
 
               <span className="flex items-center gap-1">
-                <ClockIcon />
+                <ClockIcon className="h-4 w-4 shrink-0" />
                 {task.duration}
               </span>
 
-              <span className="flex items-center gap-1">
-                <SunIcon />
+              <span className="flex items-center gap-1 font-semibold text-[#FFAE1A]">
+                <SunIcon className="h-4 w-4 shrink-0" />
                 {task.timeSlot}
               </span>
 
+              {task.scheduledRange && (
+                <span className="flex items-center gap-1">
+                  <Time className="h-4 w-4 shrink-0" />
+                  {task.scheduledRange}
+                </span>
+              )}
+
               {task.hasResource && (
                 <span className="flex items-center gap-1">
-                  <FileIcon />
+                  <Book className="h-4 w-4 shrink-0" />
                   Resource
                 </span>
               )}
@@ -148,41 +193,53 @@ export function TaskRow({
             sm:justify-end
           "
         >
-
           <Button
-            variant="task"
+            variant={isPrimaryActionDisabled ? "secondary" : "outline"}
             size="sm"
+            disabled={isPrimaryActionDisabled}
+            className={
+              isPrimaryActionDisabled
+                ? "h-9! w-auto! min-w-[138px]! justify-center px-4! text-[12px]! leading-none! font-semibold! whitespace-nowrap! cursor-not-allowed! opacity-60! hover:bg-transparent! hover:border-current! hover:text-current! hover:shadow-none!"
+                : "h-9! w-auto! min-w-[138px]! justify-center gap-2.5! px-4! text-[14px]! leading-none! font-semibold! whitespace-nowrap!"
+            }
             href={
-              task.actionLabel === "Start Session"
-                ? "/home/session"
-                : task.actionLabel === "Start Revision"
-                  ? "/revision-session"
-                  : undefined
+              isPrimaryActionDisabled
+                ? undefined
+                : isStartRevision
+                  ? `/revision-session?taskId=${task.id}`
+                  : task.type === "new-learning"
+                    ? `/home/session?taskId=${task.id}`
+                    : undefined
             }
-            onClick={
-              isStartPractice
-                ? onStartPractice
-                : undefined
-            }
+            onClick={isPrimaryActionDisabled || task.isCompleted ? undefined : isStartPractice ? onStartPractice : undefined}
           >
-            {task.actionLabel}
+            {displayLabel}
           </Button>
-          <input
-            type="checkbox"
-            checked={done}
-            onChange={() => setDone(!done)}
-            aria-label={`Mark ${task.title} complete`}
-            className="h-5 w-5 appearance-none rounded border border-[#333333] dark:border-[#8B8998] bg-transparent checked:border-brand checked:bg-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+
+          <CompleteTaskCheckbox
+            taskId={task.id}
+            title={getChapterTitle(task.title)}
+            secondsCompleted={task.secondsCompleted ?? 0}
+            isCompleted={task.isCompleted}
+            disabled={isSkipped}
+            onCompleted={onTaskChanged}
           />
 
           <TaskEditMenu
             task={{
+              id: task.id,
               title: task.title,
+              description: task.description,
               subjectName: task.subjectName,
+              chapterName: task.chapterName,
               type: task.type,
+              status: task.status,
               duration: task.duration,
               timeSlot: task.timeSlot,
             }}
+            onTaskChanged={onTaskChanged}
+            onReorder={() => router.push(`/home/today-plan?reorderTaskId=${task.id}`)}
+            disabled={isActionDisabled}
           />
 
         </div>
