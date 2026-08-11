@@ -192,8 +192,8 @@ export function TaskEditMenu({ task, onTaskChanged, onReorder, disabled }: TaskE
         onConfirm={handleDelete}
         title="Delete this task?"
         subtitle={task.title}
-        description="Are you sure you want to delete this task? This action cannot be undone."
-        confirmLabel={isDeleting ? "Deleting..." : "Yes, Delete"}
+        description="This task will be removed from today’s plan."
+        confirmLabel={isDeleting ? "Deleting..." : "Remove"}
       />
     </div>
   );
