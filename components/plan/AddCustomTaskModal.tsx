@@ -248,7 +248,7 @@ export function AddCustomTaskModal({
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="min-w-0 break-words text-[14px] font-bold leading-5 text-ink sm:truncate sm:text-base sm:leading-6 md:text-lg lg:text-[22px] lg:leading-7">
-              {isEdit ? "Edit Task" : "Add to today, tomorrow, or any future day"}
+              {isEdit ? "Edit Task" : "Add Task"}
             </h2>
 
             <p className="min-w-0 truncate text-[10px] font-normal leading-[15px] text-primary sm:mt-1 sm:text-[11px] sm:leading-4 md:text-xs md:leading-[18px] lg:text-sm">
