@@ -41,6 +41,7 @@ export type PlanTask = {
   actionLabel: string;
   isCompleted?: boolean;
   isCustom?: boolean;
+  isWellness?: boolean;
 };
 
 type PlanTaskRowProps = {
@@ -70,12 +71,16 @@ export function PlanTaskRow({
   const isStartPractice = task.type === "practice";
   const isStartRevision = task.type === "revision";
   const isSkipped = task.status === "SKIPPED";
+  const isWellnessTask = task.isWellness;
   const isActionDisabled = task.isCompleted || isSkipped;
+  const isPrimaryActionDisabled = isActionDisabled || isWellnessTask;
   const displayLabel = task.isCompleted
     ? COMPLETED_ACTION_LABELS[task.type]
     : isSkipped
       ? "Skipped"
-      : task.actionLabel;
+      : isWellnessTask
+        ? "Wellness"
+        : task.actionLabel;
 
   return (
     <div
@@ -156,14 +161,14 @@ export function PlanTaskRow({
         <Button
           variant="outline"
           size="sm"
-          disabled={isActionDisabled}
+          disabled={isPrimaryActionDisabled}
           className={
-            isActionDisabled
+            isPrimaryActionDisabled
               ? "h-[38px]! w-auto! min-w-[138px]! justify-center px-5! text-[12px]! leading-none! font-semibold! whitespace-nowrap! cursor-not-allowed! opacity-60! hover:bg-transparent! hover:border-current! hover:text-current! hover:shadow-none!"
               : "h-[38px]! w-auto! min-w-[138px]! justify-center gap-2.5! px-5! text-[14px]! leading-none! font-semibold! whitespace-nowrap!"
           }
           href={
-            isActionDisabled
+            isPrimaryActionDisabled
               ? undefined
               : isStartRevision
                 ? `/revision-session?taskId=${task.id}`
@@ -172,7 +177,7 @@ export function PlanTaskRow({
                   : undefined
           }
           onClick={
-            isActionDisabled
+            isPrimaryActionDisabled
               ? undefined
               : isStartPractice
                 ? onStartPractice

@@ -113,3 +113,10 @@ export function submitRevisionFeedback(revisionId: string, feedback: RevisionFee
     body: JSON.stringify({ feedback }),
   });
 }
+
+/** Demotes a chapter back to the learning stage, e.g. when a first revision reveals gaps. */
+export function demoteRevisionChapter(revisionId: string) {
+  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/demote`, {
+    method: "POST",
+  });
+}

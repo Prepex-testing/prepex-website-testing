@@ -3,14 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/components/layout/Sidebar";
+import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 
 export function FocusSidebar() {
   const pathname = usePathname();
+  const storedFullName = useStoredFullName();
+  const displayInitial = storedFullName.trim()[0]?.toUpperCase() ?? "S";
 
   return (
     <aside className="hidden w-24.25 flex-col items-center self-stretch border-r border-sidebar-border bg-surface px-6 py-8 lg:flex">
       <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">
-        R
+        {displayInitial}
       </div>
 
       <nav className="flex w-12 flex-col gap-2 py-6">

@@ -8,7 +8,13 @@ import { FileIcon, PlayIcon, Open, ArrowLeftIcon, LightbulbIcon } from "@/assets
 import { updateRevisionProgress, markRevisionDone } from "@/lib/api/revision";
 import { getPlannerTask, type PlannerTaskDetail } from "@/lib/api/planner";
 import { useRevisionSession } from "@/components/session/RevisionSessionProvider";
+import { RevisionSessionActionsModal } from "@/components/session/RevisionSessionActionsModal";
 import { formatClock } from "@/lib/utils/datetime";
+
+// The one destination a "leave this page" click is allowed to go to directly
+// — everything else is intercepted and routed through the session options
+// popup instead (see the click/popstate interception effects below).
+const RESOURCE_LIBRARY_PATH = "/home/resource-library";
 
 const QUESTIONS = [
   "What is Newton's First Law of Motion?",
@@ -45,10 +51,13 @@ function RevisionSessionContent() {
   const [pausedElapsedSeconds, setPausedElapsedSeconds] = useState(0);
   const [task, setTask] = useState<PlannerTaskDetail | null>(null);
   const [isTaskLoading, setTaskLoading] = useState(true);
+  const [isActionsOpen, setActionsOpen] = useState(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const savedMinutesRef = useRef(0);
   const autoCompletedRef = useRef(false);
+  const resolvedRef = useRef(false);
   const { isActive, taskId, elapsedSeconds, startSession, exitSession, clearSession } = useRevisionSession();
 
   // Loads the task's full detail (title, chapter/subject, status, secondsCompleted)
@@ -127,7 +136,49 @@ function RevisionSessionContent() {
     })();
   }, [elapsedSeconds, estimatedMinutes, revisionId, clearSession, router]);
 
+  // Intercepts in-app link clicks away from this page (sidebar/back arrow/
+  // etc.) so leaving always goes through the Exit/Complete/Cancel popup —
+  // except Reference Review's "Open" buttons, which intentionally route to
+  // /home/resource-library directly, keeping the session's floating banner
+  // alive there instead of asking the student to decide anything.
+  useEffect(() => {
+    if (!revisionId) return;
+
+    const handleClick = (event: MouseEvent) => {
+      if (resolvedRef.current) return;
+      const anchor = (event.target as HTMLElement | null)?.closest("a");
+      const href = anchor?.getAttribute("href");
+      if (!href || !href.startsWith("/")) return;
+      if (href === RESOURCE_LIBRARY_PATH || href.startsWith(`${RESOURCE_LIBRARY_PATH}/`)) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      setPendingHref(href);
+      setActionsOpen(true);
+    };
+
+    document.addEventListener("click", handleClick, true);
+    return () => document.removeEventListener("click", handleClick, true);
+  }, [revisionId]);
+
+  // Intercepts the browser back/forward buttons the same way.
+  useEffect(() => {
+    if (!revisionId) return;
+
+    window.history.pushState(null, "", window.location.href);
+    const handlePopState = () => {
+      if (resolvedRef.current) return;
+      window.history.pushState(null, "", window.location.href);
+      setPendingHref("/home");
+      setActionsOpen(true);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [revisionId]);
+
   const handleEndSession = async () => {
+    resolvedRef.current = true;
     if (!revisionId) {
       router.push("/revision-session/complete");
       return;
@@ -185,12 +236,11 @@ function RevisionSessionContent() {
 
   const displayedElapsedSeconds = isPaused ? pausedElapsedSeconds : elapsedSeconds;
 
-  const handleExitSession = async () => {
-    try {
-      await exitSession();
-    } finally {
-      router.push("/home/revision");
-    }
+  // After the popup's "Exit Session" completes, continue on to wherever the
+  // intercepted click/back-navigation was originally headed.
+  const handleExitedViaActions = () => {
+    resolvedRef.current = true;
+    router.push(pendingHref ?? "/home/revision");
   };
 
   const goTo = (index: number) => {
@@ -204,7 +254,10 @@ function RevisionSessionContent() {
       <div className="flex items-center justify-between gap-2">
         <button
           type="button"
-          onClick={handleExitSession}
+          onClick={() => {
+            setPendingHref(null);
+            setActionsOpen(true);
+          }}
           className={`flex w-fit shrink-0 items-center gap-1 text-sm font-bold ${isDark ? "text-secondary" : "text-[#334155]"}`}
         >
           <ArrowLeftIcon className="h-[8px] w-[10px] shrink-0 sm:h-[9.33px] sm:w-[12px]" />
@@ -379,6 +432,7 @@ function RevisionSessionContent() {
 
               <button
                 type="button"
+                // onClick={() => router.push(RESOURCE_LIBRARY_PATH)}
                 className={`mt-4 flex h-[38px] w-full items-center justify-center gap-2 rounded-lg border text-xs font-bold text-ink transition-colors hover:bg-tint-strong ${isDark ? "border-white" : "border-brand/15"
                   }`}
               >
@@ -418,6 +472,15 @@ function RevisionSessionContent() {
               : "Pause Session"}
         </button>
       </div>
+
+      <RevisionSessionActionsModal
+        open={isActionsOpen}
+        onClose={() => {
+          setActionsOpen(false);
+          setPendingHref(null);
+        }}
+        onExited={handleExitedViaActions}
+      />
     </div>
   );
 }

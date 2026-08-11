@@ -120,8 +120,8 @@ export function UserMenu({ name, initial }: UserMenuProps) {
           await performLogout();
           router.push("/login");
         }}
-        title="Log out?"
-        description="Are you sure you want to logout? You'll need to sign in again to access your plan."
+        title="Log out"
+        description="Are you sure you want to logout?"
         confirmLabel="Yes, Logout"
       />
     </div>
