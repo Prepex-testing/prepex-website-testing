@@ -18,15 +18,16 @@ export function FocusSidebar() {
 
       <nav className="flex w-12 flex-col gap-2 py-6">
         {NAV_ITEMS.map((item) => {
+          const matchPath = item.activeMatch ?? item.href;
           const active =
             item.label === "Practice"
               ? pathname?.startsWith("/practice")
-              : pathname === item.href ||
-                pathname?.startsWith(`${item.href}/`);
+              : pathname === matchPath ||
+                pathname?.startsWith(`${matchPath}/`);
 
           return (
             <Link
-              key={item.href}
+              key={item.label}
               href={item.href}
               aria-label={item.label}
               className={`flex w-12 items-center justify-center transition-colors duration-200 ${
