@@ -31,6 +31,7 @@ export type Task = {
   actionLabel: string;
   isCompleted?: boolean;
   isCustom?: boolean;
+  isWellness?: boolean;
 };
 
 type TaskRowProps = {
@@ -48,12 +49,16 @@ export function TaskRow({
   const isStartPractice = task.type === "practice";
   const isStartRevision = task.type === "revision";
   const isSkipped = task.status === "SKIPPED";
+  const isWellnessTask = task.isWellness;
   const isActionDisabled = task.isCompleted || isSkipped;
+  const isPrimaryActionDisabled = isActionDisabled || isWellnessTask;
   const displayLabel = task.isCompleted
     ? COMPLETED_ACTION_LABELS[task.type]
     : isSkipped
       ? "Skipped"
-      : task.actionLabel;
+      : isWellnessTask
+        ? "Wellness"
+        : task.actionLabel;
   const router = useRouter();
   return (
     <div
@@ -188,16 +193,16 @@ export function TaskRow({
           "
         >
           <Button
-            variant={isActionDisabled ? "secondary" : "outline"}
+            variant={isPrimaryActionDisabled ? "secondary" : "outline"}
             size="sm"
-            disabled={isActionDisabled}
+            disabled={isPrimaryActionDisabled}
             className={
-              isActionDisabled
+              isPrimaryActionDisabled
                 ? "h-9! w-auto! min-w-[138px]! justify-center px-4! text-[12px]! leading-none! font-semibold! whitespace-nowrap! cursor-not-allowed! opacity-60! hover:bg-transparent! hover:border-current! hover:text-current! hover:shadow-none!"
                 : "h-9! w-auto! min-w-[138px]! justify-center gap-2.5! px-4! text-[14px]! leading-none! font-semibold! whitespace-nowrap!"
             }
             href={
-              isActionDisabled
+              isPrimaryActionDisabled
                 ? undefined
                 : isStartRevision
                   ? `/revision-session?taskId=${task.id}`
@@ -205,7 +210,7 @@ export function TaskRow({
                     ? `/home/session?taskId=${task.id}`
                     : undefined
             }
-            onClick={task.isCompleted ? undefined : isStartPractice ? onStartPractice : undefined}
+            onClick={isPrimaryActionDisabled || task.isCompleted ? undefined : isStartPractice ? onStartPractice : undefined}
           >
             {displayLabel}
           </Button>

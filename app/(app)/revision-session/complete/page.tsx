@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   // ArrowLeftIcon,
   // CalendarIcon,
@@ -15,17 +15,17 @@ import {
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { TargetIcon, TrendingUpIcon, CalendarIcon, ClockIcon, LayersIcon, ArrowLeftIcon } from "@/assets/icons";
-import { submitRevisionFeedback, type RevisionFeedback } from "@/lib/api/revision";
+import { submitRevisionFeedback, demoteRevisionChapter, type RevisionFeedback } from "@/lib/api/revision";
 import { getPlannerTask, type PlannerTaskDetail } from "@/lib/api/planner";
 import { formatClock } from "@/lib/utils/datetime";
-type Difficulty = "Low" | "Medium" | "High";
+type Difficulty = "Easy" | "Medium" | "Hard";
 
-const DIFFICULTIES: Difficulty[] = ["Low", "Medium", "High"];
+const DIFFICULTIES: Difficulty[] = ["Easy", "Medium", "Hard"];
 
 const DIFFICULTY_FEEDBACK: Record<Difficulty, RevisionFeedback> = {
-  Low: "EASY",
+  Easy: "EASY",
   Medium: "MEDIUM",
-  High: "HARD",
+  Hard: "HARD",
 };
 
 export default function RevisionCompletePage() {
@@ -37,10 +37,12 @@ export default function RevisionCompletePage() {
 }
 
 function RevisionCompleteContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const taskId = searchParams.get("taskId");
   const [difficulty, setDifficulty] = useState<Difficulty>("Medium");
   const [isSubmittingFeedback, setSubmittingFeedback] = useState(false);
+  const [isDemoting, setDemoting] = useState(false);
   const [task, setTask] = useState<PlannerTaskDetail | null>(null);
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
@@ -66,13 +68,33 @@ function RevisionCompleteContent() {
 
   const handleSelectDifficulty = (option: Difficulty) => {
     setDifficulty(option);
+  };
+
+  const handleSubmit = async () => {
     if (!taskId) return;
     setSubmittingFeedback(true);
-    submitRevisionFeedback(taskId, DIFFICULTY_FEEDBACK[option])
-      .catch(() => {
-        // Best-effort — the selection still reflects locally.
-      })
-      .finally(() => setSubmittingFeedback(false));
+    try {
+      await submitRevisionFeedback(taskId, DIFFICULTY_FEEDBACK[difficulty]);
+      router.push("/home/revision");
+    } catch {
+      // Best-effort — nothing to recover here beyond re-enabling the button.
+    } finally {
+      setSubmittingFeedback(false);
+    }
+  };
+
+  const handleMoveChapterToLearning = async () => {
+    const chapterId = task?.chapter?.id;
+    if (!chapterId) return;
+    setDemoting(true);
+    try {
+      await demoteRevisionChapter(chapterId);
+      router.push("/home/revision");
+    } catch {
+      // Best-effort — nothing to recover here beyond re-enabling the button.
+    } finally {
+      setDemoting(false);
+    }
   };
 
   const STATS = [
@@ -254,13 +276,26 @@ function RevisionCompleteContent() {
           </div>
         </div>
         {/* Actions */}
-        <div className="mt-6 w-full sm:mt-8">
-          <Link
-            href="/home/revision"
-            className="flex h-14 w-full items-center justify-center rounded-2xl bg-cta text-sm font-semibold leading-6 text-white transition-colors hover:bg-cta/90 sm:h-[60px] sm:text-base"
+        <div className="mt-6 flex w-full flex-col gap-3 sm:mt-8">
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSubmittingFeedback || isDemoting}
+            className="flex h-14 w-full items-center justify-center rounded-2xl bg-cta text-sm font-semibold leading-6 text-white transition-colors hover:bg-cta/90 disabled:opacity-60 sm:h-[60px] sm:text-base"
           >
-            Back to Revision Dashboard
-          </Link>
+            Submit
+          </button>
+          {task?.isFirstRevision ? (
+            <button
+              type="button"
+              onClick={handleMoveChapterToLearning}
+              disabled={isDemoting || isSubmittingFeedback}
+              className="flex h-14 w-full items-center justify-center rounded-2xl border-2 border-brand bg-surface text-sm font-semibold leading-6 text-brand transition-colors hover:bg-brand/5 disabled:opacity-60 sm:h-[60px] sm:text-base"
+            >
+              Move Chapter to Learning
+            </button>
+          ) : null}
+
         </div>
       </div>
     </div>

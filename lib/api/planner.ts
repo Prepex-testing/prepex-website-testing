@@ -82,6 +82,7 @@ export type PlannerTaskDetail = {
   questionCount: number | null;
   chapter: PlannerChapter;
   subject: PlannerSubject | null;
+  isFirstRevision?: boolean;
 };
 
 export function getPlannerTask(taskId: string) {
