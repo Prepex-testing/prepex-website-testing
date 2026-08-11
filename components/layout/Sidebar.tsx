@@ -27,7 +27,14 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    href: "/plan",
+    // TEMPORARY (current sprint): original destination, restore by
+    // uncommenting the line below and removing the override under it.
+    // href: "/plan",
+    href: "/development-in-progress",
+    // TEMPORARY: keeps this item from highlighting as "active" while on the
+    // shared /development-in-progress placeholder — remove once href above
+    // is restored.
+    activeMatch: "/plan",
     label: "Plan",
     icon: (
       <span className={ICON_BOX_CLASS}>
@@ -36,7 +43,11 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    href: "/practice/sessions",
+    // TEMPORARY (current sprint): original destination, restore by
+    // uncommenting the line below and removing the override under it.
+    // href: "/practice/sessions",
+    href: "/development-in-progress",
+    activeMatch: "/practice",
     label: "Practice",
     icon: (
       <span className={ICON_BOX_CLASS}>
@@ -45,7 +56,11 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    href: "/stats",
+    // TEMPORARY (current sprint): original destination, restore by
+    // uncommenting the line below and removing the override under it.
+    // href: "/stats",
+    href: "/development-in-progress",
+    activeMatch: "/stats",
     label: "Stats",
     icon: (
       <span className={ICON_BOX_CLASS}>
@@ -54,7 +69,11 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    href: "/profile",
+    // TEMPORARY (current sprint): original destination, restore by
+    // uncommenting the line below and removing the override under it.
+    // href: "/profile",
+    href: "/development-in-progress",
+    activeMatch: "/profile",
     label: "Profile",
     icon: (
       <span className={ICON_BOX_CLASS}>
@@ -75,14 +94,15 @@ export function Sidebar() {
 
       <nav className="flex flex-col gap-1">
         {NAV_ITEMS.map((item) => {
+          const matchPath = item.activeMatch ?? item.href;
           const active =
             item.label === "Practice"
               ? pathname?.startsWith("/practice")
-              : pathname === item.href || pathname?.startsWith(`${item.href}/`);
+              : pathname === matchPath || pathname?.startsWith(`${matchPath}/`);
 
           return (
             <Link
-              key={item.href}
+              key={item.label}
               href={item.href}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                 active
