@@ -123,7 +123,7 @@ export function UserMenu({ name, initial }: UserMenuProps) {
         }}
         title="Log out"
         description="Are you sure you want to logout?"
-        confirmLabel="Yes, Logout"
+        confirmLabel="Logout"
       />
     </div>
   );

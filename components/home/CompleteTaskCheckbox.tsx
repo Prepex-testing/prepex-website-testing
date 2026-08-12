@@ -84,7 +84,7 @@ export function CompleteTaskCheckbox({
         onConfirm={handleConfirm}
         title="Mark task complete?"
         description="Are you sure you want to mark this task completed?"
-        confirmLabel={isCompleting ? "Completing..." : "Yes, Mark Complete"}
+        confirmLabel={isCompleting ? "Completing..." : "Mark Complete"}
       />
     </>
   );

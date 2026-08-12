@@ -21,7 +21,7 @@ const VARIANT_CLASSES: Record<Variant, string> = {
   outline:
   "border border-[#1A1A4E] bg-surface text-[#1A1A4E] hover:border-[#FF7A59] hover:bg-[#FF7A59] hover:text-white dark:border-[#FAF7F2] dark:text-[#FAF7F2] dark:hover:border-[#FF7A59] dark:hover:bg-[#FF7A59] dark:hover:text-white",
   danger:
-  "border border-[#F59E0B] bg-surface text-[#F59E0B] hover:bg-[#F59E0B] hover:text-white",
+  "border border-[#F59E0B] bg-surface text-[#F59E0B] hover:bg-[#F59E0B]/20",
 };
 
 type ButtonProps = {

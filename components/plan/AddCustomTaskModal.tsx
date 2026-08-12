@@ -13,6 +13,7 @@ import {
   getSubjectsChapters,
   type SubjectWithChapters,
 } from "@/lib/api/profile";
+import { AddTask } from "@/assets/icons";
 
 const TASK_TYPES = ["New Learning", "Revision", "Practice", "DPP", "Other"];
 
@@ -243,8 +244,8 @@ export function AddCustomTaskModal({
       {/* HEADER */}
       <div className="-mx-5 -mt-5 flex w-[calc(100%+2.5rem)] shrink-0 items-start justify-between gap-3 border-b border-brand/10 px-3 py-4 sm:-mx-8 sm:-mt-8 sm:w-[calc(100%+4rem)] sm:px-5 sm:py-5 lg:px-6 lg:py-6">
         <div className="flex min-w-0 flex-1 items-start gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand sm:size-11">
-            {isEdit ? <EditIcon /> : <PlusIcon />}
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl  bg-[#EEF0F8] text-ink dark:bg-[#FAF7F214] sm:size-11">
+            <AddTask />
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="min-w-0 break-words text-[14px] font-bold leading-5 text-ink sm:truncate sm:text-base sm:leading-6 md:text-lg lg:text-[22px] lg:leading-7">

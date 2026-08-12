@@ -65,9 +65,11 @@ export function TaskConfirmModal({
                 {/* Subtitle */}
                 {subtitle && (
                     <div className="flex h-5 w-full items-center justify-center">
-                        <p className="h-5 max-w-full text-[14px] font-bold leading-5 text-ink">
-                            {subtitle}
-                        </p>
+                        <div className="flex min-h-5 w-full items-center justify-center">
+                            <p className="max-w-full text-center text-[14px] font-bold leading-5 text-ink">
+                                {subtitle}
+                            </p>
+                        </div>
                     </div>
                 )}
 
@@ -110,7 +112,7 @@ export function TaskConfirmModal({
                     <Button
                         variant="danger"
                         onClick={onConfirm}
-                        className="h-[58px] w-[162px] rounded-lg border-[#F59E0B] px-4 py-4 text-[16px] font-bold leading-6 text-[#F59E0B] max-[399px]:w-full"
+                        className="h-[58px] w-[162px] rounded-lg px-4 py-4 text-[16px] font-bold leading-6 max-[399px]:w-full"
                     >
                         {confirmLabel}
                     </Button>

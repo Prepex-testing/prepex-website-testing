@@ -9,6 +9,8 @@ type WhiteModalProps = {
   ariaLabel: string;
   children: ReactNode;
   size?: "md" | "lg" | "xl";
+  /** Overrides the sm+ width/padding classes entirely (e.g. for a one-off Figma width). Ignored below the `sm` breakpoint, where the panel always uses the compact mobile padding. */
+  panelClassName?: string;
 };
 
 const SIZE_CLASSES: Record<NonNullable<WhiteModalProps["size"]>, string> = {
@@ -26,7 +28,14 @@ const SIZE_CLASSES: Record<NonNullable<WhiteModalProps["size"]>, string> = {
  * `CheckInModal` and `GoalSettingModal` are intentionally excluded and keep
  * using `Modal`.
  */
-export function WhiteModal({ open, onClose, ariaLabel, children, size = "md" }: WhiteModalProps) {
+export function WhiteModal({
+  open,
+  onClose,
+  ariaLabel,
+  children,
+  size = "md",
+  panelClassName,
+}: WhiteModalProps) {
   useEffect(() => {
     if (!open) return;
 
@@ -49,7 +58,7 @@ export function WhiteModal({ open, onClose, ariaLabel, children, size = "md" }: 
       onClick={onClose}
     >
       <div
-        className={`white-modal-scroll-panel w-[calc(100vw-2rem)] max-h-[85vh] overflow-y-auto rounded-2xl bg-surface p-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-modal sm:w-full sm:p-8 sm:pb-10 ${SIZE_CLASSES[size]}`}
+        className={`white-modal-scroll-panel w-[calc(100vw-2rem)] max-h-[85vh] overflow-y-auto rounded-2xl bg-surface p-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-modal sm:w-full ${panelClassName ?? `sm:p-8 sm:pb-10 ${SIZE_CLASSES[size]}`}`}
         onClick={(event) => event.stopPropagation()}
       >
         {children}
