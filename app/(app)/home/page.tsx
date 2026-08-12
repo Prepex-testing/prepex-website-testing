@@ -26,7 +26,7 @@ import {
 } from "@/lib/api/planner";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
-import { FlameIcon, BackIcon, BookIcon, BriefcaseIcon, ChartBarIcon, LayersIcon, LoderIcon, QuickIcon, RadarIcon, RevisionIcon, TrophyIcon, UserIcon, BellIcon, SparkleIcon } from "@/assets/icons";
+import { FlameIcon, BackIcon, BookIcon, BriefcaseIcon, ChartBarIcon, LayersIcon, LoderIcon, QuickIcon, RadarIcon, RevisionIcon, TrophyIcon, UserIcon, BellIcon, SparkleIcon, DotIcon } from "@/assets/icons";
 import {
   // SparkleIcon,
   RefreshIcon,
@@ -778,7 +778,7 @@ export default function HomePage() {
                   </span>
 
                   <span className="flex shrink-0 items-center gap-1">
-                    <span>Less</span>
+                    <span>Missed</span>
 
                     <span className="flex items-center gap-1">
                       {consistencyColors.map((color, index) => (
@@ -800,7 +800,7 @@ export default function HomePage() {
                       ))}
                     </span>
 
-                    <span>More</span>
+                    <span>Completed</span>
                   </span>
                 </div>
               </>
@@ -816,7 +816,7 @@ export default function HomePage() {
       <div className="flex flex-col gap-4 rounded-2xl border border-[#F59E0B] bg-[#FFFBEB] p-6 dark:border-transparent! dark:bg-[#111145] sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-[#F59E0B] shadow-[0px_1px_2px_0px_#0000000D]">
-            <InfoIcon />
+            <DotIcon />
           </span>
           <div className="min-w-0">
             <p className="text-sm font-bold text-[#F59E0B]">Backlog Alert</p>

@@ -194,7 +194,7 @@ export function TaskEditMenu({ task, onTaskChanged, onReorder, disabled }: TaskE
         title="Remove this task?"
         subtitle={getChapterTitle(task.title)}
         description="This task will be removed from today’s plan."
-        confirmLabel={isDeleting ? "Deleting..." : "Remove"}
+        confirmLabel={isDeleting ? "Removing..." : "Remove"}
       />
     </div>
   );
