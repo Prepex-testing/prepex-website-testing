@@ -5,6 +5,17 @@ export function formatShortDate(iso: string): string {
   return SHORT_DATE_FORMAT.format(new Date(iso));
 }
 
+const FULL_DATE_FORMAT = new Intl.DateTimeFormat("en-GB", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+});
+
+/** "Monday, 29 June" */
+export function formatFullDate(date: Date): string {
+  return FULL_DATE_FORMAT.format(date);
+}
+
 /** Whole minutes elapsed between an ISO timestamp and now (never negative). */
 export function minutesSince(iso: string): number {
   const elapsedMs = Date.now() - new Date(iso).getTime();

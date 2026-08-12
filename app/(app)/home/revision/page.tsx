@@ -185,7 +185,9 @@ export default function RevisionPage() {
       ...(activeStatus ? { status: activeStatus } : {}),
     })
       .then(({ data }) => setOverview(data))
-      .catch(() => setOverview(null));
+      .catch(() => {
+        // Best-effort — the list stays on its previous data until this succeeds.
+      });
   };
 
   // Refetches the revision overview whenever the active subject or status filter changes.

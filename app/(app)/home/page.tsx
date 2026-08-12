@@ -15,6 +15,7 @@ import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { CheckInModal, MOODS, type Mood } from "@/components/check-in/CheckInModal";
 import { moodIdToApiValue, apiValueToMoodId, getCheckInStatus, endRecoveryMode } from "@/lib/api/checkin";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
+import { formatFullDate } from "@/lib/utils/datetime";
 import {
   regeneratePlanForMood,
   getTodayPlan,
@@ -374,8 +375,12 @@ export default function HomePage() {
 
   const plan = planData?.plan;
   const summary = planData?.summary;
-  const planTasks = planLoadFailed ? [] : (plan ? plan.tasks.map(toHomeTask) : TASKS).slice(0, 5);
-  const completionPercent = summary?.completionPercentage ?? 22;
+  const planTasks = (plan ? plan.tasks.map(toHomeTask) : TASKS).slice(0, 5);
+  const examCountdown =
+    plan?.targetedExam && plan?.dayRemainingForExam != null
+      ? `${plan.targetedExam} in ${plan.dayRemainingForExam} days`
+      : null;
+  const completionPercent = summary?.completionPercentage ?? 0;
   const completedMinutes = summary ? summary.totalTimeCompletedSeconds / 60 : 78;
   const plannedMinutes = summary?.totalPlannedMinutes ?? 360;
 
@@ -384,7 +389,11 @@ export default function HomePage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink lg:text-h1">Good Morning, {firstName}</h1>
-          <p className="text-sm text-muted">JEE Main 2026 in 284 days</p>
+          <p
+            className={`text-sm text-muted transition-opacity duration-300 ${examCountdown ? "opacity-100" : "opacity-0"}`}
+          >
+            {examCountdown ?? " "}
+          </p>
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
@@ -482,7 +491,7 @@ export default function HomePage() {
           <div className="rounded-2xl border border-brand/10 bg-surface px-4 pt-3 pb-4 @4xl:px-6 @4xl:pt-4 @4xl:pb-6">
             <div className="flex justify-end">
               <span className="whitespace-nowrap text-[10px] leading-none text-muted @4xl:text-[11px]">
-                Friday 5 June
+                {formatFullDate(new Date())}
               </span>
             </div>
             <div className="-mt-1 flex flex-row items-center gap-3 @4xl:gap-4">
@@ -583,7 +592,7 @@ export default function HomePage() {
             </div>
 
             <div className="p-5">
-              {planLoadFailed ? (
+              {!plan && planLoadFailed ? (
                 <p className="py-8 text-center text-sm text-muted">No plan available</p>
               ) : (
                 <>
@@ -679,7 +688,7 @@ export default function HomePage() {
             </div>
 
             {consistency ? (
-              <>
+              <div className="starting:opacity-0 transition-opacity duration-300">
                 {/* Weekday labels */}
                 <div
                   className="
@@ -804,7 +813,7 @@ export default function HomePage() {
                     <span>Completed</span>
                   </span>
                 </div>
-              </>
+              </div>
             ) : (
               <div className="mt-4 flex h-32 items-center justify-center text-xs text-muted">
                 Loading...

@@ -99,6 +99,9 @@ export type DailyPlan = {
   plannerMode: string;
   generationType: PlanGenerationReason;
   tasks: PlannerTask[];
+  targetedExam?: string;
+  targetedExamDate?: string;
+  dayRemainingForExam?: number;
 };
 
 export type PlannerSubjectSummary = {
