@@ -17,9 +17,26 @@ export function FocusSidebar({ onExpand }: FocusSidebarProps) {
 
   return (
     <aside className="relative hidden w-24.25 flex-col items-center self-stretch border-r border-sidebar-border bg-surface px-6 py-8 lg:flex">
-      <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">
+      <span
+        className="
+    flex
+    h-8
+    w-8
+    shrink-0
+    items-center
+    justify-center
+    rounded-full
+    bg-[#171658]
+    text-sm
+    font-bold
+    leading-5
+    text-white
+    dark:bg-[#FAF7F2]
+    dark:text-[#171658]
+  "
+      >
         {displayInitial}
-      </div>
+      </span>
 
       {onExpand && (
         <button
@@ -39,18 +56,17 @@ export function FocusSidebar({ onExpand }: FocusSidebarProps) {
             item.label === "Practice"
               ? pathname?.startsWith("/practice")
               : pathname === matchPath ||
-                pathname?.startsWith(`${matchPath}/`);
+              pathname?.startsWith(`${matchPath}/`);
 
           return (
             <Link
               key={item.label}
               href={item.href}
               aria-label={item.label}
-              className={`flex w-12 items-center justify-center transition-colors duration-200 ${
-                active
+              className={`flex w-12 items-center justify-center transition-colors duration-200 ${active
                   ? "h-12 rounded-xl bg-sidebar-active-bg text-sidebar-active-fg"
                   : "h-10 rounded-2xl px-4 py-3 text-sidebar-inactive-fg hover:bg-sidebar-active-bg hover:text-sidebar-active-fg"
-              }`}
+                }`}
             >
               {item.icon}
             </Link>

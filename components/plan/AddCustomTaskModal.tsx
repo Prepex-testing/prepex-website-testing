@@ -344,8 +344,8 @@ export function AddCustomTaskModal({
                         onClick={() => setTaskType(type)}
                         aria-pressed={isSelected}
                         className={`rounded-full border px-3 py-1.5 text-xs font-semibold leading-5 transition-colors sm:px-4 sm:py-2 sm:text-sm ${isSelected
-                            ? "border-task-type-bg bg-task-type-bg text-task-type-selected-text shadow-task-type"
-                            : "border-task-type-border bg-transparent text-task-type-text hover:bg-tint-strong"
+                          ? "border-task-type-bg bg-task-type-bg text-task-type-selected-text shadow-task-type"
+                          : "border-task-type-border bg-transparent text-task-type-text hover:bg-tint-strong"
                           }`}
                       >
                         {type}
@@ -413,7 +413,7 @@ export function AddCustomTaskModal({
               placeholder="Specific focus areas, resources to use..."
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
-              className="mt-1 w-full resize-none rounded-xl border border-input-border bg-surface px-4 py-3 text-[14px] font-semibold leading-5 text-ink outline-none placeholder:text-[10px] placeholder:font-normal placeholder:text-muteds focus:border-input-border sm:text-[15px] sm:leading-5 sm:placeholder:text-[11px] md:text-base md:leading-6 md:placeholder:text-xs lg:placeholder:text-sm"
+              className="mt-1 w-full resize-none rounded-xl border border-input-border bg-surface px-4 py-3 text-[14px] font-medium leading-[14px] text-ink outline-none placeholder:font-['Plus_Jakarta_Sans'] placeholder:text-[14px] placeholder:font-normal placeholder:leading-[14px] placeholder:text-[#666666] dark:placeholder:text-[#8B8998] focus:border-input-border sm:text-[16px] sm:leading-[16px] sm:placeholder:text-[16px] sm:placeholder:leading-[16px]"
             />
           </div>
 
@@ -423,15 +423,31 @@ export function AddCustomTaskModal({
 
       {/* FOOTER */}
       <div className="-mx-5 -mb-5 flex min-h-[103px] w-[calc(100%+2.5rem)] shrink-0 flex-col-reverse gap-3 border-t border-brand/10 px-3 py-5 sm:-mx-8 sm:-mb-8 sm:w-[calc(100%+4rem)] sm:flex-row sm:items-center sm:justify-end sm:gap-4 sm:px-5 sm:py-6 lg:px-6">
-        <Button variant="secondary" size="sm" onClick={onClose} className="w-full sm:w-auto">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onClose}
+          className="h-[54px] w-full rounded-lg px-6 py-[12.8px] text-base sm:w-[141px]"
+        >
           Cancel
         </Button>
 
-        <Button variant="primary" size="sm" onClick={handleSubmit} disabled={isSubmitting || !taskName.trim()} className="w-full sm:w-auto">
-          {isSubmitting ? (isEdit ? "Saving..." : "Adding...") : isEdit ? "Save Changes" : "Add Task"}
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={handleSubmit}
+          disabled={isSubmitting || !taskName.trim()}
+          className="flex h-[54px] w-full items-center justify-center gap-2.5 rounded-xl px-6 py-2 sm:w-[231px]"
+        >
+          {isSubmitting
+            ? isEdit
+              ? "Saving..."
+              : "Adding..."
+            : isEdit
+              ? "Save Changes"
+              : "Add Task"}
         </Button>
       </div>
-
       <ConfirmModal
         open={isDurationConfirmOpen}
         onClose={() => setDurationConfirmOpen(false)}
