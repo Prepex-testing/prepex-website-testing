@@ -137,8 +137,8 @@ function RevisionCompleteContent() {
       <div className="w-full rounded-2xl border border-brand/10 bg-surface px-5 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10">
         {/* Success header */}
         <div className="flex w-full flex-col items-center gap-2 text-center sm:gap-3">
-          <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-[#F0FDF4] sm:size-20">
-            <CheckIcon className="h-8 w-8 shrink-0 text-[#22C55E] [&>path]:stroke-[4.5px] sm:h-10 sm:w-10 sm:[&>path]:stroke-[5px]" />
+          <span className="flex size-16 shrink-0 items-center justify-center rounded-full border-0 bg-[#F0FDF4] dark:border-[6px] dark:border-[#4B5563] sm:size-20 sm:dark:border-[7px]">
+            <CheckIcon className="h-8 w-8 shrink-0 text-[#22C55E] [&>path]:stroke-[3.5px] sm:h-10 sm:w-10 sm:[&>path]:stroke-[4px]" />
           </span>
 
           <h1
@@ -207,10 +207,10 @@ function RevisionCompleteContent() {
                   onClick={() => handleSelectDifficulty(option)}
                   disabled={isSubmittingFeedback}
                   className={`flex min-w-0 flex-1 items-center justify-center rounded-xl border-2 bg-surface px-1 py-2.5 text-center transition-all duration-300 min-[360px]:px-2 sm:min-h-16 sm:px-3 lg:min-h-20 ${selected
-                      ? "border-brand"
-                      : isDark
-                        ? "border-muted"
-                        : "border-[#F3F4F6]"
+                    ? "border-brand"
+                    : isDark
+                      ? "border-muted"
+                      : "border-[#F3F4F6]"
                     }`}
                 >
                   <span
@@ -225,10 +225,11 @@ function RevisionCompleteContent() {
           </div>
         </div>
 
-        {/* Topics revised */}
-        <div className="mt-6 flex w-full flex-col gap-4 sm:mt-10 sm:gap-6">
+        {/* Topics Revised */}
+        <div className="mt-6 flex w-full flex-col gap-3 sm:mt-8 sm:gap-4">
           <p
-            className={`text-xs font-extrabold uppercase tracking-[1.6px] ${isDark ? "text-ink" : "text-[#1F2937]"}`}
+            className={`mx-2 text-xs font-extrabold uppercase tracking-[1.6px] sm:mx-4 ${isDark ? "text-ink" : "text-[#1F2937]"
+              }`}
           >
             Topics Revised
           </p>
@@ -236,60 +237,126 @@ function RevisionCompleteContent() {
           {/* Topic Card */}
           <div
             className="
-      flex flex-col gap-4
+      mx-2
+      flex
+      min-h-[90px]
+      flex-col
+      gap-3
       rounded-2xl
-      border border-[#F3F4F6] dark:border-[#FAF7F240]
+      border
+      border-[#F3F4F6]
       bg-surface
-      p-5
-      shadow-[0px_1px_2px_0px_#F9FAFB] dark:shadow-none
+      p-4
+      shadow-[0px_1px_2px_0px_#F9FAFB]
+      dark:border-[#FAF7F240]
+      dark:shadow-none
+      sm:mx-4
+      sm:min-h-[102px]
       sm:flex-row
       sm:items-center
       sm:justify-between
-      sm:p-6
+      sm:gap-6
+      sm:p-5
     "
           >
-            <div className="flex min-w-0 items-center gap-3 sm:gap-6">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tint text-base font-bold text-ink sm:h-14 sm:w-14 sm:text-[20px]">
+            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+              <span
+                className="
+          flex
+          h-10
+          w-10
+          shrink-0
+          items-center
+          justify-center
+          rounded-xl
+          bg-tint
+          text-sm
+          font-bold
+          text-ink
+          sm:h-12
+          sm:w-12
+          sm:text-base
+        "
+              >
                 P
               </span>
 
               <div className="min-w-0 flex-1">
-                <p className="break-words text-[15px] sm:text-[18px] font-extrabold leading-6 sm:leading-7 text-ink">
-                  {task?.title ? getChapterTitle(task.title) : "Newton's Laws"}
+                <p className="break-words text-sm font-extrabold leading-5 text-ink sm:text-base sm:leading-6">
+                  {task?.title ? getChapterTitle(task.title) : ""}
                 </p>
 
-                <p className="mt-1 break-words text-xs sm:text-sm font-medium leading-5 text-[#6B7280]">
-                  Physics • Concept Video • NCERT Chapter
+                <p className="mt-0.5 break-words text-[11px] font-medium leading-4 text-[#6B7280] sm:text-xs">
+                  {task?.description ? getChapterTitle(task.description) : ""}
                 </p>
               </div>
             </div>
 
-            <span className="self-start text-xs sm:self-center sm:text-sm font-bold text-muted whitespace-nowrap">
+            <span className="self-start whitespace-nowrap text-[11px] font-bold text-muted sm:self-center sm:text-xs">
               Day 7 → Day 14
             </span>
           </div>
-        </div>
-        {/* Actions */}
-        <div className="mt-6 flex w-full flex-col gap-3 sm:mt-8">
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isSubmittingFeedback || isDemoting}
-            className="flex h-14 w-full items-center justify-center rounded-2xl bg-cta text-sm font-semibold leading-6 text-white transition-colors hover:bg-cta/90 disabled:opacity-60 sm:h-[60px] sm:text-base"
-          >
-            Submit
-          </button>
-          {task?.isFirstRevision ? (
+
+          {/* Actions */}
+          <div className="mx-2 mt-1 flex w-auto flex-col gap-2 sm:mx-4 sm:mt-2 sm:gap-3">
             <button
               type="button"
-              onClick={handleMoveChapterToLearning}
-              disabled={isDemoting || isSubmittingFeedback}
-              className="flex h-14 w-full items-center justify-center rounded-2xl border-2 border-brand bg-surface text-sm font-semibold leading-6 text-brand transition-colors hover:bg-brand/5 disabled:opacity-60 sm:h-[60px] sm:text-base"
+              onClick={handleSubmit}
+              disabled={isSubmittingFeedback || isDemoting}
+              className="
+        flex
+        h-12
+        w-full
+        items-center
+        justify-center
+        rounded-xl
+        bg-cta
+        text-sm
+        font-semibold
+        leading-5
+        text-white
+        transition-colors
+        hover:bg-cta/90
+        disabled:opacity-60
+        sm:h-14
+        sm:rounded-2xl
+        sm:text-base
+      "
             >
-              Move Chapter to Learning
+              Submit
             </button>
-          ) : null}
 
+            {task?.isFirstRevision ? (
+              <button
+                type="button"
+                onClick={handleMoveChapterToLearning}
+                disabled={isDemoting || isSubmittingFeedback}
+                className="
+          flex
+          h-12
+          w-full
+          items-center
+          justify-center
+          rounded-xl
+          border-2
+          border-brand
+          bg-surface
+          text-sm
+          font-semibold
+          leading-5
+          text-brand
+          transition-colors
+          hover:bg-brand/5
+          disabled:opacity-60
+          sm:h-14
+          sm:rounded-2xl
+          sm:text-base
+        "
+              >
+                Move Chapter to Learning
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>

@@ -253,7 +253,7 @@ export default function RevisionPage() {
                 setActiveTab(tab.id);
                 setActiveSubjectId("all");
               }}
-              className={`flex min-h-[106px] items-center gap-4 rounded-xl border p-6 text-left shadow-sm transition-colors ${active ? "border-brand" : "border-brand/10 hover:border-brand/30"
+              className={`flex min-h-[106px] items-center gap-6 rounded-xl border p-6 text-left shadow-sm transition-colors ${active ? "border-brand" : "border-brand/10 hover:border-brand/30"
                 } bg-surface`}
             >
               {/* Icon */}
