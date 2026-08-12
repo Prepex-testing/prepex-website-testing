@@ -275,17 +275,23 @@ function FocusSessionContent() {
 
       <div className="w-full rounded-2xl border border-brand/10 bg-surface p-6">
 
-        <div className="mx-auto flex max-w-[984px] flex-col items-center gap-2 text-center">
-          <p className="flex items-center justify-center gap-2 text-center text-[18px] font-semibold uppercase leading-[24px] tracking-[1.8px] text-body-text dark:text-ink sm:text-[24px] sm:leading-[31.2px] sm:tracking-[2.4px]">
-            <ClockIconss className="h-[16px] w-[14px] shrink-0 sm:h-[21px] sm:w-[18px]" />
+        <div className="mx-auto flex max-w-[984px] flex-col items-center gap-3 px-4 text-center sm:gap-4 sm:px-0">
+          {/* Focus Session */}
+          <p className="flex items-center justify-center gap-2 text-center text-[16px] font-semibold uppercase leading-5 tracking-[1.6px] text-body-text dark:text-ink min-[360px]:text-[18px] min-[360px]:leading-6 min-[360px]:tracking-[1.8px] sm:text-[24px] sm:leading-[31.2px] sm:tracking-[2.4px]">
+            <ClockIconss className="h-[14px] w-[12px] shrink-0 min-[360px]:h-[16px] min-[360px]:w-[14px] sm:h-[21px] sm:w-[18px]" />
             Focus Session
           </p>
 
-          <div className="flex flex-col items-center gap-1">
-            <p className="text-2xl font-extrabold leading-none text-ink sm:text-[32px]">
+          {/* Task Title + Subject */}
+          <div className="flex flex-col items-center gap-1.5 sm:gap-2">
+            <p className="max-w-full break-words text-base font-extrabold leading-6 text-ink min-[360px]:text-lg min-[360px]:leading-7 sm:text-[32px] sm:leading-none">
               {task?.title ? getChapterTitle(task.title) : "Electrochemistry"}
             </p>
-            <p className={`text-sm font-semibold leading-none ${isDark ? "text-white/70" : "text-[#464650]/80"}`}>
+
+            <p
+              className={`text-xs font-semibold leading-4 ${isDark ? "text-white/70" : "text-[#464650]/80"
+                } sm:text-sm sm:leading-none`}
+            >
               {task?.subject?.name ?? "Physical Chemistry"}
             </p>
           </div>
@@ -338,6 +344,7 @@ function FocusSessionContent() {
         <div className="mt-4 flex flex-col gap-4">
           {CHECKLIST_ITEMS.map((item) => {
             const done = checklist[item.field];
+
             return (
               <button
                 key={item.field}
@@ -345,7 +352,10 @@ function FocusSessionContent() {
                 onClick={() => toggleTask(item.field)}
                 aria-pressed={done}
                 className={`flex items-center gap-4 rounded-xl border p-4 text-left transition-opacity ${done ? "opacity-70" : "opacity-100"
-                  } ${isDark ? "border-white/10 bg-tint" : "border-[#C7C5D1]/30 bg-white"}`}
+                  } ${isDark
+                    ? "border-[#FAF7F214] bg-[#1A1A4E]"
+                    : "border-[#C7C5D1]/30 bg-white"
+                  }`}
               >
                 <span
                   className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-[4px] ${done
@@ -359,6 +369,7 @@ function FocusSessionContent() {
                 >
                   {done && <CheckIcon />}
                 </span>
+
                 <span
                   className={`text-sm font-medium leading-[21px] text-body-text ${done ? "line-through" : ""
                     }`}
@@ -392,7 +403,7 @@ function FocusSessionContent() {
           <button
             type="button"
             onClick={() => setCrossAppOpen(true)}
-            className="flex items-center justify-center gap-2 border-b border-tint-strong pb-6 text-center text-base font-bold text-ink sm:text-lg"
+            className="flex items-center justify-center gap-2 border-b border-tint-strong pb-6 text-center text-base font-bold text-[#1A1A4E] dark:text-[#8B8998] sm:text-lg"
           >
             <span>Start Cross App Session</span>
             <LeftIconcon className="h-4 w-4 shrink-0" />
@@ -402,7 +413,7 @@ function FocusSessionContent() {
             <button
               type="button"
               onClick={handleComplete}
-              className="text-base font-bold text-muted underline sm:text-lg"
+              className="text-base font-bold text-[#666666] underline dark:text-[#FAF7F2] sm:text-lg"
             >
               Complete session
             </button>

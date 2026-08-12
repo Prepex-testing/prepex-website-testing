@@ -4,7 +4,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ClockIcon, CheckIcon } from "@/components/ui/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { FileIcon, PlayIcon, Open, ArrowLeftIcon, LightbulbIcon } from "@/assets/icons";
+import { FileIcon, PlayIcon, Open, ArrowLeftIcon, LightbulbIcon ,TargetIcon} from "@/assets/icons";
 import { updateRevisionProgress, markRevisionDone } from "@/lib/api/revision";
 import { getPlannerTask, type PlannerTaskDetail } from "@/lib/api/planner";
 import { useRevisionSession } from "@/components/session/RevisionSessionProvider";
@@ -26,8 +26,8 @@ const QUESTIONS = [
 ];
 
 const REFERENCES = [
-  { label: "NCERT Chapter", meta: "Chapter 5", icon: <FileIcon className="h-6 w-6" /> },
-  { label: "Teacher Notes", meta: "Handwritten Notes", icon: <FileIcon className="h-6 w-6" /> },
+  { label: "NCERT Chapter", meta: "Chapter 5", icon: <TargetIcon className="h-6 w-6" /> },
+  { label: "Teacher Notes", meta: "Handwritten Notes", icon: <TargetIcon className="h-6 w-6" /> },
   { label: "Lecture Slides", meta: "PDF • 24 Slides", icon: <PlayIcon className="h-6 w-6" /> },
 ];
 
@@ -268,7 +268,7 @@ function RevisionSessionContent() {
     <div className="mx-auto flex max-w-[1213px] flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
-      <button
+        <button
           type="button"
           onClick={handleHeaderExit}
           disabled={isHeaderExiting}
@@ -306,7 +306,7 @@ function RevisionSessionContent() {
             {task?.subject?.name}
           </span>
         </div>
-        <div className="mt-3 h-px w-full bg-brand/10" />
+        <div className="mt-3 h-px w-full max-w-[1213px] bg-[#F1F5F9]/40" />
       </div>
 
       {/* Quick Recall + Focus Timer */}
@@ -328,7 +328,7 @@ function RevisionSessionContent() {
         </div>
         <div className="flex items-center gap-4 rounded-2xl border border-brand/10 bg-surface px-5 py-4 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] dark:bg-ink">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#EEF0F8] text-[#1A1A4E] dark:bg-transparent dark:text-[#111145]">
-           <ClockIcon className="h-[28px] w-[28px] shrink-0 sm:h-[33.54px] sm:w-[33.54px]" />
+            <ClockIcon className="h-[28px] w-[28px] shrink-0 sm:h-[33.54px] sm:w-[33.54px]" />
           </span>
           <div className="flex flex-col items-start">
             <span className="text-[32px] font-bold leading-[38px] text-ink dark:text-[#111145]">
@@ -417,7 +417,7 @@ function RevisionSessionContent() {
 
       {/* Reference Review */}
       <div>
-        <p className="text-xs font-bold uppercase tracking-wide text-muted">
+        <p className="text-xs font-bold uppercase tracking-wide text-[#1E293B] dark:text-[#FAF7F2]">
           Reference Review
         </p>
         <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -456,13 +456,13 @@ function RevisionSessionContent() {
             </div>
           ))}
         </div>
-        <p className="mt-3 text-xs text-muted">
+        <p className="mt-3 text-xs text-[#64748B] dark:text-[#FAF7F2]">
           Open any resource to review before continuing.
         </p>
       </div>
 
       {/* End session */}
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-col items-center gap-2">
         <button
           type="button"
           onClick={handleEndSession}
