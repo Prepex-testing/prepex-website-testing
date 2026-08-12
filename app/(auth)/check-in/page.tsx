@@ -1,33 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckInBody } from "@/components/check-in/CheckInBody";
+import { CheckInModal } from "@/components/check-in/CheckInModal";
 import type { Mood } from "@/components/check-in/moods";
 import { submitCheckIn, moodIdToApiValue, getCheckInStatus } from "@/lib/api/checkin";
 import { generatePlanForMood } from "@/lib/api/planner";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { LoderIcon } from "@/assets/icons";
-import { CheckInCard } from "@/components/layout/CheckInCard";
 import { SecondDayInfoModal } from "@/components/home/SecondDayInfoModal";
+
+// Gives the check-in modal a beat on screen before stacking the info popup on
+// top of it, instead of both appearing in the same instant.
+const SECOND_DAY_POPUP_DELAY_MS = 1000;
 
 export default function CheckInPage() {
   const router = useRouter();
   const name = useStoredFullName();
   const [isGeneratingPlan, setGeneratingPlan] = useState(false);
+  const [isSkipping, setSkipping] = useState(false);
+  const [needsCheckIn, setNeedsCheckIn] = useState(false);
   const [isSecondDayPopupOpen, setSecondDayPopupOpen] = useState(false);
-  const [pendingMood, setPendingMood] = useState<Mood | null>(null);
 
-  const generatePlanAndContinue = async (mood: Mood) => {
-    setGeneratingPlan(true);
-    try {
-      await generatePlanForMood(moodIdToApiValue(mood.id));
-    } catch {
-      // Best-effort — don't block navigation on the API call.
-    } finally {
-      router.push("/home");
-    }
-  };
+  // Single /status call drives both whether the check-in prompt is needed at
+  // all and whether the second-day popup should stack on top of it — no
+  // second /status round-trip once the user submits their mood.
+  useEffect(() => {
+    let cancelled = false;
+    let popupTimer: ReturnType<typeof setTimeout> | undefined;
+
+    getCheckInStatus()
+      .then(({ data }) => {
+        if (cancelled) return;
+
+        if (data.exists) {
+          router.push("/home");
+          return;
+        }
+
+        setNeedsCheckIn(true);
+        if (data.isSecondDay) {
+          popupTimer = setTimeout(() => {
+            if (!cancelled) setSecondDayPopupOpen(true);
+          }, SECOND_DAY_POPUP_DELAY_MS);
+        }
+      })
+      .catch(() => {
+        // Best-effort — still let the user check in even if the status call fails.
+        if (!cancelled) setNeedsCheckIn(true);
+      });
+
+    return () => {
+      cancelled = true;
+      clearTimeout(popupTimer);
+    };
+  }, [router]);
 
   const handleContinue = async (mood: Mood | null) => {
     if (!mood) {
@@ -35,57 +62,55 @@ export default function CheckInPage() {
       return;
     }
 
+    setGeneratingPlan(true);
     try {
-      const { data } = await getCheckInStatus();
-      if (data.isSecondDay) {
-        setPendingMood(mood);
-        setSecondDayPopupOpen(true);
-        return;
-      }
-    } catch {
-      // Best-effort — fall through to the regular plan generation flow.
-    }
-
-    await generatePlanAndContinue(mood);
-  };
-
-  const handleSecondDayPopupClose = () => {
-    setSecondDayPopupOpen(false);
-    if (pendingMood) {
-      const mood = pendingMood;
-      setPendingMood(null);
-      void generatePlanAndContinue(mood);
+      await generatePlanForMood(moodIdToApiValue(mood.id));
+    } catch (err) {
+      console.error("Failed to submit check-in / generate plan:", err);
+    } finally {
+      router.push("/home");
     }
   };
 
-  const handleSkip = () => {
-    submitCheckIn({ isSkipped: true }).catch(() => {
-      // Best-effort — don't block navigation on the API call.
-    });
-    router.push("/home");
+  const handleSkip = async () => {
+    setSkipping(true);
+    try {
+      await submitCheckIn({ isSkipped: true });
+    } catch (err) {
+      console.error("Failed to submit check-in:", err);
+    } finally {
+      router.push("/home");
+    }
   };
 
-  if (isGeneratingPlan) {
+  if (isGeneratingPlan || isSkipping) {
     return (
-      <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-background/90 backdrop-blur-sm">
-          <LoderIcon className="h-10 w-10 animate-spin text-ink" />
-          <p className="text-base font-bold text-ink">Generating plan...</p>
-          <p className="text-sm text-muted">Adjusting today&apos;s plan to your energy</p>
-        </div>
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-background/90 backdrop-blur-sm">
+        <LoderIcon className="h-10 w-10 animate-spin text-ink" />
+        <p className="text-base font-bold text-ink">
+          {isGeneratingPlan ? "Generating plan..." : "Just a moment..."}
+        </p>
+        <p className="text-sm text-muted">
+          {isGeneratingPlan ? "Adjusting today's plan to your energy" : "Getting things ready"}
+        </p>
       </div>
     );
   }
 
   return (
-    <CheckInCard>
-      <CheckInBody
+    <>
+      <CheckInModal
+        open={needsCheckIn}
+        onClose={() => {}}
         name={name}
         mode="onboarding"
         onContinue={handleContinue}
         onSkip={handleSkip}
       />
-      <SecondDayInfoModal open={isSecondDayPopupOpen} onClose={handleSecondDayPopupClose} />
-    </CheckInCard>
+      <SecondDayInfoModal
+        open={isSecondDayPopupOpen}
+        onClose={() => setSecondDayPopupOpen(false)}
+      />
+    </>
   );
 }

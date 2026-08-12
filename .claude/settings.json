@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//home/tis-90/Documents/prepex/prepex-backend/shared/src/validation/**)",
+      "Bash(cd /home/tis-90/Documents/prepex/prepex-backend && grep -rn \"checkin:status\\\\|invalidate\\\\|store.delete\\\\|store.clear\" services/core-service/src/ | grep -v node_modules)",
+      "Read(//home/tis-90/Documents/prepex/prepex-backend/**)"
+    ]
+  }
+}

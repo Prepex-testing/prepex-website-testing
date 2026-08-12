@@ -11,20 +11,33 @@ type CheckInModalProps = {
   open: boolean;
   onClose: () => void;
   name: string;
+  mode?: "onboarding" | "update";
   onSave?: (mood: Mood) => void;
+  onContinue?: (mood: Mood | null) => void;
+  onSkip?: () => void;
 };
 
-export function CheckInModal({ open, onClose, name, onSave }: CheckInModalProps) {
+export function CheckInModal({
+  open,
+  onClose,
+  name,
+  mode = "update",
+  onSave,
+  onContinue,
+  onSkip,
+}: CheckInModalProps) {
   return (
     <Modal open={open} onClose={onClose} ariaLabel="Daily check-in" size="lg">
       <CheckInBody
         name={name}
-        mode="update"
+        mode={mode}
         onCancel={onClose}
         onSave={(mood) => {
           onSave?.(mood);
           onClose();
         }}
+        onContinue={onContinue}
+        onSkip={onSkip}
       />
     </Modal>
   );
