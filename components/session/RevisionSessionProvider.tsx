@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { getCheckInStatus } from "@/lib/api/checkin";
 import { startRevisionSession, heartbeatRevisionSession, exitRevisionSession } from "@/lib/api/revision";
-import { getStoredUser } from "@/lib/auth/session";
+import { getAccessToken, getStoredUser } from "@/lib/auth/session";
 import { secondsSince } from "@/lib/utils/datetime";
 
 const STORAGE_KEY = "prepex_revision_session";
@@ -98,8 +98,14 @@ export function RevisionSessionProvider({ children }: { children: ReactNode }) {
 
   // GET /checkin/status is the backend source of truth: on load, only trust a
   // locally cached session (taskId/startedAt aren't exposed by that endpoint
-  // yet) when the server also confirms a session is active.
+  // yet) when the server also confirms a session is active. This provider is
+  // mounted in the root layout (every route, including public ones like
+  // /splash and /welcome), so skip the call entirely when logged out —
+  // otherwise the 401 with no refresh token forces a hard redirect to
+  // /login off of pages that never should have required auth.
   useEffect(() => {
+    if (!getAccessToken()) return;
+
     getCheckInStatus()
       .then(({ data }) => {
         const isActiveSession = Boolean(data.checkin?.isActiveSession);
