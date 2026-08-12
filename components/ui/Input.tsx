@@ -73,7 +73,7 @@ export function Input({
           type={resolvedType}
           required={required}
           spellCheck={false}
-          className="min-w-0 flex-1 bg-transparent text-body-lg font-semibold leading-none text-ink outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-5.25 placeholder:text-body-text dark:placeholder:text-ink"
+         className="min-w-0 flex-1 bg-transparent font-['Plus_Jakarta_Sans'] text-[14px] font-medium leading-[14px] tracking-normal text-ink outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-5 placeholder:text-[#666666] dark:placeholder:text-[#8B8998] sm:text-[16px] sm:leading-[16px]"
           {...props}
         />
 
