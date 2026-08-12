@@ -43,36 +43,49 @@ export function UserMenu({ name, initial }: UserMenuProps) {
         aria-haspopup="menu"
         aria-expanded={isOpen}
         className="
-      flex h-11 w-[109px] items-center gap-3
-      rounded-full
-      bg-icon-action-bg
-      py-[6px] pr-4 pl-[6px]
-      transition-colors
-      hover:bg-tint-strong
-    "
+    flex
+    h-11
+    min-w-[100px]
+    items-center
+    gap-2.5
+    rounded-full
+    bg-icon-action-bg
+    px-1.5
+    pr-3
+    transition-colors
+    hover:bg-tint-strong
+  "
       >
-        {/* Avatar Circle */}
         <span
           className="
-        flex h-8 w-8 shrink-0
-        items-center justify-center
-        rounded-full
-        bg-brand
-        text-sm font-bold text-white
-      "
+    flex
+    h-8
+    w-8
+    shrink-0
+    items-center
+    justify-center
+    rounded-full
+    bg-[#171658]
+    text-sm
+    font-bold
+    leading-5
+    text-white
+    dark:bg-[#FAF7F2]
+    dark:text-[#171658]
+  "
         >
           {displayInitial}
         </span>
 
-        {/* Name */}
         <span
           className="
-        w-[43px]
-        text-sm font-semibold
-        leading-5
-        text-ink
-        truncate
-      "
+      min-w-0
+      truncate
+      text-sm
+      font-semibold
+      leading-5
+      text-ink
+    "
         >
           {displayName}
         </span>
