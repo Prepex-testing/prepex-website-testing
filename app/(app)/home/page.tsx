@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -19,12 +19,15 @@ import { formatFullDate } from "@/lib/utils/datetime";
 import {
   regeneratePlanForMood,
   getTodayPlan,
+  deleteAllPlannerTasks,
+  acknowledgeLateOnboarding,
   type PlannerTask,
   type TodayPlanResponse,
   type StudyConsistency,
   type StudyConsistencyDay,
   getStudyConsistency,
 } from "@/lib/api/planner";
+import { getStoredUser } from "@/lib/auth/session";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { FlameIcon, BackIcon, BookIcon, BriefcaseIcon, ChartBarIcon, LayersIcon, LoderIcon, QuickIcon, RadarIcon, RevisionIcon, TrophyIcon, UserIcon, BellIcon, SparkleIcon, DotIcon } from "@/assets/icons";
@@ -294,6 +297,9 @@ export default function HomePage() {
   const [isInRecoveryMode, setInRecoveryMode] = useState(false);
   const [isEndRecoveryOpen, setEndRecoveryOpen] = useState(false);
   const [isEndingRecovery, setEndingRecovery] = useState(false);
+  const [isLateSignupPromptOpen, setLateSignupPromptOpen] = useState(false);
+  const [isQuickSessionTaskOpen, setQuickSessionTaskOpen] = useState(false);
+  const hasPromptedLateSignup = useRef(false);
   const isFriday = useSyncExternalStore(
     subscribeNoop,
     getIsFridaySnapshot,
@@ -343,6 +349,41 @@ export default function HomePage() {
 
   useEffect(refetchPlan, []);
   useEffect(refetchCheckInStatus, []);
+
+  useEffect(() => {
+    if (hasPromptedLateSignup.current) return;
+    if (planData?.plan?.isLateSingUp) {
+      hasPromptedLateSignup.current = true;
+      setLateSignupPromptOpen(true);
+    }
+  }, [planData]);
+
+  const handleLateSignupDecline = () => {
+    setLateSignupPromptOpen(false);
+    const userId = getStoredUser()?.id;
+    if (userId) {
+      acknowledgeLateOnboarding(userId).catch(() => {
+        // Best-effort — the prompt is already dismissed either way.
+      });
+    }
+  };
+
+  const handleLateSignupAccept = async () => {
+    setLateSignupPromptOpen(false);
+    const userId = getStoredUser()?.id;
+    const plannerId = planData?.plan?.id;
+    const requests = [
+      ...(userId ? [acknowledgeLateOnboarding(userId)] : []),
+      ...(plannerId ? [deleteAllPlannerTasks(plannerId)] : []),
+    ];
+    try {
+      await Promise.all(requests);
+      if (plannerId) refetchPlan();
+    } catch {
+      // Best-effort — still let the student start a quick session.
+    }
+    setQuickSessionTaskOpen(true);
+  };
 
   const handleEndRecovery = async () => {
     setEndingRecovery(true);
@@ -876,6 +917,21 @@ export default function HomePage() {
         open={isAddTaskOpen}
         onClose={() => setAddTaskOpen(false)}
         onTaskAdded={refetchPlan}
+      />
+      <ConfirmModal
+        open={isLateSignupPromptOpen}
+        onClose={handleLateSignupDecline}
+        onConfirm={handleLateSignupAccept}
+        title="You signed up late"
+        description="Next plan is ready, but want to do a quick session now instead?"
+        confirmLabel="Yes"
+        cancelLabel="No"
+      />
+      <AddCustomTaskModal
+        open={isQuickSessionTaskOpen}
+        onClose={() => setQuickSessionTaskOpen(false)}
+        onTaskAdded={() => window.location.reload()}
+        lockedTaskType="New Learning"
       />
       <RegeneratePlanModal
         open={isRegenerateOpen}

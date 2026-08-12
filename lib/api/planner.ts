@@ -102,6 +102,7 @@ export type DailyPlan = {
   targetedExam?: string;
   targetedExamDate?: string;
   dayRemainingForExam?: number;
+  isLateSingUp?: boolean;
 };
 
 export type PlannerSubjectSummary = {
@@ -215,6 +216,20 @@ export function editPlannerTask(taskId: string, input: EditPlannerTaskInput) {
 export function deletePlannerTask(taskId: string) {
   return authRequest<{ success: true; data: unknown }>(`/${taskId}`, {
     method: "DELETE",
+  });
+}
+
+/** Clears every task on a daily plan — used by the late-signup "quick session" flow. */
+export function deleteAllPlannerTasks(plannerId: string) {
+  return authRequest<{ success: true; data: unknown }>(`/plan/${plannerId}/tasks`, {
+    method: "DELETE",
+  });
+}
+
+/** Marks the late-signup prompt as acknowledged — called on either Yes or No. */
+export function acknowledgeLateOnboarding(userId: string) {
+  return authRequest<{ success: true; data: unknown }>(`/user/${userId}/late-onboarding`, {
+    method: "PATCH",
   });
 }
 
