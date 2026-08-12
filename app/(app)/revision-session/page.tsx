@@ -46,6 +46,7 @@ function RevisionSessionContent() {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [recalled, setRecalled] = useState(false);
   const [isEnding, setEnding] = useState(false);
+  const [isHeaderExiting, setHeaderExiting] = useState(false);
   const [isPausing, setPausing] = useState(false);
   const [isPaused, setPaused] = useState(false);
   const [isResuming, setResuming] = useState(false);
@@ -199,6 +200,20 @@ function RevisionSessionContent() {
     }
   };
 
+  // Header "Exit Session" — ends the tracked session (POST
+  // /revision/:taskId/session/exit via exitSession) and goes straight back
+  // to the revision list, bypassing the Exit/Complete/Cancel popup.
+  const handleHeaderExit = async () => {
+    resolvedRef.current = true;
+    setHeaderExiting(true);
+    try {
+      await exitSession();
+    } finally {
+      setHeaderExiting(false);
+      router.push("/home/revision");
+    }
+  };
+
   const handlePauseSession = async () => {
     if (!revisionId) return;
     setPausing(true);
@@ -253,7 +268,15 @@ function RevisionSessionContent() {
     <div className="mx-auto flex max-w-[1213px] flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
-      
+      <button
+          type="button"
+          onClick={handleHeaderExit}
+          disabled={isHeaderExiting}
+          className={`flex shrink-0 items-center gap-1 text-xs font-semibold leading-5 transition-opacity disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm ${isDark ? "text-muted" : "text-[#334155]"}`}
+        >
+          <ArrowLeftIcon className="h-[9.33px] w-3 shrink-0" />
+          <span>{isHeaderExiting ? "Exiting..." : "Exit Session"}</span>
+        </button>
         <p className="flex-1 truncate text-center text-[14px] font-extrabold uppercase tracking-[2.8px] text-ink">
           Revision Session
         </p>

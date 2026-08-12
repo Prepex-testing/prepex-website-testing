@@ -88,7 +88,8 @@ export function TodaysPracticeModal({ open, onClose, onStart }: TodaysPracticeMo
         ))}
       </div>
 
-      <Button variant="primary" className="mt-4 sm:mt-5" onClick={onStart}>
+      {/* <Button href="/development-in-progress" variant="primary" className="mt-4 sm:mt-5" onClick={onStart}> */}
+      <Button href="/development-in-progress" variant="primary" className="mt-4 sm:mt-5">
         Start Practice
       </Button>
       <button

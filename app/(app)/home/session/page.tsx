@@ -414,6 +414,7 @@ function FocusSessionContent() {
         open={isCrossAppOpen}
         onClose={() => setCrossAppOpen(false)}
         onStart={handleCrossAppStart}
+        task={task}
       />
       <SessionCompleteModal
         open={isCompleteOpen}
