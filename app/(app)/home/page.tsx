@@ -675,35 +675,38 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="rounded-3xl bg-surface p-4 border border-brand/10 sm:p-5">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-(--oc-heading1)">
-                Study Consistency
-              </h3>
+    <div className="rounded-3xl border border-brand/10 bg-surface p-4 sm:p-5 md:p-6 lg:p-6">
+  {/* Header */}
+  <div className="flex items-center justify-between">
+    <h3 className="text-base font-bold text-(--oc-heading1) sm:text-lg">
+      Study Consistency
+    </h3>
 
-              <BackIcon
-                className="h-[10px] w-[6px] shrink-0 text-secondary sm:h-[12px] sm:w-[7.4px]"
-              />
-            </div>
+    <BackIcon
+      className="h-[10px] w-[6px] shrink-0 text-secondary sm:h-[12px] sm:w-[7.4px]"
+    />
+  </div>
 
-            {consistency ? (
-              <div className="starting:opacity-0 transition-opacity duration-300">
-                {/* Weekday labels */}
-                <div
-                  className="
+  {consistency ? (
+    <div className="starting:opacity-0 transition-opacity duration-300">
+      {/* Weekday labels */}
+      <div
+        className="
           mx-auto
-          mt-3
+          mt-4
           grid
           w-full
           max-w-[300px]
           grid-cols-7
+          sm:max-w-[340px]
+          md:max-w-[420px]
+          lg:max-w-[460px]
         "
-                >
-                  {CONSISTENCY_WEEKDAY_LABELS.map((day, index) => (
-                    <span
-                      key={index}
-                      className="
+      >
+        {CONSISTENCY_WEEKDAY_LABELS.map((day, index) => (
+          <span
+            key={index}
+            className="
               flex
               items-center
               justify-center
@@ -713,88 +716,98 @@ export default function HomePage() {
               text-[#94A3B8]
               sm:text-xs
             "
-                    >
-                      {day}
-                    </span>
-                  ))}
-                </div>
+          >
+            {day}
+          </span>
+        ))}
+      </div>
 
-                {/* Consistency boxes */}
-                <div
-                  className="
+      {/* Consistency boxes */}
+      <div
+        className="
           mx-auto
-          mt-1.5
+          mt-2
           flex
           w-full
           max-w-[300px]
           flex-col
           gap-y-1
+          sm:max-w-[340px]
+          sm:gap-y-1.5
+          md:max-w-[420px]
+          md:gap-y-2
+          lg:max-w-[460px]
+          lg:gap-y-2.5
         "
-                >
-                  {consistencyWeeks.map((week, weekIndex) => (
-                    <div
-                      key={weekIndex}
-                      className="grid w-full grid-cols-7"
-                    >
-                      {week.map((day, dayIndex) => (
-                        <span
-                          key={dayIndex}
-                          className="flex items-center justify-center"
-                        >
-                          <span
-                            title={
-                              day
-                                ? `${day.dayCompletionPercentage}% completed on ${day.date}`
-                                : undefined
-                            }
-                            className="
+      >
+        {consistencyWeeks.map((week, weekIndex) => (
+          <div
+            key={weekIndex}
+            className="grid w-full grid-cols-7"
+          >
+            {week.map((day, dayIndex) => (
+              <span
+                key={dayIndex}
+                className="flex items-center justify-center"
+              >
+                <span
+                  title={
+                    day
+                      ? `${day.dayCompletionPercentage}% completed on ${day.date}`
+                      : undefined
+                  }
+                  className="
                     aspect-square
                     w-[14px]
                     rounded-[3px]
                     sm:w-4
+                    md:w-[18px]
+                    md:rounded-[4px]
+                    lg:w-5
+                    lg:rounded-[4px]
                   "
-                            style={{
-                              backgroundColor: day
-                                ? consistencyColors[
-                                toActivityLevel(
-                                  day.dayCompletionPercentage
-                                )
-                                ]
-                                : "transparent",
-                            }}
-                          />
-                        </span>
-                      ))}
-                    </div>
-                  ))}
-                </div>
+                  style={{
+                    backgroundColor: day
+                      ? consistencyColors[
+                          toActivityLevel(day.dayCompletionPercentage)
+                        ]
+                      : "transparent",
+                  }}
+                />
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
 
-                {/* Legend */}
-                <div
-                  className="
-          mt-3
+      {/* Legend */}
+      <div
+        className="
+          mt-4
           flex
           items-center
           justify-between
-          gap-2
+          gap-3
           text-[10px]
           leading-[15px]
           text-muted
+          sm:mt-5
           sm:text-xs
+          md:mt-6
         "
-                >
-                  <span className="shrink-0">
-                    {consistencyMonthName}
-                  </span>
+      >
+        <span className="shrink-0">
+          {consistencyMonthName}
+        </span>
 
-                  <span className="flex shrink-0 items-center gap-1">
-                    <span>Missed</span>
+        <span className="flex shrink-0 items-center gap-1">
+          <span>Missed</span>
 
-                    <span className="flex items-center gap-1">
-                      {consistencyColors.map((color, index) => (
-                        <span
-                          key={index}
-                          className="
+          <span className="flex items-center gap-1">
+            {consistencyColors.map((color, index) => (
+              <span
+                key={index}
+                className="
                   h-2
                   w-2
                   shrink-0
@@ -803,23 +816,23 @@ export default function HomePage() {
                   sm:w-2.5
                   sm:rounded-sm
                 "
-                          style={{
-                            backgroundColor: color,
-                          }}
-                        />
-                      ))}
-                    </span>
+                style={{
+                  backgroundColor: color,
+                }}
+              />
+            ))}
+          </span>
 
-                    <span>Completed</span>
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <div className="mt-4 flex h-32 items-center justify-center text-xs text-muted">
-                Loading...
-              </div>
-            )}
-          </div>
+          <span>Completed</span>
+        </span>
+      </div>
+    </div>
+  ) : (
+    <div className="mt-4 flex h-32 items-center justify-center text-xs text-muted">
+      Loading...
+    </div>
+  )}
+</div>
         </div>
       </div>
 

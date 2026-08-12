@@ -159,23 +159,22 @@ function RevisionCompleteContent() {
           {STATS.map((stat) => (
             <div
               key={stat.label}
-              className="flex flex-col items-center rounded-2xl border border-brand/10 p-4 text-center first:col-span-2 sm:p-6 sm:first:col-span-1 lg:h-[194px] lg:justify-center lg:p-8"
+              className="flex flex-col items-center rounded-2xl border border-brand/10 p-4 text-center dark:border-[#FAF7F214] dark:bg-[#1A1A4E] sm:p-6 sm:first:col-span-1 lg:h-[194px] lg:justify-center lg:p-8"
             >
-              {/* Icon circle: 40 × 40px */}
+              {/* Icon circle */}
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8 sm:size-10">
-                {/* Icon wrapper: 20 × 20px */}
                 <span className="flex size-[18px] shrink-0 items-center justify-center sm:size-5 [&>svg]:size-[14px] [&>svg]:shrink-0 sm:[&>svg]:size-[15px]">
                   {stat.icon}
                 </span>
               </span>
 
-              {/* Value: 30px / 36px */}
-              <p className="mt-3 text-[26px] font-extrabold leading-8 text-ink sm:mt-3 sm:text-[30px] sm:leading-9">
+              {/* Value */}
+              <p className="mt-5 text-[26px] font-extrabold leading-8 text-ink sm:text-[30px] sm:leading-9">
                 {stat.value}
               </p>
 
-              {/* Label: 14px / 20px */}
-              <p className="mt-1 text-center text-xs font-medium leading-[18px] text-muted sm:text-sm sm:leading-5">
+              {/* Label */}
+              <p className="mt-2 text-center text-xs font-medium leading-[18px] text-muted sm:text-sm sm:leading-5">
                 {stat.label}
               </p>
             </div>
@@ -206,15 +205,17 @@ function RevisionCompleteContent() {
                   type="button"
                   onClick={() => handleSelectDifficulty(option)}
                   disabled={isSubmittingFeedback}
-                  className={`flex min-w-0 flex-1 items-center justify-center rounded-xl border-2 bg-surface px-1 py-2.5 text-center transition-all duration-300 min-[360px]:px-2 sm:min-h-16 sm:px-3 lg:min-h-20 ${selected
-                    ? "border-brand"
+                  className={`flex h-[80px] min-w-0 items-center justify-center rounded-2xl border-2 bg-surface p-4 text-center transition-all duration-300 sm:h-[90px] md:h-[104px] ${selected
+                    ? isDark
+                      ? "border-[#FAF7F2]"
+                      : "border-brand"
                     : isDark
                       ? "border-muted"
                       : "border-[#F3F4F6]"
                     }`}
                 >
                   <span
-                    className={`whitespace-nowrap text-[14px] font-bold leading-5 min-[360px]:text-[15px] sm:text-lg sm:leading-6 lg:text-[22px] lg:leading-[22px] ${isDark ? "text-ink" : "text-[#1E293B]"
+                    className={`whitespace-nowrap font-['Plus_Jakarta_Sans'] text-[16px] font-bold leading-[16px] tracking-normal sm:text-[18px] sm:leading-[18px] md:text-[22px] md:leading-[22px] ${isDark ? "text-ink" : "text-[#1E293B]"
                       }`}
                   >
                     {option}
@@ -226,7 +227,7 @@ function RevisionCompleteContent() {
         </div>
 
         {/* Topics Revised */}
-        <div className="mt-6 flex w-full flex-col gap-3 sm:mt-8 sm:gap-4">
+        <div className="mx-2 mt-6 flex w-auto flex-col gap-3 sm:mx-4 sm:mt-8 sm:gap-4">
           <p
             className={`mx-2 text-xs font-extrabold uppercase tracking-[1.6px] sm:mx-4 ${isDark ? "text-ink" : "text-[#1F2937]"
               }`}
