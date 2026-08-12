@@ -578,7 +578,7 @@ export default function ProfilePage() {
         }}
         title="Log out"
         description="Are you sure you want to logout?"
-        confirmLabel="Yes, Logout"
+        confirmLabel="Logout"
       />
     </div>
   );

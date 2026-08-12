@@ -90,7 +90,7 @@ export { default as PracticeIcon} from "./PracticeIcon.svg";
 export { default as Book} from "./book.svg";
 export { default as Time} from "./Time.svg";
 export { default as ConfirmIcon} from "./ConfirmIcon.svg";
-
+export { default as AddTask} from "./AddTask.svg";
 
 
 

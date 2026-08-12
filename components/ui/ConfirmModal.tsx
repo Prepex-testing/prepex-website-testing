@@ -59,7 +59,7 @@ export function ConfirmModal({
           {/* Confirm */}
           <Button
 
-            variant="secondary"
+            variant="primary"
 
             className="border-danger sm:flex-1"
 

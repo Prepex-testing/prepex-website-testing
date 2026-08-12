@@ -162,10 +162,10 @@ export function TaskEditMenu({ task, onTaskChanged, onReorder, disabled }: TaskE
               setOpen(false);
               setDeleteConfirmOpen(true);
             }}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-danger hover:bg-danger-bg"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-[#F59E0B] hover:bg-[#F59E0B]/20"
           >
             <TrashIcon />
-            Delete Task
+            Remove Task
           </button>
         </div>
       )}
@@ -191,7 +191,7 @@ export function TaskEditMenu({ task, onTaskChanged, onReorder, disabled }: TaskE
         open={isDeleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
         onConfirm={handleDelete}
-        title="Delete this task?"
+        title="Remove this task?"
         subtitle={getChapterTitle(task.title)}
         description="This task will be removed from today’s plan."
         confirmLabel={isDeleting ? "Deleting..." : "Remove"}
