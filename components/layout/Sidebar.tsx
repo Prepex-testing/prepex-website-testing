@@ -8,6 +8,7 @@ import {
   CalendarIcon,
   TargetIcon,
   ChartBarIcon,
+  ChevronRightIcon,
   // UserIcon,
 } from "@/components/ui/icons";
 import {UserIcons,PracticeIcon,StatsIcon} from "@/assets/icons";
@@ -83,14 +84,29 @@ export const NAV_ITEMS = [
   },
 ];
 
-export function Sidebar() {
+type SidebarProps = {
+  onCollapse?: () => void;
+};
+
+export function Sidebar({ onCollapse }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-56 shrink-0 flex-col gap-8 border-r border-brand/10 bg-surface px-4 py-6 lg:flex">
+    <aside className="relative hidden w-56 shrink-0 flex-col gap-8 border-r border-brand/10 bg-surface px-4 py-6 lg:flex">
       <div className="px-2">
         <Logo size="compact" showTagline={false} />
       </div>
+
+      {onCollapse && (
+        <button
+          type="button"
+          onClick={onCollapse}
+          aria-label="Collapse sidebar"
+          className="absolute -right-3.5 top-8 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-sidebar-border bg-surface text-sidebar-inactive-fg shadow-sm hover:bg-sidebar-active-bg hover:text-sidebar-active-fg"
+        >
+          <ChevronRightIcon className="h-4 w-4 rotate-180" />
+        </button>
+      )}
 
       <nav className="flex flex-col gap-1">
         {NAV_ITEMS.map((item) => {
