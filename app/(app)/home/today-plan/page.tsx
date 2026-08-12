@@ -17,6 +17,7 @@ import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { getTodayPlan, reorderPlannerTask, type PlannerTask, type TodayPlanResponse } from "@/lib/api/planner";
+import { formatFullDate } from "@/lib/utils/datetime";
 import { CheckIcon, ClockIcon, ListIcon, CalendarIcon,BellIcon ,ArrowLeftIcon} from "@/assets/icons";
 import {
   // ArrowLeftIcon,
@@ -224,10 +225,10 @@ function TodayPlanContent() {
   const plan = planData?.plan;
   const summary = planData?.summary;
   const { morning, afternoon, evening, night } = groupTasksByWindow(plan?.tasks ?? []);
-  const morningTasks = planLoadFailed ? [] : plan ? morning.map(toPlanTask) : MORNING_TASKS;
-  const afternoonTasks = planLoadFailed ? [] : plan ? afternoon.map(toPlanTask) : AFTERNOON_TASKS;
-  const eveningTasks = planLoadFailed ? [] : plan ? evening.map(toPlanTask) : EVENING_TASKS;
-  const nightTasks = planLoadFailed ? [] : plan ? night.map(toPlanTask) : [];
+  const morningTasks = plan ? morning.map(toPlanTask) : planLoadFailed ? [] : MORNING_TASKS;
+  const afternoonTasks = plan ? afternoon.map(toPlanTask) : planLoadFailed ? [] : AFTERNOON_TASKS;
+  const eveningTasks = plan ? evening.map(toPlanTask) : planLoadFailed ? [] : EVENING_TASKS;
+  const nightTasks = plan ? night.map(toPlanTask) : [];
 
   // Arms the task named by ?reorderTaskId= (e.g. routed here from /home's
   // Reorder menu item) once the plan has loaded and the task is found in it.
@@ -276,7 +277,7 @@ function TodayPlanContent() {
     />
   );
 
-  const completionPercent = summary?.completionPercentage ?? 35;
+  const completionPercent = summary?.completionPercentage ?? 0;
   const statTiles = summary
     ? [
         { label: "Completed", value: formatDuration(summary.totalTimeCompletedSeconds / 60), icon: <CheckIcon className="h-4 w-4" /> },
@@ -303,7 +304,7 @@ function TodayPlanContent() {
           </Link>
           <div>
             <h1 className="text-h1 text-ink">Today&apos;s Plan</h1>
-            <p className="text-sm text-muted">Monday, 29 June</p>
+            <p className="text-sm text-muted">{formatFullDate(new Date())}</p>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-4">
@@ -383,7 +384,7 @@ function TodayPlanContent() {
         </div>
       )}
 
-      {planLoadFailed ? (
+      {!plan && planLoadFailed ? (
         <div className="rounded-2xl border border-brand/10 bg-surface py-12 text-center text-sm text-muted">
           No plan available
         </div>

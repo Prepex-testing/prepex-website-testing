@@ -259,7 +259,9 @@ function RevisionCompleteContent() {
       sm:p-5
     "
           >
-            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+            <div
+              className={`flex min-w-0 items-center gap-3 transition-opacity duration-300 sm:gap-4 ${task ? "opacity-100" : "opacity-0"}`}
+            >
               <span
                 className="
           flex
@@ -278,7 +280,7 @@ function RevisionCompleteContent() {
           sm:text-base
         "
               >
-                P
+                {task?.title?.trim()?.[0]?.toUpperCase() ?? ""}
               </span>
 
               <div className="min-w-0 flex-1">
@@ -292,9 +294,9 @@ function RevisionCompleteContent() {
               </div>
             </div>
 
-            <span className="self-start whitespace-nowrap text-[11px] font-bold text-muted sm:self-center sm:text-xs">
+            {/* <span className="self-start whitespace-nowrap text-[11px] font-bold text-muted sm:self-center sm:text-xs">
               Day 7 → Day 14
-            </span>
+            </span> */}
           </div>
 
           {/* Actions */}
