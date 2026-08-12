@@ -4,23 +4,21 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckInBody } from "@/components/check-in/CheckInBody";
 import type { Mood } from "@/components/check-in/moods";
-import { submitCheckIn, moodIdToApiValue } from "@/lib/api/checkin";
+import { submitCheckIn, moodIdToApiValue, getCheckInStatus } from "@/lib/api/checkin";
 import { generatePlanForMood } from "@/lib/api/planner";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { LoderIcon } from "@/assets/icons";
 import { CheckInCard } from "@/components/layout/CheckInCard";
+import { SecondDayInfoModal } from "@/components/home/SecondDayInfoModal";
 
 export default function CheckInPage() {
   const router = useRouter();
   const name = useStoredFullName();
   const [isGeneratingPlan, setGeneratingPlan] = useState(false);
+  const [isSecondDayPopupOpen, setSecondDayPopupOpen] = useState(false);
+  const [pendingMood, setPendingMood] = useState<Mood | null>(null);
 
-  const handleContinue = async (mood: Mood | null) => {
-    if (!mood) {
-      router.push("/home");
-      return;
-    }
-
+  const generatePlanAndContinue = async (mood: Mood) => {
     setGeneratingPlan(true);
     try {
       await generatePlanForMood(moodIdToApiValue(mood.id));
@@ -28,6 +26,35 @@ export default function CheckInPage() {
       // Best-effort — don't block navigation on the API call.
     } finally {
       router.push("/home");
+    }
+  };
+
+  const handleContinue = async (mood: Mood | null) => {
+    if (!mood) {
+      router.push("/home");
+      return;
+    }
+
+    try {
+      const { data } = await getCheckInStatus();
+      if (data.isSecondDay) {
+        setPendingMood(mood);
+        setSecondDayPopupOpen(true);
+        return;
+      }
+    } catch {
+      // Best-effort — fall through to the regular plan generation flow.
+    }
+
+    await generatePlanAndContinue(mood);
+  };
+
+  const handleSecondDayPopupClose = () => {
+    setSecondDayPopupOpen(false);
+    if (pendingMood) {
+      const mood = pendingMood;
+      setPendingMood(null);
+      void generatePlanAndContinue(mood);
     }
   };
 
@@ -58,6 +85,7 @@ export default function CheckInPage() {
         onContinue={handleContinue}
         onSkip={handleSkip}
       />
+      <SecondDayInfoModal open={isSecondDayPopupOpen} onClose={handleSecondDayPopupClose} />
     </CheckInCard>
   );
 }

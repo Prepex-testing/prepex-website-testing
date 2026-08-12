@@ -15,8 +15,6 @@ import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { CheckInModal, MOODS, type Mood } from "@/components/check-in/CheckInModal";
 import { moodIdToApiValue, apiValueToMoodId, getCheckInStatus, endRecoveryMode } from "@/lib/api/checkin";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
-import { SecondDayInfoModal } from "@/components/home/SecondDayInfoModal";
-import { hasSeenSecondDayPopup, markSecondDayPopupSeen } from "@/lib/home/secondDayPopup";
 import {
   regeneratePlanForMood,
   getTodayPlan,
@@ -295,7 +293,6 @@ export default function HomePage() {
   const [isInRecoveryMode, setInRecoveryMode] = useState(false);
   const [isEndRecoveryOpen, setEndRecoveryOpen] = useState(false);
   const [isEndingRecovery, setEndingRecovery] = useState(false);
-  const [isSecondDayPopupOpen, setSecondDayPopupOpen] = useState(false);
   const isFriday = useSyncExternalStore(
     subscribeNoop,
     getIsFridaySnapshot,
@@ -337,18 +334,10 @@ export default function HomePage() {
         } else {
           setEnergyMood(null);
         }
-        if (data.isSecondDay && !hasSeenSecondDayPopup()) {
-          setSecondDayPopupOpen(true);
-        }
       })
       .catch(() => {
         // Best-effort — mood/streak stay unset (no dummy fallback) until this succeeds.
       });
-  };
-
-  const handleSecondDayPopupClose = () => {
-    markSecondDayPopupSeen();
-    setSecondDayPopupOpen(false);
   };
 
   useEffect(refetchPlan, []);
@@ -879,8 +868,6 @@ export default function HomePage() {
           router.push("/practice");
         }}
       />
-      
-      <SecondDayInfoModal open={isSecondDayPopupOpen} onClose={handleSecondDayPopupClose} />
 
       {isGeneratingPlan && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-background/90 backdrop-blur-sm">

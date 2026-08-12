@@ -2,7 +2,7 @@
 
 import { WhiteModal } from "@/components/ui/WhiteModal";
 import { Button } from "@/components/ui/Button";
-import { InfoIcon } from "@/components/ui/icons";
+import { InfoIcon2 } from "@/components/ui/icons";
 
 type SecondDayInfoModalProps = {
   open: boolean;
@@ -15,13 +15,13 @@ export function SecondDayInfoModal({ open, onClose }: SecondDayInfoModalProps) {
       <div className="mx-auto flex w-full max-w-[340px] flex-col items-center text-center">
         <div className="flex h-16 w-full shrink-0 items-center justify-center">
           <div className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-[#F59E0B1A] text-[#F59E0B]">
-            <InfoIcon />
+            <InfoIcon2 size={24} />
           </div>
         </div>
 
         <div className="flex min-h-8 w-full items-start justify-center pt-4">
           <h2 className="w-full max-w-[340px] text-[24px] font-extrabold leading-8 text-ink">
-            Why we ask this every morning
+            Why we ask this every morning?
           </h2>
         </div>
 
