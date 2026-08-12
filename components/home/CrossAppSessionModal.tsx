@@ -15,22 +15,21 @@ const ACTIVITIES = [
   { id: "other", label: "Other" },
 ];
 
-const DURATION_OPTIONS = [
-  { value: "30", label: "30 mins" },
-  { value: "45", label: "45 mins" },
-  { value: "60", label: "60 mins" },
-  { value: "90", label: "90 mins" },
-];
-
 type CrossAppSessionModalProps = {
   open: boolean;
   onClose: () => void;
   onStart: (activityLabel: string) => void;
+  task: { estimatedMinutes: number; secondsCompleted: number } | null;
 };
 
-export function CrossAppSessionModal({ open, onClose, onStart }: CrossAppSessionModalProps) {
+export function CrossAppSessionModal({ open, onClose, onStart, task }: CrossAppSessionModalProps) {
   const [activity, setActivity] = useState("coaching-lecture");
   const activityLabel = ACTIVITIES.find((item) => item.id === activity)?.label ?? activity;
+
+  const remainingMinutes = task
+    ? Math.max(task.estimatedMinutes - Math.floor(task.secondsCompleted / 60), 0)
+    : 0;
+  const durationOptions = [{ value: String(remainingMinutes), label: `${remainingMinutes} mins` }];
 
   return (
     <WhiteModal open={open} onClose={onClose} ariaLabel="Study outside prepex">
@@ -63,7 +62,7 @@ export function CrossAppSessionModal({ open, onClose, onStart }: CrossAppSession
       </div>
 
       <div className="mt-4">
-        <Select label="How long?" options={DURATION_OPTIONS} defaultValue="60" />
+        <Select label="How long?" options={durationOptions} defaultValue={String(remainingMinutes)} />
       </div>
 
       <Button variant="primary" className="mt-6" onClick={() => onStart(activityLabel)}>

@@ -84,7 +84,7 @@ function toPlanTask(task: PlannerTask): PlanTask {
     actionLabel: task.taskType === "WELLNESS"
       ? "Wellness"
       : task.taskType === "PRACTICE" && task.questionCount
-        ? `Practice ${task.questionCount} Qs`
+        ? `Start Practice`
         : withResumeLabel(TASK_ACTION_LABEL[task.taskType] ?? "Start Session", task.status),
     isCompleted: task.status === "COMPLETED",
     isCustom: Boolean(task.isAnchor),
@@ -265,7 +265,8 @@ function TodayPlanContent() {
     <PlanTaskRow
       key={task.id}
       task={task}
-      onStartPractice={() => setPracticeModalOpen(true)}
+      // onStartPractice={() => setPracticeModalOpen(true)}
+      onStartPractice={() => {router.push("/development-in-progress");}}
       onTaskChanged={refetchPlan}
       onReorder={() => handleReorderSelect(task.id)}
       isDragArmed={reorderTaskId === task.id}

@@ -106,7 +106,7 @@ function RevisionCompleteContent() {
     },
     {
       icon: <LayersIcon className="size-[14px] sm:size-[15px]" />,
-      value: "5 / 5",
+      value: "0 / 0",
       label: "Recall prompts",
     },
     {
@@ -120,24 +120,17 @@ function RevisionCompleteContent() {
     <div className="flex w-full flex-col gap-4 p-4 sm:gap-6 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-2">
-        <Link
-          href="/home/revision"
-          className={`flex shrink-0 items-center gap-1 text-xs font-semibold leading-5 sm:text-sm ${isDark ? "text-muted" : "text-[#334155]"}`}
-        >
-          <ArrowLeftIcon className="h-[9.33px] w-3 shrink-0" />
-          <span>Exit Session</span>
-        </Link>
 
         <p className="order-3 w-full text-center text-xs font-extrabold uppercase leading-5 tracking-[2.8px] text-ink sm:order-none sm:w-auto sm:flex-1 sm:text-sm sm:tracking-[2.8px]">
           Last Revision
         </p>
 
-        <span
+        {/* <span
           className={`hidden shrink-0 items-center gap-2 text-xs font-medium leading-4 sm:flex ${isDark ? "text-muted" : "text-[#6B7280]"}`}
         >
           <CalendarIcon className="h-3.75 w-3.75 shrink-0" />
           14 May 2024, 10:30 AM
-        </span>
+        </span> */}
       </div>
 
       {/* Card */}

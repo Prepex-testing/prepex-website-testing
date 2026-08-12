@@ -50,6 +50,8 @@ export type CheckInStatus = {
   isMockToday: boolean;
   /** Daily target study hours — task durations beyond this trigger a confirm prompt. */
   dailyHours?: number;
+  /** True for the entire user's second day on the app — drives the one-time "why we ask this" popup. */
+  isSecondDay?: boolean;
 };
 
 export function getCheckInStatus() {
