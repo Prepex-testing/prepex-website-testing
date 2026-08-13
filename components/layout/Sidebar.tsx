@@ -28,13 +28,7 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    // TEMPORARY (current sprint): original destination, restore by
-    // uncommenting the line below and removing the override under it.
-    // href: "/plan",
-    href: "/development-in-progress",
-    // TEMPORARY: keeps this item from highlighting as "active" while on the
-    // shared /development-in-progress placeholder — remove once href above
-    // is restored.
+    href: "/plan",
     activeMatch: "/plan",
     label: "Plan",
     icon: (
@@ -44,10 +38,7 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    // TEMPORARY (current sprint): original destination, restore by
-    // uncommenting the line below and removing the override under it.
-    // href: "/practice/sessions",
-    href: "/development-in-progress",
+    href: "/practice/sessions",
     activeMatch: "/practice",
     label: "Practice",
     icon: (
