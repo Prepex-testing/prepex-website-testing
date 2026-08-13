@@ -57,15 +57,32 @@ export function AppShell({ children }: { children: ReactNode }) {
     getStoredSidebarCollapsedServerSnapshot,
   );
 
+  const collapsedState = isFocusMode || isCollapsed;
+
   return (
     <div className="flex min-h-screen flex-1 bg-background">
-      {isFocusMode || isCollapsed ? (
-        <FocusSidebar
-          onExpand={isFocusMode ? undefined : () => writeStoredSidebarCollapsed(false)}
-        />
-      ) : (
-        <Sidebar onCollapse={() => writeStoredSidebarCollapsed(true)} />
-      )}
+      <div
+        className={`relative hidden shrink-0 transition-[width] duration-700 ease-in-out lg:block ${
+          collapsedState ? "w-24.25" : "w-56"
+        }`}
+      >
+        <div
+          className={`absolute inset-y-0 left-0 flex transition-opacity duration-700 ease-in-out ${
+            collapsedState ? "pointer-events-none opacity-0" : "opacity-100"
+          }`}
+        >
+          <Sidebar onCollapse={() => writeStoredSidebarCollapsed(true)} />
+        </div>
+        <div
+          className={`absolute inset-y-0 left-0 flex transition-opacity duration-700 ease-in-out ${
+            collapsedState ? "opacity-100" : "pointer-events-none opacity-0"
+          }`}
+        >
+          <FocusSidebar
+            onExpand={isFocusMode ? undefined : () => writeStoredSidebarCollapsed(false)}
+          />
+        </div>
+      </div>
       <div className="min-w-0 flex-1 pb-[calc(56px+env(safe-area-inset-bottom))] lg:pb-0">
         {isCheckInVerified ? children : null}
       </div>
