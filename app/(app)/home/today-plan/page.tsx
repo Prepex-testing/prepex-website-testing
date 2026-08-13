@@ -266,8 +266,7 @@ function TodayPlanContent() {
     <PlanTaskRow
       key={task.id}
       task={task}
-      // onStartPractice={() => setPracticeModalOpen(true)}
-      onStartPractice={() => {router.push("/development-in-progress");}}
+      onStartPractice={() => setPracticeModalOpen(true)}
       onTaskChanged={refetchPlan}
       onReorder={() => handleReorderSelect(task.id)}
       isDragArmed={reorderTaskId === task.id}

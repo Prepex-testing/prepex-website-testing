@@ -113,31 +113,26 @@ const JOURNAL_STATS = [
 // Focus) is commented alongside the override so it can be restored later.
 const QUICK_ACCESS = [
   {
-    // href: "/practice/sessions",
-    href: "/development-in-progress",
+    href: "/practice/sessions",
     label: "Practice", subtitle: "Solve Questions", icon: <PencilIcon />
   },
   {
-    // href: "/home/mock-analysis",
-    href: "/development-in-progress",
+    href: "/home/mock-analysis",
     label: "Mock Test Analysis",
     subtitle: "Analyze & Improve",
     icon: <ChartBarIcon className="h-5 w-5" />,
   },
   {
-    // href: "/home/mistake-notebook",
-    href: "/development-in-progress",
+    href: "/home/mistake-notebook",
     label: "Mistake Notebook", icon: <BookIcon className="h-5 w-5" />
   },
   {
-    // href: "/home/focus-topic",
-    href: "/development-in-progress",
+    href: "/home/focus-topic",
     label: "This Week's Focus Topic",
     icon: <LayersIcon className="h-5 w-5" />,
   },
   {
-    // href: "/home/focus-next",
-    href: "/development-in-progress",
+    href: "/home/focus-next",
     label: "Where to focus next", icon: <RadarIcon className="h-5 w-5" />
   },
   {
@@ -642,8 +637,7 @@ export default function HomePage() {
                       <TaskRow
                         key={task.id}
                         task={task}
-                        // onStartPractice={() => setPracticeModalOpen(true)}
-                        onStartPractice={() => {router.push("/development-in-progress");}}
+                        onStartPractice={() => setPracticeModalOpen(true)}
                         onTaskChanged={refetchPlan}
                       />
                     ))}
@@ -888,8 +882,7 @@ export default function HomePage() {
           </div>
         </div>
         <Button
-          // href="/home/backlog"
-          href="/development-in-progress"
+          href="/home/backlog"
           variant="secondary"
           size="sm"
           className="w-full sm:w-auto sm:shrink-0 justify-center border! border-[#1A1A4E]! bg-white! text-[#1A1A4E]! shadow-[0px_1px_2px_0px_#0000000D] hover:bg-white! dark:border-transparent!"
