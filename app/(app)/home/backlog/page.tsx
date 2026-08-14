@@ -247,12 +247,6 @@ export default function BacklogPage() {
           <div className="flex items-center justify-end gap-3">
             <button
               type="button"
-              className="flex h-12 items-center justify-center px-4 text-[16px] font-semibold text-muted transition-colors hover:text-ink"
-            >
-              Learn more
-            </button>
-            <button
-              type="button"
               onClick={() => setRecoveryOpen(true)}
               className="flex h-12 w-[163px] items-center justify-center whitespace-nowrap rounded-lg border border-brand bg-surface px-6 text-[16px] font-semibold text-ink transition-colors hover:bg-tint-strong"
             >
