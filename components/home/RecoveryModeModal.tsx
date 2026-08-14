@@ -13,9 +13,10 @@ const ALLOCATIONS = [
 type RecoveryModeModalProps = {
   open: boolean;
   onClose: () => void;
+  onAddBacklogChapters?: () => void;
 };
 
-export function RecoveryModeModal({ open, onClose }: RecoveryModeModalProps) {
+export function RecoveryModeModal({ open, onClose, onAddBacklogChapters }: RecoveryModeModalProps) {
   return (
     <WhiteModal open={open} onClose={onClose} ariaLabel="Recovery Mode">
       <div className="flex items-start justify-between gap-3">
@@ -68,7 +69,7 @@ export function RecoveryModeModal({ open, onClose }: RecoveryModeModalProps) {
           Want to add chapters or topics you know are pending but haven&apos;t been in your
           plan yet?
         </p>
-        <Button variant="secondary" size="sm" className="mt-2">
+        <Button variant="secondary" size="sm" className="mt-2" onClick={onAddBacklogChapters}>
           <PlusIcon />
           Add backlog chapters
         </Button>
