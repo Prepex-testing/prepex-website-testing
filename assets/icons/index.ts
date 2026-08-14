@@ -92,6 +92,7 @@ export { default as Time} from "./Time.svg";
 export { default as ConfirmIcon} from "./ConfirmIcon.svg";
 export { default as AddTask} from "./AddTask.svg";
 export { default as DotIcon} from "./DotIcon.svg";
+export { default as Lightbulb} from "./Lightbulb.svg";
 
 
 
