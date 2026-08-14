@@ -7,6 +7,7 @@ import { Select } from "@/components/ui/Select";
 import { ChevronDownIcon, PlusIcon, XIcon } from "@/components/ui/icons";
 import { getSubjectsChapters, type SubjectWithChapters } from "@/lib/api/profile";
 import { addBacklogTasks, type BacklogTaskTypeInput } from "@/lib/api/backlog";
+import { AddTask } from "@/assets/icons";
 
 type Priority = "URGENT" | "NORMAL" | "LOW";
 
@@ -130,12 +131,12 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
       ...entries,
       ...(canCommitDraft
         ? [
-            {
-              chapterId: draftChapterId,
-              priority: draftPriority,
-              taskType: draftTaskType,
-            },
-          ]
+          {
+            chapterId: draftChapterId,
+            priority: draftPriority,
+            taskType: draftTaskType,
+          },
+        ]
         : []),
     ].map((entry) => ({
       chapterId: entry.chapterId,
@@ -163,8 +164,8 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
       {/* HEADER */}
       <div className="flex w-full items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-start gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#1E1B4B] text-white">
-            <PlusIcon />
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl  bg-[#EEF0F8] text-ink dark:bg-[#FAF7F214] sm:size-11">
+            <AddTask />
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="text-[18px] font-bold leading-6 text-ink lg:text-[22px] lg:leading-7">
@@ -264,11 +265,10 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
                       className="peer sr-only"
                     />
                     <span
-                      className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 ${
-                        selected ? "border-[#1E1B4B]" : "border-brand/25"
-                      }`}
+                      className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 ${selected ? "border-ink" : "border-brand/25"
+                        }`}
                     >
-                      {selected && <span className="size-2.5 rounded-full bg-[#1E1B4B]" />}
+                      {selected && <span className="size-2.5 rounded-full bg-ink" />}
                     </span>
                     <span className="text-[14px] font-medium text-ink">{option.label}</span>
                   </label>
@@ -293,11 +293,10 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
                       className="peer sr-only"
                     />
                     <span
-                      className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 ${
-                        selected ? "border-[#1E1B4B]" : "border-brand/25"
-                      }`}
+                      className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 ${selected ? "border-ink" : "border-brand/25"
+                        }`}
                     >
-                      {selected && <span className="size-2.5 rounded-full bg-[#1E1B4B]" />}
+                      {selected && <span className="size-2.5 rounded-full bg-ink" />}
                     </span>
                     <span className="text-[14px] font-medium text-ink">{option.label}</span>
                   </label>
@@ -310,11 +309,11 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
         {error && <p className="text-sm text-danger">{error}</p>}
 
         <Button
-          variant="secondary"
+          variant="active"
           size="sm"
           onClick={commitDraft}
           disabled={!canCommitDraft}
-          className="h-11 w-full sm:w-auto"
+          className="h-11 w-full rounded-lg border px-4 py-3 text-sm font-bold leading-5 sm:w-[122px]"
         >
           + Add More
         </Button>
