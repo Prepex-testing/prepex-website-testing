@@ -468,82 +468,102 @@ export default function HomePage() {
 
       <div className="@container">
         <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-3">
+
           {/* Today's Energy Card */}
-          <div className="relative rounded-2xl border border-brand/10 bg-surface p-4 @4xl:p-6">
-            <div className="flex flex-row items-center justify-between gap-3 @4xl:gap-4">
-              <div className="flex flex-row items-center gap-3 @4xl:gap-4">
-                <div className="flex h-15 w-15 shrink-0 items-center justify-center rounded-md bg-[#EEF0F8] dark:bg-[#13133D]">
-                  <span className="text-[34px] leading-none">
+          <div className="relative rounded-2xl border border-brand/10 bg-surface p-3 @4xl:p-6">
+            <div className="flex min-w-0 flex-row items-center justify-between gap-2 @4xl:gap-4">
+
+              <div className="flex min-w-0 flex-1 flex-row items-center gap-2 @4xl:gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#EEF0F8] dark:bg-[#13133D] @4xl:h-15 @4xl:w-15">
+                  <span className="text-[22px] leading-none @4xl:text-[26.67px]">
                     {energyMood?.emoji ?? ""}
                   </span>
                 </div>
-                <div className="flex min-w-0 flex-col items-start">
-                  <p className="text-[11px] font-medium leading-none tracking-normal text-muted @4xl:text-[12px]">
+
+                <div className="min-w-0 flex flex-col items-start">
+                  <p className="text-[9px] font-medium leading-[10px] tracking-normal text-muted @4xl:text-[12px] @4xl:leading-[14px]">
                     Today&apos;s Energy
                   </p>
-                  <h3 className="mt-1 truncate text-[18px] font-bold leading-none tracking-normal text-ink @4xl:text-[22px]">
+
+                  <h3 className="mt-1 truncate text-[16px] font-bold leading-[18px] tracking-normal text-ink @4xl:text-[22px] @4xl:leading-[24px]">
                     {energyMood?.label ?? "—"}
                   </h3>
-                  <p className="mt-1 line-clamp-1 text-[12px] font-semibold leading-none tracking-normal text-muted @4xl:text-[14px]">
+
+                  <p className="mt-1 truncate text-[10px] font-semibold leading-[12px] tracking-normal text-muted @4xl:text-[14px] @4xl:leading-[16px]">
                     Plan optimized for you
                   </p>
                 </div>
               </div>
+
               <button
                 type="button"
                 onClick={() => setCheckInOpen(true)}
-                className="shrink-0 text-[11px] font-bold leading-[15px] tracking-normal text-ink hover:underline @4xl:text-[12px]"
+                className="shrink-0 text-[10px] font-bold leading-[15px] tracking-normal text-ink hover:underline @4xl:text-[12px]"
               >
                 Change
               </button>
             </div>
           </div>
 
+
           {/* Streak Card */}
           <Link
-            // href="/home/streak"
             href="/development-in-progress"
-            className="block rounded-2xl border border-brand/10 bg-surface p-4 transition-colors hover:border-brand/30 @4xl:p-6"
+            className="block rounded-2xl border border-brand/10 bg-surface p-3 transition-colors hover:border-brand/30 @4xl:p-6"
           >
-            <div className="flex flex-row items-center justify-between gap-3 @4xl:gap-4">
-              <div className="flex min-w-0 flex-row items-center gap-3 @4xl:gap-4">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-md bg-[#FFF5F3] text-cta dark:bg-[#13133D]">
-                  <FlameIcon className="h-7.5 w-[26.67px]" />
+            <div className="flex min-w-0 flex-row items-center justify-between gap-2 @4xl:gap-4">
+
+              <div className="flex min-w-0 flex-1 flex-row items-center gap-2 @4xl:gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#FFF5F3] text-cta dark:bg-[#13133D] @4xl:h-16 @4xl:w-16">
+                  <FlameIcon className="h-6 w-[22px] @4xl:h-7.5 @4xl:w-[26.67px]" />
                 </div>
-                <div className="flex min-w-0 flex-col items-start gap-0.5 @4xl:gap-1">
-                  <h3 className="truncate text-[16px] font-bold leading-[24px] text-ink @4xl:text-[18px] @4xl:leading-[28px]">
+
+                <div className="min-w-0 flex flex-col items-start gap-0.5 @4xl:gap-1">
+                  <h3 className="truncate text-[14px] font-bold leading-5 text-ink @4xl:text-[18px] @4xl:leading-7">
                     {streakCount !== null ? `${streakCount} Day Streak` : "—"}
                   </h3>
-                  <p className="text-[12px] font-semibold leading-[16px] tracking-normal text-muted @4xl:text-[14px] @4xl:leading-[20px]">
+
+                  <p className="truncate text-[10px] font-semibold leading-4 tracking-normal text-muted @4xl:text-[14px] @4xl:leading-5">
                     Keep going.
                   </p>
                 </div>
               </div>
+
               <BackIcon className="h-[12px] w-[7.4px] shrink-0 text-muted" />
             </div>
           </Link>
 
+
           {/* Today's Progress Card */}
-          <div className="rounded-2xl border border-brand/10 bg-surface px-4 pt-3 pb-4 @4xl:px-6 @4xl:pt-4 @4xl:pb-6">
+          <div className="rounded-2xl border border-brand/10 bg-surface px-3 pt-3 pb-3 @4xl:px-6 @4xl:pt-4 @4xl:pb-6">
+
             <div className="flex justify-end">
-              <span className="whitespace-nowrap text-[10px] leading-none text-muted @4xl:text-[11px]">
+              <span className="whitespace-nowrap text-[8px] leading-none text-muted @4xl:text-[11px]">
                 {formatFullDate(new Date())}
               </span>
             </div>
-            <div className="-mt-1 flex flex-row items-center gap-3 @4xl:gap-4">
+
+            <div className="-mt-1 flex min-w-0 flex-row items-center gap-2 @4xl:gap-4">
+
               <div className="shrink-0">
-                <CircularProgress percent={completionPercent} size={64} />
+                <CircularProgress
+                  percent={completionPercent}
+                  size={56}
+                />
               </div>
-              <div className="flex h-12 min-w-0 flex-col items-start justify-between">
-                <h3 className="truncate text-[16px] font-bold leading-[24px] tracking-normal text-ink @4xl:text-[18px] @4xl:leading-[28px]">
+
+              <div className="min-w-0 flex flex-col items-start">
+                <h3 className="truncate text-[14px] font-bold leading-5 tracking-normal text-ink @4xl:text-[18px] @4xl:leading-7">
                   Today&apos;s Progress
                 </h3>
-                <p className="whitespace-nowrap text-[12px] font-semibold leading-[18px] tracking-normal text-muted @4xl:text-[14px] @4xl:leading-[20px]">
+
+                <p className="truncate text-[10px] font-semibold leading-4 tracking-normal text-muted @4xl:text-[14px] @4xl:leading-5">
                   {formatHours(completedMinutes)} / {formatHours(plannedMinutes)} completed
                 </p>
               </div>
             </div>
           </div>
+
         </div>
       </div>
 
@@ -607,24 +627,30 @@ export default function HomePage() {
                   </p>
                 </div>
               </div>
-              <div className="flex shrink-0 items-center gap-3">
+              <div className="flex w-full shrink-0 items-center justify-center gap-2 sm:w-auto sm:justify-start sm:gap-3">
                 <button
                   type="button"
                   onClick={() => setRegenerateOpen(true)}
-                  className="flex h-8.5 items-center gap-1 whitespace-nowrap rounded-lg border border-[#E5E7EB] bg-surface px-4 py-2 text-xs font-bold text-[#333333] transition-colors hover:bg-tint dark:border-[#FAF7F2] dark:text-[#FAF7F2]"
+                  className="flex h-8 items-center gap-1 whitespace-nowrap rounded-lg border border-[#E5E7EB] bg-surface px-2.5 py-1.5 text-[11px] font-bold text-[#333333] transition-colors hover:bg-tint sm:h-8.5 sm:px-4 sm:py-2 sm:text-xs dark:border-[#FAF7F2] dark:text-[#FAF7F2]"
                 >
-                  <RefreshIcon width={15} height={15} />
+                  <RefreshIcon
+                    width={14}
+                    height={14}
+                    className="shrink-0 sm:h-[15px] sm:w-[15px]"
+                  />
                   <span>Regenerate Plan</span>
                 </button>
+
                 <button
                   type="button"
                   onClick={() => setAddTaskOpen(true)}
-                  className="flex h-8.5 items-center gap-1 whitespace-nowrap rounded-lg border border-[#E5E7EB] bg-surface px-4 py-2 text-xs font-bold text-[#333333] transition-colors hover:bg-tint dark:border-[#FAF7F2] dark:text-[#FAF7F2]"
+                  className="flex h-8 items-center gap-1 whitespace-nowrap rounded-lg border border-[#E5E7EB] bg-surface px-2.5 py-1.5 text-[11px] font-bold text-[#333333] transition-colors hover:bg-tint sm:h-8.5 sm:px-4 sm:py-2 sm:text-xs dark:border-[#FAF7F2] dark:text-[#FAF7F2]"
                 >
-                  <PlusIcon className="h-3.5 w-3.5 shrink-0" />
+                  <PlusIcon className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" />
                   <span>Add task</span>
                 </button>
               </div>
+
             </div>
 
             <div className="p-5">
@@ -710,23 +736,23 @@ export default function HomePage() {
             </div>
           </div>
 
-    <div className="rounded-3xl border border-brand/10 bg-surface p-4 sm:p-5 md:p-6 lg:p-6">
-  {/* Header */}
-  <div className="flex items-center justify-between">
-    <h3 className="text-base font-bold text-(--oc-heading1) sm:text-lg">
-      Study Consistency
-    </h3>
+          <div className="rounded-3xl border border-brand/10 bg-surface p-4 sm:p-5 md:p-6 lg:p-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-(--oc-heading1) sm:text-lg">
+                Study Consistency
+              </h3>
 
-    <BackIcon
-      className="h-[10px] w-[6px] shrink-0 text-secondary sm:h-[12px] sm:w-[7.4px]"
-    />
-  </div>
+              <BackIcon
+                className="h-[10px] w-[6px] shrink-0 text-secondary sm:h-[12px] sm:w-[7.4px]"
+              />
+            </div>
 
-  {consistency ? (
-    <div className="starting:opacity-0 transition-opacity duration-300">
-      {/* Weekday labels */}
-      <div
-        className="
+            {consistency ? (
+              <div className="starting:opacity-0 transition-opacity duration-300">
+                {/* Weekday labels */}
+                <div
+                  className="
           mx-auto
           mt-4
           grid
@@ -737,11 +763,11 @@ export default function HomePage() {
           md:max-w-[420px]
           lg:max-w-[460px]
         "
-      >
-        {CONSISTENCY_WEEKDAY_LABELS.map((day, index) => (
-          <span
-            key={index}
-            className="
+                >
+                  {CONSISTENCY_WEEKDAY_LABELS.map((day, index) => (
+                    <span
+                      key={index}
+                      className="
               flex
               items-center
               justify-center
@@ -751,15 +777,15 @@ export default function HomePage() {
               text-[#94A3B8]
               sm:text-xs
             "
-          >
-            {day}
-          </span>
-        ))}
-      </div>
+                    >
+                      {day}
+                    </span>
+                  ))}
+                </div>
 
-      {/* Consistency boxes */}
-      <div
-        className="
+                {/* Consistency boxes */}
+                <div
+                  className="
           mx-auto
           mt-2
           flex
@@ -774,24 +800,24 @@ export default function HomePage() {
           lg:max-w-[460px]
           lg:gap-y-2.5
         "
-      >
-        {consistencyWeeks.map((week, weekIndex) => (
-          <div
-            key={weekIndex}
-            className="grid w-full grid-cols-7"
-          >
-            {week.map((day, dayIndex) => (
-              <span
-                key={dayIndex}
-                className="flex items-center justify-center"
-              >
-                <span
-                  title={
-                    day
-                      ? `${day.dayCompletionPercentage}% completed on ${day.date}`
-                      : undefined
-                  }
-                  className="
+                >
+                  {consistencyWeeks.map((week, weekIndex) => (
+                    <div
+                      key={weekIndex}
+                      className="grid w-full grid-cols-7"
+                    >
+                      {week.map((day, dayIndex) => (
+                        <span
+                          key={dayIndex}
+                          className="flex items-center justify-center"
+                        >
+                          <span
+                            title={
+                              day
+                                ? `${day.dayCompletionPercentage}% completed on ${day.date}`
+                                : undefined
+                            }
+                            className="
                     aspect-square
                     w-[14px]
                     rounded-[3px]
@@ -801,23 +827,23 @@ export default function HomePage() {
                     lg:w-5
                     lg:rounded-[4px]
                   "
-                  style={{
-                    backgroundColor: day
-                      ? consistencyColors[
-                          toActivityLevel(day.dayCompletionPercentage)
-                        ]
-                      : "transparent",
-                  }}
-                />
-              </span>
-            ))}
-          </div>
-        ))}
-      </div>
+                            style={{
+                              backgroundColor: day
+                                ? consistencyColors[
+                                toActivityLevel(day.dayCompletionPercentage)
+                                ]
+                                : "transparent",
+                            }}
+                          />
+                        </span>
+                      ))}
+                    </div>
+                  ))}
+                </div>
 
-      {/* Legend */}
-      <div
-        className="
+                {/* Legend */}
+                <div
+                  className="
           mt-4
           flex
           items-center
@@ -830,19 +856,19 @@ export default function HomePage() {
           sm:text-xs
           md:mt-6
         "
-      >
-        <span className="shrink-0">
-          {consistencyMonthName}
-        </span>
+                >
+                  <span className="shrink-0">
+                    {consistencyMonthName}
+                  </span>
 
-        <span className="flex shrink-0 items-center gap-1">
-          <span>Missed</span>
+                  <span className="flex shrink-0 items-center gap-1">
+                    <span>Missed</span>
 
-          <span className="flex items-center gap-1">
-            {consistencyColors.map((color, index) => (
-              <span
-                key={index}
-                className="
+                    <span className="flex items-center gap-1">
+                      {consistencyColors.map((color, index) => (
+                        <span
+                          key={index}
+                          className="
                   h-2
                   w-2
                   shrink-0
@@ -851,23 +877,23 @@ export default function HomePage() {
                   sm:w-2.5
                   sm:rounded-sm
                 "
-                style={{
-                  backgroundColor: color,
-                }}
-              />
-            ))}
-          </span>
+                          style={{
+                            backgroundColor: color,
+                          }}
+                        />
+                      ))}
+                    </span>
 
-          <span>Completed</span>
-        </span>
-      </div>
-    </div>
-  ) : (
-    <div className="mt-4 flex h-32 items-center justify-center text-xs text-muted">
-      Loading...
-    </div>
-  )}
-</div>
+                    <span>Completed</span>
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 flex h-32 items-center justify-center text-xs text-muted">
+                Loading...
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

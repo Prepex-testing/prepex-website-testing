@@ -81,22 +81,24 @@ export function TaskConfirmModal({
                 </div>
 
                 {/* Move to Backlog */}
-                <div className="flex w-full items-start justify-center pt-6">
-                    <label className="flex min-h-5 w-auto max-w-full items-center gap-2">
-                        <input
-                            type="checkbox"
-                            checked={moveToBacklog}
-                            onChange={(event) =>
-                                handleMoveToBacklogChange(event.target.checked)
-                            }
-                            className="h-4 w-4 shrink-0 cursor-pointer rounded border border-[#CBD5E1] bg-white checked:border-brand checked:bg-brand disabled:cursor-not-allowed disabled:opacity-40 dark:border-(--text-secondary,#8B8998) dark:bg-[#111145] dark:checked:border-brand dark:checked:bg-brand"
-                        />
+                {showBacklogCheckbox && (
+                    <div className="flex w-full items-start justify-center pt-6">
+                        <label className="flex min-h-5 w-auto max-w-full items-center gap-2">
+                            <input
+                                type="checkbox"
+                                checked={moveToBacklog}
+                                onChange={(event) =>
+                                    handleMoveToBacklogChange(event.target.checked)
+                                }
+                                className="h-4 w-4 shrink-0 cursor-pointer rounded border border-[#CBD5E1] bg-white checked:border-brand checked:bg-brand disabled:cursor-not-allowed disabled:opacity-40 dark:border-(--text-secondary,#8B8998) dark:bg-[#111145] dark:checked:border-brand dark:checked:bg-brand"
+                            />
 
-                        <span className="w-[166px] text-center text-[12px] font-semibold leading-4 text-[#475569] dark:text-(--text-secondary,#8B8998) sm:text-[14px] sm:leading-5">
-                            Move to Backlog instead
-                        </span>
-                    </label>
-                </div>
+                            <span className="w-[166px] text-center text-[12px] font-semibold leading-4 text-[#475569] dark:text-(--text-secondary,#8B8998) sm:text-[14px] sm:leading-5">
+                                Move to Backlog instead
+                            </span>
+                        </label>
+                    </div>
+                )}
 
 
                 {/* Buttons */}

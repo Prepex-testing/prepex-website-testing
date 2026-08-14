@@ -213,9 +213,10 @@ export function editPlannerTask(taskId: string, input: EditPlannerTaskInput) {
   });
 }
 
-export function deletePlannerTask(taskId: string) {
+export function deletePlannerTask(taskId: string, addToBacklog: boolean) {
   return authRequest<{ success: true; data: unknown }>(`/${taskId}`, {
     method: "DELETE",
+    body: JSON.stringify({ addToBacklog }),
   });
 }
 

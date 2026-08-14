@@ -56,13 +56,14 @@ export function TaskEditMenu({ task, onTaskChanged, onReorder, disabled }: TaskE
   const [isDeleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [isDeleting, setDeleting] = useState(false);
   const [isSkipping, setSkipping] = useState(false);
+  const [moveToBacklog, setMoveToBacklog] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const canSkipRevision = task.type === "revision" && task.status === "PENDING";
 
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      await deletePlannerTask(task.id);
+      await deletePlannerTask(task.id, moveToBacklog);
       setDeleteConfirmOpen(false);
       onTaskChanged?.();
     } catch {
@@ -195,6 +196,9 @@ export function TaskEditMenu({ task, onTaskChanged, onReorder, disabled }: TaskE
         subtitle={getChapterTitle(task.title)}
         description="This task will be removed from today’s plan."
         confirmLabel={isDeleting ? "Removing..." : "Remove"}
+        showBacklogCheckbox
+        moveToBacklog={moveToBacklog}
+        onMoveToBacklogChange={setMoveToBacklog}
       />
     </div>
   );

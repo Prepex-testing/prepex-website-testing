@@ -4,7 +4,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ClockIcon, CheckIcon } from "@/components/ui/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { FileIcon, PlayIcon, Open, ArrowLeftIcon, LightbulbIcon ,TargetIcon} from "@/assets/icons";
+import { FileIcon, PlayIcon, Open, ArrowLeftIcon, LightbulbIcon, TargetIcon } from "@/assets/icons";
 import { updateRevisionProgress, markRevisionDone } from "@/lib/api/revision";
 import { getPlannerTask, type PlannerTaskDetail } from "@/lib/api/planner";
 import { useRevisionSession } from "@/components/session/RevisionSessionProvider";
@@ -277,41 +277,139 @@ function RevisionSessionContent() {
           <ArrowLeftIcon className="h-[9.33px] w-3 shrink-0" />
           <span>{isHeaderExiting ? "Exiting..." : "Exit Session"}</span>
         </button>
-        <p className="flex-1 truncate text-center text-[14px] font-extrabold uppercase tracking-[2.8px] text-ink">
-          Revision Session
-        </p>
+     <p
+  className="
+    flex-1
+    truncate
+    text-center
+    text-[11px]
+    font-extrabold
+    uppercase
+    tracking-[1.8px]
+    text-ink
+
+    sm:text-[12px]
+    sm:tracking-[2.2px]
+
+    md:text-[13px]
+    md:tracking-[2.5px]
+
+    lg:text-[14px]
+    lg:tracking-[2.8px]
+  "
+>
+  Revision Session
+</p>
         <span className="w-[92px] shrink-0" aria-hidden="true" />
       </div>
 
       {/* Title */}
       <div>
-        <h1 className="text-[28px] font-bold leading-[36px] text-ink sm:text-[32px] sm:leading-[40px]">
+        {/* Title */}
+        <h1
+          className="
+      max-w-full
+      text-[20px]
+      font-bold
+      leading-[26px]
+      tracking-normal
+      text-ink
+
+      sm:text-[24px]
+      sm:leading-[31px]
+
+      md:text-[28px]
+      md:leading-[36px]
+
+      lg:text-[32px]
+      lg:leading-[40px]
+    "
+        >
           {task?.title ? getChapterTitle(task.title) : "Revision Session"}
         </h1>
-        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+
+        {/* Metadata */}
+        <div
+          className="
+      mt-2
+      flex
+      flex-col
+      items-start
+      gap-1.5
+
+      sm:flex-row
+      sm:flex-wrap
+      sm:items-center
+      sm:gap-x-3
+      sm:gap-y-1.5
+    "
+        >
+          {/* Subject Badge */}
           {task?.subject?.name && (
             <span
-              className={`rounded px-3 py-1 text-[10px] font-extrabold uppercase leading-[15px] ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+              className={`
+          inline-flex
+          shrink-0
+          items-center
+          rounded
+          px-2
+          py-0.5
+          text-[8px]
+          font-extrabold
+          uppercase
+          leading-[13px]
+
+          sm:px-3
+          sm:py-1
+          sm:text-[10px]
+          sm:leading-[15px]
+
+          ${isDark
+                  ? "bg-white text-[#1A1A4E]"
+                  : "bg-tint text-ink"
+                }
+        `}
             >
               {task.subject.name}
             </span>
           )}
-          <span className="flex items-center text-[14px] font-medium leading-5 text-[#6B7280] dark:text-primary!">
+
+          {/* Chapter + Subject */}
+          <p
+            className="
+        max-w-full
+        text-[11px]
+        font-medium
+        leading-[16px]
+        text-[#6B7280]
+        dark:text-primary!
+
+        sm:text-[13px]
+        sm:leading-[18px]
+
+        md:text-[14px]
+        md:leading-5
+      "
+          >
             {task?.chapter?.name}
+
             {task?.chapter?.name && task?.subject?.name && (
-              <span className="flex h-5 w-[24.08px] shrink-0 items-center justify-center px-2 text-[#D1D5DB] dark:text-secondary!">
+              <span className="mx-1.5 text-[#D1D5DB] dark:text-secondary!">
                 •
               </span>
             )}
+
             {task?.subject?.name}
-          </span>
+          </p>
         </div>
+
+        {/* Divider */}
         <div className="mt-3 h-px w-full max-w-[1213px] bg-[#F1F5F9]/40" />
       </div>
 
       {/* Quick Recall + Focus Timer */}
       <div className="flex flex-col items-center gap-3">
-        <p className="text-[12px] font-extrabold uppercase leading-[15px] tracking-[1px] text-muted">
+        <p className="text-[12px] font-extrabold uppercase leading-[15px] tracking-[1px] text-[#333333] dark:text-[#8B8998]">
           Quick Recall
         </p>
         <p className="text-[20px] font-extrabold leading-[28px] text-ink">

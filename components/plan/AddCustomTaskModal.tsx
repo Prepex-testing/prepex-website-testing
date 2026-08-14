@@ -8,12 +8,25 @@ import { Select } from "@/components/ui/Select";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { EditIcon, MinusIcon, PencilIcon, PlusIcon, XIcon } from "@/components/ui/icons";
 import { addPlannerTask, editPlannerTask, type SuggestedWindow } from "@/lib/api/planner";
+import { addBacklogTaskToPlan } from "@/lib/api/backlog";
 import { getCheckInStatus } from "@/lib/api/checkin";
 import {
   getSubjectsChapters,
   type SubjectWithChapters,
 } from "@/lib/api/profile";
 import { AddTask } from "@/assets/icons";
+
+const HEADER_TEXT: Record<"add" | "edit" | "planFromBacklog", { title: string; subtitle: string }> = {
+  add: { title: "Add Task", subtitle: "Structure your study plan with precision" },
+  edit: { title: "Edit Task", subtitle: "Update the details for this task" },
+  planFromBacklog: { title: "Add Backlog to plan", subtitle: "Schedule this backlog item into your plan" },
+};
+
+const SUBMIT_LABEL: Record<"add" | "edit" | "planFromBacklog", { idle: string; busy: string }> = {
+  add: { idle: "Add Task", busy: "Adding..." },
+  edit: { idle: "Save Changes", busy: "Saving..." },
+  planFromBacklog: { idle: "Add to Plan", busy: "Adding..." },
+};
 
 const TASK_TYPES = ["New Learning", "Revision", "Practice", "DPP", "Other"];
 
@@ -51,17 +64,25 @@ export type TaskFormInitialValues = {
   durationValue?: string;
   timePreferenceValue?: string;
   notes?: string;
+  /** planFromBacklog only — the fixed chapter/subject/task-type sent to the API as-is. */
+  chapterId?: string;
+  subjectId?: number;
+  taskTypeApiValue?: string;
 };
 
 type AddCustomTaskModalProps = {
   open: boolean;
   onClose: () => void;
-  mode?: "add" | "edit";
+  mode?: "add" | "edit" | "planFromBacklog";
   /** Task being edited — required in edit mode, used as the PATCH target. */
   taskId?: string;
+  /** Backlog task being scheduled — required in planFromBacklog mode, used as the POST target. */
+  backlogTaskId?: string;
   initialValues?: TaskFormInitialValues;
   onTaskAdded?: () => void;
   onTaskUpdated?: () => void;
+  /** Called after a successful planFromBacklog submit so the parent backlog list can refetch. */
+  onPlanned?: () => void;
   /** Locks Task Type to this value and hides the picker — used by the revision page. */
   lockedTaskType?: string;
 };
@@ -93,9 +114,11 @@ export function AddCustomTaskModal({
   onClose,
   mode = "add",
   taskId,
+  backlogTaskId,
   initialValues,
   onTaskAdded,
   onTaskUpdated,
+  onPlanned,
   lockedTaskType,
 }: AddCustomTaskModalProps) {
   const [taskType, setTaskType] = useState(lockedTaskType ?? initialValues?.taskType ?? "Practice");
@@ -114,6 +137,25 @@ export function AddCustomTaskModal({
   const [dailyTargetMinutes, setDailyTargetMinutes] = useState<number | null>(null);
   const [isDurationConfirmOpen, setDurationConfirmOpen] = useState(false);
   const isEdit = mode === "edit";
+  // Subject/Topic/Task Type are locked read-only both when editing an
+  // existing plan task and when scheduling a backlog item — neither lets
+  // the user change what chapter the task is actually about.
+  const isLocked = mode === "edit" || mode === "planFromBacklog";
+
+  // This modal is a single persistent instance shared across every row
+  // (e.g. the backlog page opens it for whichever task was clicked), so the
+  // useState initializers above only ever run once. Without this, reopening
+  // for a different task would keep showing the previous task's form values.
+  useEffect(() => {
+    if (!open) return;
+    setTaskType(lockedTaskType ?? initialValues?.taskType ?? "Practice");
+    setTaskName(initialValues?.taskName ?? "");
+    setDurationValue(initialValues?.durationValue ?? "30");
+    setTimePreferenceValue(initialValues?.timePreferenceValue ?? "");
+    setNotes(initialValues?.notes ?? "");
+    setError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   // Daily target study hours, used to warn when this task's duration alone
   // would exceed the student's whole-day target.
@@ -131,7 +173,7 @@ export function AddCustomTaskModal({
   // locally instead of refetching. Edit mode shows Subject/Topic as static
   // text (see below), so it has no need for this list.
   useEffect(() => {
-    if (!open || isEdit) return;
+    if (!open || isLocked) return;
 
     async function loadSubjectsChapters() {
       setLoadingChapters(true);
@@ -154,7 +196,7 @@ export function AddCustomTaskModal({
 
     loadSubjectsChapters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, isEdit]);
+  }, [open, isLocked]);
 
   const chapters = subjects.find((subject) => subject.id === subjectId)?.chapters ?? [];
 
@@ -207,6 +249,33 @@ export function AddCustomTaskModal({
       return;
     }
 
+    if (mode === "planFromBacklog") {
+      if (!backlogTaskId || !taskName.trim() || !initialValues?.chapterId || initialValues.subjectId == null) {
+        return;
+      }
+
+      setSubmitting(true);
+      setError(null);
+      try {
+        await addBacklogTaskToPlan(backlogTaskId, {
+          title: taskName.trim(),
+          taskType: initialValues.taskTypeApiValue ?? "PRACTICE",
+          estimatedMinutes: Number(durationValue),
+          chapterId: initialValues.chapterId,
+          subjectId: initialValues.subjectId,
+          description: notes.trim() || undefined,
+          suggestedWindow: SUGGESTED_WINDOW_VALUES[timePreferenceValue],
+        });
+        onPlanned?.();
+        onClose();
+      } catch {
+        setError("Couldn't add this task to your plan. Please try again.");
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
     if (!taskName.trim()) return;
 
     setSubmitting(true);
@@ -238,7 +307,7 @@ export function AddCustomTaskModal({
     <WhiteModal
       open={open}
       onClose={onClose}
-      ariaLabel={isEdit ? "Edit task" : "Add custom task"}
+      ariaLabel={HEADER_TEXT[mode].title}
       size="lg"
     >
       {/* HEADER */}
@@ -249,11 +318,11 @@ export function AddCustomTaskModal({
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="min-w-0 break-words text-[14px] font-bold leading-5 text-ink sm:truncate sm:text-base sm:leading-6 md:text-lg lg:text-[22px] lg:leading-7">
-              {isEdit ? "Edit Task" : "Add Task"}
+              {HEADER_TEXT[mode].title}
             </h2>
 
             <p className="min-w-0 truncate text-[10px] font-normal leading-[15px] text-primary sm:mt-1 sm:text-[11px] sm:leading-4 md:text-xs md:leading-[18px] lg:text-sm">
-              {isEdit ? "Update the details for this task" : "Structure your study plan with precision"}
+              {HEADER_TEXT[mode].subtitle}
             </p>
           </div>
         </div>
@@ -276,7 +345,7 @@ export function AddCustomTaskModal({
 
           {/* Subject + Topic */}
           <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-            {isEdit ? (
+            {isLocked ? (
               <StaticField
                 label="Subject"
                 value={initialValues?.subjectValue ?? ""}
@@ -294,7 +363,7 @@ export function AddCustomTaskModal({
               />
             )}
 
-            {isEdit ? (
+            {isLocked ? (
               <StaticField
                 label="Topic"
                 value={initialValues?.topicValue ?? ""}
@@ -314,7 +383,7 @@ export function AddCustomTaskModal({
           </div>
 
           {/* Task Type */}
-          {isEdit ? (
+          {isLocked ? (
             <div className="w-full">
               <p className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">
                 Task Type
@@ -439,13 +508,7 @@ export function AddCustomTaskModal({
           disabled={isSubmitting || !taskName.trim()}
           className="flex h-[54px] w-full items-center justify-center gap-2.5 rounded-xl px-6 py-2 sm:w-[231px]"
         >
-          {isSubmitting
-            ? isEdit
-              ? "Saving..."
-              : "Adding..."
-            : isEdit
-              ? "Save Changes"
-              : "Add Task"}
+          {isSubmitting ? SUBMIT_LABEL[mode].busy : SUBMIT_LABEL[mode].idle}
         </Button>
       </div>
       <ConfirmModal

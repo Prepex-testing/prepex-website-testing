@@ -280,9 +280,9 @@ export default function RevisionPage() {
         })}
       </div>
 
-      <div className="flex flex-col gap-4 pt-6 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-3 pt-5 sm:gap-4 sm:pt-6 lg:flex-row lg:items-center lg:justify-between">
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:gap-3 md:gap-4">
           {[{ id: "all" as const, name: "All" }, ...subjects].map((item) => {
             const active = activeSubjectId === item.id;
 
@@ -293,21 +293,31 @@ export default function RevisionPage() {
                 onClick={() => setActiveSubjectId(item.id)}
                 className={`
             flex
-            h-10
-            sm:h-[42px]
+            h-9
+            shrink-0
             items-center
             justify-center
             rounded-full
             border
             px-3
-            sm:px-5
-            text-xs
-            sm:text-sm
+            text-[11px]
             font-semibold
-            leading-5
+            leading-4
             whitespace-nowrap
             transition-all
             duration-200
+
+            sm:h-10
+            sm:px-4
+            sm:text-xs
+            sm:leading-5
+
+            md:h-[42px]
+            md:px-5
+            md:text-[13px]
+
+            lg:text-sm
+
             ${active
                     ? isDark
                       ? "border-white bg-white text-[#1A1A4E]"
@@ -326,40 +336,61 @@ export default function RevisionPage() {
 
         {/* Status Filter */}
         {activeTab === "due" && (
-          <div ref={statusMenuRef} className="relative w-full shrink-0 sm:w-auto">
+          <div
+            ref={statusMenuRef}
+            className="
+        relative
+        w-full
+        shrink-0
+        sm:w-auto
+        lg:ml-4
+      "
+          >
             <button
               type="button"
               aria-haspopup="menu"
               aria-expanded={isStatusMenuOpen}
               onClick={() => setStatusMenuOpen((value) => !value)}
               className={`
-      flex
-      h-10
-      sm:h-[42px]
-      w-full
-      sm:w-auto
-      sm:min-w-[182px]
-      items-center
-      justify-between
-      rounded-lg
-      border
-      px-4
-      text-xs
-      sm:text-sm
-      font-medium
-      transition-all
-      duration-200
-      ${isDark
+          flex
+          h-9
+          w-full
+          items-center
+          justify-between
+          rounded-lg
+          border
+          px-3
+          text-[11px]
+          font-medium
+          transition-all
+          duration-200
+
+          sm:h-10
+          sm:w-auto
+          sm:min-w-[170px]
+          sm:px-4
+          sm:text-xs
+
+          md:h-[42px]
+          md:min-w-[182px]
+          md:text-[13px]
+
+          lg:text-sm
+
+          ${isDark
                   ? "border-primary bg-primary text-card hover:bg-primary/90"
                   : "border-[#C4C5D8] bg-white text-[#444655] hover:text-ink"
                 }
-    `}
+        `}
             >
-              <span className="truncate">
-                Status: {STATUS_OPTIONS.find((option) => option.id === activeStatus)?.label ?? "All"}
+              <span className="min-w-0 truncate">
+                Status:{" "}
+                {STATUS_OPTIONS.find(
+                  (option) => option.id === activeStatus,
+                )?.label ?? "All"}
               </span>
 
-              <span className="ml-3 flex shrink-0 items-center justify-center">
+              <span className="ml-2 flex shrink-0 items-center justify-center sm:ml-3">
                 <ChevronDownIcon />
               </span>
             </button>
@@ -367,7 +398,24 @@ export default function RevisionPage() {
             {isStatusMenuOpen && (
               <div
                 role="menu"
-                className="absolute right-0 top-full z-40 mt-2 w-full overflow-hidden rounded-xl border border-brand/10 bg-surface py-1 shadow-modal sm:w-44"
+                className="
+            absolute
+            left-0
+            top-full
+            z-40
+            mt-2
+            w-full
+            overflow-hidden
+            rounded-xl
+            border
+            border-brand/10
+            bg-surface
+            py-1
+            shadow-modal
+            sm:left-auto
+            sm:right-0
+            sm:w-44
+          "
               >
                 <button
                   type="button"
@@ -376,11 +424,26 @@ export default function RevisionPage() {
                     setActiveStatus(null);
                     setStatusMenuOpen(false);
                   }}
-                  className={`flex w-full items-center px-3 py-2 text-left text-sm font-medium hover:bg-tint-strong ${activeStatus === null ? "text-ink" : "text-muted"
-                    }`}
+                  className={`
+              flex
+              w-full
+              items-center
+              px-3
+              py-2
+              text-left
+              text-[13px]
+              font-medium
+              hover:bg-tint-strong
+              sm:text-sm
+              ${activeStatus === null
+                      ? "text-ink"
+                      : "text-muted"
+                    }
+            `}
                 >
                   All
                 </button>
+
                 {STATUS_OPTIONS.map((option) => (
                   <button
                     key={option.id}
@@ -390,8 +453,22 @@ export default function RevisionPage() {
                       setActiveStatus(option.id);
                       setStatusMenuOpen(false);
                     }}
-                    className={`flex w-full items-center px-3 py-2 text-left text-sm font-medium hover:bg-tint-strong ${activeStatus === option.id ? "text-ink" : "text-muted"
-                      }`}
+                    className={`
+                flex
+                w-full
+                items-center
+                px-3
+                py-2
+                text-left
+                text-[13px]
+                font-medium
+                hover:bg-tint-strong
+                sm:text-sm
+                ${activeStatus === option.id
+                        ? "text-ink"
+                        : "text-muted"
+                      }
+              `}
                   >
                     {option.label}
                   </button>
@@ -452,8 +529,8 @@ export default function RevisionPage() {
                   <div className="flex items-center gap-1.5">
                     <span
                       className={`inline-flex h-5 items-center rounded-[4px] px-2 text-[9px] font-bold uppercase leading-none ${isDark
-                          ? "bg-white/10 text-white"
-                          : DIFFICULTY_STYLES[topic.difficulty]
+                        ? "bg-white/10 text-white"
+                        : DIFFICULTY_STYLES[topic.difficulty]
                         }`}
                     >
                       {topic.difficulty}
