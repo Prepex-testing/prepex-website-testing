@@ -269,7 +269,7 @@ export default function BacklogPage() {
             <span className="h-[18px] w-[4px] rounded-full bg-warning" />
 
             <h2 className="text-[20px] font-semibold uppercase leading-7 text-ink">
-              Backlogs
+              Backlog
             </h2>
 
             <span
@@ -378,21 +378,12 @@ export default function BacklogPage() {
                     {actioningId === item.id ? "Holding…" : "Hold"}
                   </button>
 
-                  <button
-                    type="button"
-                    className={`flex h-10 w-10 items-center justify-center rounded-lg hover:bg-tint-strong ${isDark ? "text-white" : "text-muted"}`}
-                  >
-                    <span className="rotate-90">
-                      <MoreIcon />
-                    </span>
-                  </button>
                 </div>
               </div>
             );
           })
         )}
       </div>
-
       <div className="flex flex-col gap-5">
         {/* Header */}
         <div className="flex items-center gap-3">

@@ -92,6 +92,8 @@
   --mood-card-bg: #FAF7F2;
   --mood-chip-bg: #E7EEFF;
   --modal-bg: #FAF7F2;
+  --modal-text:#2D2E6E;
+  --modal-subtext:#6B7280;
 
   --logo-tagline: #333333;
 
@@ -229,8 +231,10 @@
   --mood-card-bg: #2A2A6E;
   --mood-chip-bg: #232C6B;
   --modal-bg: #111145;
+  --modal-text:#FAF7F2;
+  --modal-subtext:#8B8998;
   --logo-tagline: #F0EDE5;
-
+  
 
   --preview-card-bg: #13133D;
   --preview-card-border: #242453;
@@ -364,11 +368,13 @@
   --color-weekly-title: var(--weekly-title);
   --color-weekly-label: var(--weekly-label);
   --color-loader-dot: var(--loader-dot);
-
+ 
+  --color-modal-text: var(--modal-text);
 
   --color-stats-container-bg: var(--stats-container-bg);
   --color-stats-item-bg: var(--stats-item-bg);
   --color-stats-border: var(--stats-border);
+  --color-modal-subtext: var(--modal-subtext);
 
   --color-task-card-border: var(--task-card-border);
 
