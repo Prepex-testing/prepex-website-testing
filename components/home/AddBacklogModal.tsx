@@ -46,9 +46,50 @@ type AddBacklogModalProps = {
   onAdded?: () => void;
 };
 
+function RadioGroup<T extends string>({
+  name,
+  options,
+  value,
+  onChange,
+}: {
+  name: string;
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-6">
+      {options.map((option) => {
+        const selected = value === option.value;
+        return (
+          <label key={option.value} className="flex cursor-pointer items-center gap-2">
+            <input
+              type="radio"
+              name={name}
+              value={option.value}
+              checked={selected}
+              onChange={() => onChange(option.value)}
+              className="peer sr-only"
+            />
+            <span
+              className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 ${
+                selected ? "border-[#1E1B4B]" : "border-brand/25"
+              }`}
+            >
+              {selected && <span className="size-2.5 rounded-full bg-[#1E1B4B]" />}
+            </span>
+            <span className="text-[14px] font-medium text-ink">{option.label}</span>
+          </label>
+        );
+      })}
+    </div>
+  );
+}
+
 export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps) {
   const [subjects, setSubjects] = useState<SubjectWithChapters[]>([]);
   const [entries, setEntries] = useState<BacklogEntry[]>([]);
+  const [openEntryId, setOpenEntryId] = useState<string | null>(null);
   const [draftSubjectId, setDraftSubjectId] = useState<number | null>(null);
   const [draftChapterId, setDraftChapterId] = useState("");
   const [draftPriority, setDraftPriority] = useState<Priority>("NORMAL");
@@ -71,6 +112,7 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
   useEffect(() => {
     if (open) {
       setEntries([]);
+      setOpenEntryId(null);
       setDraftSubjectId(null);
       setDraftChapterId("");
       setDraftPriority("NORMAL");
@@ -111,15 +153,47 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
     resetDraft();
   };
 
-  const editEntry = (id: string) => {
-    const entry = entries.find((item) => item.id === id);
-    if (!entry) return;
+  // Only one entry is expanded for inline editing at a time. Opening another
+  // one just switches which is expanded — the previously open entry keeps
+  // whatever values it already has and collapses back to a card instead of
+  // being discarded.
+  const toggleEntryOpen = (id: string) => {
+    setOpenEntryId((current) => (current === id ? null : id));
+  };
 
-    setDraftSubjectId(entry.subjectId);
-    setDraftChapterId(entry.chapterId);
-    setDraftPriority(entry.priority);
-    setDraftTaskType(entry.taskType);
-    setEntries((current) => current.filter((item) => item.id !== id));
+  const updateEntrySubject = (id: string, subjectId: number) => {
+    const subject = subjects.find((item) => item.id === subjectId);
+    setEntries((current) =>
+      current.map((entry) =>
+        entry.id === id
+          ? { ...entry, subjectId, subjectName: subject?.name ?? "", chapterId: "", chapterName: "" }
+          : entry,
+      ),
+    );
+  };
+
+  const updateEntryChapter = (id: string, chapterId: string) => {
+    setEntries((current) =>
+      current.map((entry) => {
+        if (entry.id !== id) return entry;
+        const chapter = subjects
+          .find((subject) => subject.id === entry.subjectId)
+          ?.chapters.find((item) => item.id === chapterId);
+        return { ...entry, chapterId, chapterName: chapter?.name ?? "" };
+      }),
+    );
+  };
+
+  const updateEntryPriority = (id: string, priority: Priority) => {
+    setEntries((current) =>
+      current.map((entry) => (entry.id === id ? { ...entry, priority } : entry)),
+    );
+  };
+
+  const updateEntryTaskType = (id: string, taskType: BacklogTaskTypeInput) => {
+    setEntries((current) =>
+      current.map((entry) => (entry.id === id ? { ...entry, taskType } : entry)),
+    );
   };
 
   const handleClose = () => {
@@ -189,40 +263,90 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
 
       {/* BODY */}
       <div className="mt-6 flex w-full flex-col gap-3">
-        {entries.map((entry) => (
-          <div
-            key={entry.id}
-            className="flex w-full items-center justify-between gap-4 rounded-xl border border-brand/10 bg-tint p-4"
-          >
-            <div className="min-w-0">
-              <p className="text-[15px] font-semibold leading-5 text-ink">{entry.subjectName}</p>
-              <span className="mt-1 inline-flex items-center rounded-full bg-surface px-2.5 py-1 text-[11px] font-medium text-muted">
-                {entry.chapterName}
-              </span>
+        {entries.map((entry) => {
+          const isOpen = openEntryId === entry.id;
+          const entryChapters = subjects.find((subject) => subject.id === entry.subjectId)?.chapters ?? [];
+
+          return (
+            <div
+              key={entry.id}
+              className="flex w-full flex-col gap-4 rounded-xl border border-brand/10 bg-tint p-4"
+            >
+              <div className="flex w-full items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-[15px] font-semibold leading-5 text-ink">{entry.subjectName}</p>
+                  <span className="mt-1 inline-flex items-center rounded-full bg-surface px-2.5 py-1 text-[11px] font-medium text-muted">
+                    {entry.chapterName}
+                  </span>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-2">
+                  <span
+                    className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-[12px] font-semibold ${PRIORITY_BADGE_CLASSES[entry.priority]}`}
+                  >
+                    {PRIORITY_OPTIONS.find((option) => option.value === entry.priority)?.label}
+                  </span>
+
+                  <span className="inline-flex h-7 items-center justify-center rounded-full bg-tint-strong px-3 text-[12px] font-semibold text-ink">
+                    {TASK_TYPE_OPTIONS.find((option) => option.value === entry.taskType)?.label}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => toggleEntryOpen(entry.id)}
+                    aria-label={isOpen ? `Collapse ${entry.chapterName}` : `Edit ${entry.chapterName}`}
+                    aria-expanded={isOpen}
+                    className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-tint-strong hover:text-ink"
+                  >
+                    <ChevronDownIcon className={isOpen ? "rotate-180" : ""} />
+                  </button>
+                </div>
+              </div>
+
+              {isOpen && (
+                <div className="flex flex-col gap-4 border-t border-brand/10 pt-4">
+                  <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+                    <Select
+                      label="Subject"
+                      options={subjects.map((subject) => ({ value: String(subject.id), label: subject.name }))}
+                      value={String(entry.subjectId)}
+                      onChange={(event) => updateEntrySubject(entry.id, Number(event.target.value))}
+                      placeholder="Subject"
+                    />
+
+                    <Select
+                      label="Topic"
+                      options={entryChapters.map((chapter) => ({ value: chapter.id, label: chapter.name }))}
+                      value={entry.chapterId}
+                      onChange={(event) => updateEntryChapter(entry.id, event.target.value)}
+                      placeholder="Topic"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <p className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">Priority:</p>
+                    <RadioGroup
+                      name={`backlog-priority-${entry.id}`}
+                      options={PRIORITY_OPTIONS}
+                      value={entry.priority}
+                      onChange={(value) => updateEntryPriority(entry.id, value)}
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <p className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">Task Type:</p>
+                    <RadioGroup
+                      name={`backlog-task-type-${entry.id}`}
+                      options={TASK_TYPE_OPTIONS}
+                      value={entry.taskType}
+                      onChange={(value) => updateEntryTaskType(entry.id, value)}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
-
-            <div className="flex shrink-0 items-center gap-2">
-              <span
-                className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-[12px] font-semibold ${PRIORITY_BADGE_CLASSES[entry.priority]}`}
-              >
-                {PRIORITY_OPTIONS.find((option) => option.value === entry.priority)?.label}
-              </span>
-
-              <span className="inline-flex h-7 items-center justify-center rounded-full bg-tint-strong px-3 text-[12px] font-semibold text-ink">
-                {TASK_TYPE_OPTIONS.find((option) => option.value === entry.taskType)?.label}
-              </span>
-
-              <button
-                type="button"
-                onClick={() => editEntry(entry.id)}
-                aria-label={`Edit ${entry.chapterName}`}
-                className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-tint-strong hover:text-ink"
-              >
-                <ChevronDownIcon />
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
 
         {/* Draft form */}
         <div className="flex w-full flex-col gap-4 rounded-xl border border-brand/10 p-4">
@@ -251,58 +375,22 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
 
           <div className="flex flex-col gap-2">
             <p className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">Priority:</p>
-            <div className="flex flex-wrap items-center gap-6">
-              {PRIORITY_OPTIONS.map((option) => {
-                const selected = draftPriority === option.value;
-                return (
-                  <label key={option.value} className="flex cursor-pointer items-center gap-2">
-                    <input
-                      type="radio"
-                      name="backlog-priority"
-                      value={option.value}
-                      checked={selected}
-                      onChange={() => setDraftPriority(option.value)}
-                      className="peer sr-only"
-                    />
-                    <span
-                      className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 ${selected ? "border-ink" : "border-brand/25"
-                        }`}
-                    >
-                      {selected && <span className="size-2.5 rounded-full bg-ink" />}
-                    </span>
-                    <span className="text-[14px] font-medium text-ink">{option.label}</span>
-                  </label>
-                );
-              })}
-            </div>
+            <RadioGroup
+              name="backlog-priority"
+              options={PRIORITY_OPTIONS}
+              value={draftPriority}
+              onChange={setDraftPriority}
+            />
           </div>
 
           <div className="flex flex-col gap-2">
             <p className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">Task Type:</p>
-            <div className="flex flex-wrap items-center gap-6">
-              {TASK_TYPE_OPTIONS.map((option) => {
-                const selected = draftTaskType === option.value;
-                return (
-                  <label key={option.value} className="flex cursor-pointer items-center gap-2">
-                    <input
-                      type="radio"
-                      name="backlog-task-type"
-                      value={option.value}
-                      checked={selected}
-                      onChange={() => setDraftTaskType(option.value)}
-                      className="peer sr-only"
-                    />
-                    <span
-                      className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 ${selected ? "border-ink" : "border-brand/25"
-                        }`}
-                    >
-                      {selected && <span className="size-2.5 rounded-full bg-ink" />}
-                    </span>
-                    <span className="text-[14px] font-medium text-ink">{option.label}</span>
-                  </label>
-                );
-              })}
-            </div>
+            <RadioGroup
+              name="backlog-task-type"
+              options={TASK_TYPE_OPTIONS}
+              value={draftTaskType}
+              onChange={setDraftTaskType}
+            />
           </div>
         </div>
 
