@@ -3,7 +3,10 @@ import { authenticatedRequest } from "@/lib/api/authRequest";
 import type { SuggestedWindow } from "@/lib/api/planner";
 
 function authRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
-  return authenticatedRequest<T>(`${CORE_API_BASE_URL}/api/backlog${path}`, options);
+  return authenticatedRequest<T>(
+    `${CORE_API_BASE_URL}/api/backlog${path}`,
+    options,
+  );
 }
 
 export type BacklogHealthTier =
@@ -23,7 +26,11 @@ export type BacklogHealth = {
   maxDaysOverdue: number;
 };
 
-export type BacklogSubject = { id: number; code: string; name: string };
+export type BacklogSubject = {
+  id: number;
+  code: string;
+  name: string;
+};
 
 export type BacklogChapterMetadata = {
   category?: string;
@@ -46,7 +53,11 @@ export type BacklogChapter = {
   chapterMetadata?: BacklogChapterMetadata | null;
 } | null;
 
-export type BacklogStatus = "ACTIVE" | "HELD" | "RESOLVED" | string;
+export type BacklogStatus =
+  | "ACTIVE"
+  | "HELD"
+  | "RESOLVED"
+  | string;
 
 export type BacklogTask = {
   id: string;
@@ -54,7 +65,12 @@ export type BacklogTask = {
   planTaskId: string | null;
   chapterId: string | null;
   title: string;
-  taskType: "WELLNESS" | "PRACTICE" | "REVISION" | "NEW_LEARNING" | string;
+  taskType:
+    | "WELLNESS"
+    | "PRACTICE"
+    | "REVISION"
+    | "NEW_LEARNING"
+    | string;
   source: string;
   priority: string;
   status: BacklogStatus;
@@ -79,25 +95,37 @@ export function getBacklog() {
 }
 
 export function holdBacklogTask(taskId: string) {
-  return authRequest<{ success: true; data: unknown }>(`/${taskId}/hold`, {
-    method: "PATCH",
-    body: JSON.stringify({}),
-  });
+  return authRequest<{ success: true; data: unknown }>(
+    `/${taskId}/hold`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({}),
+    },
+  );
 }
 
 export function reviveBacklogTask(taskId: string) {
-  return authRequest<{ success: true; data: unknown }>(`/${taskId}/revive`, {
-    method: "PATCH",
-  });
+  return authRequest<{ success: true; data: unknown }>(
+    `/${taskId}/revive`,
+    {
+      method: "PATCH",
+    },
+  );
 }
 
 export function skipBacklogTask(taskId: string) {
-  return authRequest<{ success: true; data: unknown }>(`/${taskId}/skip`, {
-    method: "PATCH",
-  });
+  return authRequest<{ success: true; data: unknown }>(
+    `/${taskId}/skip`,
+    {
+      method: "PATCH",
+    },
+  );
 }
 
-export type BacklogTaskTypeInput = "REVISION" | "NEW_LEARNING" | "PRACTICE";
+export type BacklogTaskTypeInput =
+  | "REVISION"
+  | "NEW_LEARNING"
+  | "PRACTICE";
 
 export type AddBacklogChapterInput = {
   chapterId: string;
@@ -105,7 +133,9 @@ export type AddBacklogChapterInput = {
   taskTypes: BacklogTaskTypeInput;
 };
 
-export function addBacklogTasks(chapters: AddBacklogChapterInput[]) {
+export function addBacklogTasks(
+  chapters: AddBacklogChapterInput[],
+) {
   return authRequest<{ success: true; data: unknown }>("", {
     method: "POST",
     body: JSON.stringify({ chapters }),
@@ -122,9 +152,15 @@ export type AddBacklogTaskToPlanInput = {
   suggestedWindow?: SuggestedWindow;
 };
 
-export function addBacklogTaskToPlan(backlogTaskId: string, input: AddBacklogTaskToPlanInput) {
-  return authRequest<{ success: true; data: unknown }>(`/${backlogTaskId}/addtask`, {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
+export function addBacklogTaskToPlan(
+  backlogTaskId: string,
+  input: AddBacklogTaskToPlanInput,
+) {
+  return authRequest<{ success: true; data: unknown }>(
+    `/${backlogTaskId}/addtask`,
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
+  );
 }
