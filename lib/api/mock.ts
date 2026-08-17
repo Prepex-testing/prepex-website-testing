@@ -21,17 +21,25 @@ export type MockTopicScoreInput = {
   questionsCorrect: number;
 };
 
+/**
+ * Only attemptedDate and mockName are required by the backend. Every other
+ * field is a zod `.optional()` — it accepts the key being absent, but
+ * rejects an explicit `null` ("expected number, received null"). So these
+ * are typed `?:` (no `| null`) and must be genuinely omitted, not passed as
+ * null, when the form has no value for them. JSON.stringify drops
+ * `undefined`-valued keys, which is what actually makes that omission work.
+ */
 export type SubmitMockInput = {
   attemptedDate: string;
   mockName: string;
-  sourceInstitute: string;
-  examType: string;
-  totalScore: number;
-  maxScore: number;
-  timeTakenMinutes: number;
+  sourceInstitute?: string;
+  examType?: string;
+  totalScore?: number;
+  maxScore?: number;
+  timeTakenMinutes?: number;
   testDurationMinutes?: number;
-  entryMethod: MockEntryMethod;
-  entryTier: MockEntryTier;
+  entryMethod?: MockEntryMethod;
+  entryTier?: MockEntryTier;
   subjectScores?: MockSubjectScoreInput[];
   topicScores?: MockTopicScoreInput[];
 };
@@ -41,4 +49,86 @@ export function submitMock(input: SubmitMockInput) {
     method: "POST",
     body: JSON.stringify(input),
   });
+}
+
+export type MockAnalysisStatus = "PENDING" | "COMPLETED" | string;
+
+export type MockSubjectAnalysis = {
+  id: string;
+  mockAnalysisId: string;
+  subjectId: number;
+  score: number;
+  maxScore: number;
+  accuracyPercentage: string;
+  createdAt: string;
+  subject: { id: number; code: string; name: string };
+};
+
+export type MockTopicAnalysis = {
+  id: string;
+  mockAnalysisId: string;
+  chapterId: string;
+  questionsAttempted: number;
+  questionsCorrect: number;
+  createdAt: string;
+};
+
+export type MockAnalysisItem = {
+  id: string;
+  userId: string;
+  mockName: string;
+  sourceInstitute: string;
+  examType: string;
+  attemptedDate: string;
+  entryMethod: MockEntryMethod;
+  entryTier: MockEntryTier;
+  analysisStatus: MockAnalysisStatus;
+  totalScore: number | null;
+  maxScore: number | null;
+  accuracyPercentage: string;
+  timeTakenMinutes: number;
+  testDurationMinutes: number | null;
+  ocrProcessed: boolean;
+  createdAt: string;
+  updatedAt: string;
+  subjectAnalysis: MockSubjectAnalysis[];
+  topicAnalysis: MockTopicAnalysis[];
+};
+
+export type MockAnalysisTrend = "IMPROVED" | "DECLINED" | "SAME" | string;
+
+export type MockAnalysisSummary = {
+  totalMockCount: number;
+  averageScorePercentage: number;
+  bestScorePercentage: number;
+  latestComparison: {
+    latestScorePercentage: number;
+    previousScorePercentage: number;
+    changePercentagePoints: number;
+    trend: MockAnalysisTrend;
+  } | null;
+};
+
+export type MockAnalysisPagination = {
+  total: number;
+  page: number;
+  limit: number;
+};
+
+export type MockAnalysisListResponse = {
+  summary: MockAnalysisSummary;
+  pagination: MockAnalysisPagination;
+  items: MockAnalysisItem[];
+  upcomingMock: MockAnalysisItem | null;
+};
+
+export function getMockAnalysisList(params: { page?: number; limit?: number } = {}) {
+  const query = new URLSearchParams();
+  if (params.page !== undefined) query.set("page", String(params.page));
+  if (params.limit !== undefined) query.set("limit", String(params.limit));
+
+  const queryString = query.toString();
+  return authRequest<{ success: true; data: MockAnalysisListResponse }>(
+    queryString ? `?${queryString}` : "",
+  );
 }

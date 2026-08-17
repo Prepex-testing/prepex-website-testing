@@ -55,16 +55,26 @@ const SUPPORTED_SOURCES = ["Allen", "PW", "FIITJEE", "Aakash", "Resonance", "Oth
 const FIELD_CLASSES =
   "w-full rounded-xl border border-brand/15 bg-surface px-3 py-3 text-sm text-body-text outline-none placeholder:text-muted/70 focus:border-focus-ring";
 
-// No exam-type picker exists on this page yet — every submission from here
-// is a practice mock.
-const EXAM_TYPE = "Practice";
+// No exam-type picker exists on this page yet, so there's never a real
+// value to send for it.
+const EXAM_TYPE = undefined;
 
-function sourceLabel(value: string): string {
+function sourceLabel(value: string): string | undefined {
+  if (!value) return undefined;
   return SOURCE_OPTIONS.find((option) => option.value === value)?.label ?? value;
 }
 
-/** Parses free-text durations like "2h 30m" or "3h" into total minutes. */
-function parseDurationMinutes(text: string): number {
+/** Parses a free-text field like "2h 30m" or "3h" into a whole-number string. */
+function parseOptionalNumber(text: string): number | undefined {
+  const trimmed = text.trim();
+  if (trimmed === "") return undefined;
+  const value = Number(trimmed);
+  return Number.isFinite(value) ? value : undefined;
+}
+
+/** Parses free-text durations like "2h 30m" or "3h" into total minutes. Empty input is omitted. */
+function parseDurationMinutes(text: string): number | undefined {
+  if (text.trim() === "") return undefined;
   const hours = Number(text.match(/(\d+)\s*h/i)?.[1] ?? 0);
   const minutes = Number(text.match(/(\d+)\s*m/i)?.[1] ?? 0);
   return hours * 60 + minutes;
@@ -286,33 +296,40 @@ function ManualForm() {
   const handleSave = async () => {
     const fields = level === "basic" ? basicFields : mediumFields;
     const entryTier: MockEntryTier = level === "basic" ? "BASIC" : "MEDIUM";
+    const attemptedDate = toIsoDate(fields.dateDisplay);
+
+    if (!fields.mockName.trim() || !attemptedDate) {
+      setError("Mock Name and Date Attempted are required.");
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
     try {
       await submitMock({
-        attemptedDate: toIsoDate(fields.dateDisplay),
+        attemptedDate,
         mockName: fields.mockName.trim(),
         sourceInstitute: sourceLabel(fields.source),
         examType: EXAM_TYPE,
-        totalScore: Number(fields.score) || 0,
-        maxScore: Number(fields.totalMarks) || 0,
+        totalScore: parseOptionalNumber(fields.score),
+        maxScore: parseOptionalNumber(fields.totalMarks),
         timeTakenMinutes: parseDurationMinutes(fields.timeTaken),
-        testDurationMinutes: fields.testDuration
-          ? parseDurationMinutes(fields.testDuration)
-          : undefined,
+        testDurationMinutes: parseDurationMinutes(fields.testDuration),
         entryMethod: "MANUAL",
         entryTier,
         subjectScores:
           level === "medium"
             ? subjects
-                .filter((subject) => (subjectScores[subject.id]?.score ?? "").trim() !== "")
+                .filter((subject) => {
+                  const value = subjectScores[subject.id];
+                  return value && value.score.trim() !== "" && value.maxScore.trim() !== "";
+                })
                 .map((subject) => {
                   const value = subjectScores[subject.id]!;
                   return {
                     subjectId: subject.id,
-                    score: Number(value.score) || 0,
-                    maxScore: Number(value.maxScore) || 0,
+                    score: Number(value.score),
+                    maxScore: Number(value.maxScore),
                   };
                 })
             : undefined,
@@ -501,19 +518,28 @@ function QuickLogForm() {
   ) => setFields((current) => ({ ...current, [key]: value }));
 
   const handleSave = async () => {
+    const attemptedDate = toIsoDate(fields.dateDisplay);
+
+    if (!fields.mockName.trim() || !attemptedDate) {
+      setError("Mock Name and Date are required.");
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
     try {
+      const hasTimeTaken = fields.timeTakenHours !== "" || fields.timeTakenMinutes !== "";
       const hasDuration = fields.durationHours !== "" || fields.durationMinutes !== "";
       await submitMock({
-        attemptedDate: toIsoDate(fields.dateDisplay),
+        attemptedDate,
         mockName: fields.mockName.trim(),
         sourceInstitute: sourceLabel(fields.source),
         examType: EXAM_TYPE,
-        totalScore: Number(fields.score) || 0,
-        maxScore: Number(fields.totalMarks) || 0,
-        timeTakenMinutes:
-          (Number(fields.timeTakenHours) || 0) * 60 + (Number(fields.timeTakenMinutes) || 0),
+        totalScore: parseOptionalNumber(fields.score),
+        maxScore: parseOptionalNumber(fields.totalMarks),
+        timeTakenMinutes: hasTimeTaken
+          ? (Number(fields.timeTakenHours) || 0) * 60 + (Number(fields.timeTakenMinutes) || 0)
+          : undefined,
         testDurationMinutes: hasDuration
           ? (Number(fields.durationHours) || 0) * 60 + (Number(fields.durationMinutes) || 0)
           : undefined,
