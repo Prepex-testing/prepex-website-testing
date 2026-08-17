@@ -6,7 +6,12 @@ function authRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
   return authenticatedRequest<T>(`${CORE_API_BASE_URL}/api/backlog${path}`, options);
 }
 
-export type BacklogHealthTier = "HEALTHY" | "GROWING" | "CRITICAL" | string;
+export type BacklogHealthTier =
+  | "HEALTHY"
+  | "BUILDING"
+  | "HEAVY"
+  | "TIME TO RECOVER"
+  | string;
 
 export type BacklogHealth = {
   tier: BacklogHealthTier;
