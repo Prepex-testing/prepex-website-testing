@@ -146,12 +146,11 @@ export default function BacklogPage() {
 
   const healthColor = health
     ? BACKLOG_HEALTH_COLORS[health.tier]
-    : "#4C1D95";
+    :" ";
 
-  const healthPercent = health
-    ? Math.round(
-      (health.activeTaskCount / Math.max(health.taskCount, 1)) * 100
-    )
+const healthPercent =
+  health?.taskCount
+    ? Math.round((health.activeTaskCount / health.taskCount) * 100)
     : 0;
 
   return (

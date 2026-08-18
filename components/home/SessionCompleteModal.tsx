@@ -35,9 +35,30 @@ export function SessionCompleteModal({
         >
           <XIcon />
         </button>
-        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white">
-          <CheckIcon />
-        </span>
+       <span
+  className="
+    mx-auto flex size-20 items-center justify-center
+    rounded-full border-4 border-white
+    bg-brand
+    shadow-[0px_4px_6px_-4px_rgba(0,0,0,0.1),0px_10px_15px_-3px_rgba(0,0,0,0.1)]
+    dark:bg-[var(--text-primary,#FAF7F2)]
+  "
+>
+  <span
+    className="
+      flex size-12 items-center justify-center
+      rounded-full bg-white
+      dark:bg-[var(--bg-card,#111145)]
+    "
+  >
+    <CheckIcon
+      className="
+        size-6 text-brand
+        dark:text-[var(--text-primary,#FAF7F2)]
+      "
+    />
+  </span>
+</span>
         <h2 className="mt-3 text-h1 text-ink">Session Complete</h2>
         <p className="text-sm text-muted">{topic}</p>
       </div>
@@ -54,7 +75,7 @@ export function SessionCompleteModal({
         </div>
         <div className="rounded-xl border border-brand/10 p-4 text-center">
           <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-tint text-ink">
-            <CheckCircleIcon />
+           <CheckCircleIcon width={18} height={18} />
           </span>
           <p className="mt-2 text-[10px] font-bold uppercase tracking-wide text-muted">
             Milestones Completed
