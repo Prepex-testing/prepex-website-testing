@@ -45,9 +45,46 @@ export type SubmitMockInput = {
 };
 
 export function submitMock(input: SubmitMockInput) {
-  return authRequest<{ success: true; data: unknown }>("", {
+  return authRequest<{ success: true; data: MockAnalysisItem }>("", {
     method: "POST",
     body: JSON.stringify(input),
+  });
+}
+
+export function updateMock(id: string, input: Partial<SubmitMockInput>) {
+  return authRequest<{ success: true; data: MockAnalysisItem }>(`/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export type MockExtractedData = {
+  attemptedDate: string | null;
+  mockName: string | null;
+  sourceInstitute: string | null;
+  examType: string | null;
+  totalScore: number | null;
+  maxScore: number | null;
+  timeTakenMinutes: number | null;
+  testDurationMinutes: number | null;
+  entryMethod: MockEntryMethod;
+  entryTier: MockEntryTier;
+  subjectScores: MockSubjectScoreInput[];
+};
+
+export type MockExtractImageResult = {
+  fileUrl: string;
+  parsedSuccessfully: boolean;
+  summary: string;
+  extractedData: MockExtractedData;
+};
+
+export function extractMockImage(file: File) {
+  const formData = new FormData();
+  formData.append("image", file);
+  return authRequest<{ success: true; data: MockExtractImageResult }>("/extract-image", {
+    method: "POST",
+    body: formData,
   });
 }
 
@@ -121,6 +158,16 @@ export type MockAnalysisListResponse = {
   items: MockAnalysisItem[];
   upcomingMock: MockAnalysisItem | null;
 };
+
+export function deleteMock(id: string) {
+  return authRequest<{ success: true; data: unknown }>(`/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function getMockById(id: string) {
+  return authRequest<{ success: true; data: MockAnalysisItem }>(`/${id}`);
+}
 
 export function getMockAnalysisList(params: { page?: number; limit?: number } = {}) {
   const query = new URLSearchParams();

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { CalendarIcon, ClockIcon, TargetIcon, ChartBarIcons, TrophyIcons, TrendingUpIcon, UploadIcon,LeftIconcon ,BellIcon} from "@/assets/icons";
 import {
   // BellIcon,
@@ -21,6 +22,7 @@ import {
   ChevronRightIcon,
 } from "@/components/ui/icons";
 import {
+  deleteMock,
   getMockAnalysisList,
   type MockAnalysisItem,
   type MockAnalysisListResponse,
@@ -70,10 +72,72 @@ function getMockAction(item: MockAnalysisItem): MockAction {
   }
 
   if (item.maxScore != 0) {
-    return { label: "View Analysis", href: "/home/mock-analysis/view-analytics", disabled: false };
+    return {
+      label: "View Analysis",
+      href: `/home/mock-analysis/view-analytics?id=${item.id}`,
+      disabled: false,
+    };
   }
 
-  return { label: "Upload Score", href: "/home/mock-analysis/upload-scorecard", disabled: false };
+  return {
+    label: "Upload Score",
+    href: `/home/mock-analysis/upload-scorecard?id=${item.id}`,
+    disabled: false,
+  };
+}
+
+function MoreOptionsMenu({ label, onDelete }: { label: string; onDelete: () => void }) {
+  const [isOpen, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [isOpen]);
+
+  return (
+    <div ref={containerRef} className="relative inline-block">
+      <button
+        type="button"
+        aria-label={label}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        onClick={() => setOpen((value) => !value)}
+        className="inline-flex h-5 w-5 items-center justify-center text-muted"
+      >
+        <span className="rotate-90">
+          <MoreIcon />
+        </span>
+      </button>
+
+      {isOpen && (
+        <div
+          role="menu"
+          className="absolute right-0 top-full z-40 mt-2 w-40 overflow-hidden rounded-xl border border-brand/10 bg-surface py-1 shadow-modal"
+        >
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              onDelete();
+            }}
+            className="flex w-full items-center px-3 py-2 text-left text-sm font-medium text-danger hover:bg-tint-strong"
+          >
+            Delete Mock
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function MockAnalysisPage() {
@@ -85,6 +149,10 @@ export default function MockAnalysisPage() {
   const [page, setPage] = useState(1);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [isDeleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -112,6 +180,42 @@ export default function MockAnalysisPage() {
   const pagination = data?.pagination ?? null;
   const upcomingMock = data?.upcomingMock ?? null;
   const totalPages = pagination ? Math.max(1, Math.ceil(pagination.total / pagination.limit)) : 1;
+  const mockToDelete = items.find((item) => item.id === confirmDeleteId) ?? null;
+
+  async function refetchCurrentPage() {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data } = await getMockAnalysisList({ page, limit: RECENT_MOCKS_LIMIT });
+      setData(data);
+    } catch {
+      setError("Couldn't load your mock analysis. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleConfirmDelete() {
+    if (!confirmDeleteId) return;
+
+    setDeleting(true);
+    setDeleteError(null);
+
+    try {
+      await deleteMock(confirmDeleteId);
+      setConfirmDeleteId(null);
+
+      if (items.length === 1 && page > 1) {
+        setPage((current) => current - 1);
+      } else {
+        await refetchCurrentPage();
+      }
+    } catch {
+      setDeleteError("Couldn't delete the mock. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   const statCards = [
     {
@@ -122,13 +226,13 @@ export default function MockAnalysisPage() {
     },
     {
       label: "Avg Score",
-      value: summary ? `${summary.averageScorePercentage}%` : "—",
+      value: summary?.averageScorePercentage != null? `${summary.averageScorePercentage}%`: "—",
       caption: "Average across mocks",
       icon: <ChartBarIcons />,
     },
     {
       label: "Best Score",
-      value: summary ? `${summary.bestScorePercentage}%` : "—",
+      value: summary?.bestScorePercentage != null? `${summary.bestScorePercentage}%`: "—",
       caption: "Personal best",
       icon: <TrophyIcons />,
     },
@@ -280,6 +384,9 @@ export default function MockAnalysisPage() {
           <h2 className="text-[18px] font-extrabold leading-7 text-ink">
             Recent Mocks
           </h2>
+          {deleteError && (
+            <p className="text-caption font-semibold text-warning">{deleteError}</p>
+          )}
         </div>
 
         <div className="hidden overflow-x-auto px-4 py-4 md:block sm:px-6 lg:px-8">
@@ -380,15 +487,10 @@ export default function MockAnalysisPage() {
                     </td>
 
                     <td className="py-5 text-center">
-                      <button
-                        type="button"
-                        aria-label={`More options for ${mock.mockName}`}
-                        className="inline-flex h-5 w-5 items-center justify-center text-muted"
-                      >
-                        <span className="rotate-90">
-                          <MoreIcon />
-                        </span>
-                      </button>
+                      <MoreOptionsMenu
+                        label={`More options for ${mock.mockName}`}
+                        onDelete={() => setConfirmDeleteId(mock.id)}
+                      />
                     </td>
                   </tr>
                 ))
@@ -419,15 +521,10 @@ export default function MockAnalysisPage() {
                       {formatMockDate(mock.attemptedDate)}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    aria-label={`More options for ${mock.mockName}`}
-                    className="inline-flex h-5 w-5 items-center justify-center text-muted"
-                  >
-                    <span className="rotate-90">
-                      <MoreIcon />
-                    </span>
-                  </button>
+                  <MoreOptionsMenu
+                    label={`More options for ${mock.mockName}`}
+                    onDelete={() => setConfirmDeleteId(mock.id)}
+                  />
                 </div>
 
                 <div className="mt-4 flex items-center justify-between gap-4">
@@ -537,6 +634,22 @@ export default function MockAnalysisPage() {
           </Button>
         </div>
       </section>
+
+      <ConfirmModal
+        open={confirmDeleteId !== null}
+        onClose={() => {
+          if (isDeleting) return;
+          setConfirmDeleteId(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Mock"
+        description={
+          mockToDelete
+            ? `Are you sure you want to delete "${mockToDelete.mockName}"? This action cannot be undone.`
+            : "Are you sure you want to delete this mock? This action cannot be undone."
+        }
+        confirmLabel={isDeleting ? "Deleting…" : "Delete"}
+      />
     </div>
   );
 }
