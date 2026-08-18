@@ -93,6 +93,8 @@ export { default as ConfirmIcon} from "./ConfirmIcon.svg";
 export { default as AddTask} from "./AddTask.svg";
 export { default as DotIcon} from "./DotIcon.svg";
 export { default as Lightbulb} from "./Lightbulb.svg";
+export { default as Right} from "./Right.svg";
+export { default as Star} from "./Star.svg";
 
 
 

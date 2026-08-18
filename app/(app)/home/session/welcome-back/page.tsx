@@ -127,6 +127,7 @@ export default function WelcomeBackPage() {
               label={item.label}
               selected={outcome === item.id}
               onSelect={() => setOutcome(item.id)}
+              unselectedLabelClassName="text-[#666666] dark:text-[#8B8998]"
             />
           ))}
         </div>

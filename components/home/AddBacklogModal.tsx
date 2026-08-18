@@ -17,10 +17,16 @@ const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
   { value: "LOW", label: "Low" },
 ];
 
+
 const PRIORITY_BADGE_CLASSES: Record<Priority, string> = {
-  URGENT: "border border-cta text-cta",
-  NORMAL: "bg-tint-strong text-ink",
-  LOW: "bg-tint text-muted",
+  NORMAL:
+    "bg-white border-[#E5E7EB] text-[#1A1A4E] dark:bg-[#111145] dark:border-[#8B8998] dark:text-[#8B8998]",
+
+  URGENT:
+    "bg-[#FFF1F0] border-[#FF7A59] text-[#FF7A59] dark:bg-[#FF7A59] dark:border-[#8B8998] dark:text-[#FAF7F2]",
+
+  LOW:
+    "bg-[#F0FDF4] border-[#86EFAC] text-[#166534] dark:bg-[#166534] dark:border-[#8B8998] dark:text-[#FAF7F2]",
 };
 
 const TASK_TYPE_OPTIONS: { value: BacklogTaskTypeInput; label: string }[] = [
@@ -61,6 +67,7 @@ function RadioGroup<T extends string>({
     <div className="flex flex-wrap items-center gap-6">
       {options.map((option) => {
         const selected = value === option.value;
+
         return (
           <label key={option.value} className="flex cursor-pointer items-center gap-2">
             <input
@@ -71,14 +78,19 @@ function RadioGroup<T extends string>({
               onChange={() => onChange(option.value)}
               className="peer sr-only"
             />
+
             <span
-              className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 ${
-                selected ? "border-[#1E1B4B]" : "border-brand/25"
-              }`}
+              className={`flex size-5 shrink-0 items-center justify-center rounded-full ${selected
+                  ? "border-2 border-ink"
+                  : "border-[1.5px] border-[#E5E7EB] dark:border-[#8B8998]"
+                }`}
             >
-              {selected && <span className="size-2.5 rounded-full bg-[#1E1B4B]" />}
+              {selected && <span className="size-2.5 rounded-full bg-ink" />}
             </span>
-            <span className="text-[14px] font-medium text-ink">{option.label}</span>
+
+            <span className="text-[14px] font-medium text-ink">
+              {option.label}
+            </span>
           </label>
         );
       })}
@@ -270,61 +282,88 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
           return (
             <div
               key={entry.id}
-              className="flex w-full flex-col gap-4 rounded-xl border border-brand/10 bg-tint p-4"
+              className="flex w-full flex-col rounded-xl border border-[#E5E7EB] bg-[#F3F4F6] p-4 dark:border-[#8B8998] dark:bg-[#111145]"
             >
-              <div className="flex w-full items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="text-[15px] font-semibold leading-5 text-ink">{entry.subjectName}</p>
-                  <span className="mt-1 inline-flex items-center rounded-full bg-surface px-2.5 py-1 text-[11px] font-medium text-muted">
-                    {entry.chapterName}
+              {/* Header */}
+              <div className="flex w-full items-center justify-between gap-3">
+                {/* Subject + Chapter */}
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  {/* Subject */}
+                  <p className="truncate text-base font-bold leading-5 text-ink">
+                    {entry.subjectName}
+                  </p>
+
+                  {/* Chapter */}
+                  <span className="inline-flex h-[23px] w-fit max-w-full items-center rounded-full border border-[#E5E7EB] bg-white px-2 py-1 text-[11px] font-medium leading-[15px] text-[#333333] dark:border-[#8B8998] dark:bg-[#111145] dark:text-[#8B8998]">
+                    <span className="truncate">{entry.chapterName}</span>
                   </span>
                 </div>
 
+                {/* Priority + Chevron */}
                 <div className="flex shrink-0 items-center gap-2">
+                  {/* Priority */}
                   <span
-                    className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-[12px] font-semibold ${PRIORITY_BADGE_CLASSES[entry.priority]}`}
+                    className={`inline-flex h-[23px] items-center justify-center rounded-full border px-2.5 py-1 text-[11px] font-semibold leading-[15px] ${PRIORITY_BADGE_CLASSES[entry.priority]}`}
                   >
                     {PRIORITY_OPTIONS.find((option) => option.value === entry.priority)?.label}
                   </span>
 
-                  <span className="inline-flex h-7 items-center justify-center rounded-full bg-tint-strong px-3 text-[12px] font-semibold text-ink">
-                    {TASK_TYPE_OPTIONS.find((option) => option.value === entry.taskType)?.label}
-                  </span>
-
+                  {/* Expand / Collapse */}
                   <button
                     type="button"
                     onClick={() => toggleEntryOpen(entry.id)}
-                    aria-label={isOpen ? `Collapse ${entry.chapterName}` : `Edit ${entry.chapterName}`}
+                    aria-label={
+                      isOpen
+                        ? `Collapse ${entry.chapterName}`
+                        : `Edit ${entry.chapterName}`
+                    }
                     aria-expanded={isOpen}
                     className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-tint-strong hover:text-ink"
                   >
-                    <ChevronDownIcon className={isOpen ? "rotate-180" : ""} />
+                    <ChevronDownIcon
+                      className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+                        }`}
+                    />
                   </button>
                 </div>
               </div>
 
+              {/* Expanded Content */}
               {isOpen && (
-                <div className="flex flex-col gap-4 border-t border-brand/10 pt-4">
+                <div className="flex flex-col gap-4 border-t border-[#E5E7EB] pt-4 dark:border-[#8B8998]">
                   <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
                     <Select
                       label="Subject"
-                      options={subjects.map((subject) => ({ value: String(subject.id), label: subject.name }))}
+                      options={subjects.map((subject) => ({
+                        value: String(subject.id),
+                        label: subject.name,
+                      }))}
                       value={String(entry.subjectId)}
-                      onChange={(event) => updateEntrySubject(entry.id, Number(event.target.value))}
+                      onChange={(event) =>
+                        updateEntrySubject(entry.id, Number(event.target.value))
+                      }
                       placeholder="Subject"
                     />
 
                     <Select
                       label="Topic"
-                      options={entryChapters.map((chapter) => ({ value: chapter.id, label: chapter.name }))}
+                      options={entryChapters.map((chapter) => ({
+                        value: chapter.id,
+                        label: chapter.name,
+                      }))}
                       value={entry.chapterId}
-                      onChange={(event) => updateEntryChapter(entry.id, event.target.value)}
+                      onChange={(event) =>
+                        updateEntryChapter(entry.id, event.target.value)
+                      }
                       placeholder="Topic"
                     />
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <p className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">Priority:</p>
+                    <p className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">
+                      Priority:
+                    </p>
+
                     <RadioGroup
                       name={`backlog-priority-${entry.id}`}
                       options={PRIORITY_OPTIONS}
@@ -334,7 +373,10 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <p className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">Task Type:</p>
+                    <p className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">
+                      Task Type:
+                    </p>
+
                     <RadioGroup
                       name={`backlog-task-type-${entry.id}`}
                       options={TASK_TYPE_OPTIONS}
@@ -349,7 +391,7 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
         })}
 
         {/* Draft form */}
-        <div className="flex w-full flex-col gap-4 rounded-xl border border-brand/10 p-4">
+        <div className="flex w-full flex-col gap-4 rounded-xl border border-[#E5E7EB] bg-white p-4 dark:border-[#8B8998] dark:bg-[#111145]">
           <p className="text-[13px] font-medium text-muted">For each, optionally add specifics:</p>
 
           <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
@@ -374,7 +416,10 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
           </div>
 
           <div className="flex flex-col gap-2">
-            <p className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">Priority:</p>
+            <p className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">
+              Priority:
+            </p>
+
             <RadioGroup
               name="backlog-priority"
               options={PRIORITY_OPTIONS}
@@ -384,7 +429,10 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
           </div>
 
           <div className="flex flex-col gap-2">
-            <p className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">Task Type:</p>
+            <p className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">
+              Task Type:
+            </p>
+
             <RadioGroup
               name="backlog-task-type"
               options={TASK_TYPE_OPTIONS}

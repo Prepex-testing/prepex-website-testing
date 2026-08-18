@@ -33,7 +33,7 @@ import {
   ChevronDownIcon,
 } from "@/components/ui/icons";
 
-import { LineIcon, BoltIcon, CrossIcon, BoxIcon, MenuIcon, ChemistryIcon, MathIcon, PhysicsIcon, Clock ,BellIcon,ArrowLeftIcon} from "@/assets/icons";
+import { LineIcon, BoltIcon, CrossIcon, BoxIcon, MenuIcon, ChemistryIcon, MathIcon, PhysicsIcon, Clock, BellIcon, ArrowLeftIcon } from "@/assets/icons";
 
 const SUBJECT_ICON_BY_CODE: Record<string, React.ReactNode> = {
   PHY: <PhysicsIcon />,
@@ -50,6 +50,13 @@ const TASK_TYPE_DISPLAY: Record<string, string> = {
   REVISION: "Revision",
   NEW_LEARNING: "New Learning",
   WELLNESS: "Other",
+};
+
+const BACKLOG_HEALTH_COLORS: Record<BacklogHealth["tier"], string> = {
+  HEALTHY: "#00D274",
+  BUILDING: "#FFD65A",
+  HEAVY: "#FF6937",
+  "TIME TO RECOVER": "#FD3539",
 };
 
 export default function BacklogPage() {
@@ -137,6 +144,15 @@ export default function BacklogPage() {
     }
   };
 
+  const healthColor = health
+    ? BACKLOG_HEALTH_COLORS[health.tier]
+    :" ";
+
+const healthPercent =
+  health?.taskCount
+    ? Math.round((health.activeTaskCount / health.taskCount) * 100)
+    : 0;
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -161,17 +177,20 @@ export default function BacklogPage() {
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
         {/* Progress Card */}
-        <div className="flex h-[142px] flex-col items-center justify-center rounded-2xl  p-6">
+        <div className="flex h-[142px] flex-col items-center justify-center rounded-2xl p-6">
           <CircularProgress
-            percent={65}
+            percent={healthPercent}
             displayValue={health?.activeTaskCount ?? 0}
             suffix=""
             label="Tasks"
             size={72}
-            progressColor="#4C1D95"
+            progressColor={healthColor}
           />
 
-          <span className="mt-3 inline-flex h-[23px] items-center justify-center rounded-full bg-[#4C1D95] px-3 text-[10px] font-bold uppercase tracking-[0.8px] text-white shadow-[0px_1px_2px_0px_#0000000D]">
+          <span
+            className="mt-3 inline-flex h-[23px] items-center justify-center rounded-full px-3 text-[10px] font-bold uppercase tracking-[0.8px] text-white shadow-[0px_1px_2px_0px_#0000000D]"
+            style={{ backgroundColor: healthColor }}
+          >
             {health?.tier ?? "—"}
           </span>
         </div>
@@ -195,7 +214,7 @@ export default function BacklogPage() {
 
         {/* Time Span */}
         <div className="flex h-[142px] items-center rounded-2xl border border-brand/10 bg-surface p-6">
-          <span className="mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+          <span className="mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg  bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
             <Clock />
           </span>
 
@@ -225,14 +244,14 @@ export default function BacklogPage() {
       </div>
 
       {health?.recoveryRequired && (
-        <div className="flex flex-col gap-4 rounded-2xl border border-brand/10 bg-surface p-6 backdrop-blur-[12px] lg:h-[98px] lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex w-full flex-col gap-4 rounded-2xl border border-brand/10 bg-surface p-6 backdrop-blur-[12px] lg:h-[98px] lg:flex-row lg:items-center lg:justify-between">
           {/* Left */}
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 items-center gap-4">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
               <BoltIcon />
             </span>
 
-            <div>
+            <div className="min-w-0">
               <h3 className="text-[14px] font-semibold leading-5 text-ink">
                 Your backlog is building.
               </h3>
@@ -244,11 +263,11 @@ export default function BacklogPage() {
           </div>
 
           {/* Right */}
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex w-full items-center justify-center lg:w-auto lg:justify-end">
             <button
               type="button"
               onClick={() => setRecoveryOpen(true)}
-              className="flex h-12 w-[163px] items-center justify-center whitespace-nowrap rounded-lg border border-brand bg-surface px-6 text-[16px] font-semibold text-ink transition-colors hover:bg-tint-strong"
+              className="flex h-12 w-[163px] shrink-0 items-center justify-center whitespace-nowrap rounded-lg border border-brand bg-surface px-6 text-[16px] font-semibold text-ink transition-colors hover:bg-tint-strong"
             >
               Start Recovery
             </button>
@@ -258,16 +277,17 @@ export default function BacklogPage() {
 
       <div className="flex flex-col gap-5">
         {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="h-[18px] w-[4px] rounded-full bg-warning" />
+        <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="h-[18px] w-[4px] shrink-0 rounded-full bg-warning" />
 
             <h2 className="text-[20px] font-semibold uppercase leading-7 text-ink">
               Backlog
             </h2>
 
             <span
-              className={`text-[14px] font-normal leading-[21px] ${isDark ? "text-ink" : "text-muted"}`}
+              className={`text-[14px] font-normal leading-[21px] ${isDark ? "text-ink" : "text-muted"
+                }`}
             >
               (high-impact first)
             </span>
@@ -276,7 +296,7 @@ export default function BacklogPage() {
           <button
             type="button"
             onClick={() => setAddBacklogOpen(true)}
-            className="flex h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-lg bg-cta px-5 text-[14px] font-semibold text-white transition-colors hover:bg-[#E8623F]"
+            className="flex h-11 w-fit shrink-0 self-center items-center justify-center whitespace-nowrap rounded-lg bg-cta px-5 text-[14px] font-semibold text-white transition-colors hover:bg-[#E8623F] sm:self-auto"
           >
             Add Backlog
           </button>
@@ -391,9 +411,9 @@ export default function BacklogPage() {
         </div>
 
         {/* Cards */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2 lg:gap-6">
           {heldTasks.length === 0 ? (
-            <div className="rounded-2xl border border-brand/10 bg-surface px-8 py-8 text-center text-[14px] font-medium text-muted lg:col-span-2">
+            <div className="rounded-2xl border border-brand/10 bg-surface px-6 py-8 text-center text-[13px] font-medium text-muted sm:px-8 sm:text-[14px] lg:col-span-2">
               No held backlog task available.
             </div>
           ) : (
@@ -404,33 +424,41 @@ export default function BacklogPage() {
               return (
                 <div
                   key={item.id}
-                  className="relative flex h-[90px] items-center justify-between rounded-2xl border border-brand/10 bg-surface p-5 shadow-[0px_4px_20px_0px_#00000008]"
+                  className="relative flex min-h-[82px] w-full items-start justify-between gap-2 rounded-2xl border border-brand/10 bg-surface p-3.5 shadow-[0px_4px_20px_0px_#00000008] sm:min-h-[90px] sm:items-center sm:gap-4 sm:p-5"
                 >
                   {/* Left */}
-                  <div className="flex items-center gap-4">
+                  <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center sm:gap-4">
                     {/* Subject Icon */}
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8 sm:h-10 sm:w-10">
                       {subjectIcon(subject?.code)}
                     </span>
 
                     {/* Content */}
-                    <div>
-                      <span className="inline-flex rounded-sm bg-tint-strong px-2 py-[2px] text-[10px] font-medium text-ink">
+                    <div className="min-w-0 flex-1">
+                      {/* Subject */}
+                      <span className="inline-flex max-w-full rounded-sm bg-tint-strong px-2 py-[2px] text-[9px] font-medium leading-3 text-ink sm:text-[10px] sm:leading-4">
                         {subject?.name ?? "General"}
                       </span>
 
-                      <h3 className="mt-1 text-[18px] font-semibold leading-5 text-ink">
+                      {/* Title */}
+                      <h3 className="mt-1 break-words text-[14px] font-semibold leading-5 text-ink sm:text-[18px]">
                         {title}
                       </h3>
 
-                      <p className="mt-1 text-[11px] font-medium leading-4 text-muted">
+                      {/* Overdue */}
+                      <p className="mt-1 break-words text-[10px] font-medium leading-4 text-muted sm:text-[11px]">
                         {item.daysOverdue} days overdue, weight {item.priorityWeight}
                       </p>
                     </div>
                   </div>
 
                   {/* More Button */}
-                  <div ref={(el) => { menuRefs.current[item.id] = el; }} className="relative">
+                  <div
+                    ref={(el) => {
+                      menuRefs.current[item.id] = el;
+                    }}
+                    className="relative shrink-0"
+                  >
                     <button
                       type="button"
                       aria-label={`More options for ${title}`}
@@ -438,9 +466,12 @@ export default function BacklogPage() {
                       aria-expanded={openMenuId === item.id}
                       disabled={actioningId === item.id}
                       onClick={() =>
-                        setOpenMenuId((current) => (current === item.id ? null : item.id))
+                        setOpenMenuId((current) =>
+                          current === item.id ? null : item.id,
+                        )
                       }
-                      className={`flex h-8 w-8 items-center justify-center rounded-lg hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-60 ${isDark ? "text-white" : "text-muted"}`}
+                      className={`flex h-8 w-8 items-center justify-center rounded-lg hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-60 ${isDark ? "text-white" : "text-muted"
+                        }`}
                     >
                       <span className="rotate-90">
                         <MoreIcon />
@@ -501,16 +532,16 @@ export default function BacklogPage() {
         initialValues={
           planningTask
             ? {
-                taskName: planningTask.chapter?.name
-                  ? `Backlog . ${planningTask.chapter.name}`
-                  : planningTask.title,
-                subjectValue: planningTask.chapter?.subject.name ?? "",
-                topicValue: planningTask.chapter?.name ?? "",
-                taskType: TASK_TYPE_DISPLAY[planningTask.taskType] ?? planningTask.taskType,
-                taskTypeApiValue: planningTask.taskType,
-                chapterId: planningTask.chapter?.id ?? planningTask.chapterId ?? "",
-                subjectId: planningTask.chapter?.subject.id,
-              }
+              taskName: planningTask.chapter?.name
+                ? `Backlog . ${planningTask.chapter.name}`
+                : planningTask.title,
+              subjectValue: planningTask.chapter?.subject.name ?? "",
+              topicValue: planningTask.chapter?.name ?? "",
+              taskType: TASK_TYPE_DISPLAY[planningTask.taskType] ?? planningTask.taskType,
+              taskTypeApiValue: planningTask.taskType,
+              chapterId: planningTask.chapter?.id ?? planningTask.chapterId ?? "",
+              subjectId: planningTask.chapter?.subject.id,
+            }
             : undefined
         }
       />
