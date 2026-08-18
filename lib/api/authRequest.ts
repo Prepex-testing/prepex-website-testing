@@ -62,19 +62,23 @@ export async function authenticatedRequest<T>(url: string, options: RequestInit 
       throw err;
     }
 
+    let newAccessToken: string;
     try {
-      const newAccessToken = await refreshAccessTokenOnce();
-
-      return await apiRequest<T>(url, {
-        ...options,
-        headers: { Authorization: `Bearer ${newAccessToken}`, ...options.headers },
-      });
+      newAccessToken = await refreshAccessTokenOnce();
     } catch (refreshErr) {
       // No way to recover client-side from an invalid/expired/revoked
       // refresh token — end the session and send the user back to login.
+      // Scoped to just the refresh call: a failure of the retried request
+      // below is a separate problem and shouldn't force a logout when the
+      // refresh itself succeeded.
       clearSession();
       redirectToLogin();
       throw refreshErr;
     }
+
+    return await apiRequest<T>(url, {
+      ...options,
+      headers: { Authorization: `Bearer ${newAccessToken}`, ...options.headers },
+    });
   }
 }
