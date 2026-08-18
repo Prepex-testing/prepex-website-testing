@@ -57,6 +57,7 @@ export function CrossAppSessionModal({ open, onClose, onStart, task }: CrossAppS
             label={item.label}
             selected={activity === item.id}
             onSelect={() => setActivity(item.id)}
+            unselectedLabelClassName="text-[#666666] dark:text-[#8B8998]"
           />
         ))}
       </div>
