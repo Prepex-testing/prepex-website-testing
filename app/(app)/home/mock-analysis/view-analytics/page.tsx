@@ -145,6 +145,19 @@ function ViewAnalyticsContent() {
     percent: Math.round(Number(subject.accuracyPercentage)) || 0,
   }));
 
+  const subjectTestStrategy = mock.subjectAnalysis
+    .filter((subject) => subject.timeTakenMinutes != null || subject.testDurationMinutes != null)
+    .map((subject) => ({
+      id: subject.id,
+      label: subject.subject.name,
+      timeTakenMinutes: subject.timeTakenMinutes,
+      testDurationMinutes: subject.testDurationMinutes,
+    }));
+  const maxSubjectTime = Math.max(1, ...subjectTestStrategy.map((s) => s.timeTakenMinutes ?? 0));
+  const hasMissingSubjectTime =
+    mock.subjectAnalysis.length === 0 ||
+    mock.subjectAnalysis.some((subject) => subject.timeTakenMinutes == null);
+
   return (
     <div className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8">
       {header}
@@ -280,6 +293,59 @@ function ViewAnalyticsContent() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Subject-wise test strategy */}
+      {subjectTestStrategy.length > 0 && (
+        <div className="flex flex-col gap-6 rounded-2xl border border-brand/10 bg-surface p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+          <p className="text-sm font-bold uppercase tracking-[0.4px] text-ink">
+            Subject-wise Test Strategy
+          </p>
+          <div className="flex flex-col gap-4">
+            {subjectTestStrategy.map((subject, index) => {
+              const percent =
+                subject.timeTakenMinutes != null
+                  ? Math.round((subject.timeTakenMinutes / maxSubjectTime) * 100)
+                  : 0;
+              return (
+                <div key={subject.id} className="flex items-center gap-3">
+                  <span
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ink text-xs font-bold text-white"
+                    style={isDark ? { color: "#1A1A4E" } : undefined}
+                  >
+                    {index + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-ink">{subject.label}</span>
+                      <span className="text-right leading-tight">
+                        <span className="block text-xs font-bold text-ink">
+                          {subject.timeTakenMinutes != null ? `${subject.timeTakenMinutes} min` : "—"}
+                        </span>
+                        {subject.testDurationMinutes != null && (
+                          <span className="block text-[11px] text-muted">
+                            of {subject.testDurationMinutes} min
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    <div className="mt-1 h-1.5 rounded-full bg-tint-strong">
+                      <div className="h-1.5 rounded-full bg-brand" style={{ width: `${percent}%` }} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {hasMissingSubjectTime && (
+        <div className="flex flex-col items-center gap-2 pt-2">
+          <Button href={`/home/mock-analysis/upload-scorecard?id=${mock.id}`} variant="primary">
+            Update score details
+          </Button>
         </div>
       )}
 

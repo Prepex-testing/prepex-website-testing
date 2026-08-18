@@ -231,14 +231,27 @@ const EMPTY_MANUAL_FIELDS: ManualFields = {
   testDuration: "",
 };
 
-type SubjectScoreValue = { score: string; maxScore: string };
+type SubjectScoreValue = {
+  score: string;
+  maxScore: string;
+  timeTaken: string;
+  testDuration: string;
+};
+
+const EMPTY_SUBJECT_SCORE: SubjectScoreValue = {
+  score: "",
+  maxScore: "",
+  timeTaken: "",
+  testDuration: "",
+};
 
 /** Keyed by subject id — populated once /profile/subjects-chapters resolves. */
 type SubjectScoresState = Record<number, SubjectScoreValue>;
 
 /** Only subjects with both a score and a max score are included. Returns
  * `undefined` (not `[]`) when none qualify, so the key is omitted from the
- * request body rather than sent as an empty array. */
+ * request body rather than sent as an empty array. Time Taken/Test Duration
+ * are optional per subject and omitted individually when blank. */
 function buildSubjectScores(
   subjects: SubjectWithChapters[],
   subjectScores: SubjectScoresState,
@@ -254,6 +267,8 @@ function buildSubjectScores(
         subjectId: subject.id,
         score: Number(value.score),
         maxScore: Number(value.maxScore),
+        timeTakenMinutes: parseOptionalNumber(value.timeTaken),
+        testDurationMinutes: parseOptionalNumber(value.testDuration),
       };
     });
 
@@ -352,6 +367,7 @@ function ManualForm({ mockId }: { mockId?: string | null }) {
   const [error, setError] = useState<string | null>(null);
   const [isPrefilling, setPrefilling] = useState(!!mockId);
   const [prefillTick, setPrefillTick] = useState(0);
+  const [showSubjectScores, setShowSubjectScores] = useState(!mockId);
 
   useEffect(() => {
     getSubjectsChapters()
@@ -385,6 +401,12 @@ function ManualForm({ mockId }: { mockId?: string | null }) {
           scores[subjectAnalysis.subjectId] = {
             score: String(subjectAnalysis.score),
             maxScore: String(subjectAnalysis.maxScore),
+            timeTaken:
+              subjectAnalysis.timeTakenMinutes != null ? String(subjectAnalysis.timeTakenMinutes) : "",
+            testDuration:
+              subjectAnalysis.testDurationMinutes != null
+                ? String(subjectAnalysis.testDurationMinutes)
+                : "",
           };
         }
         setSubjectScores(scores);
@@ -415,7 +437,7 @@ function ManualForm({ mockId }: { mockId?: string | null }) {
   ) =>
     setSubjectScores((current) => ({
       ...current,
-      [subjectId]: { ...(current[subjectId] ?? { score: "", maxScore: "" }), [field]: value },
+      [subjectId]: { ...(current[subjectId] ?? EMPTY_SUBJECT_SCORE), [field]: value },
     }));
 
   const handleSave = async () => {
@@ -495,39 +517,82 @@ function ManualForm({ mockId }: { mockId?: string | null }) {
           />
 
           <div className="flex flex-col gap-3">
-            <p className="text-sm font-semibold text-ink">Subject Scores (Optional)</p>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              {subjects.map((subject) => {
-                const value = subjectScores[subject.id] ?? { score: "", maxScore: "" };
-                return (
-                  <div key={subject.id} className="flex flex-col gap-1">
-                    <label className="text-[14px] font-semibold leading-5 text-ink">
-                      {subject.name}
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        className={FIELD_CLASSES}
-                        placeholder="Score"
-                        aria-label={`${subject.name} score`}
-                        value={value.score}
-                        onChange={(event) =>
-                          updateSubjectScore(subject.id, "score", event.target.value)
-                        }
-                      />
-                      <input
-                        className={FIELD_CLASSES}
-                        placeholder="Max score"
-                        aria-label={`${subject.name} max score`}
-                        value={value.maxScore}
-                        onChange={(event) =>
-                          updateSubjectScore(subject.id, "maxScore", event.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-ink">Subject Scores (Optional)</p>
+              {!showSubjectScores && (
+                <button
+                  type="button"
+                  onClick={() => setShowSubjectScores(true)}
+                  className="flex items-center gap-1 text-sm font-semibold text-cta"
+                >
+                  <PlusIcon />
+                  Add Subject Score
+                </button>
+              )}
             </div>
+
+            {showSubjectScores && (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                {subjects.map((subject) => {
+                  const value = subjectScores[subject.id] ?? EMPTY_SUBJECT_SCORE;
+                  return (
+                    <div key={subject.id} className="flex flex-col gap-2">
+                      <label className="text-[14px] font-semibold leading-5 text-ink">
+                        {subject.name}
+                      </label>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[11px] font-medium text-muted">Score / Max Score</span>
+                        <div className="flex gap-2">
+                          <input
+                            className={FIELD_CLASSES}
+                            placeholder="Score"
+                            aria-label={`${subject.name} score`}
+                            value={value.score}
+                            onChange={(event) =>
+                              updateSubjectScore(subject.id, "score", event.target.value)
+                            }
+                          />
+                          <input
+                            className={FIELD_CLASSES}
+                            placeholder="Max score"
+                            aria-label={`${subject.name} max score`}
+                            value={value.maxScore}
+                            onChange={(event) =>
+                              updateSubjectScore(subject.id, "maxScore", event.target.value)
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[11px] font-medium text-muted">
+                          Time Taken / Test Duration (min)
+                        </span>
+                        <div className="flex gap-2">
+                          <input
+                            className={FIELD_CLASSES}
+                            placeholder="Time taken (min)"
+                            aria-label={`${subject.name} time taken`}
+                            value={value.timeTaken}
+                            onChange={(event) =>
+                              updateSubjectScore(subject.id, "timeTaken", event.target.value)
+                            }
+                          />
+                          <input
+                            className={FIELD_CLASSES}
+                            placeholder="Test duration (min)"
+                            aria-label={`${subject.name} test duration`}
+                            value={value.testDuration}
+                            onChange={(event) =>
+                              updateSubjectScore(subject.id, "testDuration", event.target.value)
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -581,7 +646,7 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
   ) =>
     setSubjectScores((current) => ({
       ...current,
-      [subjectId]: { ...(current[subjectId] ?? { score: "", maxScore: "" }), [field]: value },
+      [subjectId]: { ...(current[subjectId] ?? EMPTY_SUBJECT_SCORE), [field]: value },
     }));
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -613,6 +678,10 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
         scores[subjectScore.subjectId] = {
           score: String(subjectScore.score),
           maxScore: String(subjectScore.maxScore),
+          timeTaken:
+            subjectScore.timeTakenMinutes != null ? String(subjectScore.timeTakenMinutes) : "",
+          testDuration:
+            subjectScore.testDurationMinutes != null ? String(subjectScore.testDurationMinutes) : "",
         };
       }
       setSubjectScores(scores);
@@ -780,9 +849,9 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
               return (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   {subjectRows.map(({ id, name }) => {
-                    const value = subjectScores[id] ?? { score: "", maxScore: "" };
+                    const value = subjectScores[id] ?? EMPTY_SUBJECT_SCORE;
                     return (
-                      <div key={id} className="flex flex-col gap-1">
+                      <div key={id} className="flex flex-col gap-2">
                         <label className="text-[14px] font-semibold leading-5 text-ink">
                           {name}
                         </label>
@@ -801,6 +870,26 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
                             value={value.maxScore}
                             onChange={(event) =>
                               updateSubjectScore(id, "maxScore", event.target.value)
+                            }
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            className={FIELD_CLASSES}
+                            placeholder="Time taken (min)"
+                            aria-label={`${name} time taken`}
+                            value={value.timeTaken}
+                            onChange={(event) =>
+                              updateSubjectScore(id, "timeTaken", event.target.value)
+                            }
+                          />
+                          <input
+                            className={FIELD_CLASSES}
+                            placeholder="Test duration (min)"
+                            aria-label={`${name} test duration`}
+                            value={value.testDuration}
+                            onChange={(event) =>
+                              updateSubjectScore(id, "testDuration", event.target.value)
                             }
                           />
                         </div>

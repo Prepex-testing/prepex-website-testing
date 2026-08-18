@@ -12,6 +12,8 @@ export type MockSubjectScoreInput = {
   subjectId: number;
   score: number;
   maxScore: number;
+  timeTakenMinutes?: number;
+  testDurationMinutes?: number;
 };
 
 export type MockTopicScoreInput = {
@@ -97,6 +99,8 @@ export type MockSubjectAnalysis = {
   score: number;
   maxScore: number;
   accuracyPercentage: string;
+  timeTakenMinutes: number | null;
+  testDurationMinutes: number | null;
   createdAt: string;
   subject: { id: number; code: string; name: string };
 };

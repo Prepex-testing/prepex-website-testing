@@ -28,7 +28,8 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    href: "/plan",
+    // href: "/plan",
+    href: "/development-in-progress",
     activeMatch: "/plan",
     label: "Plan",
     icon: (
