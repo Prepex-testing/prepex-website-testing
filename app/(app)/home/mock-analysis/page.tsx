@@ -7,7 +7,7 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { CalendarIcon, ClockIcon, TargetIcon, ChartBarIcons, TrophyIcons, TrendingUpIcon, UploadIcon,LeftIconcon ,BellIcon} from "@/assets/icons";
+import { CalendarIcon, ClockIcon, TargetIcon, ChartBarIcons, TrophyIcons, TrendingUpIcon, UploadIcon, LeftIconcon, BellIcon, TrendingDownIcon } from "@/assets/icons";
 import {
   // BellIcon,
   RefreshIcon,
@@ -27,6 +27,7 @@ import {
   type MockAnalysisItem,
   type MockAnalysisListResponse,
 } from "@/lib/api/mock";
+import { useRouter } from "next/navigation";
 
 const RECENT_MOCKS_LIMIT = 5;
 
@@ -141,10 +142,10 @@ function MoreOptionsMenu({ label, onDelete }: { label: string; onDelete: () => v
 }
 
 export default function MockAnalysisPage() {
+  const router = useRouter();
   const { resolvedTheme } = useTheme();
   const iconBgStyle =
     resolvedTheme === "dark" ? { backgroundColor: "#13133D" } : undefined;
-
   const [data, setData] = useState<MockAnalysisListResponse | null>(null);
   const [page, setPage] = useState(1);
   const [isLoading, setLoading] = useState(true);
@@ -226,13 +227,13 @@ export default function MockAnalysisPage() {
     },
     {
       label: "Avg Score",
-      value: summary?.averageScorePercentage != null? `${summary.averageScorePercentage}%`: "—",
+      value: summary?.averageScorePercentage != null ? `${summary.averageScorePercentage}%` : "—",
       caption: "Average across mocks",
       icon: <ChartBarIcons />,
     },
     {
       label: "Best Score",
-      value: summary?.bestScorePercentage != null? `${summary.bestScorePercentage}%`: "—",
+      value: summary?.bestScorePercentage != null ? `${summary.bestScorePercentage}%` : "—",
       caption: "Personal best",
       icon: <TrophyIcons />,
     },
@@ -242,7 +243,13 @@ export default function MockAnalysisPage() {
         ? `${summary.latestComparison.changePercentagePoints >= 0 ? "+" : ""}${summary.latestComparison.changePercentagePoints}%`
         : "—",
       caption: summary?.latestComparison ? "vs previous mock" : "Not enough data yet",
-      icon: <TrendingUpIcon />,
+      icon:
+        summary?.latestComparison &&
+          summary.latestComparison.changePercentagePoints < 0 ? (
+          <TrendingDownIcon />
+        ) : (
+          <TrendingUpIcon />
+        ),
     },
   ];
 
@@ -265,23 +272,28 @@ export default function MockAnalysisPage() {
         </div>
       </header>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {statCards.map((card) => (
           <div
             key={card.label}
-            className="flex items-start gap-4 rounded-2xl border border-brand/10 bg-surface p-4 shadow-sm dark:shadow-[0_1px_4px_rgba(0,0,0,0.16)]"
+            className="flex min-h-[134.5px] w-full items-center gap-4 rounded-2xl border border-card bg-surface px-5 py-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:px-6 sm:py-8"
           >
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink [&>svg]:h-6 [&>svg]:w-6 dark:bg-[#FAF7F2]/8">
+            {/* Icon */}
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
               {card.icon}
             </span>
-            <div className="min-w-0">
-              <p className="text-caption font-semibold leading-4 text-muted">
+
+            {/* Content */}
+            <div className="min-w-0 flex-1">
+              <p className="h-4 truncate text-[11px] font-semibold leading-4 text-muted sm:text-[12px]">
                 {card.label}
               </p>
-              <p className="text-[22px] font-bold leading-8 text-ink sm:text-[24px]">
+
+              <p className="h-8 truncate text-[22px] font-bold leading-8 tracking-normal text-ink sm:text-[24px]">
                 {card.value}
               </p>
-              <p className="pt-1 text-[11px] font-bold leading-[16.5px] text-muted">
+
+              <p className="pt-[3px] text-[10px] font-bold leading-[16.5px] text-muted sm:text-[11px]">
                 {card.caption}
               </p>
             </div>
@@ -305,6 +317,7 @@ export default function MockAnalysisPage() {
             </div>
             <button
               type="button"
+              onClick={() => router.push("/development-in-progress")}
               className="flex items-center gap-2 text-body-lg font-semibold leading-6 text-ink"
             >
               View Calendar
@@ -321,34 +334,37 @@ export default function MockAnalysisPage() {
                   const { day, monthYear, weekday } = formatCalendarParts(upcomingMock.attemptedDate);
                   return (
                     <>
-                      <span className="text-[32px] font-bold leading-8 text-ink sm:text-[36px]">
+                      <span className="text-center text-[32px] font-bold leading-8 text-ink sm:text-[36px] sm:leading-10">
                         {day}
                       </span>
-                      <span className="mt-1 text-[14px] font-medium leading-5 text-muted">
+                      <span className="mt-1 text-center text-[14px] font-semibold leading-5 text-muted">
                         {monthYear}
                       </span>
-                      <span className="text-[14px] leading-5 text-muted">{weekday}</span>
+                      <span className="mt-1 text-center text-[12px] font-medium leading-4 text-muted sm:text-[12px]">
+                        {weekday}
+                      </span>
                     </>
                   );
                 })()}
               </div>
+              <div className="hidden h-16 w-px shrink-0 bg-brand/10 sm:block" />
 
-              <div className="min-w-0 flex-1">
-                <h3 className="text-[18px] font-bold leading-7 text-ink sm:text-[20px]">
+              <div className="min-w-0 flex-1 sm:ml-4">
+                <h3 className="text-[16px] font-bold leading-7 text-ink sm:text-[18px]">
                   {upcomingMock.mockName}
                 </h3>
 
-                <p className="mt-1 text-[14px] leading-5 text-muted">
+                <p className="mt-1 text-[13px] font-normal leading-5 text-muted sm:text-[14px]">
                   {upcomingMock.sourceInstitute} · {upcomingMock.examType}
                 </p>
 
                 {!!upcomingMock.testDurationMinutes && (
                   <div className="mt-4 flex items-center gap-2">
-                    <span className="text-muted [&>svg]:h-4 [&>svg]:w-4">
-                      <ClockIcon />
+                    <span className="flex size-4 shrink-0 items-center justify-center text-ink">
+                      <ClockIcon className="size-4" />
                     </span>
 
-                    <span className="text-[14px] font-medium leading-5 text-muted">
+                    <span className="text-sm font-medium leading-5 text-ink">
                       {upcomingMock.testDurationMinutes} Minutes
                     </span>
                   </div>
@@ -357,9 +373,9 @@ export default function MockAnalysisPage() {
             </div>
 
             <div className="flex w-full items-center gap-4 rounded-xl border border-brand/10 bg-tint p-4 sm:p-5 lg:w-[320px] lg:flex-shrink-0">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface shadow-sm dark:bg-tint sm:h-13 sm:w-13">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface shadow-sm dark:bg-[#111145] sm:h-13 sm:w-13">
                 <span className="text-ink [&>svg]:h-5 [&>svg]:w-5">
-                  <ClockIcon />
+                  <ClockIcon className="size-[18px] sm:size-[21px]" />
                 </span>
               </div>
 

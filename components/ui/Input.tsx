@@ -32,11 +32,7 @@ export function Input({
       {/* Label */}
       <label
         htmlFor={inputId}
-        className="
-          text-body-lg font-medium leading-none
-          text-body-text
-          dark:text-ink
-        "
+        className=" text-body-lg font-medium leading-none text-body-text dark:text-ink"
       >
         {label}
         {required && <span className="text-cta"> *</span>}
