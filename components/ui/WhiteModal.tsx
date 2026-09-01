@@ -54,7 +54,7 @@ export function WhiteModal({
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center sm:px-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 sm:items-center sm:px-6"
       onClick={onClose}
     >
       <div

@@ -8,12 +8,14 @@ type InputProps = {
   label: string;
   helperText?: string;
   icon?: ReactNode;
+  labelClassName?: string;
 } & InputHTMLAttributes<HTMLInputElement>;
 
 export function Input({
   label,
   helperText,
   icon,
+  labelClassName = "text-body-lg font-medium leading-none text-body-text dark:text-ink",
   id,
   type = "text",
   required,
@@ -32,7 +34,7 @@ export function Input({
       {/* Label */}
       <label
         htmlFor={inputId}
-        className=" text-body-lg font-medium leading-none text-body-text dark:text-ink"
+        className={labelClassName}
       >
         {label}
         {required && <span className="text-cta"> *</span>}
@@ -47,8 +49,7 @@ export function Input({
 
       {/* Input Box */}
       <div
-        className="
-    flex h-12.25 w-full min-w-0 items-center gap-3
+        className="flex h-12.25 w-full min-w-0 items-center gap-3
     rounded-xl
     border
     border-input-border
@@ -69,7 +70,7 @@ export function Input({
           type={resolvedType}
           required={required}
           spellCheck={false}
-         className="min-w-0 flex-1 bg-transparent font-['Plus_Jakarta_Sans'] text-[14px] font-medium leading-[14px] tracking-normal text-ink outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-5 placeholder:text-[#666666] dark:placeholder:text-[#8B8998] sm:text-[16px] sm:leading-[16px]"
+          className="min-w-0 flex-1 bg-transparent font-['Plus_Jakarta_Sans'] text-[14px] font-medium leading-[14px] tracking-normal text-ink outline-none placeholder:text-[14px] placeholder:font-normal placeholder:leading-5 placeholder:text-[#666666] dark:placeholder:text-[#8B8998] sm:text-[16px] sm:leading-[16px]"
           {...props}
         />
 

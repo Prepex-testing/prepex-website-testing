@@ -199,7 +199,7 @@
 
   /* header icon-action row: theme toggle, bell, user menu */
   --icon-action-bg: #242453;
-  --icon-action-text: var(--border-card, #FAF7F214);
+  --icon-action-text: #FAF7F2;
   --border-card: #faf7f2;
 
   --oc-card-bg: conic-gradient(from 90deg at 100% 0%,

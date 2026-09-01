@@ -27,14 +27,15 @@ export function DurationInput({
   onChange,
   disabled = false,
 }: DurationInputProps) {
-  const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(0);
+  // Changed only these from 0 → ""
+  const [hours, setHours] = useState<number | "">("");
+  const [minutes, setMinutes] = useState<number | "">("");
 
   // Convert backend total minutes → hours + minutes
   useEffect(() => {
     if (value == null || value <= 0) {
-      setHours(0);
-      setMinutes(0);
+      setHours("");
+      setMinutes("");
       return;
     }
 
@@ -43,11 +44,12 @@ export function DurationInput({
   }, [value]);
 
   const updateDuration = (
-    nextHours: number,
-    nextMinutes: number,
+    nextHours: number | "",
+    nextMinutes: number | "",
   ) => {
     const totalMinutes =
-      nextHours * 60 + nextMinutes;
+      (nextHours === "" ? 0 : nextHours) * 60 +
+      (nextMinutes === "" ? 0 : nextMinutes);
 
     onChange(
       totalMinutes > 0
@@ -59,6 +61,13 @@ export function DurationInput({
   const handleHoursChange = (
     inputValue: string,
   ) => {
+    // Keep placeholder when field is empty
+    if (inputValue === "") {
+      setHours("");
+      updateDuration("", minutes);
+      return;
+    }
+
     const nextHours = Math.min(
       Math.max(Number(inputValue) || 0, 0),
       MAX_HOURS,
@@ -75,6 +84,13 @@ export function DurationInput({
   const handleMinutesChange = (
     inputValue: string,
   ) => {
+    // Keep placeholder when field is empty
+    if (inputValue === "") {
+      setMinutes("");
+      updateDuration(hours, "");
+      return;
+    }
+
     const nextMinutes = Math.min(
       Math.max(Number(inputValue) || 0, 0),
       MAX_MINUTES,
@@ -90,7 +106,7 @@ export function DurationInput({
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-body-lg font-medium leading-none text-body-text dark:text-ink">
+      <label className="text-[13px] font-medium leading-none text-body-text dark:text-ink sm:text-[14px]">
         {label}
       </label>
 

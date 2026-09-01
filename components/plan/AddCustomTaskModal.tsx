@@ -341,6 +341,7 @@ export function AddCustomTaskModal({
             placeholder="e.g. Watch PW lecture on Friction"
             value={taskName}
             onChange={(event) => setTaskName(event.target.value)}
+            required
           />
 
           {/* Subject + Topic */}

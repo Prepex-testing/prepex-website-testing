@@ -5,13 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { RadioOption } from "@/components/ui/RadioOption";
-import { ArrowLeftIcon, BellIcon, ClockIcon } from "@/components/ui/icons";
+import { ArrowLeftIcon, ClockIcon } from "@/components/ui/icons";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { getCheckInStatus } from "@/lib/api/checkin";
 import { updatePlannerTask, type TaskStatus } from "@/lib/api/planner";
 import { getActiveSessionTaskId, clearActiveSessionTaskId } from "@/lib/session/activeTask";
 import { minutesSince } from "@/lib/utils/datetime";
+import { BellIcon } from "@/assets/icons";
 
 const OUTCOMES = [
   { id: "completed", label: "Completed as planned" },
@@ -75,17 +76,13 @@ export default function WelcomeBackPage() {
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <Link href="/home/session" aria-label="Back to Focus Session" className="text-ink">
-            <ArrowLeftIcon />
-          </Link>
-          <h1 className="text-h1 text-ink">Welcome Back</h1>
         </div>
-        <div className="flex items-center gap-4">
+       <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
@@ -94,31 +91,56 @@ export default function WelcomeBackPage() {
       </div>
 
       <div className="mx-auto w-full max-w-xl rounded-2xl border border-brand/10 bg-surface p-5 sm:p-8">
-        <div className="text-center">
-          <span className="inline-flex items-center gap-1 rounded-full bg-tint-strong px-3 py-1 text-xs font-semibold text-ink">
-            <ClockIcon />
-            Session Overview
-          </span>
+        {/* Header */}
+        <div className="flex h-auto min-h-[81.39px] w-full max-w-[512px] flex-col gap-2 text-center">
+          {/* First row */}
+          <div className="flex min-h-[51px] w-full items-start justify-center pt-3">
+            <h2 className="whitespace-nowrap font-['Plus_Jakarta_Sans'] text-[clamp(24px,5vw,32px)] font-bold leading-[1.2] tracking-[-0.64px] text-ink">
+              Welcome Back
+            </h2>
+          </div>
+
+          {/* Second row */}
+          <div className="flex min-h-[22.39px] w-full items-center justify-center">
+            <span className="inline-flex h-[22.39px] shrink-0 items-center justify-center gap-2 rounded-full bg-tint-strong px-3 py-1 font-['Plus_Jakarta_Sans'] text-[12px] font-semibold leading-[14.4px] text-ink">
+              <ClockIcon className="h-[11.67px] w-[11.67px] shrink-0" />
+              <span className="whitespace-nowrap">Session Overview</span>
+            </span>
+          </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="rounded-xl border border-brand/10 p-3">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
+        {/* Session Overview */}
+        <div className="mt-5 grid w-full max-w-[512px] grid-cols-1 gap-5 sm:grid-cols-2">
+          {/* Left Box */}
+          <div className="flex min-h-[116px] w-full flex-col gap-1 rounded-[12px] border border-brand/10 p-5">
+            <p className="h-[14px] font-['Plus_Jakarta_Sans'] text-[11px] font-medium uppercase leading-[13.2px] text-muted">
               Active Task
             </p>
-            <p className="mt-1 text-sm font-bold text-ink">{crossAppActivity}</p>
+
+            <p className="font-['Plus_Jakarta_Sans'] text-[20px] font-semibold leading-7 text-ink">
+              {crossAppActivity}
+            </p>
           </div>
-          <div className="rounded-xl border border-brand/10 p-3">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
+
+          {/* Right Box */}
+          <div className="flex min-h-[116px] w-full flex-col gap-1 rounded-[12px] border border-brand/10 p-5">
+            <p className="h-[14px] font-['Plus_Jakarta_Sans'] text-[11px] font-medium uppercase leading-[13.2px] text-muted">
               Duration
             </p>
-            <p className="mt-1 text-sm font-bold text-ink">{elapsedMinutes} mins elapsed</p>
+
+            <p className="font-['Plus_Jakarta_Sans'] text-[20px] font-semibold leading-7 text-ink">
+              {elapsedMinutes} mins elapsed
+            </p>
           </div>
         </div>
 
-        <p className="mt-5 text-center text-sm font-bold text-ink">How did it go?</p>
+        {/* Outcome Question */}
+        <p className="mt-5 w-full font-['Plus_Jakarta_Sans'] text-center text-[20px] font-semibold leading-7 tracking-normal text-ink">
+          How did it go?
+        </p>
 
-        <div className="mt-3 flex flex-col gap-3">
+        {/* Outcomes */}
+        <div className="mt-3 flex flex-col gap-2">
           {OUTCOMES.map((item) => (
             <RadioOption
               key={item.id}
@@ -132,7 +154,12 @@ export default function WelcomeBackPage() {
           ))}
         </div>
 
-        <Button variant="primary" className="mt-6" onClick={handleConfirm}>
+        {/* Confirm */}
+        <Button
+          variant="primary"
+          className="mt-6 w-full"
+          onClick={handleConfirm}
+        >
           Confirm
         </Button>
       </div>

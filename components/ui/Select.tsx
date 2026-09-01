@@ -50,11 +50,10 @@ export function Select({
         <select
           id={selectId}
           {...uncontrolledProps}
-          className={`${SELECT_TEXT_CLASS} ${
-            selectedValue
-              ? "font-medium text-ink"
-              : "font-normal text-[#666666] dark:text-[#8B8998]"
-          }`}
+          className={`${SELECT_TEXT_CLASS} ${selectedValue
+              ? "font-medium text-[16px] text-ink"
+              : "font-normal text-[14px] text-[#666666] dark:text-[#8B8998]"
+            }`}
           {...props}
         >
           {placeholder && (

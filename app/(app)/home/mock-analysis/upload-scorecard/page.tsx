@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useId, useMemo, useState, type ChangeEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -22,8 +23,6 @@ import {
 } from "@/lib/api/mock";
 import { getSubjectsChapters, type SubjectWithChapters } from "@/lib/api/profile";
 import {
-  // ArrowLeftIcon,
-  // BellIcon,
   RefreshIcon,
   PlusIcon,
   UploadIcon,
@@ -32,6 +31,7 @@ import {
 import { ArrowLeftIcon, BellIcon } from "@/assets/icons";
 import { DateField } from "@/components/ui/DateField";
 import { DurationInput } from "@/components/ui/DurationInput";
+
 type Tab = "manual" | "upload-image" | "quick-log";
 
 const TABS: { id: Tab; label: string }[] = [
@@ -44,6 +44,18 @@ const TAB_SUBTITLES: Record<Tab, string> = {
   manual: "Enter your mock test details manually",
   "upload-image": "Upload a screenshot and we'll extract the details",
   "quick-log": "Save now and analyze in detail later",
+};
+
+// Animation presets
+const fadeIn = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+};
+
+const fadeTransition = {
+  duration: 0.25,
+  ease: [0.4, 0, 0.2, 1] as const,
 };
 
 const SOURCE_OPTIONS = [
@@ -60,9 +72,8 @@ const SOURCE_OPTIONS = [
 const SUPPORTED_SOURCES = ["Allen Career Institute", "PW", "FIITJEE", "Aakash Institute", "Resonance", "Other"];
 
 const FIELD_CLASSES =
-  "min-w-0 flex-1 rounded-xl border border-input-border bg-surface px-4 py-3 font-['Plus_Jakarta_Sans'] text-[14px] font-medium leading-[14px] tracking-normal text-ink outline-none transition-colors placeholder:text-[14px] placeholder:font-normal placeholder:leading-5 placeholder:text-[#666666] focus:border-input-border dark:placeholder:text-[#8B8998] sm:text-[16px] sm:leading-[16px]";
-// No exam-type picker exists on this page yet, so there's never a real
-// value to send for it.
+  "min-w-0 flex-1 rounded-xl border border-input-border bg-surface px-4 py-3 font-['Plus_Jakarta_Sans'] text-[14px] font-medium leading-[14px] tracking-normal text-ink outline-none transition-colors placeholder:text-[14px] placeholder:font-normal placeholder:leading-5 placeholder:text-[#666666] focus:border-input-border dark:placeholder:text-[#8B8998] sm:text-[16px] sm:leading-[16px] sm:placeholder:text-[14px]";
+
 const EXAM_TYPE = undefined;
 
 function sourceLabel(value: string): string | undefined {
@@ -96,7 +107,6 @@ const validateScores = (
   return null;
 };
 
-/** Parses a free-text field like "2h 30m" or "3h" into a whole-number string. */
 function parseOptionalNumber(text: string): number | undefined {
   const trimmed = text.trim();
   if (trimmed === "") return undefined;
@@ -104,11 +114,6 @@ function parseOptionalNumber(text: string): number | undefined {
   return Number.isFinite(value) ? value : undefined;
 }
 
-/**
- * Parses free-text durations like "2h 30m" or "3h" into total minutes. A
- * plain number (no "h"/"m" suffix, e.g. "120") is treated as minutes
- * directly. Empty input is omitted.
- */
 function parseDurationMinutes(text: string): number | undefined {
   const trimmed = text.trim();
   if (trimmed === "") return undefined;
@@ -119,14 +124,12 @@ function parseDurationMinutes(text: string): number | undefined {
   return hours * 60 + minutes;
 }
 
-/** DateInput reports dates as DD/MM/YYYY — the API wants YYYY-MM-DD. */
 function toIsoDate(display: string): string {
   const [day, month, year] = display.split("/").map(Number);
   if (!day || !month || !year) return "";
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-/** The API returns attemptedDate as an ISO date/datetime — DateInput wants DD/MM/YYYY. */
 function toDisplayDate(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
@@ -135,13 +138,11 @@ function toDisplayDate(iso: string): string {
   return `${day}/${month}/${date.getFullYear()}`;
 }
 
-/** Inverse of sourceLabel — maps an API label (e.g. "Allen") back to its Select value. */
 function sourceValue(label: string | null | undefined): string {
   if (!label) return "";
   return SOURCE_OPTIONS.find((option) => option.label === label)?.value ?? "";
 }
 
-/** Inverse of parseDurationMinutes — formats total minutes back into "2h 30m" style text. */
 function formatDurationMinutes(minutes: number | null | undefined): string {
   if (minutes == null || minutes <= 0) return "";
   const hours = Math.floor(minutes / 60);
@@ -167,8 +168,17 @@ function UploadScorecardContent() {
   const [level, setLevel] = useState<ManualLevel>(editMockId ? "medium" : "basic");
 
   return (
-    <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <motion.div
+      {...fadeIn}
+      transition={{ ...fadeTransition, duration: 0.35 }}
+      className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8"
+    >
+      {/* Header */}
+      <motion.div
+        {...fadeIn}
+        transition={{ ...fadeTransition, duration: 0.3 }}
+        className="flex flex-wrap items-center justify-between gap-3"
+      >
         <div className="flex items-center gap-3">
           <Link
             href="/home/mock-analysis"
@@ -179,7 +189,16 @@ function UploadScorecardContent() {
           </Link>
           <div>
             <h1 className="text-h1 text-ink">Upload Mock Analysis</h1>
-            <p className="text-sm text-muted">{TAB_SUBTITLES[tab]}</p>
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={tab}
+                {...fadeIn}
+                transition={{ ...fadeTransition, duration: 0.2 }}
+                className="text-sm text-muted"
+              >
+                {TAB_SUBTITLES[tab]}
+              </motion.p>
+            </AnimatePresence>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-4">
@@ -193,9 +212,13 @@ function UploadScorecardContent() {
           </button>
           <UserMenu />
         </div>
-      </div>
+      </motion.div>
 
-      <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+      <motion.div
+        {...fadeIn}
+        transition={{ ...fadeTransition, delay: 0.05 }}
+        className="rounded-2xl border border-brand/10 bg-surface p-6"
+      >
         {/* Tabs */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div
@@ -228,10 +251,11 @@ function UploadScorecardContent() {
             <div
               role="tablist"
               aria-label="Manual entry detail level"
-              className="flex h-[41px] w-full rounded-[8px] bg-[#1A1A4E] p-1 sm:w-fit"
+              className="flex h-[41px] w-full rounded-[8px] border border-brand bg-surface p-1 sm:w-fit dark:border-white"
             >
               {MANUAL_LEVELS.map((item) => {
                 const locked = !!editMockId && item.id !== "medium";
+
                 return (
                   <button
                     key={item.id}
@@ -241,9 +265,10 @@ function UploadScorecardContent() {
                     disabled={locked}
                     onClick={() => !locked && setLevel(item.id)}
                     className={`flex h-[33px] flex-1 items-center justify-center whitespace-nowrap rounded-[6px] px-2 text-[12px] font-semibold leading-[21px] transition-colors sm:flex-none sm:px-5 sm:text-[14px] ${level === item.id
-                      ? "bg-[#FAF7F2] text-[#1A1A4E]"
-                      : "bg-transparent text-white hover:bg-white/10"
-                      } ${locked ? "cursor-not-allowed opacity-40" : ""}`}
+                      ? "bg-brand text-surface dark:bg-white dark:text-[#1A1A4E]"
+                      : "bg-transparent text-brand hover:bg-brand/5 dark:text-white dark:hover:bg-white/10"
+                      } ${locked ? "cursor-not-allowed opacity-40" : ""
+                      }`}
                   >
                     {item.label}
                   </button>
@@ -253,12 +278,20 @@ function UploadScorecardContent() {
           )}
         </div>
 
-        {/* Form */}
-        {tab === "manual" && <ManualForm mockId={editMockId} level={level} setLevel={setLevel} />}
-        {tab === "upload-image" && <UploadImageForm disabled={!!editMockId} />}
-        {tab === "quick-log" && <QuickLogForm disabled={!!editMockId} />}
-      </div>
-    </div>
+        {/* Form with AnimatePresence for smooth tab transitions */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={tab}
+            {...fadeIn}
+            transition={fadeTransition}
+          >
+            {tab === "manual" && <ManualForm mockId={editMockId} level={level} setLevel={setLevel} />}
+            {tab === "upload-image" && <UploadImageForm disabled={!!editMockId} />}
+            {tab === "quick-log" && <QuickLogForm disabled={!!editMockId} />}
+          </motion.div>
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -303,13 +336,8 @@ const EMPTY_SUBJECT_SCORE: SubjectScoreValue = {
   testDuration: "",
 };
 
-/** Keyed by subject id — populated once /profile/subjects-chapters resolves. */
 type SubjectScoresState = Record<number, SubjectScoreValue>;
 
-/** Only subjects with both a score and a max score are included. Returns
- * `undefined` (not `[]`) when none qualify, so the key is omitted from the
- * request body rather than sent as an empty array. Time Taken/Test Duration
- * are optional per subject and omitted individually when blank. */
 function buildSubjectScores(
   subjects: SubjectWithChapters[],
   subjectScores: SubjectScoresState,
@@ -337,11 +365,13 @@ function MockDetailsFields({
   fields,
   onChange,
   onScoreError,
+  scoreError,
   dateInputKey,
 }: {
   fields: ManualFields;
   onChange: <K extends keyof ManualFields>(key: K, value: ManualFields[K]) => void;
   onScoreError: (error: string | null) => void;
+  scoreError?: string | null;
   dateInputKey?: string | number;
 }) {
   return (
@@ -354,6 +384,7 @@ function MockDetailsFields({
           required
           value={fields.mockName}
           onChange={(event) => onChange("mockName", event.target.value)}
+          labelClassName="text-[13px] font-medium leading-5 text-body-text dark:text-ink sm:text-[14px] sm:leading-5"
         />
         <DateField
           key={dateInputKey}
@@ -362,6 +393,7 @@ function MockDetailsFields({
           required
           defaultValue={fields.dateDisplay}
           onDateChange={(value) => onChange("dateDisplay", value)}
+          labelClassName="text-[13px] font-medium leading-5 text-body-text dark:text-ink sm:text-[14px] sm:leading-5"
         />
       </div>
 
@@ -371,37 +403,54 @@ function MockDetailsFields({
           placeholder="Select Source"
           options={SOURCE_OPTIONS}
           value={fields.source}
-          onChange={(event) => onChange("source", event.target.value)}
+          onChange={(event) =>
+            onChange("source", event.target.value)
+          }
+          labelClassName="text-[13px] font-medium leading-5 text-body-text dark:text-ink sm:text-[14px] sm:leading-5"
         />
-        <div className="flex flex-col gap-1">
-          <label className="text-body-lg font-medium leading-none text-body-text dark:text-ink">
+
+        <div className="flex flex-col gap-2">
+          <label className="text-[13px] font-medium leading-5 text-body-text dark:text-ink sm:text-[14px]">
             Total Marks
           </label>
 
-          <div className="mt-1 flex gap-2">
-            <input
-              type="number"
-              className="min-w-0 flex-1 rounded-xl border border-input-border bg-surface px-4 py-3 font-['Plus_Jakarta_Sans'] text-[14px] font-medium leading-[14px] tracking-normal text-ink outline-none transition-colors placeholder:text-[14px] placeholder:font-normal placeholder:leading-5 placeholder:text-[#666666] focus:border-input-border dark:placeholder:text-[#8B8998] sm:text-[16px] sm:leading-[16px]"
-              placeholder="Marks Scored"
-              aria-label="Marks Scored"
-              value={fields.score}
-              onChange={(event) => {
-                onChange("score", event.target.value);
-                onScoreError(validateScores(event.target.value, fields.totalMarks));
-              }}
-            />
+          <div className="flex flex-col gap-1">
+            <div className="flex gap-2">
+              <input
+                type="number"
+                className="min-w-0 flex-1 rounded-xl border border-input-border bg-surface px-4 py-3 font-['Plus_Jakarta_Sans'] text-[14px] font-medium leading-[14px] tracking-normal text-ink outline-none transition-colors placeholder:text-[14px] placeholder:font-normal placeholder:leading-5 placeholder:text-[#666666] focus:border-input-border dark:placeholder:text-[#8B8998] sm:text-[16px] sm:leading-[16px]"
+                placeholder="Marks Scored"
+                aria-label="Marks Scored"
+                value={fields.score}
+                onChange={(event) => {
+                  onChange("score", event.target.value);
+                  onScoreError(
+                    validateScores(
+                      event.target.value,
+                      fields.totalMarks,
+                    ),
+                  );
+                }}
+              />
 
-            <input
-              type="number"
-              className="min-w-0 flex-1 rounded-xl border border-input-border bg-surface px-4 py-3 font-['Plus_Jakarta_Sans'] text-[14px] font-medium leading-[14px] tracking-normal text-ink outline-none transition-colors placeholder:text-[14px] placeholder:font-normal placeholder:leading-5 placeholder:text-[#666666] focus:border-input-border dark:placeholder:text-[#8B8998] sm:text-[16px] sm:leading-[16px]"
-              placeholder="Maximum Marks"
-              aria-label="Maximum Marks"
-              value={fields.totalMarks}
-              onChange={(event) => {
-                onChange("totalMarks", event.target.value);
-                onScoreError(validateScores(fields.score, event.target.value));
-              }}
-            />
+              <input
+                type="number"
+                className="min-w-0 flex-1 rounded-xl border border-input-border bg-surface px-4 py-3 font-['Plus_Jakarta_Sans'] text-[14px] font-medium leading-[14px] tracking-normal text-ink outline-none transition-colors placeholder:text-[14px] placeholder:font-normal placeholder:leading-5 placeholder:text-[#666666] focus:border-input-border dark:placeholder:text-[#8B8998] sm:text-[16px] sm:leading-[16px]"
+                placeholder="Maximum Marks"
+                aria-label="Maximum Marks"
+                value={fields.totalMarks}
+                onChange={(event) => {
+                  onChange("totalMarks", event.target.value);
+                  onScoreError(
+                    validateScores(
+                      fields.score,
+                      event.target.value,
+                    ),
+                  );
+                }}
+              />
+            </div>
+            {scoreError && <p className="text-xs text-danger">{scoreError}</p>}
           </div>
         </div>
       </div>
@@ -437,17 +486,24 @@ function ManualForm({
   const [mediumFields, setMediumFields] = useState<ManualFields>(EMPTY_MANUAL_FIELDS);
   const [subjects, setSubjects] = useState<SubjectWithChapters[]>([]);
   const [subjectScores, setSubjectScores] = useState<SubjectScoresState>({});
+  const [subjectScoreErrors, setSubjectScoreErrors] = useState<Record<number, string | null>>({});
   const [isSubmitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [scoreError, setScoreError] = useState<string | null>(null);
   const [isPrefilling, setPrefilling] = useState(!!mockId);
   const [prefillTick, setPrefillTick] = useState(0);
   const [showSubjectScores, setShowSubjectScores] = useState(!mockId);
+
+  const isManualRequiredReady =
+    !!(level === "basic" ? basicFields.mockName.trim() : mediumFields.mockName.trim()) &&
+    !!toIsoDate(level === "basic" ? basicFields.dateDisplay : mediumFields.dateDisplay);
+  const hasInvalidSubjectScore = Object.values(subjectScoreErrors).some((message) => !!message);
 
   useEffect(() => {
     getSubjectsChapters()
       .then(({ data }) => setSubjects(data.subjects))
       .catch(() => {
-        // Best-effort — Subject Scores just won't have options if this fails.
+        // Best-effort
       });
   }, []);
 
@@ -471,9 +527,6 @@ function ManualForm({
           source: sourceValue(data.sourceInstitute),
           score: data.totalScore != null ? String(data.totalScore) : "",
           totalMarks: data.maxScore != null ? String(data.maxScore) : "",
-
-          // IMPORTANT:
-          // backend value is already minutes
           timeTaken: data.timeTakenMinutes ?? undefined,
           testDuration: data.testDurationMinutes ?? undefined,
         });
@@ -484,12 +537,10 @@ function ManualForm({
           scores[subjectAnalysis.subjectId] = {
             score: String(subjectAnalysis.score),
             maxScore: String(subjectAnalysis.maxScore),
-
             timeTaken:
               subjectAnalysis.timeTakenMinutes != null
                 ? String(subjectAnalysis.timeTakenMinutes)
                 : "",
-
             testDuration:
               subjectAnalysis.testDurationMinutes != null
                 ? String(subjectAnalysis.testDurationMinutes)
@@ -498,6 +549,14 @@ function ManualForm({
         }
 
         setSubjectScores(scores);
+        setSubjectScoreErrors(
+          Object.fromEntries(
+            Object.entries(scores).map(([subjectId, value]) => [
+              Number(subjectId),
+              validateScores(value.score, value.maxScore),
+            ]),
+          ),
+        );
         setPrefillTick((tick) => tick + 1);
       })
       .catch(() => {
@@ -528,11 +587,27 @@ function ManualForm({
     subjectId: number,
     field: keyof SubjectScoreValue,
     value: string,
-  ) =>
-    setSubjectScores((current) => ({
-      ...current,
-      [subjectId]: { ...(current[subjectId] ?? EMPTY_SUBJECT_SCORE), [field]: value },
-    }));
+  ) => {
+    setSubjectScores((current) => {
+      const nextValue = {
+        ...(current[subjectId] ?? EMPTY_SUBJECT_SCORE),
+        [field]: value,
+      };
+
+      const nextScore = field === "score" ? value : nextValue.score;
+      const nextMaxScore = field === "maxScore" ? value : nextValue.maxScore;
+
+      setSubjectScoreErrors((currentErrors) => ({
+        ...currentErrors,
+        [subjectId]: validateScores(nextScore, nextMaxScore),
+      }));
+
+      return {
+        ...current,
+        [subjectId]: nextValue,
+      };
+    });
+  };
 
   const handleSave = async () => {
     const fields = level === "basic" ? basicFields : mediumFields;
@@ -540,7 +615,6 @@ function ManualForm({
     const attemptedDate = toIsoDate(fields.dateDisplay);
 
     if (!fields.mockName.trim() || !attemptedDate) {
-      setError("Mock Name and Date Attempted are required.");
       return;
     }
 
@@ -554,10 +628,8 @@ function ManualForm({
         examType: EXAM_TYPE,
         totalScore: parseOptionalNumber(fields.score),
         maxScore: parseOptionalNumber(fields.totalMarks),
-
         timeTakenMinutes: fields.timeTaken,
         testDurationMinutes: fields.testDuration,
-
         entryMethod: "MANUAL" as const,
         entryTier,
         subjectScores:
@@ -579,112 +651,135 @@ function ManualForm({
 
   return (
     <div className="flex flex-col gap-5">
-      {level === "basic" && <MockDetailsFields fields={basicFields} onChange={updateBasicField} onScoreError={setError} />}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={level}
+          {...fadeIn}
+          transition={fadeTransition}
+          className="flex flex-col gap-5"
+        >
+          {level === "basic" && (
+            <MockDetailsFields
+              fields={basicFields}
+              onChange={updateBasicField}
+              onScoreError={setScoreError}
+              scoreError={scoreError}
+            />
+          )}
 
-      {level === "medium" && (
-        <div className="flex flex-col gap-5">
-          <MockDetailsFields
-            fields={mediumFields}
-            onChange={updateMediumField}
-            onScoreError={setError}
-            dateInputKey={mockId ? `prefill-${prefillTick}` : "medium"}
-          />
+          {level === "medium" && (
+            <div className="flex flex-col gap-5">
+              <MockDetailsFields
+                fields={mediumFields}
+                onChange={updateMediumField}
+                onScoreError={setScoreError}
+                scoreError={scoreError}
+                dateInputKey={mockId ? `prefill-${prefillTick}` : "medium"}
+              />
 
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-ink">Subject Scores (Optional)</p>
-              {!showSubjectScores && (
-                <button
-                  type="button"
-                  onClick={() => setShowSubjectScores(true)}
-                  className="flex items-center gap-1 text-sm font-semibold text-cta"
-                >
-                  <PlusIcon />
-                  Add Subject Score
-                </button>
-              )}
-            </div>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-ink">Subject Scores (Optional)</p>
+                  {!showSubjectScores && (
+                    <button
+                      type="button"
+                      onClick={() => setShowSubjectScores(true)}
+                      className="flex items-center gap-1 text-sm font-semibold text-cta"
+                    >
+                      <PlusIcon />
+                      Add Subject Score
+                    </button>
+                  )}
+                </div>
 
-            {showSubjectScores && (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                {subjects.map((subject) => {
-                  const value = subjectScores[subject.id] ?? EMPTY_SUBJECT_SCORE;
-                  return (
-                    <div key={subject.id} className="flex flex-col gap-2">
-                      <label className="text-[14px] font-semibold leading-5 text-ink">
-                        {subject.name}
-                      </label>
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[11px] font-medium text-muted">Score / Max Score</span>
-                        <div className="flex gap-2">
-                          <input
-                            type="number"
-                            min={0}
-                            className={FIELD_CLASSES}
-                            placeholder="Score"
-                            aria-label={`${subject.name} score`}
-                            value={value.score}
-                            onChange={(event) =>
-                              updateSubjectScore(subject.id, "score", event.target.value)
+                {showSubjectScores && (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    {subjects.map((subject) => {
+                      const value = subjectScores[subject.id] ?? EMPTY_SUBJECT_SCORE;
+                      return (
+                        <div
+                          key={subject.id}
+                          className="flex flex-col gap-2 rounded-xl border border-brand/15 bg-surface p-4 shadow-sm dark:border-white/10 dark:shadow-black/20"
+                        >
+                          <label className="text-[14px] font-semibold leading-5 text-ink sm:text-[16px]">
+                            {subject.name}
+                          </label>
+                          <div className="flex flex-col gap-2">
+                            <label className="text-[13px] font-medium leading-none text-body-text dark:text-ink sm:text-[14px]">
+                              Total Marks
+                            </label>
+                            <div className="flex flex-col gap-1">
+                              <div className="flex gap-2">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  className={FIELD_CLASSES}
+                                  placeholder="Score"
+                                  aria-label={`${subject.name} score`}
+                                  value={value.score}
+                                  onChange={(event) =>
+                                    updateSubjectScore(subject.id, "score", event.target.value)
+                                  }
+                                />
+
+                                <input
+                                  type="number"
+                                  min={0}
+                                  className={FIELD_CLASSES}
+                                  placeholder="Max score"
+                                  aria-label={`${subject.name} max score`}
+                                  value={value.maxScore}
+                                  onChange={(event) =>
+                                    updateSubjectScore(subject.id, "maxScore", event.target.value)
+                                  }
+                                />
+                              </div>
+                              {subjectScoreErrors[subject.id] && (
+                                <p className="text-xs text-danger">{subjectScoreErrors[subject.id]}</p>
+                              )}
+                            </div>
+                          </div>
+                          <DurationInput
+                            label="Time Taken"
+                            value={parseOptionalNumber(value.timeTaken)}
+                            onChange={(minutes) =>
+                              updateSubjectScore(
+                                subject.id,
+                                "timeTaken",
+                                minutes == null ? "" : String(minutes),
+                              )
                             }
                           />
-
-                          <input
-                            type="number"
-                            min={0}
-                            className={FIELD_CLASSES}
-                            placeholder="Max score"
-                            aria-label={`${subject.name} max score`}
-                            value={value.maxScore}
-                            onChange={(event) =>
-                              updateSubjectScore(subject.id, "maxScore", event.target.value)
+                          <DurationInput
+                            label="Test Duration"
+                            value={parseOptionalNumber(value.testDuration)}
+                            onChange={(minutes) =>
+                              updateSubjectScore(
+                                subject.id,
+                                "testDuration",
+                                minutes == null ? "" : String(minutes),
+                              )
                             }
                           />
                         </div>
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[11px] font-medium text-muted">
-                          Time Taken / Test Duration (min)
-                        </span>
-                        <div className="flex gap-2">
-                          <input
-                            type="number"
-                            min={0}
-                            className={FIELD_CLASSES}
-                            placeholder="Time taken (min)"
-                            aria-label={`${subject.name} time taken`}
-                            value={value.timeTaken}
-                            onChange={(event) =>
-                              updateSubjectScore(subject.id, "timeTaken", event.target.value)
-                            }
-                          />
-
-                          <input
-                            type="number"
-                            min={0}
-                            className={FIELD_CLASSES}
-                            placeholder="Test duration (min)"
-                            aria-label={`${subject.name} test duration`}
-                            value={value.testDuration}
-                            onChange={(event) =>
-                              updateSubjectScore(subject.id, "testDuration", event.target.value)
-                            }
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </div>
-      )}
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
 
       {error && <p className="text-sm text-danger">{error}</p>}
 
       <div className="flex flex-col items-center gap-2 pt-2">
-        <Button variant="primary" onClick={handleSave} disabled={isSubmitting || isPrefilling}>
+        <Button
+          variant="primary"
+          onClick={handleSave}
+          disabled={isSubmitting || isPrefilling || !isManualRequiredReady || !!scoreError || hasInvalidSubjectScore}
+        >
           {isSubmitting ? "Saving..." : isPrefilling ? "Loading..." : "Save & Analyze"}
         </Button>
       </div>
@@ -693,8 +788,6 @@ function ManualForm({
 }
 
 function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
-
-
   const fileInputId = useId();
   const router = useRouter();
 
@@ -702,17 +795,17 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
   const [extractError, setExtractError] = useState<string | null>(null);
   const [summary, setSummary] = useState<string | null>(null);
   const [parsedSuccessfully, setParsedSuccessfully] = useState(true);
-  const [missingRequiredFields, setMissingRequiredFields] = useState<string[]>([]);
-
   const [subjects, setSubjects] = useState<SubjectWithChapters[]>([]);
   const [fields, setFields] = useState<ManualFields | null>(null);
   const [subjectScores, setSubjectScores] = useState<SubjectScoresState>({});
+  const [subjectScoreErrors, setSubjectScoreErrors] = useState<Record<number, string | null>>({});
   const [extractedSubjectIds, setExtractedSubjectIds] = useState<number[]>([]);
   const [showAllSubjects, setShowAllSubjects] = useState(false);
   const [prefillTick, setPrefillTick] = useState(0);
 
   const [isSubmitting, setSubmitting] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [scoreError, setScoreError] = useState<string | null>(null);
 
   const [previewFile, setPreviewFile] = useState<File | null>(null);
 
@@ -731,7 +824,7 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
     getSubjectsChapters()
       .then(({ data }) => setSubjects(data.subjects))
       .catch(() => {
-        // Best-effort — Subject Scores just won't have options if this fails.
+        // Best-effort
       });
   }, []);
 
@@ -742,11 +835,27 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
     subjectId: number,
     field: keyof SubjectScoreValue,
     value: string,
-  ) =>
-    setSubjectScores((current) => ({
-      ...current,
-      [subjectId]: { ...(current[subjectId] ?? EMPTY_SUBJECT_SCORE), [field]: value },
-    }));
+  ) => {
+    setSubjectScores((current) => {
+      const nextValue = {
+        ...(current[subjectId] ?? EMPTY_SUBJECT_SCORE),
+        [field]: value,
+      };
+
+      const nextScore = field === "score" ? value : nextValue.score;
+      const nextMaxScore = field === "maxScore" ? value : nextValue.maxScore;
+
+      setSubjectScoreErrors((currentErrors) => ({
+        ...currentErrors,
+        [subjectId]: validateScores(nextScore, nextMaxScore),
+      }));
+
+      return {
+        ...current,
+        [subjectId]: nextValue,
+      };
+    });
+  };
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -758,12 +867,10 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
     }
 
     setPreviewFile(file);
-
     setExtracting(true);
     setExtractError(null);
     setSaveError(null);
     setShowAllSubjects(false);
-    setMissingRequiredFields([]);
 
     try {
       const { data } = await extractMockImage(file);
@@ -799,19 +906,20 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
       }
 
       setSubjectScores(scores);
+      setSubjectScoreErrors(
+        Object.fromEntries(
+          Object.entries(scores).map(([subjectId, value]) => [
+            Number(subjectId),
+            validateScores(value.score, value.maxScore),
+          ]),
+        ),
+      );
       setExtractedSubjectIds(
         (extracted.subjectScores ?? []).map((s) => s.subjectId),
       );
       setPrefillTick((tick) => tick + 1);
       setSummary(data.summary || null);
       setParsedSuccessfully(data.parsedSuccessfully);
-
-      const missing: string[] = [];
-
-      if (!extracted.mockName) missing.push("Mock Name");
-      if (!extracted.attemptedDate) missing.push("Date Attempted");
-
-      setMissingRequiredFields(missing);
     } catch {
       setExtractError(
         "Couldn't read this scorecard. Please try again or enter details manually.",
@@ -821,12 +929,13 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
     }
   };
 
+  const hasInvalidSubjectScore = Object.values(subjectScoreErrors).some((message) => !!message);
+
   const handleSave = async () => {
     if (!fields) return;
     const attemptedDate = toIsoDate(fields.dateDisplay);
 
     if (!fields.mockName.trim() || !attemptedDate) {
-      setSaveError("Mock Name and Date Attempted are required.");
       return;
     }
 
@@ -869,7 +978,6 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
       >
         {previewUrl ? (
           <>
-            {/* Small Image Preview */}
             <div className="relative flex h-[180px] w-full max-w-[280px] items-center justify-center overflow-hidden rounded-xl border border-brand/10 bg-tint p-2">
               <img
                 src={previewUrl}
@@ -877,30 +985,26 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
                 className="h-full w-full object-contain"
               />
 
-              {/* Small loading spinner while extracting */}
               {isExtracting && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/10">
                   <span
-                    className="h-8 w-8 animate-spin rounded-full border-2 border-brand/20 border-t-brand"
+                    className="h-8 w-8 animate-spin rounded-full border-2 border-brand/25 border-t-cta"
                     aria-label="Reading scorecard"
                   />
                 </div>
               )}
             </div>
 
-            {/* Upload Status */}
             <p className="text-sm font-semibold text-ink">
               {isExtracting
                 ? "Reading your scorecard…"
                 : "Image uploaded successfully"}
             </p>
 
-            {/* File name */}
             <p className="max-w-full truncate px-2 text-xs font-medium text-muted">
               {previewFile?.name}
             </p>
 
-            {/* Status / Replace text */}
             <p className="text-xs font-medium text-muted">
               {isExtracting
                 ? "Please wait while we extract the details"
@@ -912,7 +1016,7 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-tint text-ink">
               {isExtracting ? (
                 <span
-                  className="h-5 w-5 animate-spin rounded-full border-2 border-brand/20 border-t-brand"
+                  className="h-5 w-5 animate-spin rounded-full border-2 border-brand/25 border-t-cta"
                   aria-label="Uploading"
                 />
               ) : (
@@ -926,7 +1030,9 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
                 : "Drag & drop your screenshot here"}
             </p>
 
-            <p className="text-xs font-medium text-muted">or</p>
+            <p className="text-xs font-medium text-muted">
+              or
+            </p>
 
             <span className="flex h-9 items-center justify-center rounded-lg border border-brand/15 bg-surface px-4 text-sm font-semibold text-body-text hover:bg-tint-strong">
               Browse Files
@@ -948,7 +1054,6 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
         />
       </label>
 
-
       <div className="flex items-start gap-2 rounded-xl bg-tint-strong p-3">
         <span className="mt-0.5 text-ink">
           <InfoIcon />
@@ -961,122 +1066,148 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
 
       {extractError && <p className="text-sm text-danger">{extractError}</p>}
 
-      {fields && (
-        <div className="flex flex-col gap-5 border-t border-brand/10 pt-5">
-          <p className="text-sm font-bold text-ink">2. Review Extracted Details</p>
+      <AnimatePresence>
+        {fields && (
+          <motion.div
+            {...fadeIn}
+            transition={{ ...fadeTransition, duration: 0.3 }}
+            className="flex flex-col gap-5 border-t border-brand/10 pt-5"
+          >
+            <p className="text-sm font-bold text-ink">2. Review Extracted Details</p>
 
-          {summary && (
-            <p className="text-xs text-muted">
-              {parsedSuccessfully
-                ? summary
-                : `${summary} We couldn't read everything — please check the fields below.`}
-            </p>
-          )}
+            {summary && (
+              <p className="text-xs text-muted">
+                {parsedSuccessfully
+                  ? summary
+                  : `${summary} We couldn't read everything — please check the fields below.`}
+              </p>
+            )}
 
-          {missingRequiredFields.length > 0 && (
-            <p className="text-xs font-semibold text-danger">
-              We couldn&apos;t detect the {missingRequiredFields.join(" and ")} from the image —
-              please fill {missingRequiredFields.length > 1 ? "them" : "it"} in below.
-            </p>
-          )}
+            <MockDetailsFields
+              fields={fields}
+              onChange={updateField}
+              onScoreError={setScoreError}
+              scoreError={scoreError}
+              dateInputKey={`extracted-${prefillTick}`}
+            />
 
-          <MockDetailsFields
-            fields={fields}
-            onChange={updateField}
-            onScoreError={setSaveError}
-            dateInputKey={`extracted-${prefillTick}`}
-          />
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-ink">Subject Scores (Optional)</p>
+                {extractedSubjectIds.length === 0 && !showAllSubjects && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllSubjects(true)}
+                    className="flex items-center gap-1 text-sm font-semibold text-cta"
+                  >
+                    <PlusIcon />
+                    Add Subject Score
+                  </button>
+                )}
+              </div>
 
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-ink">Subject Scores (Optional)</p>
-              {extractedSubjectIds.length === 0 && !showAllSubjects && (
-                <button
-                  type="button"
-                  onClick={() => setShowAllSubjects(true)}
-                  className="flex items-center gap-1 text-sm font-semibold text-cta"
-                >
-                  <PlusIcon />
-                  Add Subject Score
-                </button>
-              )}
+              {(() => {
+                const subjectRows =
+                  extractedSubjectIds.length > 0
+                    ? extractedSubjectIds.map((id) => ({
+                      id,
+                      name: subjects.find((subject) => subject.id === id)?.name ?? `Subject ${id}`,
+                    }))
+                    : showAllSubjects
+                      ? subjects.map((subject) => ({ id: subject.id, name: subject.name }))
+                      : [];
+
+                if (subjectRows.length === 0) return null;
+
+                return (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    {subjectRows.map(({ id, name }) => {
+                      const value = subjectScores[id] ?? EMPTY_SUBJECT_SCORE;
+                      return (
+                        <div
+                          key={id}
+                          className="flex flex-col gap-2 rounded-xl border border-brand/15 bg-surface p-4 shadow-sm dark:border-white/10 dark:shadow-black/20"
+                        >
+                          <label className="text-[14px] font-semibold leading-5 text-ink">
+                            {name}
+                          </label>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[13px] font-medium leading-none text-body-text dark:text-ink sm:text-[14px]">
+                              Total Marks
+                            </label>
+                            <div className="flex flex-col gap-1">
+                              <div className="flex gap-2">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  className={FIELD_CLASSES}
+                                  placeholder="Marks Scored"
+                                  aria-label={`${name} marks scored`}
+                                  value={value.score}
+                                  onChange={(event) => updateSubjectScore(id, "score", event.target.value)}
+                                />
+                                <input
+                                  type="number"
+                                  min={0}
+                                  className={FIELD_CLASSES}
+                                  placeholder="Maximum Marks"
+                                  aria-label={`${name} maximum marks`}
+                                  value={value.maxScore}
+                                  onChange={(event) =>
+                                    updateSubjectScore(id, "maxScore", event.target.value)
+                                  }
+                                />
+                              </div>
+                              {subjectScoreErrors[id] && (
+                                <p className="text-xs text-danger">{subjectScoreErrors[id]}</p>
+                              )}
+                            </div>
+                          </div>
+                          <DurationInput
+                            label="Time Taken"
+                            value={parseOptionalNumber(value.timeTaken)}
+                            onChange={(minutes) =>
+                              updateSubjectScore(id, "timeTaken", minutes == null ? "" : String(minutes))
+                            }
+                          />
+                          <DurationInput
+                            label="Test Duration"
+                            value={parseOptionalNumber(value.testDuration)}
+                            onChange={(minutes) =>
+                              updateSubjectScore(
+                                id,
+                                "testDuration",
+                                minutes == null ? "" : String(minutes),
+                              )
+                            }
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
 
-            {(() => {
-              const subjectRows =
-                extractedSubjectIds.length > 0
-                  ? extractedSubjectIds.map((id) => ({
-                    id,
-                    name: subjects.find((subject) => subject.id === id)?.name ?? `Subject ${id}`,
-                  }))
-                  : showAllSubjects
-                    ? subjects.map((subject) => ({ id: subject.id, name: subject.name }))
-                    : [];
+            {saveError && <p className="text-sm text-danger">{saveError}</p>}
 
-              if (subjectRows.length === 0) return null;
-
-              return (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  {subjectRows.map(({ id, name }) => {
-                    const value = subjectScores[id] ?? EMPTY_SUBJECT_SCORE;
-                    return (
-                      <div key={id} className="flex flex-col gap-2">
-                        <label className="text-[14px] font-semibold leading-5 text-ink">
-                          {name}
-                        </label>
-                        <div className="flex gap-2">
-                          <input
-                            className={FIELD_CLASSES}
-                            placeholder="Score"
-                            aria-label={`${name} score`}
-                            value={value.score}
-                            onChange={(event) => updateSubjectScore(id, "score", event.target.value)}
-                          />
-                          <input
-                            className={FIELD_CLASSES}
-                            placeholder="Max score"
-                            aria-label={`${name} max score`}
-                            value={value.maxScore}
-                            onChange={(event) =>
-                              updateSubjectScore(id, "maxScore", event.target.value)
-                            }
-                          />
-                        </div>
-                        <div className="flex gap-2">
-                          <input
-                            className={FIELD_CLASSES}
-                            placeholder="Time taken (min)"
-                            aria-label={`${name} time taken`}
-                            value={value.timeTaken}
-                            onChange={(event) =>
-                              updateSubjectScore(id, "timeTaken", event.target.value)
-                            }
-                          />
-                          <input
-                            className={FIELD_CLASSES}
-                            placeholder="Test duration (min)"
-                            aria-label={`${name} test duration`}
-                            value={value.testDuration}
-                            onChange={(event) =>
-                              updateSubjectScore(id, "testDuration", event.target.value)
-                            }
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })()}
-          </div>
-
-          {saveError && <p className="text-sm text-danger">{saveError}</p>}
-
-          <Button variant="primary" onClick={handleSave} disabled={isSubmitting || disabled}>
-            {isSubmitting ? "Saving..." : "Save & Analyze"}
-          </Button>
-        </div>
-      )}
+            <Button
+              variant="primary"
+              onClick={handleSave}
+              disabled={
+                isSubmitting ||
+                disabled ||
+                !fields?.mockName.trim() ||
+                !toIsoDate(fields.dateDisplay) ||
+                !!scoreError ||
+                hasInvalidSubjectScore
+              }
+            >
+              {isSubmitting ? "Saving..." : "Save & Analyze"}
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1108,13 +1239,14 @@ const EMPTY_QUICK_LOG_FIELDS: QuickLogFieldsState = {
 };
 
 function QuickLogForm({ disabled = false }: { disabled?: boolean }) {
-
   const router = useRouter();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const [fields, setFields] = useState<QuickLogFieldsState>(EMPTY_QUICK_LOG_FIELDS);
   const [isSubmitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [scoreError, setScoreError] = useState<string | null>(null);
+  const isQuickLogRequiredReady = !!fields.mockName.trim() && !!toIsoDate(fields.dateDisplay);
 
   const updateField = <K extends keyof QuickLogFieldsState>(
     key: K,
@@ -1125,7 +1257,6 @@ function QuickLogForm({ disabled = false }: { disabled?: boolean }) {
     const attemptedDate = toIsoDate(fields.dateDisplay);
 
     if (!fields.mockName.trim() || !attemptedDate) {
-      setError("Mock Name and Date are required.");
       return;
     }
 
@@ -1159,8 +1290,6 @@ function QuickLogForm({ disabled = false }: { disabled?: boolean }) {
       setSubmitting(false);
     }
   };
-
-
 
   return (
     <div className="rounded-2xl border border-brand/10 bg-surface p-6">
@@ -1202,35 +1331,37 @@ function QuickLogForm({ disabled = false }: { disabled?: boolean }) {
               Total Marks
             </label>
 
-            <div className="mt-1 flex gap-2">
-              <input
-                type="number"
-                min={0}
-                className="min-w-0 flex-1 rounded-xl border border-input-border bg-surface px-4 py-3 font-['Plus_Jakarta_Sans'] text-[14px] font-medium leading-[14px] tracking-normal text-ink outline-none transition-colors placeholder:text-[14px] placeholder:font-normal placeholder:leading-5 placeholder:text-[#666666] focus:border-input-border dark:placeholder:text-[#8B8998] sm:text-[16px] sm:leading-[16px]"
-                placeholder="Marks Scored"
-                aria-label="Marks Scored"
-                value={fields.score}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  updateField("score", value);
-                  setError(validateScores(value, fields.totalMarks));
-                }}
-              />
+            <div className="mt-1 flex flex-col gap-1">
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min={0}
+                  className="min-w-0 flex-1 rounded-xl border border-input-border bg-surface px-4 py-3 font-['Plus_Jakarta_Sans'] text-[14px] font-medium leading-[14px] tracking-normal text-ink outline-none transition-colors placeholder:text-[14px] placeholder:font-normal placeholder:leading-5 placeholder:text-[#666666] focus:border-input-border dark:placeholder:text-[#8B8998] sm:text-[16px] sm:leading-[16px]"
+                  placeholder="Marks Scored"
+                  aria-label="Marks Scored"
+                  value={fields.score}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    updateField("score", value);
+                    setScoreError(validateScores(value, fields.totalMarks));
+                  }}
+                />
 
-              <input
-                type="number"
-                min={0}
-                className="min-w-0 flex-1 rounded-xl border border-input-border bg-surface px-4 py-3 font-['Plus_Jakarta_Sans'] text-[14px] font-medium leading-[14px] tracking-normal text-ink outline-none transition-colors placeholder:text-[14px] placeholder:font-normal placeholder:leading-5 placeholder:text-[#666666] focus:border-input-border dark:placeholder:text-[#8B8998] sm:text-[16px] sm:leading-[16px]"
-                placeholder="Maximum Marks"
-                aria-label="Maximum Marks"
-                value={fields.totalMarks}
-                onChange={(event) => {
-                  const value = event.target.value;
-
-                  updateField("totalMarks", value);
-                  setError(validateScores(fields.score, value));
-                }}
-              />
+                <input
+                  type="number"
+                  min={0}
+                  className="min-w-0 flex-1 rounded-xl border border-input-border bg-surface px-4 py-3 font-['Plus_Jakarta_Sans'] text-[14px] font-medium leading-[14px] tracking-normal text-ink outline-none transition-colors placeholder:text-[14px] placeholder:font-normal placeholder:leading-5 placeholder:text-[#666666] focus:border-input-border dark:placeholder:text-[#8B8998] sm:text-[16px] sm:leading-[16px]"
+                  placeholder="Maximum Marks"
+                  aria-label="Maximum Marks"
+                  value={fields.totalMarks}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    updateField("totalMarks", value);
+                    setScoreError(validateScores(fields.score, value));
+                  }}
+                />
+              </div>
+              {scoreError && <p className="text-xs text-danger">{scoreError}</p>}
             </div>
           </div>
         </div>
@@ -1243,7 +1374,7 @@ function QuickLogForm({ disabled = false }: { disabled?: boolean }) {
             variant="primary"
             className={isDark ? "border border-[#FAF7F2]" : undefined}
             onClick={handleSave}
-            disabled={isSubmitting || disabled}
+            disabled={isSubmitting || disabled || !isQuickLogRequiredReady || !!scoreError}
           >
             {isSubmitting ? "Saving..." : "Save & Analyze"}
           </Button>

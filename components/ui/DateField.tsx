@@ -32,6 +32,7 @@ type DateFieldProps = {
   defaultValue?: string;
   onDateChange?: (value: string) => void;
   disablePast?: boolean;
+  labelClassName?: string;
 };
 
 function startOfDay(date: Date): Date {
@@ -108,6 +109,7 @@ export function DateField({
   defaultValue = "",
   onDateChange,
   disablePast = false,
+  labelClassName = "text-body-lg font-medium leading-none text-body-text dark:text-ink",
 }: DateFieldProps) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
@@ -228,10 +230,7 @@ export function DateField({
       ref={containerRef}
       className="flex w-full flex-col gap-2"
     >
-      <label
-        htmlFor={inputId}
-        className="text-body-lg font-medium leading-none text-body-text dark:text-ink"
-      >
+     <label htmlFor={inputId} className={labelClassName}>
         {label}
         {required && <span className="text-cta"> *</span>}
       </label>
