@@ -6,6 +6,7 @@ import { getCheckInStatus } from "@/lib/api/checkin";
 import { getAccessToken } from "@/lib/auth/session";
 
 const WELCOME_BACK_PATH = "/home/session/welcome-back";
+const BAD_DAY_PATH = "/home/bad-day";
 
 /**
  * Verifies today's check-in exists (and the cross-app-study redirect) before
@@ -40,6 +41,17 @@ export function useCheckInGate(enabled: boolean) {
           }
           if (data.checkin?.isStudyingCrossApp && pathname !== WELCOME_BACK_PATH) {
             router.push(WELCOME_BACK_PATH);
+            return;
+          }
+          // Section 4.3 — returning after 2+ inactive days: show the Bad Day
+          // welcome screen once (until acknowledged).
+          if (
+            data.checkin?.isBadDayReturn &&
+            !data.checkin?.badDayAcknowledgedAt &&
+            pathname !== BAD_DAY_PATH &&
+            pathname !== WELCOME_BACK_PATH
+          ) {
+            router.push(BAD_DAY_PATH);
           }
         })
         .catch(() => {

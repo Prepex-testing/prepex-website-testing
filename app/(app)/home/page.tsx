@@ -13,11 +13,22 @@ import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { CheckInModal, MOODS, type Mood } from "@/components/check-in/CheckInModal";
-import { moodIdToApiValue, apiValueToMoodId, getCheckInStatus, endRecoveryMode } from "@/lib/api/checkin";
+import {
+  moodIdToApiValue,
+  apiValueToMoodId,
+  getCheckInStatus,
+  endRecoveryMode,
+  activateRecoveryMode,
+  type BurnoutStatus,
+} from "@/lib/api/checkin";
+import { BurnoutSignalModal } from "@/components/home/BurnoutSignalModal";
+import { PlannerCheckInModal } from "@/components/home/PlannerCheckInModal";
+import { WellnessResourceModal } from "@/components/home/WellnessResourceModal";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { formatFullDate } from "@/lib/utils/datetime";
 import {
   regeneratePlanForMood,
+  generatePlan,
   getTodayPlan,
   deleteAllPlannerTasks,
   acknowledgeLateOnboarding,
@@ -290,11 +301,20 @@ export default function HomePage() {
   const [isGeneratingPlan, setGeneratingPlan] = useState(false);
   const [streakCount, setStreakCount] = useState<number | null>(null);
   const [isInRecoveryMode, setInRecoveryMode] = useState(false);
+  const [recoveryWeekDay, setRecoveryWeekDay] = useState(0);
   const [isEndRecoveryOpen, setEndRecoveryOpen] = useState(false);
   const [isEndingRecovery, setEndingRecovery] = useState(false);
   const [isLateSignupPromptOpen, setLateSignupPromptOpen] = useState(false);
   const [isQuickSessionTaskOpen, setQuickSessionTaskOpen] = useState(false);
   const hasPromptedLateSignup = useRef(false);
+  // Section 4.2.2 — burnout tier / disengagement pop-ups. One per session.
+  const [burnout, setBurnout] = useState<BurnoutStatus | null>(null);
+  const [burnoutModal, setBurnoutModal] = useState<
+    null | "inquiry" | "tier3" | "tier4" | "wellness"
+  >(null);
+  const [inquiryId, setInquiryId] = useState<string | null>(null);
+  const [lastCheckinDate, setLastCheckinDate] = useState("");
+  const hasPromptedBurnout = useRef(false);
   const isFriday = useSyncExternalStore(
     subscribeNoop,
     getIsFridaySnapshot,
@@ -328,7 +348,14 @@ export default function HomePage() {
     getCheckInStatus()
       .then(({ data }) => {
         setStreakCount(data.checkin?.streakCount ?? null);
-        setInRecoveryMode(Boolean(data.checkin?.isInRecoveryMode));
+        const bs = data.burnoutStatus ?? null;
+        setBurnout(bs);
+        setInRecoveryMode(
+          Boolean(bs?.recoveryWeek?.active) || Boolean(data.checkin?.isInRecoveryMode),
+        );
+        setRecoveryWeekDay(bs?.recoveryWeek?.day ?? 0);
+        setLastCheckinDate(data.checkinDate);
+        maybePromptBurnout(bs, data.checkinDate);
         const moodValue = data.checkin?.mood;
         if (moodValue) {
           const moodId = apiValueToMoodId(moodValue);
@@ -340,6 +367,75 @@ export default function HomePage() {
       .catch(() => {
         // Best-effort — mood/streak stay unset (no dummy fallback) until this succeeds.
       });
+  };
+
+  // Section 4.2.2 — pick at most one tier/inquiry pop-up per session. Tier 4/5
+  // also honour a per-day "seen" stamp so they don't re-nag every home visit
+  // (Section 4.6).
+  const BURNOUT_SEEN_KEY = "prepex.burnoutPromptSeen";
+  const burnoutSeenStamp = (tierResponse: string, checkinDate: string) =>
+    `${checkinDate.slice(0, 10)}:${tierResponse}`;
+
+  const maybePromptBurnout = (bs: BurnoutStatus | null, checkinDate: string) => {
+    if (!bs || hasPromptedBurnout.current) return;
+
+    if (bs.pendingInquiry) {
+      hasPromptedBurnout.current = true;
+      setInquiryId(bs.pendingInquiry.id);
+      setBurnoutModal("inquiry");
+      return;
+    }
+    if (bs.tierResponse === "RECOVERY_SUGGESTED") {
+      hasPromptedBurnout.current = true;
+      setBurnoutModal("tier3");
+      return;
+    }
+    if (bs.tierResponse === "RECOVERY_ACTIVATED" || bs.tierResponse === "WELLNESS") {
+      let seen = false;
+      try {
+        seen = localStorage.getItem(BURNOUT_SEEN_KEY) === burnoutSeenStamp(bs.tierResponse, checkinDate);
+      } catch {
+        seen = false;
+      }
+      if (seen) return;
+      hasPromptedBurnout.current = true;
+      setBurnoutModal(bs.tierResponse === "WELLNESS" ? "wellness" : "tier4");
+    }
+  };
+
+  const dismissBurnoutModal = () => {
+    const bs = burnout;
+    if (bs && (bs.tierResponse === "RECOVERY_ACTIVATED" || bs.tierResponse === "WELLNESS")) {
+      try {
+        localStorage.setItem(BURNOUT_SEEN_KEY, burnoutSeenStamp(bs.tierResponse, lastCheckinDate));
+      } catch {
+        // per-day stamp just won't persist — the session ref still guards.
+      }
+    }
+    setBurnoutModal(null);
+  };
+
+  const handleActivateRecovery = async () => {
+    try {
+      await activateRecoveryMode();
+      await generatePlan("RECOVERY");
+    } catch {
+      // Best-effort — the banner/plan refresh below still reflects server state.
+    }
+    setBurnoutModal(null);
+    refetchPlan();
+    refetchCheckInStatus();
+  };
+
+  const handleInquiryResolved = (actionTaken: string) => {
+    setBurnoutModal(null);
+    setInquiryId(null);
+    if (actionTaken === "regenerate_walkthrough") {
+      setRegenerateOpen(true);
+    } else if (actionTaken === "wellness_surfaced" || actionTaken === "wellness_page") {
+      setBurnoutModal("wellness");
+    }
+    // "plan_strategy_review" / "none" — nothing more to show; response is saved.
   };
 
   useEffect(refetchPlan, []);
@@ -451,8 +547,10 @@ export default function HomePage() {
               <AlertTriangleIcon />
             </span>
             <div className="min-w-0">
-              <p className="text-sm font-bold text-warning">Recovery Mode</p>
-              <p className="text-xs text-muted">Your recovery plan is active</p>
+              <p className="text-sm font-bold text-warning">Recovery Week</p>
+              <p className="text-xs text-muted">
+                {recoveryWeekDay > 0 ? `Day ${recoveryWeekDay} of 7` : "Your recovery plan is active"}
+              </p>
             </div>
           </div>
           <button
@@ -957,6 +1055,38 @@ export default function HomePage() {
         onClose={() => setRegenerateOpen(false)}
         onRegenerated={refetchPlan}
       />
+
+      {/* Section 4.2.2 / 4.4 — burnout tier + disengagement pop-ups */}
+      <PlannerCheckInModal
+        open={burnoutModal === "inquiry"}
+        inquiryId={inquiryId}
+        onClose={dismissBurnoutModal}
+        onResolved={handleInquiryResolved}
+      />
+      <BurnoutSignalModal
+        open={burnoutModal === "tier3"}
+        onClose={dismissBurnoutModal}
+        title="How's it going?"
+        intro="A few things stood out this week:"
+        signalText={burnout?.signalLabels ?? []}
+        primaryLabel="Start a Recovery Week"
+        onPrimary={handleActivateRecovery}
+        secondaryLabel="Not now"
+      />
+      <BurnoutSignalModal
+        open={burnoutModal === "tier4"}
+        onClose={dismissBurnoutModal}
+        title="Your plan is lighter this week"
+        intro="We've eased things off for a few days so you can reset. You can end it anytime."
+        signalText={burnout?.signalLabels ?? []}
+        primaryLabel="View today's plan"
+        onPrimary={() => {
+          dismissBurnoutModal();
+          router.push("/plan");
+        }}
+        secondaryLabel="Got it"
+      />
+      <WellnessResourceModal open={burnoutModal === "wellness"} onClose={dismissBurnoutModal} />
       <TodaysPracticeModal
         open={isPracticeModalOpen}
         onClose={() => setPracticeModalOpen(false)}
