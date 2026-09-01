@@ -23,7 +23,7 @@ export function RecoveryModeModal({ open, onClose, onAddBacklogChapters }: Recov
       open={open}
       onClose={onClose}
       ariaLabel="Recovery Mode"
-      panelClassName="sm:w-full sm:max-w-[896px] sm:h-[813px] sm:max-h-[85vh] sm:rounded-[22px] sm:p-0 sm:overflow-y-auto"
+     panelClassName="sm:w-full sm:max-w-[896px] sm:rounded-[22px] sm:p-0"
     >
       {/* Header */}
       <div className="flex w-full items-center justify-between gap-3 px-4 pt-5 sm:h-7 sm:w-full sm:px-6 sm:pt-10">

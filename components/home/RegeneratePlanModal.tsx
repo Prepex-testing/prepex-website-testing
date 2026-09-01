@@ -16,32 +16,32 @@ const REASONS: {
   label: string;
   regenReason: RegenReason;
 }[] = [
-  {
-    id: "too-heavy",
-    label: "Plan feels too heavy",
-    regenReason: "TOO_HEAVY",
-  },
-  {
-    id: "too-light",
-    label: "Plan feels too light",
-    regenReason: "TOO_LIGHT",
-  },
-  {
-    id: "wrong-subjects",
-    label: "Wrong subjects today",
-    regenReason: "WRONG_SUBJECTS",
-  },
-  {
-    id: "time-slots",
-    label: "Time slots don't work",
-    regenReason: "TIME_SLOTS",
-  },
-  {
-    id: "fresh-take",
-    label: "Just want a fresh take",
-    regenReason: "FRESH_TAKE",
-  },
-];
+    {
+      id: "too-heavy",
+      label: "Plan feels too heavy",
+      regenReason: "TOO_HEAVY",
+    },
+    {
+      id: "too-light",
+      label: "Plan feels too light",
+      regenReason: "TOO_LIGHT",
+    },
+    {
+      id: "wrong-subjects",
+      label: "Wrong subjects today",
+      regenReason: "WRONG_SUBJECTS",
+    },
+    {
+      id: "time-slots",
+      label: "Time slots don't work",
+      regenReason: "TIME_SLOTS",
+    },
+    {
+      id: "fresh-take",
+      label: "Just want a fresh take",
+      regenReason: "FRESH_TAKE",
+    },
+  ];
 
 type RegeneratePlanModalProps = {
   open: boolean;
@@ -134,6 +134,7 @@ export function RegeneratePlanModal({
             selected={reasonId === option.id}
             onSelect={() => setReasonId(option.id)}
             compact
+            unselectedLabelClassName="text-[#666666] dark:text-[#8B8998]"
           />
         ))}
       </div>
@@ -146,29 +147,13 @@ export function RegeneratePlanModal({
       )}
 
       {/* Actions */}
-      <div
-        className="
-          mt-8
-          grid
-          w-full
-          grid-cols-2
-          gap-3
-          sm:grid-cols-[141px_271px]
-        "
-      >
+      <div className="mt-8 grid w-full min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1.92fr)] gap-3">
         {/* Cancel */}
         <Button
           variant="secondary"
           size="sm"
           onClick={onClose}
-          className="
-            h-[54px]
-            w-full
-            rounded-lg
-            px-6
-            py-0
-            text-body-lg
-          "
+          className="h-[54px] w-full min-w-0 rounded-lg px-4 py-0 text-body-lg"
         >
           Cancel
         </Button>
@@ -180,13 +165,14 @@ export function RegeneratePlanModal({
           onClick={handleRegenerate}
           disabled={isSubmitting}
           className="
-            h-[54px]
-            w-full
-            rounded-xl
-            px-6
-            py-0
-            text-[18px]
-          "
+      h-[54px]
+      w-full
+      min-w-0
+      rounded-xl
+      px-4
+      py-0
+      text-[18px]
+    "
         >
           {isSubmitting ? "Regenerating..." : "Regenerate"}
         </Button>

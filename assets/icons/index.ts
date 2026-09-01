@@ -95,6 +95,7 @@ export { default as DotIcon} from "./DotIcon.svg";
 export { default as Lightbulb} from "./Lightbulb.svg";
 export { default as Right} from "./Right.svg";
 export { default as Star} from "./Star.svg";
+export { default as TrendingDownIcon} from "./TrendingDownIcon.svg";
 
 
 

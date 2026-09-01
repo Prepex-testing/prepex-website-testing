@@ -246,7 +246,7 @@ export default function MistakeNotebookEntryPage() {
         {/* Review Count */}
         <div className="flex flex-col items-center gap-1 text-center">
           <p className="flex items-center gap-1.5 text-sm font-bold text-ink">
-            <RefreshIcon />
+           <RefreshIcon className="w-2 h-2 sm:w-3 sm:h-3 md:w-5 md:h-5" />
             Review Count
           </p>
           <p className="text-[32px] font-extrabold leading-none text-ink">3</p>
@@ -270,7 +270,7 @@ export default function MistakeNotebookEntryPage() {
 
       <div className="flex flex-col items-center gap-2">
         <Button variant="primary">
-          <RefreshIcon />
+          <RefreshIcon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
           Review Now
         </Button>
         <p className="text-xs text-muted">Start a fresh attempt</p>
