@@ -989,14 +989,18 @@ export function SearchIcon() {
   );
 }
 
-export function BookmarkIcon({ filled = false }: { filled?: boolean }) {
+export function BookmarkIcon({
+  filled = false,
+  ...props
+}: SVGProps<SVGSVGElement> & {
+  filled?: boolean;
+}) {
   return (
     <svg
-      width="16"
-      height="16"
       viewBox="0 0 16 16"
       fill={filled ? "currentColor" : "none"}
       aria-hidden="true"
+      {...props}
     >
       <path
         d="M4 2.5h8a1 1 0 0 1 1 1V14l-5-3-5 3V3.5a1 1 0 0 1 1-1Z"
@@ -1787,6 +1791,34 @@ export function AlertCircleIcon(props: SVGProps<SVGSVGElement>) {
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7v6" />
       <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function DoubleArrowIcon({
+  width = 24,
+  height = 24,
+  ...props
+}: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={width}
+      height={height}
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <text
+        x="12"
+        y="17"
+        textAnchor="middle"
+        fontSize="24"
+        fontWeight="600"
+        fill="currentColor"
+      >
+        »
+      </text>
     </svg>
   );
 }

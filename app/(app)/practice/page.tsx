@@ -4,7 +4,7 @@ import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } fr
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { WhiteModal } from "@/components/ui/WhiteModal";
-import { BellIcon, ClockIcon, BookmarkIcon } from "@/components/ui/icons";
+import { ClockIcon, BookmarkIcon, DoubleArrowIcon } from "@/components/ui/icons";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { getTodayPlan } from "@/lib/api/planner";
@@ -18,6 +18,7 @@ import {
   type PracticeSessionQuestion,
   type TaskQuestionsResponse,
 } from "@/lib/api/practice";
+import { BellIcon } from "@/assets/icons";
 
 function formatTime(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60);
@@ -138,7 +139,7 @@ function PracticeModeContent() {
         if (playable.length === 0) {
           // In-progress session but nothing left to play — finalize and go
           // straight to the analysis instead of surfacing an error.
-          await completePracticeSession(res.data.sessionId).catch(() => {});
+          await completePracticeSession(res.data.sessionId).catch(() => { });
           router.replace(`/practice/complete?sessionId=${res.data.sessionId}`);
           return;
         }
@@ -351,7 +352,7 @@ function PracticeModeContent() {
           <p className="text-[20px] font-bold leading-7 text-ink whitespace-nowrap">
             Question {questionNumber} of {total}
           </p>
-          <span className="flex h-4 items-center rounded-sm bg-tint px-2 text-[12px] font-semibold uppercase tracking-[0.6px] leading-4 text-ink">
+          <span className="flex h-4 items-center rounded-sm bg-subject-bg px-2 text-[12px] font-semibold uppercase tracking-[0.6px] leading-4 text-ink">
             {prettyDifficulty(currentQ.difficulty)}
           </span>
           {isMarked && (
@@ -386,9 +387,8 @@ function PracticeModeContent() {
           return (
             <span
               key={index}
-              className={`h-2 w-2 rounded-full transition-colors duration-200 ${
-                isDone || isActive ? "bg-question-dot-active" : "bg-question-dot-inactive"
-              }`}
+              className={`h-2 w-2 rounded-full transition-colors duration-200 ${isDone || isActive ? "bg-question-dot-active" : "bg-question-dot-inactive"
+                }`}
             />
           );
         })}
@@ -412,7 +412,9 @@ function PracticeModeContent() {
         ))}
       </div>
 
-      <h2 className="text-h2 text-ink">{currentQ.questionText}</h2>
+      <h2 className="text-[16px] font-bold leading-[1.4] tracking-normal text-ink sm:text-[20px] sm:leading-[1.3] lg:text-[24px] lg:leading-[1.25]">
+        {currentQ.questionText}
+      </h2>
 
       {currentQ.questionImageUrl && (
         // PRD 126 — question images load progressively on slow connections.
@@ -428,25 +430,31 @@ function PracticeModeContent() {
       <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-2">
         {options.map(([key, value]) => {
           const isSelected = selectedKey === key;
+
           return (
             <button
               key={key}
               type="button"
               onClick={() => setSelectedKey(key)}
               aria-pressed={isSelected}
-              className={`flex min-h-[98px] w-full items-center rounded-xl border p-6 text-left transition-all duration-200 ${
-                isSelected ? "border-brand bg-tint-strong" : "border-brand/20 bg-transparent"
-              }`}
+              className={`flex min-h-[98px] w-full items-center rounded-xl border p-6 text-left shadow-[0px_1px_2px_#0000000D] transition-all duration-200 dark:shadow-none ${isSelected
+                ? "border-brand bg-tint-strong"
+                : "border-[#F3F4F6] bg-white dark:border-[#FAF7F214] dark:bg-transparent"
+                }`}
             >
               <div
-                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${
-                  isSelected ? "bg-brand text-background" : "bg-tint text-ink"
-                }`}
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${isSelected
+                  ? "bg-brand text-background dark:bg-white dark:text-[#1A1A4E]"
+                  : "bg-tint text-ink"
+                  }`}
               >
-                <span className="text-[18px] font-bold leading-7">{key}</span>
+                <span className="text-[18px] font-bold leading-7">
+                  {key}
+                </span>
               </div>
+
               <span
-                className="ml-6 text-[20px] font-medium italic leading-8 text-ink"
+                className="ml-6 text-[24px] font-medium italic leading-8 tracking-[0px] text-ink"
                 style={{ fontFamily: "Liberation Serif, serif" }}
               >
                 {value}
@@ -456,42 +464,51 @@ function PracticeModeContent() {
         })}
       </div>
 
-      <div className="flex w-full flex-wrap items-center justify-between gap-6 rounded-2xl border border-brand/10 bg-surface px-6 py-6 sm:px-10">
-        <div className="flex flex-wrap items-center gap-8 sm:gap-12">
-          <button
-            type="button"
-            onClick={handleToggleMark}
-            aria-pressed={isMarked}
-            className={`flex h-8 items-center gap-3 transition-colors ${
-              isMarked ? "text-ink" : "text-muted hover:text-ink"
-            }`}
-          >
-            <BookmarkIcon filled={isMarked} />
-            <span className="text-[16px] font-bold leading-6">Mark for review</span>
-          </button>
+     <div className="flex w-full flex-col items-center justify-between gap-6 rounded-2xl border border-brand/10 bg-surface px-4 py-5 sm:flex-row sm:px-6 sm:py-6 lg:px-10">
+  <div className="flex w-full flex-wrap items-center justify-center gap-6 sm:w-auto sm:justify-start sm:gap-8 lg:gap-12">
+    <button
+      type="button"
+      onClick={handleToggleMark}
+      aria-pressed={isMarked}
+      className={`flex h-8 items-center gap-3 transition-colors ${
+        isMarked
+          ? "text-[#666666] dark:text-[#FAF7F2]"
+          : "text-[#666666] hover:text-ink dark:text-[#FAF7F2] dark:hover:text-white"
+      }`}
+    >
+      <BookmarkIcon
+        filled={isMarked}
+        className="h-6 w-6 shrink-0 sm:h-7 sm:w-7 lg:h-8 lg:w-8"
+      />
 
-          <button
-            type="button"
-            onClick={handleSkip}
-            disabled={submitting || finishing}
-            className="flex h-8 items-center gap-3 text-muted transition-colors hover:text-ink disabled:opacity-30"
-          >
-            <span className="text-xl font-semibold">»</span>
-            <span className="text-[16px] font-bold leading-6">
-              {isLast ? "Skip & Finish" : "Skip Question"}
-            </span>
-          </button>
-        </div>
+      <span className="text-[14px] font-bold leading-6 sm:text-[16px]">
+        Mark for review
+      </span>
+    </button>
 
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={selectedKey === null || submitting || finishing}
-          className="flex h-14 w-[200px] items-center justify-center rounded-xl bg-cta text-[18px] font-bold leading-7 text-white transition-opacity hover:opacity-90 disabled:opacity-40"
-        >
-          {submitting ? "Saving…" : isLast ? "Submit & Finish" : "Submit answer"}
-        </button>
-      </div>
+    <button
+      type="button"
+      onClick={handleSkip}
+      disabled={submitting || finishing}
+      className="flex h-8 items-center gap-3 text-[#666666] transition-colors hover:text-ink disabled:opacity-30 dark:text-[#FAF7F2] dark:hover:text-white"
+    >
+      <DoubleArrowIcon className="h-6 w-6 shrink-0 sm:h-7 sm:w-7 lg:h-8 lg:w-8" />
+
+      <span className="text-[14px] font-bold leading-6 sm:text-[16px]">
+        {isLast ? "Skip & Finish" : "Skip Question"}
+      </span>
+    </button>
+  </div>
+
+  <button
+    type="button"
+    onClick={handleSubmit}
+    disabled={selectedKey === null || submitting || finishing}
+    className="flex h-12 w-full items-center justify-center rounded-xl bg-cta text-[16px] font-bold leading-7 text-white transition-opacity hover:opacity-90 disabled:opacity-40 sm:h-14 sm:w-[200px] sm:text-[18px]"
+  >
+    {submitting ? "Saving…" : isLast ? "Submit & Finish" : "Submit answer"}
+  </button>
+</div>
 
       {/* PRD 130 — leaving a live session requires confirmation. */}
       <WhiteModal
