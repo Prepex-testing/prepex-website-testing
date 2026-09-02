@@ -47,7 +47,7 @@ export type PlanTask = {
 
 type PlanTaskRowProps = {
   task: PlanTask;
-  onStartPractice?: () => void;
+  onStartPractice?: (taskId: string) => void;
   onTaskChanged?: () => void;
   /** Called when "Reorder" is clicked — arms this task for drag-and-drop. */
   onReorder?: () => void;
@@ -181,7 +181,7 @@ export function PlanTaskRow({
             isPrimaryActionDisabled
               ? undefined
               : isStartPractice
-                ? onStartPractice
+                ? () => onStartPractice?.(task.id)
                 : undefined
           }
         >

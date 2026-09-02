@@ -37,7 +37,7 @@ export type Task = {
 
 type TaskRowProps = {
   task: Task;
-  onStartPractice?: () => void;
+  onStartPractice?: (taskId: string) => void;
   onTaskChanged?: () => void;
 };
 
@@ -274,7 +274,7 @@ export function TaskRow({
           isPrimaryActionDisabled || task.isCompleted
             ? undefined
             : isStartPractice
-              ? onStartPractice
+              ? () => onStartPractice?.(task.id)
               : undefined
         }
       >

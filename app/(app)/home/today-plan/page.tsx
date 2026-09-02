@@ -201,6 +201,7 @@ function TodayPlanContent() {
   const reorderTaskIdParam = searchParams.get("reorderTaskId");
   const [isRegenerateOpen, setRegenerateOpen] = useState(false);
   const [isPracticeModalOpen, setPracticeModalOpen] = useState(false);
+  const [practiceTaskId, setPracticeTaskId] = useState<string | null>(null);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
   const [planData, setPlanData] = useState<TodayPlanResponse | null>(null);
   const [planLoadFailed, setPlanLoadFailed] = useState(false);
@@ -266,7 +267,10 @@ function TodayPlanContent() {
     <PlanTaskRow
       key={task.id}
       task={task}
-      onStartPractice={() => setPracticeModalOpen(true)}
+      onStartPractice={(taskId) => {
+        setPracticeTaskId(taskId);
+        setPracticeModalOpen(true);
+      }}
       onTaskChanged={refetchPlan}
       onReorder={() => handleReorderSelect(task.id)}
       isDragArmed={reorderTaskId === task.id}
@@ -477,7 +481,7 @@ function TodayPlanContent() {
         onClose={() => setPracticeModalOpen(false)}
         onStart={() => {
           setPracticeModalOpen(false);
-          router.push("/practice");
+          router.push(practiceTaskId ? `/practice?taskId=${practiceTaskId}` : "/practice");
         }}
       />
     </div>

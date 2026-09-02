@@ -1,151 +1,159 @@
 "use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
-
-import { useState } from "react";
-import Link from "next/link";
-import { Chip } from "@/components/ui/Chip";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { AlertTriangleIcon } from "@/components/ui/icons";
+import { ClockIcon, CalendarIcon, FileIcon, BellIcon } from "@/assets/icons";
 import {
-  // BellIcon,
-  ChevronDownIcon,
-  MoreIcon,
-  // FileIcon,
-  AlertTriangleIcon,
-  // CalendarIcon,
-  // ClockIcon,
-} from "@/components/ui/icons";
-import { ClockIcon, CalendarIcon, FileIcon,BellIcon } from "@/assets/icons";
-const SUBJECT_FILTERS = ["All", "Physics", "Chemistry", "Maths"];
-const TYPE_FILTERS = ["All", "Silly", "Concept", "Time", "Guess"];
-
-type MistakeTag = "conceptual" | "silly" | "time" | "guess";
+  getMistakePatterns,
+  listMistakes,
+  MISTAKE_TAG_LABELS,
+  type MistakeListItem,
+  type MistakePatternsResponse,
+  type MistakeTag,
+} from "@/lib/api/practice";
 
 const TAG_STYLES: Record<MistakeTag, string> = {
-  conceptual: "bg-tint text-ink",
-  silly: "bg-cta/10 text-cta",
-  time: "bg-warning/10 text-warning",
-  guess: "bg-info-bg text-info",
+  CONCEPTUAL_GAP: "bg-tint text-ink",
+  SILLY_ERROR: "bg-cta/10 text-cta",
+  TIME_PRESSURE: "bg-warning/10 text-warning",
+  WILD_GUESS: "bg-info-bg text-info",
 };
 
-type MistakeEntry = {
-  id: string;
-  subjectLabel: string;
-  title: string;
-  tag: MistakeTag;
-  lastReviewed: string;
-  quote: string;
-  dueIn?: string;
-};
-
-const DUE_TODAY: MistakeEntry[] = [
-  {
-    id: "coord-geo",
-    subjectLabel: "M",
-    title: "Coordinate Geometry · Common Tangents",
-    tag: "conceptual",
-    lastReviewed: "Last reviewed: 7 days ago",
-    quote: "I need to memorize the 4 tangent cases",
-  },
-  {
-    id: "optics-lens",
-    subjectLabel: "P",
-    title: "Physics · Optics · Lens",
-    tag: "silly",
-    lastReviewed: "Last reviewed: 3 days ago",
-    quote: "Sign convention slip",
-  },
-  {
-    id: "thermo",
-    subjectLabel: "C",
-    title: "Chemistry · Thermodynamics · ΔG & ΔH",
-    tag: "conceptual",
-    lastReviewed: "Last reviewed: 5 days ago",
-    quote: "Confuse ΔG sign in spontaneity",
-  },
-  {
-    id: "integration",
-    subjectLabel: "M",
-    title: "Mathematics · Calculus · Integration",
-    tag: "time",
-    lastReviewed: "Last reviewed: 8 days ago",
-    quote: "Take too long in partial fractions",
-  },
+const TYPE_FILTERS: ("All" | MistakeTag)[] = [
+  "All",
+  "SILLY_ERROR",
+  "CONCEPTUAL_GAP",
+  "TIME_PRESSURE",
+  "WILD_GUESS",
 ];
 
-const UPCOMING: MistakeEntry[] = [
-  {
-    id: "friction",
-    subjectLabel: "P",
-    title: "Physics · Mechanics · Friction",
-    tag: "conceptual",
-    lastReviewed: "Last reviewed: 9 days ago",
-    quote: "Forgot limiting friction condition",
-    dueIn: "Due in 2 days",
-  },
-];
+function daysAgo(iso: string | null): string {
+  if (!iso) return "Not reviewed yet";
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  if (diff <= 0) return "Reviewed today";
+  return `Last reviewed: ${diff} day${diff === 1 ? "" : "s"} ago`;
+}
 
-function MistakeRow({ entry }: { entry: MistakeEntry }) {
+function dueLabel(iso: string): { due: boolean; text: string } {
+  const target = new Date(iso).getTime();
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+  if (target <= endOfToday.getTime()) return { due: true, text: "Due now" };
+  const days = Math.ceil((target - Date.now()) / 86_400_000);
+  return { due: false, text: `Due in ${days} day${days === 1 ? "" : "s"}` };
+}
+
+function MistakeRow({ entry }: { entry: MistakeListItem }) {
+  const subjectName = entry.chapter?.subject?.name ?? "";
+  const subjectLetter = subjectName.charAt(0).toUpperCase() || "?";
+  const chapterName = entry.chapter?.name ?? entry.topic;
+  const primaryTag = entry.mistakeTags[0];
+  const { due, text } = dueLabel(entry.nextReviewDate);
+
   return (
     <div className="flex flex-col gap-5 rounded-[20px] border border-brand/10 p-5 sm:flex-row sm:items-center">
-      {/* Icon box */}
       <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-tint text-2xl font-black text-ink">
-        {entry.subjectLabel}
+        {subjectLetter}
       </span>
 
-      {/* Content block */}
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <p className="flex flex-wrap items-center gap-2">
           <span className="text-[16px] font-bold leading-6 text-ink">
-            {entry.title}
+            {chapterName} · {entry.topic}
           </span>
-          <span
-            className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.25px] ${TAG_STYLES[entry.tag]}`}
-          >
-            {entry.tag}
-          </span>
+          {primaryTag && (
+            <span
+              className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.25px] ${TAG_STYLES[primaryTag]}`}
+            >
+              {MISTAKE_TAG_LABELS[primaryTag]}
+            </span>
+          )}
           <span className="text-[11px] font-medium leading-[16.5px] text-muted/70">
-            {entry.lastReviewed}
+            {daysAgo(entry.lastReviewedAt)}
           </span>
         </p>
         <p className="text-[14px] font-medium italic leading-5 text-muted">
-          &ldquo;{entry.quote}&rdquo;
+          {entry.studentNote ? `“${entry.studentNote}”` : entry.question?.questionText ?? ""}
         </p>
       </div>
 
-      {/* Actions */}
       <div className="flex shrink-0 items-center gap-3 pl-[76px] sm:pl-0">
-        {entry.dueIn ? (
+        {!due && (
           <span className="rounded-full bg-tint-strong px-3 py-1 text-xs font-semibold text-ink">
-            {entry.dueIn}
+            {text}
           </span>
-        ) : (
-          <Link
-            href="/home/mistake-notebook/entry"
-            className="inline-flex h-9 w-[138px] items-center justify-center gap-2 rounded-lg border border-[var(--button-border)] bg-surface px-4 text-[14px] font-semibold text-body-text transition-colors hover:border-[#FF7A59] hover:bg-[#FF7A59] hover:text-white"
-          >
-            Start Practice
-          </Link>
         )}
-        <button
-          type="button"
-          aria-label={`More options for ${entry.title}`}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+        <Link
+          href={`/home/mistake-notebook/entry?id=${entry.id}`}
+          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[var(--button-border)] bg-surface px-4 text-[14px] font-semibold text-body-text transition-colors hover:border-[#FF7A59] hover:bg-[#FF7A59] hover:text-white"
         >
-          <span className="inline-block rotate-90">
-            <MoreIcon />
-          </span>
-        </button>
+          {due ? "Review now" : "Open"}
+        </Link>
       </div>
     </div>
   );
 }
 
 export default function MistakeNotebookPage() {
-  const [subjectFilter, setSubjectFilter] = useState("All");
-  const [typeFilter, setTypeFilter] = useState("All");
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+
+  const [items, setItems] = useState<MistakeListItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [patterns, setPatterns] = useState<MistakePatternsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [subjectFilter, setSubjectFilter] = useState("All");
+  const [typeFilter, setTypeFilter] = useState<"All" | MistakeTag>("All");
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([listMistakes({ status: "ACTIVE", limit: 50 }), getMistakePatterns()])
+      .then(([list, pat]) => {
+        if (cancelled) return;
+        setItems(list.data.items);
+        setTotal(list.data.total);
+        setPatterns(pat.data);
+      })
+      .catch((err) => {
+        if (!cancelled)
+          setError(err instanceof Error ? err.message : "Could not load your notebook.");
+      })
+      .finally(() => !cancelled && setLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const subjects = useMemo(() => {
+    const set = new Set<string>();
+    items.forEach((i) => i.chapter?.subject?.name && set.add(i.chapter.subject.name));
+    return ["All", ...[...set].sort()];
+  }, [items]);
+
+  const filtered = useMemo(
+    () =>
+      items.filter((i) => {
+        if (subjectFilter !== "All" && i.chapter?.subject?.name !== subjectFilter) return false;
+        if (typeFilter !== "All" && !i.mistakeTags.includes(typeFilter)) return false;
+        return true;
+      }),
+    [items, subjectFilter, typeFilter],
+  );
+
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+  const dueToday = filtered.filter(
+    (i) => new Date(i.nextReviewDate).getTime() <= endOfToday.getTime(),
+  );
+  const upcoming = filtered.filter(
+    (i) => new Date(i.nextReviewDate).getTime() > endOfToday.getTime(),
+  );
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -164,60 +172,106 @@ export default function MistakeNotebookPage() {
         </div>
       </div>
 
-      <div className="flex items-center gap-6 rounded-2xl border border-brand/10 bg-surface p-6 min-h-[112px] w-full">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl  bg-icon-chip-bg text-ink shadow-sm dark:bg-[#FAF7F2]/8 [&>svg]:h-6 [&>svg]:w-auto">
+      <div className="flex min-h-[112px] w-full items-center gap-6 rounded-2xl border border-brand/10 bg-surface p-6">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-icon-chip-bg text-ink shadow-sm dark:bg-[#FAF7F2]/8 [&>svg]:h-6 [&>svg]:w-auto">
           <FileIcon />
         </div>
-
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <h2 className="text-[22px] font-bold leading-[100%] text-ink">
-            Mistake Notebook
-          </h2>
-
+          <h2 className="text-[22px] font-bold leading-[100%] text-ink">Mistake Notebook</h2>
           <div className="flex flex-wrap items-center gap-2 text-[14px] leading-5">
-            <span className="font-medium text-muted">47 entries</span>
-
+            <span className="font-medium text-muted">{total} entries</span>
             <span className="text-muted">•</span>
-
             <span className="font-bold text-[#F59E0B] underline decoration-[#FED7AA] decoration-[2px] underline-offset-2">
-              12 due for review today
+              {dueToday.length} due for review today
             </span>
           </div>
         </div>
       </div>
 
+      {error && (
+        <p className="rounded-xl border border-warning/40 bg-warning/5 p-4 text-sm text-warning">
+          {error}
+        </p>
+      )}
+
+      {/* Pattern recognition (PRD 5.7) */}
+      {patterns && patterns.patterns.length > 0 && (
+        <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="flex items-center gap-2 text-[12px] font-extrabold uppercase tracking-[1.2px] text-[#F59E0B]">
+              <AlertTriangleIcon /> Mistake Patterns · Last {patterns.windowDays} Days
+            </p>
+            <span className="text-[12px] font-semibold text-muted">
+              ~{patterns.totalMarksLost} marks lost
+            </span>
+          </div>
+
+          {!patterns.qualifiesForInsight && (
+            <p className="mt-2 text-[12px] text-muted">
+              Patterns sharpen after {patterns.minEntriesForInsight} tagged mistakes — {patterns.totalEntries} so far.
+            </p>
+          )}
+
+          <div className="mt-4 flex flex-col gap-3">
+            {patterns.patterns.map((p) => (
+              <div key={p.tag} className="rounded-xl border border-brand/10 p-4">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <p className="text-[15px] font-bold text-ink">
+                    {p.label}: <span className="text-[#F59E0B]">{p.marksLost} marks lost</span>
+                  </p>
+                  <span className="text-[12px] text-muted">
+                    {p.count} question{p.count === 1 ? "" : "s"}
+                    {p.topChapterName ? `, mostly ${p.topChapterName}` : ""}
+                  </span>
+                </div>
+                {p.suggestedAction && (
+                  <p className="mt-1 text-[13px] text-body-text">
+                    <span className="font-semibold">Action:</span> {p.suggestedAction}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {patterns.insight && (
+            <p className="mt-4 border-t border-brand/10 pt-4 text-[13px] leading-5 text-body-text">
+              <span className="font-bold">Insight:</span> {patterns.insight}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Filters */}
       <div className="w-full rounded-2xl border border-brand/10 bg-surface px-6 pt-[17px] pb-6 shadow-sm">
         <div className="flex items-center justify-between">
           <p className="text-[14px] font-bold uppercase tracking-[0.7px]">Filters</p>
-
           <button
             type="button"
             onClick={() => {
               setSubjectFilter("All");
               setTypeFilter("All");
             }}
-            className="text-xs font-semibold text-muted hover:text-ink transition-colors"
+            className="text-xs font-semibold text-muted transition-colors hover:text-ink"
           >
             Clear all
           </button>
         </div>
 
         <div className="mt-4 flex flex-col gap-6 lg:flex-row lg:gap-8">
-          {/* Subject */}
           <div className="flex w-full max-w-[355px] flex-col gap-3">
             <p className="text-sm font-bold uppercase text-ink">Subject</p>
-
             <div className="flex flex-wrap gap-2">
-              {SUBJECT_FILTERS.map((item) => (
+              {subjects.map((item) => (
                 <button
                   key={item}
                   onClick={() => setSubjectFilter(item)}
-                  className={`h-[34px] rounded-full border px-4 text-[12px] font-medium transition-all ${subjectFilter === item
-                    ? "border-brand bg-brand text-white"
-                    : isDark
-                      ? "border-muted text-white bg-transparent hover:bg-tint"
-                      : "border-brand text-ink bg-transparent hover:bg-tint"
-                    }`}
+                  className={`h-[34px] rounded-full border px-4 text-[12px] font-medium transition-all ${
+                    subjectFilter === item
+                      ? "border-brand bg-brand text-white"
+                      : isDark
+                        ? "border-muted bg-transparent text-white hover:bg-tint"
+                        : "border-brand bg-transparent text-ink hover:bg-tint"
+                  }`}
                 >
                   {item}
                 </button>
@@ -225,23 +279,22 @@ export default function MistakeNotebookPage() {
             </div>
           </div>
 
-          {/* Mistake Type */}
           <div className="flex w-full flex-1 flex-col gap-3">
             <p className="text-sm font-bold uppercase text-ink">Mistake Type</p>
-
             <div className="flex flex-wrap gap-2">
               {TYPE_FILTERS.map((item) => (
                 <button
                   key={item}
                   onClick={() => setTypeFilter(item)}
-                  className={`h-[34px] rounded-full border px-4 text-[12px] font-medium transition-all ${typeFilter === item
-                    ? "border-brand bg-brand text-white"
-                    : isDark
-                      ? "border-muted text-white bg-transparent hover:bg-tint"
-                      : "border-brand text-ink bg-transparent hover:bg-tint"
-                    }`}
+                  className={`h-[34px] rounded-full border px-4 text-[12px] font-medium transition-all ${
+                    typeFilter === item
+                      ? "border-brand bg-brand text-white"
+                      : isDark
+                        ? "border-muted bg-transparent text-white hover:bg-tint"
+                        : "border-brand bg-transparent text-ink hover:bg-tint"
+                  }`}
                 >
-                  {item}
+                  {item === "All" ? "All" : MISTAKE_TAG_LABELS[item]}
                 </button>
               ))}
             </div>
@@ -249,50 +302,39 @@ export default function MistakeNotebookPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-brand/10 bg-surface p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="flex items-center gap-2 text-[12px] font-extrabold uppercase leading-4 tracking-[1.2px] text-[#F59E0B]">
-            <ClockIcon />
-            Due Today <span className="text-muted normal-case">(12)</span>
-          </p>
-
-          <div className="flex items-center gap-3">
-            <span className="text-[12px] font-bold leading-4 text-muted">Sort by</span>
-            <button
-              type="button"
-              className="flex h-[34px] items-center gap-3 rounded-xl border border-brand/15 px-4 text-[12px] font-bold leading-4 text-ink"
-            >
-              Due soon
-              <ChevronDownIcon className="h-4 w-4" />
-            </button>
+      {loading ? (
+        <p className="text-sm text-muted">Loading your notebook…</p>
+      ) : (
+        <>
+          <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+            <p className="flex items-center gap-2 text-[12px] font-extrabold uppercase leading-4 tracking-[1.2px] text-[#F59E0B]">
+              <ClockIcon />
+              Due Today <span className="normal-case text-muted">({dueToday.length})</span>
+            </p>
+            <div className="mt-4 flex flex-col gap-4">
+              {dueToday.length === 0 ? (
+                <p className="text-sm text-muted">Nothing due today. 🎉</p>
+              ) : (
+                dueToday.map((entry) => <MistakeRow key={entry.id} entry={entry} />)
+              )}
+            </div>
           </div>
-        </div>
 
-        <div className="mt-4 flex flex-col gap-4">
-          {DUE_TODAY.map((entry) => (
-            <MistakeRow key={entry.id} entry={entry} />
-          ))}
-        </div>
-
-        <button
-          type="button"
-          className="mt-3 w-full text-center text-sm font-semibold text-[#F59E0B] underline decoration-[#FED7AA]"
-        >
-          8 more due for review today
-        </button>
-      </div>
-
-      <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide">
-          <CalendarIcon />
-          Upcoming <span className="font-normal">(35)</span>
-        </p>
-        <div className="mt-4 flex flex-col gap-3">
-          {UPCOMING.map((entry) => (
-            <MistakeRow key={entry.id} entry={entry} />
-          ))}
-        </div>
-      </div>
+          <div className="rounded-2xl border border-brand/10 bg-surface p-5">
+            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide">
+              <CalendarIcon />
+              Upcoming <span className="font-normal">({upcoming.length})</span>
+            </p>
+            <div className="mt-4 flex flex-col gap-3">
+              {upcoming.length === 0 ? (
+                <p className="text-sm text-muted">No upcoming reviews.</p>
+              ) : (
+                upcoming.map((entry) => <MistakeRow key={entry.id} entry={entry} />)
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
