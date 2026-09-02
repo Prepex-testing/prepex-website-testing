@@ -35,6 +35,8 @@ export type MistakeEntryRef = {
   mistakeTags: MistakeTag[];
   studentNote: string | null;
   status: string;
+  reviewCount: number;
+  lastReviewedAt: string | null;
 };
 
 export type PracticeSessionQuestion = {
@@ -67,6 +69,26 @@ export type TaskQuestionsResponse = {
 export function getTaskQuestions(taskId: string) {
   return authRequest<{ success: true; data: TaskQuestionsResponse }>(
     `/tasks/${taskId}/questions`,
+  );
+}
+
+/** Student-facing questions for an existing session id (no plan task needed). */
+export function getSessionQuestions(sessionId: string) {
+  return authRequest<{ success: true; data: TaskQuestionsResponse }>(
+    `/sessions/${sessionId}/questions`,
+  );
+}
+
+/**
+ * Starts a Mistake Review practice session from one chapter's ACTIVE + due
+ * mistake-notebook entries, optionally narrowed to a single tag. A question
+ * with several tags appears in each tag's session until it is answered
+ * correctly in any of them, at which point it graduates out of the notebook.
+ */
+export function startMistakeSession(chapterId: string, tag?: MistakeTag) {
+  return authRequest<{ success: true; data: TaskQuestionsResponse }>(
+    `/mistakes/session`,
+    { method: "POST", body: JSON.stringify(tag ? { chapterId, tag } : { chapterId }) },
   );
 }
 
@@ -114,6 +136,8 @@ export type PracticeSessionDetail = {
   correctQuestions: number;
   wrongQuestions: number;
   skippedQuestions: number;
+  /** Count of questions flagged "mark for review" during the session. */
+  markedQuestions: number;
   accuracy: number | string | null;
   startedAt: string;
   completedAt: string | null;

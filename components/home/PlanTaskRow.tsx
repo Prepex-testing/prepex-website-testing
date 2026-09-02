@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ClockIcon, CalendarIcon, GripVerticalIcon } from "@/components/ui/icons";
 import { TaskEditMenu } from "@/components/home/TaskEditMenu";
@@ -8,6 +10,7 @@ import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE }
 import type { TaskType } from "@/components/home/TaskRow";
 import { Book, Time } from "@/assets/icons";
 import { getChapterTitle } from "@/lib/utils/text";
+import { getTaskQuestions } from "@/lib/api/practice";
 
 type Difficulty = "high" | "medium";
 
@@ -69,19 +72,39 @@ export function PlanTaskRow({
   onDragStart,
   onDrop,
 }: PlanTaskRowProps) {
+  const router = useRouter();
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false);
   const isStartPractice = task.type === "practice";
   const isStartRevision = task.type === "revision";
   const isSkipped = task.status === "SKIPPED";
   const isWellnessTask = task.isWellness;
+  // A finished practice task swaps its (disabled) "Practice Completed" chip for
+  // an active "View Analysis" button that opens the session breakdown.
+  const isPracticeDone = task.type === "practice" && Boolean(task.isCompleted) && !isSkipped;
   const isActionDisabled = task.isCompleted || isSkipped;
-  const isPrimaryActionDisabled = isActionDisabled || isWellnessTask;
-  const displayLabel = task.isCompleted
-    ? COMPLETED_ACTION_LABELS[task.type]
-    : isSkipped
-      ? "Skipped"
-      : isWellnessTask
-        ? "Wellness"
-        : task.actionLabel;
+  const isPrimaryActionDisabled = isPracticeDone ? false : isActionDisabled || isWellnessTask;
+  const displayLabel = isPracticeDone
+    ? loadingAnalysis
+      ? "Loading…"
+      : "View Analysis"
+    : task.isCompleted
+      ? COMPLETED_ACTION_LABELS[task.type]
+      : isSkipped
+        ? "Skipped"
+        : isWellnessTask
+          ? "Wellness"
+          : task.actionLabel;
+
+  const handleViewAnalysis = async () => {
+    if (loadingAnalysis) return;
+    setLoadingAnalysis(true);
+    try {
+      const res = await getTaskQuestions(task.id);
+      router.push(`/practice/complete?sessionId=${res.data.sessionId}`);
+    } catch {
+      setLoadingAnalysis(false);
+    }
+  };
 
   return (
     <div
@@ -178,11 +201,13 @@ export function PlanTaskRow({
                   : undefined
           }
           onClick={
-            isPrimaryActionDisabled
-              ? undefined
-              : isStartPractice
-                ? () => onStartPractice?.(task.id)
-                : undefined
+            isPracticeDone
+              ? handleViewAnalysis
+              : isPrimaryActionDisabled
+                ? undefined
+                : isStartPractice
+                  ? () => onStartPractice?.(task.id)
+                  : undefined
           }
         >
           {displayLabel}

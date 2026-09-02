@@ -10,6 +10,7 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { getTodayPlan } from "@/lib/api/planner";
 import {
   completePracticeSession,
+  getSessionQuestions,
   getTaskQuestions,
   optionEntries,
   prettyDifficulty,
@@ -45,11 +46,13 @@ function PracticeModeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const taskIdParam = searchParams.get("taskId");
+  const sessionIdParam = searchParams.get("sessionId");
 
   const [data, setData] = useState<TaskQuestionsResponse | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Remaining question queue (front = current). Skipping rotates to the back.
+  // Remaining question queue (front = current). Each question is shown once —
+  // answering or skipping removes it for good; the session ends when it drains.
   const [queue, setQueue] = useState<PracticeSessionQuestion[]>([]);
   const [lockedCount, setLockedCount] = useState(0);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -66,32 +69,64 @@ function PracticeModeContent() {
     let cancelled = false;
     (async () => {
       try {
-        let taskId = taskIdParam;
-        if (!taskId) {
-          const plan = await getTodayPlan();
-          const practiceTasks =
-            plan.data.plan?.tasks?.filter((t) => t.taskType === "PRACTICE") ?? [];
-          const practice =
-            practiceTasks.find((t) => t.status !== "COMPLETED" && t.status !== "SKIPPED") ??
-            practiceTasks[0];
-          if (!practice) {
-            if (!cancelled) setLoadError("No practice task scheduled for today.");
-            return;
+        let res: Awaited<ReturnType<typeof getTaskQuestions>>;
+        if (sessionIdParam) {
+          // Resume / play an existing session (e.g. a Mistake Review that has
+          // no plan task behind it).
+          res = await getSessionQuestions(sessionIdParam);
+        } else {
+          let taskId = taskIdParam;
+          if (!taskId) {
+            const plan = await getTodayPlan();
+            const practiceTasks =
+              plan.data.plan?.tasks?.filter((t) => t.taskType === "PRACTICE") ?? [];
+            const practice =
+              practiceTasks.find((t) => t.status !== "COMPLETED" && t.status !== "SKIPPED") ??
+              practiceTasks[0];
+            if (!practice) {
+              // Nothing to practise from here — send them to the sessions list
+              // rather than a dead-end error screen.
+              if (!cancelled) router.replace("/practice/sessions");
+              return;
+            }
+            taskId = practice.id;
           }
-          taskId = practice.id;
+          res = await getTaskQuestions(taskId);
         }
-        const res = await getTaskQuestions(taskId);
         if (cancelled) return;
-        const playable = res.data.questions.filter((q) => q.question !== null);
-        if (playable.length === 0) {
+
+        // Session already finished (student completed it earlier, or every
+        // question was answered/skipped) — never show an error, just take them
+        // to the analysis.
+        if (res.data.status === "COMPLETED") {
+          router.replace(`/practice/complete?sessionId=${res.data.sessionId}`);
+          return;
+        }
+
+        const withQuestion = res.data.questions.filter((q) => q.question !== null);
+        if (withQuestion.length === 0) {
           setLoadError("No practice questions are available for this task yet.");
+          return;
+        }
+
+        const answeredCount = res.data.questions.filter(
+          (q) => q.result === "CORRECT" || q.result === "WRONG",
+        ).length;
+        // Only queue questions not already answered in a prior visit — each is
+        // played exactly once per session.
+        const playable = withQuestion.filter(
+          (q) => q.result !== "CORRECT" && q.result !== "WRONG",
+        );
+        if (playable.length === 0) {
+          // In-progress session but nothing left to play — finalize and go
+          // straight to the analysis instead of surfacing an error.
+          await completePracticeSession(res.data.sessionId).catch(() => {});
+          router.replace(`/practice/complete?sessionId=${res.data.sessionId}`);
           return;
         }
         setData(res.data);
         setQueue(playable);
-        setLockedCount(
-          res.data.questions.filter((q) => q.result === "CORRECT" || q.result === "WRONG").length,
-        );
+        setLockedCount(answeredCount);
         questionStartRef.current = Date.now();
       } catch (err) {
         if (!cancelled) {
@@ -102,7 +137,7 @@ function PracticeModeContent() {
     return () => {
       cancelled = true;
     };
-  }, [taskIdParam]);
+  }, [taskIdParam, sessionIdParam, router]);
 
   // ---- continuous timer (PRD 121) --------------------------------------------
   useEffect(() => {
@@ -169,17 +204,32 @@ function PracticeModeContent() {
     });
   }, [data, current, selectedKey, submitting, markedIds, advanceQueue]);
 
-  // PRD 122 — Skip moves the question to the end of the session for retry.
-  const handleSkip = useCallback(() => {
-    if (!current || submitting) return;
+  // Skip records the question as SKIPPED and drops it from the session — it is
+  // never shown again, and the session ends once the queue drains.
+  const handleSkip = useCallback(async () => {
+    if (!data || !current || submitting || finishing) return;
+    setSubmitting(true);
+    const timeTakenSeconds = Math.max(1, Math.round((Date.now() - questionStartRef.current) / 1000));
+    try {
+      await submitPracticeAnswer(data.sessionId, {
+        questionId: current.questionId,
+        timeTakenSeconds,
+        markedForReview: markedIds.has(current.practiceSessionQuestionId),
+        skipped: true,
+      });
+    } catch (err) {
+      setSubmitting(false);
+      setLoadError(err instanceof Error ? err.message : "Could not skip this question.");
+      return;
+    }
+    setSubmitting(false);
+    setLockedCount((c) => c + 1);
     setQueue((q) => {
-      if (q.length <= 1) return q; // last one — nothing to rotate to
-      const next = [...q.slice(1), q[0]];
-      setSelectedKey(null);
-      questionStartRef.current = Date.now();
+      const next = q.slice(1);
+      advanceQueue(next);
       return next;
     });
-  }, [current, submitting]);
+  }, [data, current, submitting, finishing, markedIds, advanceQueue]);
 
   // PRD 123 — Mark for review flags the question without skipping.
   const handleToggleMark = useCallback(() => {
@@ -355,11 +405,13 @@ function PracticeModeContent() {
           <button
             type="button"
             onClick={handleSkip}
-            disabled={isLast || submitting}
+            disabled={submitting || finishing}
             className="flex h-8 items-center gap-3 text-muted transition-colors hover:text-ink disabled:opacity-30"
           >
             <span className="text-xl font-semibold">»</span>
-            <span className="text-[16px] font-bold leading-6">Skip Question</span>
+            <span className="text-[16px] font-bold leading-6">
+              {isLast ? "Skip & Finish" : "Skip Question"}
+            </span>
           </button>
         </div>
 

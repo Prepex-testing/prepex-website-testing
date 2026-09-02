@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -11,6 +11,7 @@ import {
   getMistakePatterns,
   listMistakes,
   MISTAKE_TAG_LABELS,
+  startMistakeSession,
   type MistakeListItem,
   type MistakePatternsResponse,
   type MistakeTag,
@@ -31,69 +32,93 @@ const TYPE_FILTERS: ("All" | MistakeTag)[] = [
   "WILD_GUESS",
 ];
 
-function daysAgo(iso: string | null): string {
-  if (!iso) return "Not reviewed yet";
-  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
-  if (diff <= 0) return "Reviewed today";
-  return `Last reviewed: ${diff} day${diff === 1 ? "" : "s"} ago`;
-}
+type DueTagGroup = {
+  key: string;
+  chapterId: string;
+  chapterName: string;
+  subjectName: string;
+  tag: MistakeTag | null;
+  entries: MistakeListItem[];
+  /** Earliest nextReviewDate in the group — shown in the "All Due" list. */
+  oldestDue: string;
+};
 
-function dueLabel(iso: string): { due: boolean; text: string } {
-  const target = new Date(iso).getTime();
-  const endOfToday = new Date();
-  endOfToday.setHours(23, 59, 59, 999);
-  if (target <= endOfToday.getTime()) return { due: true, text: "Due now" };
-  const days = Math.ceil((target - Date.now()) / 86_400_000);
-  return { due: false, text: `Due in ${days} day${days === 1 ? "" : "s"}` };
-}
+function DueTagRow({ group, showDate }: { group: DueTagGroup; showDate?: boolean }) {
+  const router = useRouter();
+  const [starting, setStarting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
-function MistakeRow({ entry }: { entry: MistakeListItem }) {
-  const subjectName = entry.chapter?.subject?.name ?? "";
-  const subjectLetter = subjectName.charAt(0).toUpperCase() || "?";
-  const chapterName = entry.chapter?.name ?? entry.topic;
-  const primaryTag = entry.mistakeTags[0];
-  const { due, text } = dueLabel(entry.nextReviewDate);
+  const subjectLetter = group.subjectName.charAt(0).toUpperCase() || "?";
+  const n = group.entries.length;
+  const dueOn = new Date(group.oldestDue).toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
+  const start = async () => {
+    if (starting) return;
+    setStarting(true);
+    setErr(null);
+    try {
+      const { data } = await startMistakeSession(group.chapterId, group.tag ?? undefined);
+      router.push(`/practice?sessionId=${data.sessionId}`);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Couldn't start practice.");
+      setStarting(false);
+    }
+  };
 
   return (
-    <div className="flex flex-col gap-5 rounded-[20px] border border-brand/10 p-5 sm:flex-row sm:items-center">
+    <div className="flex flex-col gap-4 rounded-[20px] border border-brand/10 p-5 sm:flex-row sm:items-center">
       <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-tint text-2xl font-black text-ink">
         {subjectLetter}
       </span>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <p className="flex flex-wrap items-center gap-2">
           <span className="text-[16px] font-bold leading-6 text-ink">
-            {chapterName} · {entry.topic}
+            {group.subjectName ? `${group.subjectName} · ` : ""}
+            {group.chapterName}
           </span>
-          {primaryTag && (
+          {group.tag ? (
             <span
-              className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.25px] ${TAG_STYLES[primaryTag]}`}
+              className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.25px] ${TAG_STYLES[group.tag]}`}
             >
-              {MISTAKE_TAG_LABELS[primaryTag]}
+              {MISTAKE_TAG_LABELS[group.tag]}
+            </span>
+          ) : (
+            <span className="rounded-full bg-tint px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.25px] text-muted">
+              Untagged
             </span>
           )}
-          <span className="text-[11px] font-medium leading-[16.5px] text-muted/70">
-            {daysAgo(entry.lastReviewedAt)}
+          <span className="rounded-full bg-tint-strong px-2 py-0.5 text-[11px] font-bold text-ink">
+            {n} question{n === 1 ? "" : "s"}
           </span>
+          {showDate && (
+            <span className="rounded-full bg-[rgba(245,158,11,0.1)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.25px] text-[#F59E0B]">
+              Due {dueOn}
+            </span>
+          )}
         </p>
-        <p className="text-[14px] font-medium italic leading-5 text-muted">
-          {entry.studentNote ? `“${entry.studentNote}”` : entry.question?.questionText ?? ""}
+        <p className="truncate text-[13px] font-medium text-muted">
+          {group.entries
+            .map((e) => e.topic)
+            .filter((v, i, a) => a.indexOf(v) === i)
+            .slice(0, 4)
+            .join(" · ")}
         </p>
+        {err && <p className="text-[12px] font-semibold text-danger">{err}</p>}
       </div>
 
-      <div className="flex shrink-0 items-center gap-3 pl-[76px] sm:pl-0">
-        {!due && (
-          <span className="rounded-full bg-tint-strong px-3 py-1 text-xs font-semibold text-ink">
-            {text}
-          </span>
-        )}
-        <Link
-          href={`/home/mistake-notebook/entry?id=${entry.id}`}
-          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[var(--button-border)] bg-surface px-4 text-[14px] font-semibold text-body-text transition-colors hover:border-[#FF7A59] hover:bg-[#FF7A59] hover:text-white"
-        >
-          {due ? "Review now" : "Open"}
-        </Link>
-      </div>
+      <button
+        type="button"
+        onClick={start}
+        disabled={starting}
+        className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-[var(--button-border)] bg-surface px-4 text-[14px] font-semibold text-body-text transition-colors hover:border-[#FF7A59] hover:bg-[#FF7A59] hover:text-white disabled:opacity-50"
+      >
+        {starting ? "Starting…" : "Start Practice"}
+      </button>
     </div>
   );
 }
@@ -146,13 +171,49 @@ export default function MistakeNotebookPage() {
     [items, subjectFilter, typeFilter],
   );
 
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
   const endOfToday = new Date();
   endOfToday.setHours(23, 59, 59, 999);
-  const dueToday = filtered.filter(
-    (i) => new Date(i.nextReviewDate).getTime() <= endOfToday.getTime(),
+
+  // Reviews scheduled for today vs everything already overdue from before today.
+  const dueToday = filtered.filter((i) => {
+    const t = new Date(i.nextReviewDate).getTime();
+    return t >= startOfToday.getTime() && t <= endOfToday.getTime();
+  });
+  const pastDue = filtered.filter(
+    (i) => new Date(i.nextReviewDate).getTime() < startOfToday.getTime(),
   );
-  const upcoming = filtered.filter(
-    (i) => new Date(i.nextReviewDate).getTime() > endOfToday.getTime(),
+
+  // chapter+tag grouping — one "Start Practice" row per tag; a multi-tagged
+  // mistake appears under each of its tags. `oldestDue` drives the date shown
+  // in the "All Due" section.
+  const groupByChapterTag = (list: MistakeListItem[]): DueTagGroup[] => {
+    const map = new Map<string, DueTagGroup>();
+    for (const e of list) {
+      const tags: (MistakeTag | null)[] = e.mistakeTags.length ? e.mistakeTags : [null];
+      for (const tag of tags) {
+        const key = `${e.chapterId}::${tag ?? "_"}`;
+        const g = map.get(key) ?? {
+          key,
+          chapterId: e.chapterId,
+          chapterName: e.chapter?.name ?? e.topic,
+          subjectName: e.chapter?.subject?.name ?? "",
+          tag,
+          entries: [],
+          oldestDue: e.nextReviewDate,
+        };
+        g.entries.push(e);
+        if (new Date(e.nextReviewDate) < new Date(g.oldestDue)) g.oldestDue = e.nextReviewDate;
+        map.set(key, g);
+      }
+    }
+    return [...map.values()];
+  };
+
+  const dueGroups = groupByChapterTag(dueToday);
+  const pastDueGroups = groupByChapterTag(pastDue).sort(
+    (a, b) => new Date(a.oldestDue).getTime() - new Date(b.oldestDue).getTime(),
   );
 
   return (
@@ -312,24 +373,31 @@ export default function MistakeNotebookPage() {
               Due Today <span className="normal-case text-muted">({dueToday.length})</span>
             </p>
             <div className="mt-4 flex flex-col gap-4">
-              {dueToday.length === 0 ? (
+              {dueGroups.length === 0 ? (
                 <p className="text-sm text-muted">Nothing due today. 🎉</p>
               ) : (
-                dueToday.map((entry) => <MistakeRow key={entry.id} entry={entry} />)
+                dueGroups.map((group) => (
+                  <DueTagRow key={group.key} group={group} />
+                ))
               )}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide">
+          <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+            <p className="flex items-center gap-2 text-[12px] font-extrabold uppercase leading-4 tracking-[1.2px] text-[#F59E0B]">
               <CalendarIcon />
-              Upcoming <span className="font-normal">({upcoming.length})</span>
+              All Due <span className="normal-case text-muted">({pastDueGroups.length})</span>
             </p>
-            <div className="mt-4 flex flex-col gap-3">
-              {upcoming.length === 0 ? (
-                <p className="text-sm text-muted">No upcoming reviews.</p>
+            <p className="mt-1 text-[12px] text-muted">
+              Mistake practices that fell due before today — oldest first.
+            </p>
+            <div className="mt-4 flex flex-col gap-4">
+              {pastDueGroups.length === 0 ? (
+                <p className="text-sm text-muted">Nothing overdue. You&apos;re caught up.</p>
               ) : (
-                upcoming.map((entry) => <MistakeRow key={entry.id} entry={entry} />)
+                pastDueGroups.map((group) => (
+                  <DueTagRow key={group.key} group={group} showDate />
+                ))
               )}
             </div>
           </div>
