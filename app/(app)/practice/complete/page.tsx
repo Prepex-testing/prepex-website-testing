@@ -1,21 +1,20 @@
 "use client";
+
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { UserMenu } from "@/components/layout/UserMenu";
-
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
-import {
-  BellIcon,
-  // ClockIcon,
-  TargetIcon,
-  CheckCircleIcon,
-  AlertTriangleIcon,
-  // BoltIcon,
-} from "@/components/ui/icons";
+import { BellIcon, CheckCircleIcon, AlertTriangleIcon } from "@/components/ui/icons";
 import { LayersIcon, ClockIcon, VectorIcon } from "@/assets/icons";
+import {
+  getPracticeSession,
+  type PracticeSessionDetail,
+  type PracticeTopicAnalysis,
+} from "@/lib/api/practice";
+
 type Mastery = "mastered" | "on-track" | "needs-work" | "critical";
 
 const MASTERY_STYLES: Record<
@@ -48,12 +47,14 @@ const MASTERY_STYLES: Record<
   },
 };
 
-const SKILLS = [
-  { name: "Tangents", correct: 3, total: 3, mastery: "mastered" as Mastery },
-  { name: "Equations", correct: 2, total: 3, mastery: "on-track" as Mastery },
-  { name: "Common Tangents", correct: 0, total: 3, mastery: "critical" as Mastery },
-  { name: "Family of Circles", correct: 2, total: 3, mastery: "needs-work" as Mastery },
-];
+function masteryOf(topic: PracticeTopicAnalysis): Mastery {
+  const pct =
+    topic.totalQuestions > 0 ? (topic.correctQuestions / topic.totalQuestions) * 100 : 0;
+  if (topic.weaknessDetected || pct < 40) return "critical";
+  if (pct < 65) return "needs-work";
+  if (pct < 100) return "on-track";
+  return "mastered";
+}
 
 export default function PracticeCompletePage() {
   return (
@@ -66,12 +67,52 @@ export default function PracticeCompletePage() {
 function PracticeCompleteContent() {
   const { resolvedTheme } = useTheme();
   const searchParams = useSearchParams();
-  const correct = Number(searchParams.get("correct") ?? 7);
-  const total = Number(searchParams.get("total") ?? 12);
-  const elapsedSeconds = Number(searchParams.get("time") ?? 18 * 60);
-  const minutes = Math.round(elapsedSeconds / 60);
-  const avgPerQuestion = total > 0 ? (elapsedSeconds / 60 / total).toFixed(1) : "0";
+  const sessionId = searchParams.get("sessionId");
+
+  const [session, setSession] = useState<PracticeSessionDetail | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const error = fetchError ?? (sessionId ? null : "No session specified.");
+
+  useEffect(() => {
+    if (!sessionId) return;
+    let cancelled = false;
+    getPracticeSession(sessionId)
+      .then((res) => !cancelled && setSession(res.data))
+      .catch(
+        (err) =>
+          !cancelled &&
+          setFetchError(err instanceof Error ? err.message : "Could not load your results."),
+      );
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId]);
+
+  const correct = session?.correctQuestions ?? 0;
+  const total = session?.totalQuestions ?? 0;
+  const wrong = session?.wrongQuestions ?? 0;
+  const attempted = session?.attemptedQuestions ?? 0;
+  const elapsedSeconds = session?.durationSeconds ?? 0;
+  const minutes = Math.max(1, Math.round(elapsedSeconds / 60));
+  const avgPerQuestion = attempted > 0 ? (elapsedSeconds / 60 / attempted).toFixed(1) : "0";
   const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+  const topics = session?.topicAnalysis ?? [];
+  const chapterLabel =
+    session?.questions.find((q) => q.question)?.question?.topic ?? "Practice";
+  const weakTopic = topics.find((t) => masteryOf(t) === "critical" || t.weaknessDetected);
+
+  if (error) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 p-8 text-center">
+        <p className="text-h2 text-ink">Results unavailable</p>
+        <p className="max-w-md text-sm text-muted">{error}</p>
+        <Button href="/plan" variant="secondary" size="sm">
+          Back to plan
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -90,127 +131,133 @@ function PracticeCompleteContent() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-6">
-        {/* Score card */}
-        <div className="flex flex-wrap items-center justify-between gap-6 rounded-2xl border border-brand/10 bg-surface p-6">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <span className="mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg  bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
-                <LayersIcon />
-              </span>
-              <h2 className="text-[40px] font-extrabold leading-10 tracking-[-1px] text-ink whitespace-nowrap">
-                {correct} / {total} Correct
-              </h2>
-            </div>
-
+      {!session ? (
+        <p className="text-sm text-muted">Loading your results…</p>
+      ) : (
+        <div className="flex flex-col gap-6">
+          {/* Score card */}
+          <div className="flex flex-wrap items-center justify-between gap-6 rounded-2xl border border-brand/10 bg-surface p-6">
             <div className="flex flex-col gap-3">
-              <p className="text-[20px] font-bold leading-7  text-muted">
-                Maths · Coordinate Geometry
-              </p>
-
-              <div className="flex items-center gap-3 text-[15px] font-medium text-muted">
-                <ClockIcon />
-                <span>
-                  Time: {minutes} min · Avg {avgPerQuestion} min/Q
+              <div className="flex items-center gap-2">
+                <span className="mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+                  <LayersIcon />
                 </span>
+                <h2 className="text-[40px] font-extrabold leading-10 tracking-[-1px] text-ink whitespace-nowrap">
+                  {correct} / {total} Correct
+                </h2>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <p className="text-[20px] font-bold leading-7 text-muted">{chapterLabel}</p>
+                <div className="flex items-center gap-3 text-[15px] font-medium text-muted">
+                  <ClockIcon />
+                  <span>
+                    Time: {minutes} min · Avg {avgPerQuestion} min/Q
+                  </span>
+                </div>
               </div>
             </div>
+
+            <CircularProgress
+              percent={Math.max(percent, 2)}
+              displayValue={percent}
+              size={128}
+              progressColor={resolvedTheme === "dark" ? "#ffffff" : "#1A1A4E"}
+            />
           </div>
 
-          <CircularProgress
-            percent={Math.max(percent, 2)}
-            displayValue={percent}
-            size={128}
-            progressColor={resolvedTheme === "dark" ? "#ffffff" : "#1A1A4E"}
-          />
-        </div>
+          {/* Performance breakdown */}
+          <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+            <div className="flex items-center justify-between border-b border-tint-strong pb-5">
+              <p className="text-[13px] font-bold uppercase tracking-[1.95px] text-ink">
+                Performance Breakdown
+              </p>
+              <span className="rounded-2xl bg-tint px-3 py-1 text-caption font-semibold uppercase text-ink dark:bg-white dark:text-[#1A1A4E]">
+                Skill Analytics
+              </span>
+            </div>
 
-        {/* Performance breakdown */}
-        <div className="rounded-2xl border border-brand/10 bg-surface p-6">
-          <div className="flex items-center justify-between border-b border-tint-strong pb-5">
-            <p className="text-[13px] font-bold uppercase tracking-[1.95px] text-ink">
-              Performance Breakdown
-            </p>
-            <span className="rounded-2xl bg-tint px-3 py-1 text-caption font-semibold uppercase text-ink dark:bg-white dark:text-[#1A1A4E]">
-              Skill Analytics
-            </span>
-          </div>
+            {topics.length === 0 ? (
+              <p className="pt-6 text-sm text-muted">
+                No per-topic breakdown — not enough attempted questions.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-3 pt-6">
+                {topics.map((topic) => {
+                  const skillPercent =
+                    topic.totalQuestions > 0
+                      ? Math.round((topic.correctQuestions / topic.totalQuestions) * 100)
+                      : 0;
+                  const mastery = masteryOf(topic);
+                  const style = MASTERY_STYLES[mastery];
+                  const isWarning = mastery === "needs-work" || mastery === "critical";
 
-          <div className="flex flex-col gap-3 pt-6">
-            {SKILLS.map((skill) => {
-              const skillPercent = Math.round((skill.correct / skill.total) * 100);
-              const style = MASTERY_STYLES[skill.mastery];
-              const isCritical = skill.mastery === "critical";
-              const isWarning = skill.mastery === "needs-work" || isCritical;
-
-              return (
-                <div
-                  key={skill.name}
-                  className={`flex items-center justify-between rounded-2xl border p-5 ${style.rowClass}`}
-                >
-                  <p className="text-[18px] font-bold text-body-text">{skill.name}</p>
-
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`flex items-center gap-1 rounded-full px-3 py-1 text-[13px] font-bold ${style.badgeBg} ${style.badgeText}`}
-                      >
-                        {isWarning ? <AlertTriangleIcon /> : <CheckCircleIcon />}
-                        {skill.correct}/{skill.total}
-                      </span>
-                      {isCritical && (
-                        <span className="text-[#F59E0B]">
-                          <AlertTriangleIcon />
+                  return (
+                    <div
+                      key={topic.id}
+                      className={`flex items-center justify-between rounded-2xl border p-5 ${style.rowClass}`}
+                    >
+                      <p className="text-[18px] font-bold text-body-text">{topic.topic}</p>
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`flex items-center gap-1 rounded-full px-3 py-1 text-[13px] font-bold ${style.badgeBg} ${style.badgeText}`}
+                        >
+                          {isWarning ? <AlertTriangleIcon /> : <CheckCircleIcon />}
+                          {topic.correctQuestions}/{topic.totalQuestions}
                         </span>
-                      )}
+                        <span
+                          className={`w-12 text-right text-[15px] font-bold ${style.percentText}`}
+                        >
+                          {skillPercent}%
+                        </span>
+                      </div>
                     </div>
-                    <span className={`w-12 text-right text-[15px] font-bold ${style.percentText}`}>
-                      {skillPercent}%
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            )}
           </div>
-        </div>
 
-        {/* Next focus */}
-        <div className="rounded-2xl border border-brand/10 bg-surface p-6">
-          <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[rgba(245,158,11,0.1)] text-[#F59E0B]">
-              <VectorIcon className="w-5 h-5" />
-            </span>
-            <p className="text-caption font-extrabold uppercase tracking-[1.2px] text-[#F59E0B]">
-              Next Focus
+          {/* Weakness + mistake notebook (PRD 5.5.1) */}
+          <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+            <div className="flex items-center gap-2">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[rgba(245,158,11,0.1)] text-[#F59E0B]">
+                <VectorIcon className="h-5 w-5" />
+              </span>
+              <p className="text-caption font-extrabold uppercase tracking-[1.2px] text-[#F59E0B]">
+                {weakTopic ? "Weakness Detected" : "Next Focus"}
+              </p>
+            </div>
+
+            <h3 className="mt-3 text-[18px] font-bold text-body-text">
+              {weakTopic ? `${weakTopic.topic} needs work` : "Solid session — keep the streak"}
+            </h3>
+
+            <p className="mt-2 text-[15px] leading-6 text-muted">
+              {wrong > 0
+                ? `${wrong} question${wrong === 1 ? "" : "s"} added to your Mistake Notebook. Tomorrow's plan is updated.`
+                : "No wrong answers — nothing added to your Mistake Notebook."}
             </p>
           </div>
 
-          <h3 className="mt-3 text-[18px] font-bold text-body-text">Gap to close</h3>
-
-          <p className="mt-1 text-[15px] leading-6 text-muted">
-            The trouble was finding circle intersections. Three more focused attempts and
-            you&apos;ll have it.
-          </p>
+          {/* Actions */}
+          <div className="flex flex-col gap-5">
+            <Button
+              href={`/practice/analysis?sessionId=${sessionId}`}
+              className="h-17 rounded-2xl bg-cta text-[18px] font-bold text-white hover:bg-cta"
+            >
+              View Question by Question Analysis
+            </Button>
+            <Button
+              href={`/practice/analysis?sessionId=${sessionId}&solutions=1`}
+              variant="secondary"
+              className="h-18 rounded-2xl border-2 border-ink bg-transparent text-[18px] font-bold text-ink hover:bg-tint-strong"
+            >
+              View Solutions
+            </Button>
+          </div>
         </div>
-
-        {/* Actions */}
-        <div className="flex flex-col gap-5">
-          <Button
-            href="/practice/analysis"
-            className="h-17 rounded-2xl bg-cta text-[18px] font-bold text-white hover:bg-cta"
-          >
-            View Question by Question Analysis
-          </Button>
-
-          <Button
-            href="/practice/analysis"
-            variant="secondary"
-            className="h-18 rounded-2xl border-2 border-ink bg-transparent text-[18px] font-bold text-ink hover:bg-tint-strong"
-          >
-            View Solution
-          </Button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

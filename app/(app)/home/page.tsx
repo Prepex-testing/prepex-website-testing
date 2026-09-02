@@ -292,6 +292,7 @@ export default function HomePage() {
   const firstName = storedFullName.trim().split(/\s+/)[0] || "there";
   const [isQuickFocusOpen, setQuickFocusOpen] = useState(false);
   const [isPracticeModalOpen, setPracticeModalOpen] = useState(false);
+  const [practiceTaskId, setPracticeTaskId] = useState<string | null>(null);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
   const [isRegenerateOpen, setRegenerateOpen] = useState(false);
   const [isCheckInOpen, setCheckInOpen] = useState(false);
@@ -761,7 +762,10 @@ export default function HomePage() {
                       <TaskRow
                         key={task.id}
                         task={task}
-                        onStartPractice={() => setPracticeModalOpen(true)}
+                        onStartPractice={(taskId) => {
+                          setPracticeTaskId(taskId);
+                          setPracticeModalOpen(true);
+                        }}
                         onTaskChanged={refetchPlan}
                       />
                     ))}
@@ -1092,7 +1096,7 @@ export default function HomePage() {
         onClose={() => setPracticeModalOpen(false)}
         onStart={() => {
           setPracticeModalOpen(false);
-          router.push("/practice");
+          router.push(practiceTaskId ? `/practice?taskId=${practiceTaskId}` : "/practice");
         }}
       />
 
