@@ -112,6 +112,12 @@ export type CheckInStatus = {
   dailyHours?: number;
   /** True for the entire user's second day on the app — drives the one-time "why we ask this" popup. */
   isSecondDay?: boolean;
+  isBacklogAvailable: boolean;
+  latestBacklog: {
+    title: string;
+    addedAt: string;
+    daysOverdue: number;
+  } | null;
 };
 
 export function getCheckInStatus() {

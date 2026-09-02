@@ -243,10 +243,11 @@ function formatWindow(window: string | null | undefined) {
 }
 
 function toHomeTask(task: PlannerTask): Task {
+  const isSundayDpp = task.taskType === "PRACTICE" && task.title === "DPP Sunday" && !task.chapter;
   return {
     id: task.id,
-    subjectLabel: task.subject?.code?.[0] ?? "W",
-    subjectName: task.subject?.name ?? "Wellness",
+    subjectLabel: isSundayDpp ? "DPP" : task.subject?.code?.[0] ?? "W",
+    subjectName: isSundayDpp ? "DPP" : task.subject?.name ?? "Wellness",
     type: TASK_TYPE_STYLE[task.taskType] ?? "new-learning",
     title: task.title,
     meta: task.description ?? task.chapter?.name ?? "",
@@ -315,6 +316,10 @@ export default function HomePage() {
   >(null);
   const [inquiryId, setInquiryId] = useState<string | null>(null);
   const [lastCheckinDate, setLastCheckinDate] = useState("");
+  const [backlogStatus, setBacklogStatus] = useState<{
+    isAvailable: boolean;
+    latest: { title: string; daysOverdue: number } | null;
+  }>({ isAvailable: false, latest: null });
   const hasPromptedBurnout = useRef(false);
   const isFriday = useSyncExternalStore(
     subscribeNoop,
@@ -356,6 +361,10 @@ export default function HomePage() {
         );
         setRecoveryWeekDay(bs?.recoveryWeek?.day ?? 0);
         setLastCheckinDate(data.checkinDate);
+        setBacklogStatus({
+          isAvailable: data.isBacklogAvailable,
+          latest: data.latestBacklog,
+        });
         maybePromptBurnout(bs, data.checkinDate);
         const moodValue = data.checkin?.mood;
         if (moodValue) {
@@ -999,6 +1008,7 @@ export default function HomePage() {
         </div>
       </div>
 
+      {backlogStatus.isAvailable && backlogStatus.latest && (
       <div className="flex flex-col gap-4 rounded-2xl border border-[#F59E0B] bg-[#FFFBEB] p-6 dark:border-transparent! dark:bg-[#111145] sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-[#F59E0B] shadow-[0px_1px_2px_0px_#0000000D]">
@@ -1006,7 +1016,7 @@ export default function HomePage() {
           </span>
           <div className="min-w-0">
             <p className="text-sm font-bold text-[#F59E0B]">Backlog Alert</p>
-            <p className="text-xs text-[rgba(70,70,80,0.7)] dark:text-[#FAF7F2]!">Thermodynamics • Pending for 3 days</p>
+            <p className="text-xs text-[rgba(70,70,80,0.7)] dark:text-[#FAF7F2]!"><span className="truncate">{backlogStatus.latest.title}</span> • Pending for {backlogStatus.latest.daysOverdue} days</p>
           </div>
         </div>
         <Button
@@ -1018,6 +1028,7 @@ export default function HomePage() {
           Review Now
         </Button>
       </div>
+      )}
 
       <ConfirmModal
         open={isEndRecoveryOpen}
