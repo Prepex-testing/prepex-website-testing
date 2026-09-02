@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -14,18 +13,6 @@ import { FileIcon, SparkleIcon, TrendingUpIcon } from "@/components/ui/icons";
 import { getMockById, type MockAnalysisItem } from "@/lib/api/mock";
 import type { ReactNode } from "react";
 import { PercentileGauge } from "@/components/ui/PercentileGauge";
-
-// Animation presets
-const fadeIn = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0 },
-};
-
-const fadeTransition = {
-  duration: 0.25,
-  ease: [0.4, 0, 0.2, 1] as const,
-};
 
 /** e.g. "20 Aug 2026, Thu" */
 function formatTestDate(iso: string): string {
@@ -79,11 +66,7 @@ function ViewAnalyticsContent() {
   }, [mockId]);
 
   const header = (
-    <motion.div
-      {...fadeIn}
-      transition={{ ...fadeTransition, duration: 0.3 }}
-      className="flex flex-wrap items-center justify-between gap-3"
-    >
+    <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex items-center gap-3">
         <Link href="/home/mock-analysis" aria-label="Back to Mock Analysis" className="text-ink">
           <ArrowLeftIcon />
@@ -101,61 +84,41 @@ function ViewAnalyticsContent() {
         </button>
         <UserMenu />
       </div>
-    </motion.div>
+    </div>
   );
 
   if (!mockId) {
     return (
-      <motion.div
-        {...fadeIn}
-        transition={{ ...fadeTransition, duration: 0.35 }}
-        className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8"
-      >
+      <div className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8">
         {header}
-        <motion.p
-          {...fadeIn}
-          transition={{ ...fadeTransition, delay: 0.05 }}
-          className="text-sm text-muted"
-        >
+        <p className="text-sm text-muted">
           No mock selected. Go back to{" "}
           <Link href="/home/mock-analysis" className="font-semibold text-cta">
             Mock Analysis
           </Link>{" "}
           and pick one to view.
-        </motion.p>
-      </motion.div>
+        </p>
+      </div>
     );
   }
 
   // Loading state - just show header without any loading message
   if (isLoading) {
     return (
-      <motion.div
-        {...fadeIn}
-        transition={{ ...fadeTransition, duration: 0.35 }}
-        className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8"
-      >
+      <div className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8">
         {header}
-      </motion.div>
+      </div>
     );
   }
 
   if (error || !mock) {
     return (
-      <motion.div
-        {...fadeIn}
-        transition={{ ...fadeTransition, duration: 0.35 }}
-        className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8"
-      >
+      <div className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8">
         {header}
-        <motion.p
-          {...fadeIn}
-          transition={{ ...fadeTransition, delay: 0.05 }}
-          className="py-8 text-center text-sm text-warning"
-        >
+        <p className="py-8 text-center text-sm text-warning">
           {error ?? "Couldn't load this mock's analysis."}
-        </motion.p>
-      </motion.div>
+        </p>
+      </div>
     );
   }
 
@@ -197,36 +160,22 @@ function ViewAnalyticsContent() {
     mock.subjectAnalysis.some((subject) => subject.timeTakenMinutes == null);
 
   return (
-    <motion.div
-      {...fadeIn}
-      transition={{ ...fadeTransition, duration: 0.35 }}
-      className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8"
-    >
+    <div className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8">
       {header}
 
-      <AnimatePresence>
-        {!hasScore && (
-          <motion.div
-            {...fadeIn}
-            transition={{ ...fadeTransition, delay: 0.05 }}
-            className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand/10 bg-tint-strong px-6 py-4"
-          >
-            <p className="text-sm text-ink">
-              This mock hasn&apos;t been scored yet — add your score to see the full analysis.
-            </p>
-            <Button href={`/home/mock-analysis/upload-scorecard?id=${mock.id}`} variant="secondary" size="sm">
-              Upload Score
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {!hasScore && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand/10 bg-tint-strong px-6 py-4">
+          <p className="text-sm text-ink">
+            This mock hasn&apos;t been scored yet — add your score to see the full analysis.
+          </p>
+          <Button href={`/home/mock-analysis/upload-scorecard?id=${mock.id}`} variant="secondary" size="sm">
+            Upload Score
+          </Button>
+        </div>
+      )}
 
       {/* Mock summary card */}
-      <motion.div
-        {...fadeIn}
-        transition={{ ...fadeTransition, delay: 0.05 }}
-        className="flex flex-col gap-6 rounded-[24px] border border-brand/10 bg-surface px-[24px] pt-[32px] pb-[24px] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)] sm:flex-row sm:items-center sm:justify-between"
-      >
+      <div className="flex flex-col gap-6 rounded-[24px] border border-brand/10 bg-surface px-[24px] pt-[32px] pb-[24px] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)] sm:flex-row sm:items-center sm:justify-between">
         {/* Left Section */}
         <div className="flex items-center gap-5">
           <div
@@ -243,13 +192,8 @@ function ViewAnalyticsContent() {
 
         {/* Right Section */}
         <div className="flex flex-wrap gap-4 sm:gap-[64px]">
-          {headerStats.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              {...fadeIn}
-              transition={{ ...fadeTransition, delay: 0.08 + index * 0.03 }}
-              className="flex flex-col"
-            >
+          {headerStats.map((stat) => (
+            <div key={stat.label} className="flex flex-col">
               <span
                 className="text-[14px] font-medium leading-[20px] text-muted"
                 style={isDark ? { color: "var(--ink)" } : undefined}
@@ -270,23 +214,15 @@ function ViewAnalyticsContent() {
                   {stat.value}
                 </span>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
-      </motion.div>
+      </div>
 
       {/* Score Cards Grid */}
-      <motion.div
-        {...fadeIn}
-        transition={{ ...fadeTransition, delay: 0.1 }}
-        className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
-      >
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-2">
         {/* Total Score Card */}
-        <motion.div
-          {...fadeIn}
-          transition={{ ...fadeTransition, delay: 0.12 }}
-          className="flex flex-col items-center rounded-[16px] border border-brand/10 bg-surface px-[32px] pt-[28px] pb-[24px] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]"
-        >
+        <div className="flex flex-col items-center rounded-[16px] border border-brand/10 bg-surface px-[32px] pt-[28px] pb-[24px] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
           <p className="text-[18px] font-bold uppercase leading-[28px] tracking-[0.5px] text-muted">
             Total Score
           </p>
@@ -317,14 +253,10 @@ function ViewAnalyticsContent() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Accuracy Card */}
-        <motion.div
-          {...fadeIn}
-          transition={{ ...fadeTransition, delay: 0.15 }}
-          className="flex flex-col items-center rounded-[16px] border border-brand/10 bg-surface px-[32px] py-[28px] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]"
-        >
+        <div className="flex flex-col items-center rounded-[16px] border border-brand/10 bg-surface px-[32px] py-[28px] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
           <CircularProgress
             percent={accuracyPercent}
             size={140}
@@ -335,16 +267,12 @@ function ViewAnalyticsContent() {
             }
           />
           <p className="mt-5 text-[16px] font-semibold leading-none text-muted">
-            Accuracy
+            Percentile
           </p>
-        </motion.div>
+        </div>
 
         {/* Percentile Card */}
-        <motion.div
-          {...fadeIn}
-          transition={{ ...fadeTransition, delay: 0.18 }}
-          className="flex flex-col items-center justify-center rounded-[16px] border border-brand/10 bg-surface px-8 py-7 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]"
-        >
+        {/* <div className="flex flex-col items-center justify-center rounded-[16px] border border-brand/10 bg-surface px-8 py-7 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
           <PercentileGauge
             value={82}
             size={250}
@@ -354,11 +282,59 @@ function ViewAnalyticsContent() {
           <p className="-mt-3 text-[16px] font-semibold text-muted">
             Percentile
           </p>
-        </motion.div>
-      </motion.div>
+        </div> */}
+      </div>
 
-      {/* AI Insight */}
-      <motion.div
+      {/* Subject Performance + Subject-wise Test Strategy */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {/* Subject Performance */}
+        {subjectPerformance.length > 0 && (
+          <div className="flex flex-col gap-6 rounded-2xl border border-brand/10 bg-surface p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
+            <p className="text-sm font-bold uppercase tracking-[0.4px] text-ink">
+              Subject Performance
+            </p>
+
+            <div className="flex flex-col gap-4">
+              {subjectPerformance.map((subject) => (
+                <div
+                  key={subject.id}
+                  className="flex flex-col gap-2"
+                >
+                  <span className="text-[10px] font-bold uppercase tracking-wide text-muted">
+                    {subject.label}
+                  </span>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-bold">
+                      <span className="text-ink">
+                        {subject.score}
+                      </span>
+                      <span className="text-muted/50">
+                        /{subject.maxScore}
+                      </span>
+                    </span>
+
+                    <span className="flex items-center gap-1 font-bold text-ink">
+                      <span>{subject.percent}%</span>
+                    </span>
+                  </div>
+
+                  <div className="h-1.5 rounded-full bg-tint-strong">
+                    <div
+                      className="h-1.5 rounded-full bg-brand dark:bg-[#FAF7F2]"
+                      style={{
+                        width: `${subject.percent}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* AI Insight */}
+        {/* <motion.div
         {...fadeIn}
         transition={{ ...fadeTransition, delay: 0.22 }}
         className="flex items-start gap-4 rounded-2xl border border-brand/20 bg-surface p-6"
@@ -380,183 +356,103 @@ function ViewAnalyticsContent() {
             in Chemistry.
           </p>
         </div>
-      </motion.div>
-
-      {/* Subject Performance + Subject-wise Test Strategy */}
-      <motion.div
-        {...fadeIn}
-        transition={{ ...fadeTransition, delay: 0.25 }}
-        className="grid grid-cols-1 gap-6 md:grid-cols-2"
-      >
-        {/* Subject Performance */}
-        <AnimatePresence>
-          {subjectPerformance.length > 0 && (
-            <motion.div
-              {...fadeIn}
-              transition={{ ...fadeTransition, delay: 0.28 }}
-              className="flex flex-col gap-6 rounded-2xl border border-brand/10 bg-surface p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]"
-            >
-              <p className="text-sm font-bold uppercase tracking-[0.4px] text-ink">
-                Subject Performance
-              </p>
-
-              <div className="flex flex-col gap-4">
-                {subjectPerformance.map((subject, index) => (
-                  <motion.div
-                    key={subject.id}
-                    {...fadeIn}
-                    transition={{ ...fadeTransition, delay: 0.3 + index * 0.03 }}
-                    className="flex flex-col gap-2"
-                  >
-                    <span className="text-[10px] font-bold uppercase tracking-wide text-muted">
-                      {subject.label}
-                    </span>
-
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-bold">
-                        <span className="text-ink">
-                          {subject.score}
-                        </span>
-                        <span className="text-muted/50">
-                          /{subject.maxScore}
-                        </span>
-                      </span>
-
-                      <span className="flex items-center gap-1 font-bold text-ink">
-                        <span>{subject.percent}%</span>
-                      </span>
-                    </div>
-
-                    <div className="h-1.5 rounded-full bg-tint-strong">
-                      <div
-                        className="h-1.5 rounded-full bg-brand"
-                        style={{
-                          width: `${subject.percent}%`,
-                        }}
-                      />
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      </motion.div> */}
 
         {/* Subject-wise Test Strategy */}
-        <AnimatePresence>
-          {subjectTestStrategy.length > 0 && (
-            <motion.div
-              {...fadeIn}
-              transition={{ ...fadeTransition, delay: 0.32 }}
-              className="flex flex-col gap-6 rounded-2xl border border-brand/10 bg-surface p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]"
+        {subjectTestStrategy.length > 0 && (
+          <div className="flex flex-col gap-6 rounded-2xl border border-brand/10 bg-surface p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
+            <p className="text-sm font-bold uppercase tracking-[0.4px] text-ink">
+              Subject-wise Test Strategy
+            </p>
+
+            <div className="flex flex-col gap-4">
+              {subjectTestStrategy.map((subject, index) => {
+                const percent =
+                  subject.timeTakenMinutes != null
+                    ? Math.round(
+                      (subject.timeTakenMinutes / maxSubjectTime) * 100,
+                    )
+                    : 0;
+
+                return (
+                  <div
+                    key={subject.id}
+                    className="flex items-center gap-3"
+                  >
+                    <span
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ink text-xs font-bold text-white dark:text-background"
+                    >
+                      {index + 1}
+                    </span>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-sm font-semibold text-ink">
+                          {subject.label}
+                        </span>
+
+                        <span className="shrink-0 text-right leading-tight">
+                          <span className="block text-xs font-bold text-ink">
+                            {subject.timeTakenMinutes != null
+                              ? `${subject.timeTakenMinutes} min`
+                              : "—"}
+                          </span>
+
+                          {subject.testDurationMinutes != null && (
+                            <span className="block text-[11px] text-muted">
+                              of {subject.testDurationMinutes} min
+                            </span>
+                          )}
+                        </span>
+                      </div>
+
+                      <div className="mt-1 h-1.5 rounded-full bg-tint-strong">
+                        <div
+                          className="h-1.5 rounded-full bg-brand"
+                          style={{
+                            width: `${percent}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Strategy Note */}
+            <div
+              className={`w-full max-w-[320px] rounded-lg border p-4 ${isDark
+                ? "border-brand/10 bg-[var(--sub)]"
+                : "border-brand/10 bg-tint-strong"
+                }`}
             >
-              <p className="text-sm font-bold uppercase tracking-[0.4px] text-ink">
-                Subject-wise Test Strategy
+              <p className="text-[11px] font-bold uppercase tracking-[1.1px] text-ink">
+                Strategy Note
               </p>
 
-              <div className="flex flex-col gap-4">
-                {subjectTestStrategy.map((subject, index) => {
-                  const percent =
-                    subject.timeTakenMinutes != null
-                      ? Math.round(
-                        (subject.timeTakenMinutes / maxSubjectTime) * 100,
-                      )
-                      : 0;
-
-                  return (
-                    <motion.div
-                      key={subject.id}
-                      {...fadeIn}
-                      transition={{ ...fadeTransition, delay: 0.34 + index * 0.03 }}
-                      className="flex items-center gap-3"
-                    >
-                      <span
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ink text-xs font-bold text-white dark:text-background"
-                      >
-                        {index + 1}
-                      </span>
-
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="text-sm font-semibold text-ink">
-                            {subject.label}
-                          </span>
-
-                          <span className="shrink-0 text-right leading-tight">
-                            <span className="block text-xs font-bold text-ink">
-                              {subject.timeTakenMinutes != null
-                                ? `${subject.timeTakenMinutes} min`
-                                : "—"}
-                            </span>
-
-                            {subject.testDurationMinutes != null && (
-                              <span className="block text-[11px] text-muted">
-                                of {subject.testDurationMinutes} min
-                              </span>
-                            )}
-                          </span>
-                        </div>
-
-                        <div className="mt-1 h-1.5 rounded-full bg-tint-strong">
-                          <div
-                            className="h-1.5 rounded-full bg-brand"
-                            style={{
-                              width: `${percent}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              {/* Strategy Note */}
-              <motion.div
-                {...fadeIn}
-                transition={{ ...fadeTransition, delay: 0.38 }}
-                className={`w-full max-w-[320px] rounded-lg border p-4 ${isDark
-                  ? "border-brand/10 bg-[var(--sub)]"
-                  : "border-brand/10 bg-tint-strong"
-                }`}
-              >
-                <p className="text-[11px] font-bold uppercase tracking-[1.1px] text-ink">
-                  Strategy Note
-                </p>
-
-                <p className="mt-2 leading-5 text-link">
-                  Excessive time in Maths impacted Chemistry quality. Rebalance next
-                  time.
-                </p>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+              <p className="mt-2 leading-5 text-link">
+                Excessive time in Maths impacted Chemistry quality. Rebalance next
+                time.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Update Score Details Button */}
-      <AnimatePresence>
-        {hasMissingSubjectTime && (
-          <motion.div
-            {...fadeIn}
-            transition={{ ...fadeTransition, delay: 0.42 }}
-            className="flex flex-col items-center gap-2 pt-2"
-          >
-            <Button href={`/home/mock-analysis/upload-scorecard?id=${mock.id}`} variant="primary">
-              Update score details
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {hasMissingSubjectTime && (
+        <div className="flex flex-col items-center gap-2 pt-2">
+          <Button href={`/home/mock-analysis/upload-scorecard?id=${mock.id}`} variant="primary">
+            Update score details
+          </Button>
+        </div>
+      )}
 
       {/* Footer Note */}
-      <motion.div
-        {...fadeIn}
-        transition={{ ...fadeTransition, delay: 0.45 }}
-        className="rounded-sm bg-[#1A1A4E] py-3 text-center text-[16px] font-semibold leading-none text-white"
-      >
+      <div className="rounded-sm bg-[#1A1A4E] py-3 text-center text-[16px] font-semibold leading-none text-white">
         Mock scores never visible to partner.
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }

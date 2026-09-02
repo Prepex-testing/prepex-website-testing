@@ -186,6 +186,31 @@ export function BookIcon() {
     </svg>
   );
 }
+export function BookIcon1(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <path
+        d="M8 3.5c-1.2-1-3-1.3-4.7-1V11c1.7-.3 3.5 0 4.7 1 1.2-1 3-1.3 4.7-1V2.5c-1.7-.3-3.5 0-4.7 1Z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8 3.5V12"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
+    </svg>
+  );
+}
+
 
 export function GlobeIcon() {
   return (
