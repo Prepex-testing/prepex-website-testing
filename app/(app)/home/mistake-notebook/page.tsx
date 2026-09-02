@@ -37,7 +37,7 @@ type DueTagGroup = {
   chapterId: string;
   chapterName: string;
   subjectName: string;
-  tag: MistakeTag | null;
+  tag: MistakeTag;
   entries: MistakeListItem[];
   /** Earliest nextReviewDate in the group — shown in the "All Due" list. */
   oldestDue: string;
@@ -61,7 +61,7 @@ function DueTagRow({ group, showDate }: { group: DueTagGroup; showDate?: boolean
     setStarting(true);
     setErr(null);
     try {
-      const { data } = await startMistakeSession(group.chapterId, group.tag ?? undefined);
+      const { data } = await startMistakeSession(group.chapterId, group.tag);
       router.push(`/practice?sessionId=${data.sessionId}`);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Couldn't start practice.");
@@ -81,17 +81,11 @@ function DueTagRow({ group, showDate }: { group: DueTagGroup; showDate?: boolean
             {group.subjectName ? `${group.subjectName} · ` : ""}
             {group.chapterName}
           </span>
-          {group.tag ? (
-            <span
-              className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.25px] ${TAG_STYLES[group.tag]}`}
-            >
-              {MISTAKE_TAG_LABELS[group.tag]}
-            </span>
-          ) : (
-            <span className="rounded-full bg-tint px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.25px] text-muted">
-              Untagged
-            </span>
-          )}
+          <span
+            className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.25px] ${TAG_STYLES[group.tag]}`}
+          >
+            {MISTAKE_TAG_LABELS[group.tag]}
+          </span>
           <span className="rounded-full bg-tint-strong px-2 py-0.5 text-[11px] font-bold text-ink">
             {n} question{n === 1 ? "" : "s"}
           </span>
@@ -186,14 +180,14 @@ export default function MistakeNotebookPage() {
   );
 
   // chapter+tag grouping — one "Start Practice" row per tag; a multi-tagged
-  // mistake appears under each of its tags. `oldestDue` drives the date shown
-  // in the "All Due" section.
+  // mistake appears under each of its tags. Untagged mistakes aren't
+  // practisable, so they don't produce a row. `oldestDue` drives the date
+  // shown in the "All Due" section.
   const groupByChapterTag = (list: MistakeListItem[]): DueTagGroup[] => {
     const map = new Map<string, DueTagGroup>();
     for (const e of list) {
-      const tags: (MistakeTag | null)[] = e.mistakeTags.length ? e.mistakeTags : [null];
-      for (const tag of tags) {
-        const key = `${e.chapterId}::${tag ?? "_"}`;
+      for (const tag of e.mistakeTags) {
+        const key = `${e.chapterId}::${tag}`;
         const g = map.get(key) ?? {
           key,
           chapterId: e.chapterId,

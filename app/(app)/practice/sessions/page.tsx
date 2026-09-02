@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PlanTaskRow } from "@/components/home/PlanTaskRow";
+import { PlanTaskRow, toRowDifficulty } from "@/components/home/PlanTaskRow";
 import type { PlanTask } from "@/components/home/PlanTaskRow";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
@@ -30,7 +30,7 @@ function toPracticeRow(task: PlannerTask): PlanTask {
       task.scheduledStart && task.scheduledEnd
         ? `${task.scheduledStart} - ${task.scheduledEnd}`
         : "",
-    difficulty: "medium",
+    difficulty: toRowDifficulty(task.chapter?.chapterMetadata?.difficulty),
     actionLabel: "Start Practice",
     isCompleted: task.status === "COMPLETED",
   };

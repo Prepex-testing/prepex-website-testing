@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -143,11 +143,12 @@ function QuestionAnalysisContent() {
   const tagsFor = (sq: PracticeSessionQuestion): MistakeTag[] =>
     tagOverrides[sq.practiceSessionQuestionId] ?? sq.mistakeEntry?.mistakeTags ?? [];
 
-  // Every wrong answer that landed in the Mistake Notebook needs at least one tag
-  // before the pattern analysis is meaningful.
-  const mistakeQuestions = withQuestion.filter((q) => q.mistakeEntry?.id);
-  const untaggedCount = mistakeQuestions.filter((q) => tagsFor(q).length === 0).length;
-  const allTagged = mistakeQuestions.length > 0 && untaggedCount === 0;
+  // Every wrong answer needs at least one tag before the pattern analysis is
+  // meaningful. Count how many are still untagged and only unlock the button
+  // once none remain.
+  const wrongToTag = withQuestion.filter((q) => q.result === "WRONG" && q.mistakeEntry?.id);
+  const untaggedCount = wrongToTag.filter((q) => tagsFor(q).length === 0).length;
+  const allTagged = wrongToTag.length > 0 && untaggedCount === 0;
 
   if (error) {
     return (
@@ -216,9 +217,25 @@ function QuestionAnalysisContent() {
             </div>
           </div>
 
-          {!currentQuestion ? (
+          {visible.length === 0 ? (
             <p className="text-sm text-muted">Nothing to show here.</p>
+          ) : solutionsFirst ? (
+            /* "View Solutions" — every question at once, solutions expanded. */
+            <div className="flex flex-col gap-6">
+              {visible.map((sq) => (
+                <QuestionCard
+                  key={sq.practiceSessionQuestionId}
+                  sq={sq}
+                  openSolution
+                  tags={tagsFor(sq)}
+                  onTagsChange={(next) =>
+                    setTagOverrides((m) => ({ ...m, [sq.practiceSessionQuestionId]: next }))
+                  }
+                />
+              ))}
+            </div>
           ) : (
+            /* "Question by Question" — one at a time. */
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm font-bold text-ink">
@@ -251,26 +268,26 @@ function QuestionAnalysisContent() {
               </div>
 
               <QuestionCard
-                key={currentQuestion.practiceSessionQuestionId}
-                sq={currentQuestion}
-                openSolution={solutionsFirst}
-                tags={tagsFor(currentQuestion)}
+                key={currentQuestion!.practiceSessionQuestionId}
+                sq={currentQuestion!}
+                openSolution={false}
+                tags={tagsFor(currentQuestion!)}
                 onTagsChange={(next) =>
                   setTagOverrides((m) => ({
                     ...m,
-                    [currentQuestion.practiceSessionQuestionId]: next,
+                    [currentQuestion!.practiceSessionQuestionId]: next,
                   }))
                 }
               />
             </div>
           )}
 
-          {mistakeQuestions.length > 0 && (
+          {wrongToTag.length > 0 && (
             <div className="flex flex-col items-center gap-3 rounded-2xl border border-brand/10 bg-surface p-6 text-center">
               <p className="text-sm text-muted">
                 {allTagged
-                  ? "All mistakes tagged — see how they add up."
-                  : `Tag all the mistakes to analyse mistake pattern (${untaggedCount} left).`}
+                  ? "All wrong answers tagged — see how they add up."
+                  : `Tag every wrong answer to analyse the mistake pattern — ${untaggedCount} of ${wrongToTag.length} left.`}
               </p>
               <Button
                 variant="primary"
@@ -318,24 +335,42 @@ function QuestionCard({
   const [busy, setBusy] = useState(false);
   const mistakeId = sq.mistakeEntry?.id ?? null;
 
+  // Review stats mirrored locally so a re-tag on this screen updates the panel
+  // without a refetch.
+  const [reviewCount, setReviewCount] = useState(sq.mistakeEntry?.reviewCount ?? 0);
+  const [lastReviewedAt, setLastReviewedAt] = useState<string | null>(
+    sq.mistakeEntry?.lastReviewedAt ?? null,
+  );
+  // Only the first edit in a visit counts as one re-review.
+  const reReviewedRef = useRef(false);
+
   // "Reviewed before" — a notebook question already tagged / reviewed, i.e. one
-  // being re-practised from the Mistake Notebook. Those show the read-only
-  // context panels; a fresh wrong answer (no tag/review yet) shows the
-  // interactive "Tag this mistake" card instead. Decided from the server value,
-  // not the live-edited `tags`, so tagging here doesn't flip the card mid-use.
+  // being re-practised from the Mistake Notebook. Those also get the read-only
+  // context panels above the tag editor. Decided from the server value, not the
+  // live-edited `tags`, so tagging here doesn't flip the card mid-use.
   const isReviewedMistake =
     !!sq.mistakeEntry &&
     (sq.mistakeEntry.mistakeTags.length > 0 ||
       sq.mistakeEntry.reviewCount > 0 ||
       !!sq.mistakeEntry.lastReviewedAt);
 
+  // A change to an already-tagged mistake is a re-review: bump the count once.
+  const reReviewFlag = () => {
+    if (!isReviewedMistake || reReviewedRef.current) return false;
+    reReviewedRef.current = true;
+    setReviewCount((c) => c + 1);
+    setLastReviewedAt(new Date().toISOString());
+    return true;
+  };
+
   const toggleTag = async (tag: MistakeTag) => {
     if (!mistakeId || busy) return;
     const next = tags.includes(tag) ? tags.filter((t) => t !== tag) : [...tags, tag];
     onTagsChange(next);
     setBusy(true);
+    const reReview = reReviewFlag();
     try {
-      await tagMistake(mistakeId, { mistakeTags: next });
+      await tagMistake(mistakeId, { mistakeTags: next, ...(reReview && { reReview: true }) });
     } catch {
       onTagsChange(tags); // revert on failure
     } finally {
@@ -346,8 +381,9 @@ function QuestionCard({
   const saveNote = async () => {
     if (!mistakeId || busy || note === savedNote) return;
     setBusy(true);
+    const reReview = reReviewFlag();
     try {
-      await tagMistake(mistakeId, { studentNote: note });
+      await tagMistake(mistakeId, { studentNote: note, ...(reReview && { reReview: true }) });
       setSavedNote(note);
     } finally {
       setBusy(false);
@@ -472,8 +508,8 @@ function QuestionCard({
       )}
     </div>
 
-    {/* Mistake-notebook context — only for a question re-practised from the
-        Mistake Notebook (already tagged / reviewed). */}
+    {/* Mistake-notebook context — for a question re-practised from the Mistake
+        Notebook (already tagged / reviewed). Reflects the live-edited values. */}
     {isReviewedMistake && sq.mistakeEntry && (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="rounded-2xl border border-brand/10 bg-surface p-5">
@@ -481,8 +517,8 @@ function QuestionCard({
             Mistake Tag
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
-            {sq.mistakeEntry.mistakeTags.length ? (
-              sq.mistakeEntry.mistakeTags.map((t) => (
+            {tags.length ? (
+              tags.map((t) => (
                 <span
                   key={t}
                   className="flex items-center gap-1.5 rounded-full bg-tint px-3 py-1 text-[12px] font-bold text-ink"
@@ -495,9 +531,9 @@ function QuestionCard({
               <span className="text-[13px] text-muted">Not tagged yet</span>
             )}
           </div>
-          {sq.mistakeEntry.mistakeTags[0] && (
+          {tags[0] && (
             <p className="mt-2 text-[13px] leading-5 text-muted">
-              {TAG_DESCRIPTIONS[sq.mistakeEntry.mistakeTags[0]]}
+              {TAG_DESCRIPTIONS[tags[0]]}
             </p>
           )}
         </div>
@@ -507,9 +543,7 @@ function QuestionCard({
             Student Note
           </p>
           <p className="mt-2 text-[13px] italic leading-5 text-body-text">
-            {sq.mistakeEntry.studentNote
-              ? `“${sq.mistakeEntry.studentNote}”`
-              : "No note added."}
+            {savedNote ? `“${savedNote}”` : "No note added."}
           </p>
         </div>
 
@@ -520,7 +554,7 @@ function QuestionCard({
                 Review Count
               </p>
               <p className="mt-1 text-[22px] font-extrabold leading-7 text-ink">
-                {sq.mistakeEntry.reviewCount}
+                {reviewCount}
               </p>
               <p className="text-[12px] text-muted">Times reviewed</p>
             </div>
@@ -529,15 +563,15 @@ function QuestionCard({
                 Last Reviewed
               </p>
               <p className="mt-1 text-[14px] font-bold text-ink">
-                {sq.mistakeEntry.lastReviewedAt ? (
+                {lastReviewedAt ? (
                   <>
-                    {new Date(sq.mistakeEntry.lastReviewedAt).toLocaleDateString(undefined, {
+                    {new Date(lastReviewedAt).toLocaleDateString(undefined, {
                       day: "numeric",
                       month: "short",
                       year: "numeric",
                     })}{" "}
                     <span className="font-medium text-muted">
-                      ({relativeDay(sq.mistakeEntry.lastReviewedAt)})
+                      ({relativeDay(lastReviewedAt)})
                     </span>
                   </>
                 ) : (
@@ -550,12 +584,12 @@ function QuestionCard({
       </div>
     )}
 
-    {/* Tag this mistake (PRD 5.5.2 / 5.5.3) — only for a fresh wrong answer that
-        has not been tagged / reviewed yet. */}
-    {mistakeId && !isReviewedMistake && (
+    {/* Tag this mistake (PRD 5.5.2 / 5.5.3) — shown for any wrong answer in the
+        notebook. Re-tagging one already reviewed counts as a re-review. */}
+    {mistakeId && (
       <div className="rounded-2xl border border-brand/10 bg-surface p-6">
         <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-muted">
-          Tag this mistake
+          {isReviewedMistake ? "Re-tag this mistake" : "Tag this mistake"}
         </p>
 
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">

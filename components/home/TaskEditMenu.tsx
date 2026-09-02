@@ -124,7 +124,9 @@ export function TaskEditMenu({ task, onTaskChanged, onReorder, disabled }: TaskE
           role="menu"
           className="absolute right-0 top-full z-20 mt-2 w-56 max-w-[calc(100vw-2rem)] rounded-2xl bg-surface p-2 shadow-modal"
         >
-          {MENU_ITEMS.map((item) => (
+          {MENU_ITEMS.filter(
+            (item) => item.label !== "Reorder" || onReorder,
+          ).map((item) => (
             <button
               key={item.label}
               type="button"

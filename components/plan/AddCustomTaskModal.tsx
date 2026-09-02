@@ -216,7 +216,17 @@ export function AddCustomTaskModal({
     });
   };
 
+  // Every field is required except Additional Notes. Subject/Topic aren't
+  // user-editable in edit / planFromBacklog mode (they're shown as static
+  // text), so they're only enforced when the pickers are live.
+  const isFormValid =
+    taskName.trim().length > 0 &&
+    timePreferenceValue.length > 0 &&
+    Number(durationValue) >= MIN_DURATION_MINUTES &&
+    (isLocked || (subjectId != null && chapterId.length > 0));
+
   const handleSubmit = () => {
+    if (!isFormValid) return;
     const exceedsDailyTarget = dailyTargetMinutes != null && Number(durationValue) > dailyTargetMinutes;
     if (exceedsDailyTarget) {
       setDurationConfirmOpen(true);
@@ -231,6 +241,7 @@ export function AddCustomTaskModal({
   };
 
   const performSubmit = async () => {
+    if (!isFormValid) return;
     if (isEdit) {
       if (!taskId || !taskName.trim()) return;
 
@@ -492,6 +503,11 @@ export function AddCustomTaskModal({
           </div>
 
           {error && <p className="text-sm text-danger">{error}</p>}
+          {!error && !isFormValid && (
+            <p className="text-sm text-muted">
+              Fill in every field to continue — only Additional Notes is optional.
+            </p>
+          )}
         </div>
       </div>
 
@@ -510,7 +526,7 @@ export function AddCustomTaskModal({
           variant="primary"
           size="sm"
           onClick={handleSubmit}
-          disabled={isSubmitting || !taskName.trim()}
+          disabled={isSubmitting || !isFormValid}
           className="flex h-[54px] w-full items-center justify-center gap-2.5 rounded-xl px-6 py-2 sm:w-[231px]"
         >
           {isSubmitting ? SUBMIT_LABEL[mode].busy : SUBMIT_LABEL[mode].idle}

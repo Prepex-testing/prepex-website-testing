@@ -107,15 +107,6 @@ export default function FocusNextPage() {
                   {item.deltaValue}% this week
                 </span>
               </div>
-
-              <Button
-                href="/practice"
-                variant="secondary"
-                size="sm"
-                className="bg-surface text-ink hover:!bg-[#FF7A59] hover:!text-white hover:!border-[#FF7A59]"
-              >
-                Start Practice
-              </Button>
             </div>
           </div>
         ))}

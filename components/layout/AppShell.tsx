@@ -7,9 +7,9 @@ import { FocusSidebar } from "@/components/layout/FocusSidebar";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { useCheckInGate } from "@/components/check-in/CheckInGate";
 
-// The revision session is an immersive "focus" experience: narrower sidebar,
-// no check-in interruptions.
-const FOCUS_PATH = "/revision-session";
+// Immersive "focus" experiences: narrower sidebar, no check-in interruptions.
+// (The practice player also intercepts nav clicks to confirm leaving.)
+const FOCUS_PATHS = ["/revision-session", "/practice"];
 
 const SIDEBAR_COLLAPSED_KEY = "prepex.sidebarCollapsed";
 // Same-tab writes don't fire the native `storage` event (only other tabs get
@@ -49,7 +49,7 @@ function writeStoredSidebarCollapsed(collapsed: boolean) {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const isFocusMode = pathname === FOCUS_PATH;
+  const isFocusMode = FOCUS_PATHS.includes(pathname);
   const isCheckInVerified = useCheckInGate(!isFocusMode);
   const isCollapsed = useSyncExternalStore(
     subscribeToStoredSidebarCollapsed,

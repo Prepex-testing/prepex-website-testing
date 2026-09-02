@@ -60,9 +60,15 @@ function PracticeModeContent() {
   const [elapsed, setElapsed] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [finishing, setFinishing] = useState(false);
+  const [exiting, setExiting] = useState(false);
   const [confirmEndOpen, setConfirmEndOpen] = useState(false);
+  // Where an intercepted nav click / back-button was headed. null = the
+  // header "End Session" button, which just goes to the analysis or list.
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
 
   const questionStartRef = useRef<number>(0);
+  // Once End/Exit is chosen the nav interceptors stand down.
+  const resolvedRef = useRef(false);
 
   // ---- load ---------------------------------------------------------------
   useEffect(() => {
@@ -73,7 +79,12 @@ function PracticeModeContent() {
         if (sessionIdParam) {
           // Resume / play an existing session (e.g. a Mistake Review that has
           // no plan task behind it).
-          res = await getSessionQuestions(sessionIdParam);
+          try {
+            res = await getSessionQuestions(sessionIdParam);
+          } catch {
+            if (!cancelled) setLoadError("No practice questions available for this topic.");
+            return;
+          }
         } else {
           let taskId = taskIdParam;
           if (!taskId) {
@@ -91,7 +102,14 @@ function PracticeModeContent() {
             }
             taskId = practice.id;
           }
-          res = await getTaskQuestions(taskId);
+          try {
+            // A 404 / error here means the question bank has nothing for this
+            // task's chapter/topic.
+            res = await getTaskQuestions(taskId);
+          } catch {
+            if (!cancelled) setLoadError("No practice questions available for this topic.");
+            return;
+          }
         }
         if (cancelled) return;
 
@@ -105,7 +123,7 @@ function PracticeModeContent() {
 
         const withQuestion = res.data.questions.filter((q) => q.question !== null);
         if (withQuestion.length === 0) {
-          setLoadError("No practice questions are available for this task yet.");
+          setLoadError("No practice questions available for this topic.");
           return;
         }
 
@@ -146,6 +164,41 @@ function PracticeModeContent() {
     return () => clearInterval(timer);
   }, [data]);
 
+  // ---- leave-guard: intercept nav clicks + browser back while a session is
+  // live, and route them through the End / Exit / Continue popup (mirrors the
+  // revision session).
+  useEffect(() => {
+    if (!data) return;
+
+    const handleClick = (event: MouseEvent) => {
+      if (resolvedRef.current) return;
+      const anchor = (event.target as HTMLElement | null)?.closest("a");
+      const href = anchor?.getAttribute("href");
+      if (!href || !href.startsWith("/")) return;
+      // Staying inside the running session is fine.
+      if (href === "/practice" || href.startsWith("/practice?")) return;
+      event.preventDefault();
+      event.stopPropagation();
+      setPendingHref(href);
+      setConfirmEndOpen(true);
+    };
+
+    window.history.pushState(null, "", window.location.href);
+    const handlePopState = () => {
+      if (resolvedRef.current) return;
+      window.history.pushState(null, "", window.location.href);
+      setPendingHref("/practice/sessions");
+      setConfirmEndOpen(true);
+    };
+
+    document.addEventListener("click", handleClick, true);
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      document.removeEventListener("click", handleClick, true);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [data]);
+
   const total = data?.totalQuestions ?? queue.length;
   const current = queue[0];
   const currentQ = current?.question ?? null;
@@ -159,6 +212,7 @@ function PracticeModeContent() {
 
   const finish = useCallback(async () => {
     if (!data || finishing) return;
+    resolvedRef.current = true;
     setFinishing(true);
     try {
       await completePracticeSession(data.sessionId);
@@ -167,6 +221,20 @@ function PracticeModeContent() {
     }
     router.push(`/practice/complete?sessionId=${data.sessionId}`);
   }, [data, finishing, router]);
+
+  // Leave without completing — the session stays IN_PROGRESS and can be
+  // resumed later. Answers already submitted are kept.
+  const handleExitSession = useCallback(() => {
+    resolvedRef.current = true;
+    setExiting(true);
+    setConfirmEndOpen(false);
+    router.push(pendingHref ?? "/practice/sessions");
+  }, [pendingHref, router]);
+
+  const handleContinueSession = useCallback(() => {
+    setConfirmEndOpen(false);
+    setPendingHref(null);
+  }, []);
 
   const advanceQueue = useCallback(
     (nextQueue: PracticeSessionQuestion[]) => {
@@ -247,8 +315,8 @@ function PracticeModeContent() {
     return (
       <CenteredMessage title="Practice unavailable">
         <p className="max-w-md text-sm text-muted">{loadError}</p>
-        <Button variant="secondary" size="sm" onClick={() => router.push("/plan")}>
-          Back to plan
+        <Button variant="secondary" size="sm" onClick={() => router.push("/practice/sessions")}>
+          Back to practice sessions
         </Button>
       </CenteredMessage>
     );
@@ -425,36 +493,45 @@ function PracticeModeContent() {
         </button>
       </div>
 
-      {/* PRD 130 — End Session requires confirmation. */}
+      {/* PRD 130 — leaving a live session requires confirmation. */}
       <WhiteModal
         open={confirmEndOpen}
-        onClose={() => setConfirmEndOpen(false)}
-        ariaLabel="End practice session"
+        onClose={handleContinueSession}
+        ariaLabel="Practice session options"
       >
         <div className="text-center">
-          <h2 className="text-xl font-bold text-ink sm:text-2xl">End this session?</h2>
+          <h2 className="text-xl font-bold text-ink sm:text-2xl">Leave this practice session?</h2>
           <p className="mt-2 text-sm text-muted">
-            Your answers so far are saved. We&apos;ll analyse what you&apos;ve done and add wrong
-            answers to your Mistake Notebook.
+            Your answers so far are saved either way.
           </p>
         </div>
-        <Button
-          variant="primary"
-          className="mt-5"
-          disabled={finishing}
-          onClick={() => {
-            setConfirmEndOpen(false);
-            void finish();
-          }}
-        >
-          {finishing ? "Finishing…" : "End & see analysis"}
-        </Button>
+        <div className="mt-6 flex flex-col gap-2">
+          <Button
+            variant="primary"
+            disabled={finishing || exiting}
+            onClick={() => {
+              setConfirmEndOpen(false);
+              void finish();
+            }}
+          >
+            {finishing ? "Finishing…" : "End Session & see analysis"}
+          </Button>
+          <Button
+            variant="secondary"
+            className="border-[#F59E0B]! text-[#F59E0B]! hover:bg-[#F59E0B33]!"
+            disabled={finishing || exiting}
+            onClick={handleExitSession}
+          >
+            {exiting ? "Exiting…" : "Exit Session"}
+          </Button>
+        </div>
         <button
           type="button"
-          onClick={() => setConfirmEndOpen(false)}
-          className="mt-2 w-full text-center text-sm font-semibold text-muted"
+          onClick={handleContinueSession}
+          disabled={finishing || exiting}
+          className="mt-3 w-full text-center text-sm font-semibold text-muted disabled:opacity-60"
         >
-          Keep practising
+          Continue Session
         </button>
       </WhiteModal>
     </div>
