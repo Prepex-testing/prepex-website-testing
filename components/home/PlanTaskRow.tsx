@@ -12,19 +12,30 @@ import { Book, Time } from "@/assets/icons";
 import { getChapterTitle } from "@/lib/utils/text";
 import { getTaskQuestions } from "@/lib/api/practice";
 
-type Difficulty = "high" | "medium";
+type Difficulty = "easy" | "medium" | "high";
+
+const DIFFICULTY_CHIP =
+  " bg-[#EEF0F8] text-[#1A1A4E] dark:border-transparent dark:bg-[#242453] dark:text-white";
 
 const DIFFICULTY_STYLES: Record<Difficulty, string> = {
-  high:
-    " bg-[#EEF0F8] text-[#1A1A4E] dark:border-transparent dark:bg-[#242453] dark:text-white",
-  medium:
-    " bg-[#EEF0F8] text-[#1A1A4E] dark:border-transparent dark:bg-[#242453] dark:text-white",
+  easy: DIFFICULTY_CHIP,
+  medium: DIFFICULTY_CHIP,
+  high: DIFFICULTY_CHIP,
 };
 
 const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-  high: "High",
+  easy: "Easy",
   medium: "Medium",
+  high: "High",
 };
+
+/** Maps chapter metadata difficulty (EASY/MEDIUM/HARD) to the row's scale. */
+export function toRowDifficulty(d: string | null | undefined): Difficulty {
+  const v = (d ?? "").toUpperCase();
+  if (v === "EASY") return "easy";
+  if (v === "HARD" || v === "VERY_HARD") return "high";
+  return "medium";
+}
 
 export type PlanTask = {
   id: string;

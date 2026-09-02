@@ -299,7 +299,7 @@ export function getMistakePatterns() {
 /** Add/update tags and personal note on a mistake (PRD 5.5.2 / 5.5.3). */
 export function tagMistake(
   mistakeId: string,
-  body: { mistakeTags?: MistakeTag[]; studentNote?: string },
+  body: { mistakeTags?: MistakeTag[]; studentNote?: string; reReview?: boolean },
 ) {
   return authRequest<{ success: true; data: unknown }>(`/mistakes/${mistakeId}/tag`, {
     method: "PATCH",
