@@ -479,6 +479,7 @@ function TodayPlanContent() {
       <TodaysPracticeModal
         open={isPracticeModalOpen}
         onClose={() => setPracticeModalOpen(false)}
+        taskId={practiceTaskId}
         onStart={() => {
           setPracticeModalOpen(false);
           router.push(practiceTaskId ? `/practice?taskId=${practiceTaskId}` : "/practice");

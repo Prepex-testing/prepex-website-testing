@@ -13,6 +13,7 @@ export { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE }
 import { Book, Time } from "@/assets/icons";
 import { useState } from "react";
 import { getChapterTitle } from "@/lib/utils/text";
+import { getTaskQuestions } from "@/lib/api/practice";
 export type Task = {
   id: string;
   subjectLabel: string;
@@ -47,20 +48,39 @@ export function TaskRow({
   onTaskChanged,
 }: TaskRowProps) {
   const [done, setDone] = useState(false);
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false);
+  const router = useRouter();
   const isStartPractice = task.type === "practice";
   const isStartRevision = task.type === "revision";
   const isSkipped = task.status === "SKIPPED";
   const isWellnessTask = task.isWellness;
+  // A finished practice task swaps its (disabled) "Practice Completed" chip for
+  // an active "View Analysis" button that opens the session breakdown.
+  const isPracticeDone = task.type === "practice" && Boolean(task.isCompleted) && !isSkipped;
   const isActionDisabled = task.isCompleted || isSkipped;
-  const isPrimaryActionDisabled = isActionDisabled || isWellnessTask;
-  const displayLabel = task.isCompleted
-    ? COMPLETED_ACTION_LABELS[task.type]
-    : isSkipped
-      ? "Skipped"
-      : isWellnessTask
-        ? "Wellness"
-        : task.actionLabel;
-  const router = useRouter();
+  const isPrimaryActionDisabled = isPracticeDone ? false : isActionDisabled || isWellnessTask;
+  const displayLabel = isPracticeDone
+    ? loadingAnalysis
+      ? "Loading…"
+      : "View Analysis"
+    : task.isCompleted
+      ? COMPLETED_ACTION_LABELS[task.type]
+      : isSkipped
+        ? "Skipped"
+        : isWellnessTask
+          ? "Wellness"
+          : task.actionLabel;
+
+  const handleViewAnalysis = async () => {
+    if (loadingAnalysis) return;
+    setLoadingAnalysis(true);
+    try {
+      const res = await getTaskQuestions(task.id);
+      router.push(`/practice/complete?sessionId=${res.data.sessionId}`);
+    } catch {
+      setLoadingAnalysis(false);
+    }
+  };
   return (
    <div
   className="
@@ -271,11 +291,13 @@ export function TaskRow({
                 : undefined
         }
         onClick={
-          isPrimaryActionDisabled || task.isCompleted
-            ? undefined
-            : isStartPractice
-              ? () => onStartPractice?.(task.id)
-              : undefined
+          isPracticeDone
+            ? handleViewAnalysis
+            : isPrimaryActionDisabled || task.isCompleted
+              ? undefined
+              : isStartPractice
+                ? () => onStartPractice?.(task.id)
+                : undefined
         }
       >
         {displayLabel}

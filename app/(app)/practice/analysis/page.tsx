@@ -1,11 +1,22 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
-import { BellIcon, CheckIcon, XIcon, AlertTriangleIcon } from "@/components/ui/icons";
+import {
+  ArrowLeftIcon,
+  BellIcon,
+  BookmarkIcon,
+  CheckIcon,
+  XIcon,
+  ConceptualGapIcon,
+  SillyErrorIcon,
+  TimePressureIcon,
+  WildGuessIcon,
+} from "@/components/ui/icons";
 import {
   answerToText,
   getPracticeSession,
@@ -20,6 +31,37 @@ import {
 
 const ALL_TAGS = Object.keys(MISTAKE_TAG_LABELS) as MistakeTag[];
 
+const TAG_ICONS: Record<MistakeTag, ReactNode> = {
+  SILLY_ERROR: <SillyErrorIcon />,
+  CONCEPTUAL_GAP: <ConceptualGapIcon />,
+  TIME_PRESSURE: <TimePressureIcon />,
+  WILD_GUESS: <WildGuessIcon />,
+};
+
+const TAG_DESCRIPTIONS: Record<MistakeTag, string> = {
+  CONCEPTUAL_GAP: "You struggled with understanding the concept.",
+  SILLY_ERROR: "A careless slip — the concept was understood.",
+  TIME_PRESSURE: "You ran short on time on this one.",
+  WILD_GUESS: "Answered without a confident method.",
+};
+
+function relativeDay(iso: string): string {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  return `${days} days ago`;
+}
+
+type AnalysisFilter = "all" | "correct" | "wrong" | "skipped" | "marked";
+
+const FILTERS: { id: AnalysisFilter; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "correct", label: "Correct" },
+  { id: "wrong", label: "Wrong" },
+  { id: "skipped", label: "Skipped" },
+  { id: "marked", label: "Marked" },
+];
+
 export default function QuestionAnalysisPage() {
   return (
     <Suspense fallback={null}>
@@ -29,14 +71,25 @@ export default function QuestionAnalysisPage() {
 }
 
 function QuestionAnalysisContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("sessionId");
   const solutionsFirst = searchParams.get("solutions") === "1";
 
   const [session, setSession] = useState<PracticeSessionDetail | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [onlyWrong, setOnlyWrong] = useState(false);
+  const [filter, setFilter] = useState<AnalysisFilter>("all");
+  // One question shown at a time — this is the position within the filtered set.
+  const [index, setIndex] = useState(0);
+  // Live tag edits, layered over each mistake's server-side tags. Keyed by
+  // practiceSessionQuestionId.
+  const [tagOverrides, setTagOverrides] = useState<Record<string, MistakeTag[]>>({});
   const error = fetchError ?? (sessionId ? null : "No session specified.");
+
+  const selectFilter = (id: AnalysisFilter) => {
+    setFilter(id);
+    setIndex(0);
+  };
 
   useEffect(() => {
     if (!sessionId) return;
@@ -53,10 +106,48 @@ function QuestionAnalysisContent() {
     };
   }, [sessionId]);
 
+  const withQuestion = useMemo(
+    () => (session?.questions ?? []).filter((q) => q.question),
+    [session],
+  );
+
+  const counts = useMemo(
+    () => ({
+      all: withQuestion.length,
+      correct: withQuestion.filter((q) => q.result === "CORRECT").length,
+      wrong: withQuestion.filter((q) => q.result === "WRONG").length,
+      skipped: withQuestion.filter((q) => q.result === "SKIPPED").length,
+      marked: withQuestion.filter((q) => q.markedForReview).length,
+    }),
+    [withQuestion],
+  );
+
   const visible = useMemo(() => {
-    const qs = (session?.questions ?? []).filter((q) => q.question);
-    return onlyWrong ? qs.filter((q) => q.result === "WRONG") : qs;
-  }, [session, onlyWrong]);
+    switch (filter) {
+      case "correct":
+        return withQuestion.filter((q) => q.result === "CORRECT");
+      case "wrong":
+        return withQuestion.filter((q) => q.result === "WRONG");
+      case "skipped":
+        return withQuestion.filter((q) => q.result === "SKIPPED");
+      case "marked":
+        return withQuestion.filter((q) => q.markedForReview);
+      default:
+        return withQuestion;
+    }
+  }, [withQuestion, filter]);
+
+  const currentIndex = visible.length ? Math.min(index, visible.length - 1) : 0;
+  const currentQuestion = visible[currentIndex];
+
+  const tagsFor = (sq: PracticeSessionQuestion): MistakeTag[] =>
+    tagOverrides[sq.practiceSessionQuestionId] ?? sq.mistakeEntry?.mistakeTags ?? [];
+
+  // Every wrong answer that landed in the Mistake Notebook needs at least one tag
+  // before the pattern analysis is meaningful.
+  const mistakeQuestions = withQuestion.filter((q) => q.mistakeEntry?.id);
+  const untaggedCount = mistakeQuestions.filter((q) => tagsFor(q).length === 0).length;
+  const allTagged = mistakeQuestions.length > 0 && untaggedCount === 0;
 
   if (error) {
     return (
@@ -73,7 +164,16 @@ function QuestionAnalysisContent() {
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-h1 text-ink">Question Analysis</h1>
+        <div className="flex items-center gap-3">
+          <Link
+            href={sessionId ? `/practice/complete?sessionId=${sessionId}` : "/practice"}
+            aria-label="Back to practice results"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink transition-colors hover:bg-tint-strong"
+          >
+            <ArrowLeftIcon />
+          </Link>
+          <h1 className="text-h1 text-ink">Question Analysis</h1>
+        </div>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
@@ -91,32 +191,103 @@ function QuestionAnalysisContent() {
         <p className="text-sm text-muted">Loading analysis…</p>
       ) : (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col gap-3">
             <p className="text-sm font-semibold text-muted">
               {session.correctQuestions}/{session.totalQuestions} correct ·{" "}
-              {session.wrongQuestions} in Mistake Notebook
+              {session.wrongQuestions} wrong · {session.skippedQuestions} skipped ·{" "}
+              {session.markedQuestions} marked
             </p>
-            <button
-              type="button"
-              onClick={() => setOnlyWrong((v) => !v)}
-              className={`rounded-full border px-4 py-1.5 text-[13px] font-bold transition-colors ${
-                onlyWrong
-                  ? "border-[#F59E0B] bg-[rgba(245,158,11,0.1)] text-[#F59E0B]"
-                  : "border-brand/20 text-ink hover:bg-tint-strong"
-              }`}
-            >
-              {onlyWrong ? "Showing wrong only" : "Show wrong only"}
-            </button>
+            <div className="flex flex-wrap gap-2">
+              {FILTERS.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => selectFilter(f.id)}
+                  aria-pressed={filter === f.id}
+                  className={`rounded-full border px-4 py-1.5 text-[13px] font-bold transition-colors ${
+                    filter === f.id
+                      ? "border-[#F59E0B] bg-[rgba(245,158,11,0.1)] text-[#F59E0B]"
+                      : "border-brand/20 text-ink hover:bg-tint-strong"
+                  }`}
+                >
+                  {f.label} ({counts[f.id]})
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="flex flex-col gap-6">
-            {visible.map((sq) => (
-              <QuestionCard key={sq.practiceSessionQuestionId} sq={sq} openSolution={solutionsFirst} />
-            ))}
-            {visible.length === 0 && (
-              <p className="text-sm text-muted">Nothing to show here.</p>
-            )}
-          </div>
+          {!currentQuestion ? (
+            <p className="text-sm text-muted">Nothing to show here.</p>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm font-bold text-ink">
+                  Question {currentIndex + 1} of {visible.length}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIndex((i) => Math.max(0, i - 1))}
+                    disabled={currentIndex === 0}
+                    className="flex h-9 items-center gap-1.5 rounded-full border border-brand/20 px-4 text-[13px] font-bold text-ink transition-colors hover:bg-tint-strong disabled:opacity-30 disabled:hover:bg-transparent"
+                  >
+                    <ArrowLeftIcon />
+                    Prev
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setIndex((i) => Math.min(visible.length - 1, i + 1))
+                    }
+                    disabled={currentIndex >= visible.length - 1}
+                    className="flex h-9 items-center gap-1.5 rounded-full border border-brand/20 px-4 text-[13px] font-bold text-ink transition-colors hover:bg-tint-strong disabled:opacity-30 disabled:hover:bg-transparent"
+                  >
+                    Next
+                    <span className="rotate-180">
+                      <ArrowLeftIcon />
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <QuestionCard
+                key={currentQuestion.practiceSessionQuestionId}
+                sq={currentQuestion}
+                openSolution={solutionsFirst}
+                tags={tagsFor(currentQuestion)}
+                onTagsChange={(next) =>
+                  setTagOverrides((m) => ({
+                    ...m,
+                    [currentQuestion.practiceSessionQuestionId]: next,
+                  }))
+                }
+              />
+            </div>
+          )}
+
+          {mistakeQuestions.length > 0 && (
+            <div className="flex flex-col items-center gap-3 rounded-2xl border border-brand/10 bg-surface p-6 text-center">
+              <p className="text-sm text-muted">
+                {allTagged
+                  ? "All mistakes tagged — see how they add up."
+                  : `Tag all the mistakes to analyse mistake pattern (${untaggedCount} left).`}
+              </p>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={!allTagged}
+                onClick={() =>
+                  router.push(
+                    sessionId
+                      ? `/practice/mistake-analysis?sessionId=${sessionId}`
+                      : "/home/mistake-notebook",
+                  )
+                }
+              >
+                Analyse mistake pattern
+              </Button>
+            </div>
+          )}
         </>
       )}
     </div>
@@ -126,9 +297,14 @@ function QuestionAnalysisContent() {
 function QuestionCard({
   sq,
   openSolution,
+  tags,
+  onTagsChange,
 }: {
   sq: PracticeSessionQuestion;
   openSolution: boolean;
+  /** Controlled by the page so it can tell when every mistake is tagged. */
+  tags: MistakeTag[];
+  onTagsChange: (tags: MistakeTag[]) => void;
 }) {
   const q = sq.question!;
   const correctKey = answerToText(sq.correctAnswer ?? q.correctAnswer);
@@ -137,21 +313,31 @@ function QuestionCard({
   const options = optionEntries(q.options);
 
   const [showSolution, setShowSolution] = useState(openSolution);
-  const [tags, setTags] = useState<MistakeTag[]>(sq.mistakeEntry?.mistakeTags ?? []);
   const [note, setNote] = useState(sq.mistakeEntry?.studentNote ?? "");
   const [savedNote, setSavedNote] = useState(sq.mistakeEntry?.studentNote ?? "");
   const [busy, setBusy] = useState(false);
   const mistakeId = sq.mistakeEntry?.id ?? null;
 
+  // "Reviewed before" — a notebook question already tagged / reviewed, i.e. one
+  // being re-practised from the Mistake Notebook. Those show the read-only
+  // context panels; a fresh wrong answer (no tag/review yet) shows the
+  // interactive "Tag this mistake" card instead. Decided from the server value,
+  // not the live-edited `tags`, so tagging here doesn't flip the card mid-use.
+  const isReviewedMistake =
+    !!sq.mistakeEntry &&
+    (sq.mistakeEntry.mistakeTags.length > 0 ||
+      sq.mistakeEntry.reviewCount > 0 ||
+      !!sq.mistakeEntry.lastReviewedAt);
+
   const toggleTag = async (tag: MistakeTag) => {
     if (!mistakeId || busy) return;
     const next = tags.includes(tag) ? tags.filter((t) => t !== tag) : [...tags, tag];
-    setTags(next);
+    onTagsChange(next);
     setBusy(true);
     try {
       await tagMistake(mistakeId, { mistakeTags: next });
     } catch {
-      setTags(tags); // revert on failure
+      onTagsChange(tags); // revert on failure
     } finally {
       setBusy(false);
     }
@@ -169,15 +355,22 @@ function QuestionCard({
   };
 
   return (
+    <>
     <div className="rounded-2xl border border-brand/10 bg-surface p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs font-bold uppercase tracking-wide text-ink">
           Q.{sq.displayOrder} · {q.topic}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {q.difficulty && (
             <span className="rounded-full bg-tint px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-ink">
               {prettyDifficulty(q.difficulty)}
+            </span>
+          )}
+          {sq.markedForReview && (
+            <span className="flex items-center gap-1 rounded-full bg-tint px-3 py-1 text-[10px] font-bold uppercase text-ink">
+              <BookmarkIcon filled />
+              Marked
             </span>
           )}
           <span
@@ -252,61 +445,6 @@ function QuestionCard({
         )}
       </div>
 
-      {/* Mistake tagging (PRD 5.5.2 / 5.5.3) — only for wrong answers */}
-      {mistakeId && (
-        <div className="mt-5 rounded-xl border border-ink/10 p-4">
-          <p className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-[1.2px] text-ink">
-            <AlertTriangleIcon /> Tag this mistake
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {ALL_TAGS.map((tag) => {
-              const active = tags.includes(tag);
-              return (
-                <button
-                  key={tag}
-                  type="button"
-                  disabled={busy}
-                  onClick={() => toggleTag(tag)}
-                  aria-pressed={active}
-                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] font-bold transition-colors disabled:opacity-50 ${
-                    active
-                      ? "border-[#1A1A4E] bg-[#EEF0F8] text-[#1A1A4E] dark:border-white dark:bg-transparent dark:text-white"
-                      : "border-brand/20 text-body-text hover:border-ink/40"
-                  }`}
-                >
-                  {active && <CheckIcon />}
-                  {MISTAKE_TAG_LABELS[tag]}
-                </button>
-              );
-            })}
-          </div>
-
-          <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            onBlur={saveNote}
-            placeholder="Add a personal note (e.g. “forgot the sign convention”)"
-            rows={2}
-            className="mt-3 w-full resize-none rounded-lg border border-brand/20 bg-transparent p-3 text-sm text-ink outline-none focus:border-ink/40"
-          />
-          <div className="mt-1 flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-success">
-              ✓ Added to Mistake Notebook
-            </span>
-            {note !== savedNote && (
-              <button
-                type="button"
-                onClick={saveNote}
-                disabled={busy}
-                className="text-[12px] font-bold text-ink underline disabled:opacity-50"
-              >
-                Save note
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
       {(q.solutionText || q.solutionImageUrl) && (
         <div className="mt-4">
           <button
@@ -333,5 +471,143 @@ function QuestionCard({
         </div>
       )}
     </div>
+
+    {/* Mistake-notebook context — only for a question re-practised from the
+        Mistake Notebook (already tagged / reviewed). */}
+    {isReviewedMistake && sq.mistakeEntry && (
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="rounded-2xl border border-brand/10 bg-surface p-5">
+          <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-muted">
+            Mistake Tag
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {sq.mistakeEntry.mistakeTags.length ? (
+              sq.mistakeEntry.mistakeTags.map((t) => (
+                <span
+                  key={t}
+                  className="flex items-center gap-1.5 rounded-full bg-tint px-3 py-1 text-[12px] font-bold text-ink"
+                >
+                  {TAG_ICONS[t]}
+                  {MISTAKE_TAG_LABELS[t]}
+                </span>
+              ))
+            ) : (
+              <span className="text-[13px] text-muted">Not tagged yet</span>
+            )}
+          </div>
+          {sq.mistakeEntry.mistakeTags[0] && (
+            <p className="mt-2 text-[13px] leading-5 text-muted">
+              {TAG_DESCRIPTIONS[sq.mistakeEntry.mistakeTags[0]]}
+            </p>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-brand/10 bg-surface p-5">
+          <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-muted">
+            Student Note
+          </p>
+          <p className="mt-2 text-[13px] italic leading-5 text-body-text">
+            {sq.mistakeEntry.studentNote
+              ? `“${sq.mistakeEntry.studentNote}”`
+              : "No note added."}
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-brand/10 bg-surface p-5 sm:col-span-2">
+          <div className="flex flex-wrap items-center gap-x-10 gap-y-3">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-brand">
+                Review Count
+              </p>
+              <p className="mt-1 text-[22px] font-extrabold leading-7 text-ink">
+                {sq.mistakeEntry.reviewCount}
+              </p>
+              <p className="text-[12px] text-muted">Times reviewed</p>
+            </div>
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-muted">
+                Last Reviewed
+              </p>
+              <p className="mt-1 text-[14px] font-bold text-ink">
+                {sq.mistakeEntry.lastReviewedAt ? (
+                  <>
+                    {new Date(sq.mistakeEntry.lastReviewedAt).toLocaleDateString(undefined, {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}{" "}
+                    <span className="font-medium text-muted">
+                      ({relativeDay(sq.mistakeEntry.lastReviewedAt)})
+                    </span>
+                  </>
+                ) : (
+                  "Not reviewed yet"
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Tag this mistake (PRD 5.5.2 / 5.5.3) — only for a fresh wrong answer that
+        has not been tagged / reviewed yet. */}
+    {mistakeId && !isReviewedMistake && (
+      <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+        <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-muted">
+          Tag this mistake
+        </p>
+
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {ALL_TAGS.map((tag) => {
+            const active = tags.includes(tag);
+            return (
+              <button
+                key={tag}
+                type="button"
+                disabled={busy}
+                onClick={() => toggleTag(tag)}
+                aria-pressed={active}
+                className={`flex flex-col items-center justify-center gap-2 rounded-xl border p-4 text-center transition-colors disabled:opacity-50 ${
+                  active
+                    ? "border-[1.5px] border-brand bg-tint/50 text-brand"
+                    : "border-brand/15 text-body-text hover:border-ink/40"
+                }`}
+              >
+                {TAG_ICONS[tag]}
+                <span className="text-[12px] font-semibold leading-4">
+                  {MISTAKE_TAG_LABELS[tag]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <textarea
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          onBlur={saveNote}
+          placeholder="Add a personal note (e.g. “forgot the sign convention”)"
+          rows={2}
+          className="mt-4 w-full resize-none rounded-lg border border-brand/20 bg-transparent p-3 text-sm text-ink outline-none focus:border-ink/40"
+        />
+        <div className="mt-1 flex items-center justify-between">
+          <span className="text-[11px] font-semibold text-success">
+            ✓ Added to Mistake Notebook
+          </span>
+          {note !== savedNote && (
+            <button
+              type="button"
+              onClick={saveNote}
+              disabled={busy}
+              className="text-[12px] font-bold text-ink underline disabled:opacity-50"
+            >
+              Save note
+            </button>
+          )}
+        </div>
+      </div>
+    )}
+    </>
   );
 }

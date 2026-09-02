@@ -1,13 +1,17 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
-import { BellIcon, CheckCircleIcon, AlertTriangleIcon } from "@/components/ui/icons";
+import {
+  AlertTriangleIcon,
+  BellIcon,
+  CheckCircleIcon,
+} from "@/components/ui/icons";
 import { LayersIcon, ClockIcon, VectorIcon } from "@/assets/icons";
 import {
   getPracticeSession,
@@ -19,38 +23,33 @@ type Mastery = "mastered" | "on-track" | "needs-work" | "critical";
 
 const MASTERY_STYLES: Record<
   Mastery,
-  { badgeBg: string; badgeText: string; percentText: string; rowClass: string }
+  { badge: string; pct: string; row: string }
 > = {
   mastered: {
-    badgeBg: "bg-[rgba(67,176,144,0.1)]",
-    badgeText: "text-[#28B485]",
-    percentText: "text-[#28B485]",
-    rowClass: "bg-surface border-transparent",
+    badge: "bg-[rgba(67,176,144,0.1)] text-[#28B485]",
+    pct: "text-[#28B485]",
+    row: "border-transparent bg-surface",
   },
   "on-track": {
-    badgeBg: "bg-[#E7F9F3]",
-    badgeText: "text-[#28B485]",
-    percentText: "text-ink",
-    rowClass: "bg-surface border-transparent",
+    badge: "bg-[#E7F9F3] text-[#28B485]",
+    pct: "text-ink",
+    row: "border-transparent bg-surface",
   },
   "needs-work": {
-    badgeBg: "bg-[rgba(245,158,11,0.1)]",
-    badgeText: "text-[#FFAE1A]",
-    percentText: "text-ink",
-    rowClass: "bg-surface border-transparent",
+    badge: "bg-[rgba(245,158,11,0.1)] text-[#FFAE1A]",
+    pct: "text-ink",
+    row: "border-transparent bg-surface",
   },
   critical: {
-    badgeBg: "bg-[rgba(245,158,11,0.1)]",
-    badgeText: "text-[#F59E0B]",
-    percentText: "text-[#F59E0B]",
-    rowClass: "bg-[rgba(245,158,11,0.05)] border-[rgba(255,127,92,0.2)]",
+    badge: "bg-[rgba(245,158,11,0.1)] text-[#F59E0B]",
+    pct: "text-[#F59E0B]",
+    row: "border-[rgba(255,127,92,0.2)] bg-[rgba(245,158,11,0.05)]",
   },
 };
 
-function masteryOf(topic: PracticeTopicAnalysis): Mastery {
-  const pct =
-    topic.totalQuestions > 0 ? (topic.correctQuestions / topic.totalQuestions) * 100 : 0;
-  if (topic.weaknessDetected || pct < 40) return "critical";
+function masteryOf(t: PracticeTopicAnalysis): Mastery {
+  const pct = t.totalQuestions > 0 ? (t.correctQuestions / t.totalQuestions) * 100 : 0;
+  if (t.weaknessDetected || pct < 40) return "critical";
   if (pct < 65) return "needs-work";
   if (pct < 100) return "on-track";
   return "mastered";
@@ -98,9 +97,29 @@ function PracticeCompleteContent() {
   const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
 
   const topics = session?.topicAnalysis ?? [];
-  const chapterLabel =
-    session?.questions.find((q) => q.question)?.question?.topic ?? "Practice";
-  const weakTopic = topics.find((t) => masteryOf(t) === "critical" || t.weaknessDetected);
+  const primaryTopic = useMemo(() => {
+    if (!session) return "Practice";
+    const counts = new Map<string, number>();
+    for (const q of session.questions) {
+      const t = q.question?.topic;
+      if (t) counts.set(t, (counts.get(t) ?? 0) + 1);
+    }
+    let best = "Practice";
+    let bestN = 0;
+    for (const [t, n] of counts) if (n > bestN) [best, bestN] = [t, n];
+    return best;
+  }, [session]);
+  const weakTopic = useMemo(() => {
+    const ranked = [...topics].sort((a, b) => {
+      const pa = a.totalQuestions ? a.correctQuestions / a.totalQuestions : 1;
+      const pb = b.totalQuestions ? b.correctQuestions / b.totalQuestions : 1;
+      return pa - pb;
+    });
+    const first = ranked[0];
+    if (!first) return null;
+    const pct = first.totalQuestions ? first.correctQuestions / first.totalQuestions : 1;
+    return first.weaknessDetected || pct < 0.65 ? first : null;
+  }, [topics]);
 
   if (error) {
     return (
@@ -142,13 +161,13 @@ function PracticeCompleteContent() {
                 <span className="mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
                   <LayersIcon />
                 </span>
-                <h2 className="text-[40px] font-extrabold leading-10 tracking-[-1px] text-ink whitespace-nowrap">
+                <h2 className="whitespace-nowrap text-[40px] font-extrabold leading-10 tracking-[-1px] text-ink">
                   {correct} / {total} Correct
                 </h2>
               </div>
 
               <div className="flex flex-col gap-3">
-                <p className="text-[20px] font-bold leading-7 text-muted">{chapterLabel}</p>
+                <p className="text-[20px] font-bold leading-7 text-muted">{primaryTopic}</p>
                 <div className="flex items-center gap-3 text-[15px] font-medium text-muted">
                   <ClockIcon />
                   <span>
@@ -188,26 +207,23 @@ function PracticeCompleteContent() {
                     topic.totalQuestions > 0
                       ? Math.round((topic.correctQuestions / topic.totalQuestions) * 100)
                       : 0;
-                  const mastery = masteryOf(topic);
-                  const style = MASTERY_STYLES[mastery];
-                  const isWarning = mastery === "needs-work" || mastery === "critical";
-
+                  const m = masteryOf(topic);
+                  const style = MASTERY_STYLES[m];
+                  const isWarn = m === "needs-work" || m === "critical";
                   return (
                     <div
                       key={topic.id}
-                      className={`flex items-center justify-between rounded-2xl border p-5 ${style.rowClass}`}
+                      className={`flex items-center justify-between rounded-2xl border p-5 ${style.row}`}
                     >
                       <p className="text-[18px] font-bold text-body-text">{topic.topic}</p>
                       <div className="flex items-center gap-3">
                         <span
-                          className={`flex items-center gap-1 rounded-full px-3 py-1 text-[13px] font-bold ${style.badgeBg} ${style.badgeText}`}
+                          className={`flex items-center gap-1 rounded-full px-3 py-1 text-[13px] font-bold ${style.badge}`}
                         >
-                          {isWarning ? <AlertTriangleIcon /> : <CheckCircleIcon />}
+                          {isWarn ? <AlertTriangleIcon /> : <CheckCircleIcon />}
                           {topic.correctQuestions}/{topic.totalQuestions}
                         </span>
-                        <span
-                          className={`w-12 text-right text-[15px] font-bold ${style.percentText}`}
-                        >
+                        <span className={`w-12 text-right text-[15px] font-bold ${style.pct}`}>
                           {skillPercent}%
                         </span>
                       </div>
@@ -218,7 +234,7 @@ function PracticeCompleteContent() {
             )}
           </div>
 
-          {/* Weakness + mistake notebook (PRD 5.5.1) */}
+          {/* Next focus / weakness */}
           <div className="rounded-2xl border border-brand/10 bg-surface p-6">
             <div className="flex items-center gap-2">
               <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[rgba(245,158,11,0.1)] text-[#F59E0B]">
@@ -240,7 +256,7 @@ function PracticeCompleteContent() {
             </p>
           </div>
 
-          {/* Actions */}
+          {/* Deep-dive actions */}
           <div className="flex flex-col gap-5">
             <Button
               href={`/practice/analysis?sessionId=${sessionId}`}
@@ -254,6 +270,13 @@ function PracticeCompleteContent() {
               className="h-18 rounded-2xl border-2 border-ink bg-transparent text-[18px] font-bold text-ink hover:bg-tint-strong"
             >
               View Solutions
+            </Button>
+            <Button
+              href="/home/mistake-notebook"
+              variant="secondary"
+              className="h-16 rounded-2xl border border-brand/20 bg-transparent text-[16px] font-bold text-ink hover:bg-tint-strong"
+            >
+              Open Mistake Notebook
             </Button>
           </div>
         </div>

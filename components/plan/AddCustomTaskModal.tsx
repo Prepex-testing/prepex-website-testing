@@ -85,6 +85,8 @@ type AddCustomTaskModalProps = {
   onPlanned?: () => void;
   /** Locks Task Type to this value and hides the picker — used by the revision page. */
   lockedTaskType?: string;
+  /** Overrides the modal header title (add mode) — e.g. "Add Custom Practice Task". */
+  title?: string;
 };
 
 /** Read-only stand-in for a Select, styled to match — used in edit mode where
@@ -120,7 +122,9 @@ export function AddCustomTaskModal({
   onTaskUpdated,
   onPlanned,
   lockedTaskType,
+  title,
 }: AddCustomTaskModalProps) {
+  const headerTitle = title ?? HEADER_TEXT[mode].title;
   const [taskType, setTaskType] = useState(lockedTaskType ?? initialValues?.taskType ?? "Practice");
   const [taskName, setTaskName] = useState(initialValues?.taskName ?? "");
   const [durationValue, setDurationValue] = useState(initialValues?.durationValue ?? "30");
@@ -307,7 +311,7 @@ export function AddCustomTaskModal({
     <WhiteModal
       open={open}
       onClose={onClose}
-      ariaLabel={HEADER_TEXT[mode].title}
+      ariaLabel={headerTitle}
       size="lg"
     >
       {/* HEADER */}
@@ -318,7 +322,7 @@ export function AddCustomTaskModal({
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="min-w-0 break-words text-[14px] font-bold leading-5 text-ink sm:truncate sm:text-base sm:leading-6 md:text-lg lg:text-[22px] lg:leading-7">
-              {HEADER_TEXT[mode].title}
+              {headerTitle}
             </h2>
 
             <p className="min-w-0 truncate text-[10px] font-normal leading-[15px] text-primary sm:mt-1 sm:text-[11px] sm:leading-4 md:text-xs md:leading-[18px] lg:text-sm">
