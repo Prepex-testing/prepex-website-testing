@@ -21,6 +21,7 @@ export default function BadDayPage() {
   const [data, setData] = useState<BadDayWelcome | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [starting, setStarting] = useState(false);
+  const [showMoreTasks, setShowMoreTasks] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -94,7 +95,7 @@ export default function BadDayPage() {
           {/* TASK + CTA BLOCK */}
           <div className="flex w-full max-w-[465px] flex-col items-center gap-5 sm:gap-6">
             <p className="text-center text-[14px] font-semibold leading-[20px] text-ink sm:text-[16px]">
-              Let&apos;s start fresh today. Just one small task.
+              Let&apos;s start fresh today. Just a few small tasks.
             </p>
 
             {firstTask && (
@@ -114,10 +115,35 @@ export default function BadDayPage() {
             )}
 
             {restTasks.length > 0 && (
-              <p className="text-[13px] leading-[18px] text-muted">
-                {restTasks.length} more easy{" "}
-                {restTasks.length === 1 ? "task" : "tasks"} below.
-              </p>
+              <button
+                onClick={() => setShowMoreTasks(!showMoreTasks)}
+                className="text-left text-[13px] leading-[18px] text-muted transition hover:text-ink"
+              >
+                {showMoreTasks ? "Show less" : `${restTasks.length} more easy ${restTasks.length === 1 ? "task" : "tasks"} below.`}
+              </button>
+            )}
+
+            {showMoreTasks && restTasks.length > 0 && (
+              <div className="w-full space-y-3">
+                {restTasks.map((task, index) => (
+                  <div
+                    key={index}
+                    className="rounded-2xl border border-brand/10 bg-background p-5 text-left shadow-[0_1px_2px_0_rgba(26,26,78,0.06)]"
+                  >
+                    <p className="text-[15px] font-bold leading-[22px] text-ink">
+                      {task.title}
+                    </p>
+                    {task.description && (
+                      <p className="mt-1 text-[13px] leading-[18px] text-muted">
+                        {task.description}
+                      </p>
+                    )}
+                    <p className="mt-3 text-[13px] font-semibold text-brand">
+                      {task.estimatedMinutes} min · You&apos;ve got this
+                    </p>
+                  </div>
+                ))}
+              </div>
             )}
 
             <Button

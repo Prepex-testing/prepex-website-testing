@@ -81,15 +81,14 @@ function getMockAction(item: MockAnalysisItem): MockAction {
   };
 }
 
-
 function MoreOptionsMenu({ label, onDelete }: { label: string; onDelete: () => void }) {
   const [isOpen, setOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const MENU_WIDTH = 160; // w-40
-  const MENU_HEIGHT = 44; // approx height for a single menu item
+  const MENU_WIDTH = 160;
+  const MENU_HEIGHT = 44;
 
   const openMenu = () => {
     const button = buttonRef.current;
@@ -97,19 +96,15 @@ function MoreOptionsMenu({ label, onDelete }: { label: string; onDelete: () => v
 
     const rect = button.getBoundingClientRect();
 
-    // default: open below, right-aligned to the button
     let top = rect.bottom + 8;
     let left = rect.right - MENU_WIDTH;
 
-    // flip above if opening below would overflow the viewport bottom
     if (top + MENU_HEIGHT > window.innerHeight) {
       top = rect.top - MENU_HEIGHT - 8;
     }
 
-    // clamp so it never goes off the left edge
     if (left < 8) left = 8;
 
-    // clamp so it never goes off the right edge
     if (left + MENU_WIDTH > window.innerWidth - 8) {
       left = window.innerWidth - MENU_WIDTH - 8;
     }
@@ -172,13 +167,9 @@ function MoreOptionsMenu({ label, onDelete }: { label: string; onDelete: () => v
 
       {isOpen &&
         createPortal(
-          <motion.div
+          <div
             ref={menuRef}
             role="menu"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
             style={{
               position: "fixed",
               top: coords.top,
@@ -198,7 +189,7 @@ function MoreOptionsMenu({ label, onDelete }: { label: string; onDelete: () => v
             >
               Delete Mock
             </button>
-          </motion.div>,
+          </div>,
           document.body
         )}
     </>
@@ -329,12 +320,7 @@ export default function MockAnalysisPage() {
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-      className="flex w-full flex-col gap-6 p-4 sm:p-6 lg:p-8"
-    >
+    <div className="flex w-full flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-[24px] font-bold leading-8 text-ink sm:text-[28px]">
           Mock Analysis
@@ -352,18 +338,10 @@ export default function MockAnalysisPage() {
         </div>
       </header>
 
-      <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3, delay: 0.05, ease: "easeOut" }}
-        className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
-      >
-        {statCards.map((card, index) => (
-          <motion.div
+      <section className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {statCards.map((card) => (
+          <div
             key={card.label}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3, delay: 0.1 + index * 0.05, ease: "easeOut" }}
             className="flex min-h-[134.5px] w-full items-center gap-4 rounded-2xl border border-card bg-surface px-5 py-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:px-6 sm:py-8"
           >
             {/* Icon */}
@@ -385,17 +363,12 @@ export default function MockAnalysisPage() {
                 {card.caption}
               </p>
             </div>
-          </motion.div>
+          </div>
         ))}
-      </motion.section>
+      </section>
 
       {upcomingMock && (
-        <motion.section
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, delay: 0.02, ease: "easeOut" }}
-          className="flex flex-col gap-5 rounded-[20px] border border-brand/10 bg-surface p-4 shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_1px_6px_rgba(0,0,0,0.18)] sm:gap-6 sm:p-5 lg:p-8"
-        >
+        <section className="flex flex-col gap-5 rounded-[20px] border border-brand/10 bg-surface p-4 shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_1px_6px_rgba(0,0,0,0.18)] sm:gap-6 sm:p-5 lg:p-8">
           {/* Header */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
@@ -503,14 +476,10 @@ export default function MockAnalysisPage() {
               </div>
             </div>
           </div>
-        </motion.section>
+        </section>
       )}
-      <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3, delay: 0.25, ease: "easeOut" }}
-        className="overflow-hidden rounded-[24px] border border-brand/10 bg-surface shadow-sm dark:shadow-[0_1px_4px_rgba(0,0,0,0.16)]"
-      >
+
+      <section className="overflow-hidden rounded-[24px] border border-brand/10 bg-surface shadow-sm dark:shadow-[0_1px_4px_rgba(0,0,0,0.16)]">
         {/* Section Header */}
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-5 pl-10 sm:px-6 sm:pl-14 lg:px-8 lg:pl-[72px]">
           <h2 className="text-[18px] font-extrabold leading-7 text-ink">
@@ -524,45 +493,45 @@ export default function MockAnalysisPage() {
           )}
         </div>
 
-        {/* Desktop / Tablet Table */}
+        {/* Desktop / Tablet Table - with pagination animation only */}
         <AnimatePresence mode="wait">
-          {isPageChanging || isLoading ? (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="hidden overflow-x-auto px-6 py-4 md:block sm:px-8 lg:px-10"
-            >
-              <table className="w-full min-w-[760px] border-collapse">
-                <thead>
-                  <tr className="h-12 border-0 bg-[#F9FAFB80] [box-shadow:0_0_0_100vmax_#F9FAFB80] [clip-path:inset(0_-100vmax)] dark:bg-[var(--border-ghost-button,#FAF7F240)] dark:[box-shadow:0_0_0_100vmax_var(--border-ghost-button,#FAF7F240)]">
-                    <th className="py-4 pl-4 pr-2 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white sm:pl-6 lg:pl-8">
-                      Mock Test
-                    </th>
+          <motion.div
+            key={isPageChanging ? `page-${page}` : 'table'}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="hidden overflow-x-auto px-6 py-4 md:block sm:px-8 lg:px-10"
+          >
+            <table className="w-full min-w-[760px] border-collapse">
+              <thead>
+                <tr className="h-12 border-0 bg-[#F9FAFB80] [box-shadow:0_0_0_100vmax_#F9FAFB80] [clip-path:inset(0_-100vmax)] dark:bg-[var(--border-ghost-button,#FAF7F240)] dark:[box-shadow:0_0_0_100vmax_var(--border-ghost-button,#FAF7F240)]">
+                  <th className="py-0 pl-4 pr-2 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white sm:pl-6 lg:pl-8">
+                    Mock Test
+                  </th>
 
-                    <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
-                      Date
-                    </th>
+                  <th className="py-0 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
+                    Date
+                  </th>
 
-                    <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
-                      Score
-                    </th>
+                  <th className="py-0 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
+                    Score
+                  </th>
 
-                    <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
-                      Accuracy
-                    </th>
+                  <th className="py-0 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
+                    Accuracy
+                  </th>
 
-                    <th className="py-4 text-center text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
-                      Action
-                    </th>
+                  <th className="py-0 text-center text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
+                    Action
+                  </th>
 
-                    <th className="w-14 pr-4 dark:bg-tint sm:pr-6 lg:pr-8" />
-                  </tr>
-                </thead>
+                  <th className="w-14 border-0 pr-4 sm:pr-6 lg:pr-8" />
+                </tr>
+              </thead>
 
-                <tbody>
+              <tbody>
+                {isLoading ? (
                   <tr>
                     <td
                       colSpan={6}
@@ -571,46 +540,7 @@ export default function MockAnalysisPage() {
                       Loading mocks…
                     </td>
                   </tr>
-                </tbody>
-              </table>
-            </motion.div>
-          ) : error ? (
-            <motion.div
-              key="error"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="hidden overflow-x-auto px-6 py-4 md:block sm:px-8 lg:px-10"
-            >
-              <table className="w-full min-w-[760px] border-collapse">
-                <thead>
-                  <tr className="h-12 border-0 bg-[#F9FAFB80] [box-shadow:0_0_0_100vmax_#F9FAFB80] [clip-path:inset(0_-100vmax)] dark:bg-[var(--border-ghost-button,#FAF7F240)] dark:[box-shadow:0_0_0_100vmax_var(--border-ghost-button,#FAF7F240)]">
-                    <th className="py-4 pl-4 pr-2 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white sm:pl-6 lg:pl-8">
-                      Mock Test
-                    </th>
-
-                    <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
-                      Date
-                    </th>
-
-                    <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
-                      Score
-                    </th>
-
-                    <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
-                      Accuracy
-                    </th>
-
-                    <th className="py-4 text-center text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
-                      Action
-                    </th>
-
-                    <th className="w-14 pr-4 dark:bg-tint sm:pr-6 lg:pr-8" />
-                  </tr>
-                </thead>
-
-                <tbody>
+                ) : error ? (
                   <tr>
                     <td
                       colSpan={6}
@@ -619,46 +549,7 @@ export default function MockAnalysisPage() {
                       {error}
                     </td>
                   </tr>
-                </tbody>
-              </table>
-            </motion.div>
-          ) : items.length === 0 ? (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="hidden overflow-x-auto px-6 py-4 md:block sm:px-8 lg:px-10"
-            >
-              <table className="w-full min-w-[760px] border-collapse">
-                <thead>
-                  <tr className="h-12 border-0 bg-[#F9FAFB80] [box-shadow:0_0_0_100vmax_#F9FAFB80] [clip-path:inset(0_-100vmax)] dark:bg-[var(--border-ghost-button,#FAF7F240)] dark:[box-shadow:0_0_0_100vmax_var(--border-ghost-button,#FAF7F240)]">
-                    <th className="py-4 pl-4 pr-2 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white sm:pl-6 lg:pl-8">
-                      Mock Test
-                    </th>
-
-                    <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
-                      Date
-                    </th>
-
-                    <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
-                      Score
-                    </th>
-
-                    <th className="py-4 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
-                      Accuracy
-                    </th>
-
-                    <th className="py-4 text-center text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
-                      Action
-                    </th>
-
-                    <th className="w-14 pr-4 dark:bg-tint sm:pr-6 lg:pr-8" />
-                  </tr>
-                </thead>
-
-                <tbody>
+                ) : items.length === 0 ? (
                   <tr>
                     <td
                       colSpan={6}
@@ -667,56 +558,10 @@ export default function MockAnalysisPage() {
                       No mocks yet.
                     </td>
                   </tr>
-                </tbody>
-              </table>
-            </motion.div>
-          ) : (
-            <motion.div
-              key={page}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="hidden overflow-x-auto px-6 py-4 md:block sm:px-8 lg:px-10"
-            >
-              <table className="w-full min-w-[760px] border-collapse">
-                <thead>
-                  <tr className="h-12 border-0 bg-[#F9FAFB80] [box-shadow:0_0_0_100vmax_#F9FAFB80] [clip-path:inset(0_-100vmax)] dark:bg-[var(--border-ghost-button,#FAF7F240)] dark:[box-shadow:0_0_0_100vmax_var(--border-ghost-button,#FAF7F240)]">
-                    <th className="py-0 pl-4 pr-2 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white sm:pl-6 lg:pl-8">
-                      Mock Test
-                    </th>
-
-                    <th className="py-0 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
-                      Date
-                    </th>
-
-                    <th className="py-0 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
-                      Score
-                    </th>
-
-                    <th className="py-0 text-left text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
-                      Accuracy
-                    </th>
-
-                    <th className="py-0 text-center text-caption font-bold uppercase tracking-[0.6px] text-muted dark:text-white">
-                      Action
-                    </th>
-
-                    <th className="w-14 border-0 pr-4 sm:pr-6 lg:pr-8" />
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {items.map((mock, index) => (
-                    <motion.tr
+                ) : (
+                  items.map((mock) => (
+                    <tr
                       key={mock.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{
-                        duration: 0.2,
-                        delay: index * 0.03,
-                        ease: "easeOut",
-                      }}
                       className="border-b border-brand/5 last:border-0"
                     >
                       <td className="py-5 pl-4 pr-2 sm:pl-6 lg:pl-8">
@@ -778,74 +623,40 @@ export default function MockAnalysisPage() {
                           onDelete={() => setConfirmDeleteId(mock.id)}
                         />
                       </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
-            </motion.div>
-          )}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </motion.div>
         </AnimatePresence>
 
-        {/* Mobile View */}
+        {/* Mobile View - with pagination animation only */}
         <AnimatePresence mode="wait">
-          {isPageChanging || isLoading ? (
-            <motion.div
-              key="mobile-loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="flex flex-col gap-3 p-4 md:hidden sm:p-6"
-            >
+          <motion.div
+            key={isPageChanging ? `mobile-page-${page}` : 'mobile-table'}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="flex flex-col gap-3 p-4 md:hidden sm:p-6"
+          >
+            {isLoading ? (
               <p className="py-8 text-center text-sm text-muted">
                 Loading mocks…
               </p>
-            </motion.div>
-          ) : error ? (
-            <motion.div
-              key="mobile-error"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="flex flex-col gap-3 p-4 md:hidden sm:p-6"
-            >
+            ) : error ? (
               <p className="py-8 text-center text-sm text-warning">
                 {error}
               </p>
-            </motion.div>
-          ) : items.length === 0 ? (
-            <motion.div
-              key="mobile-empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="flex flex-col gap-3 p-4 md:hidden sm:p-6"
-            >
+            ) : items.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted">
                 No mocks yet.
               </p>
-            </motion.div>
-          ) : (
-            <motion.div
-              key={`mobile-${page}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="flex flex-col gap-3 p-4 md:hidden sm:p-6"
-            >
-              {items.map((mock, index) => (
-                <motion.div
+            ) : (
+              items.map((mock) => (
+                <div
                   key={mock.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{
-                    duration: 0.2,
-                    delay: index * 0.03,
-                    ease: "easeOut",
-                  }}
                   className="rounded-xl border border-brand/10 bg-surface/90 p-4"
                 >
                   {/* Mock Header */}
@@ -918,10 +729,10 @@ export default function MockAnalysisPage() {
                       </Link>
                     );
                   })()}
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
+                </div>
+              ))
+            )}
+          </motion.div>
         </AnimatePresence>
 
         {/* Pagination */}
@@ -962,14 +773,9 @@ export default function MockAnalysisPage() {
             </div>
           </div>
         )}
-      </motion.section>
+      </section>
 
-      <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3, delay: 0.3, ease: "easeOut" }}
-        className="flex flex-col gap-5 rounded-[20px] border border-brand/10 bg-surface px-4 py-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.18)] sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 lg:px-8 lg:py-8"
-      >
+      <section className="flex flex-col gap-5 rounded-[20px] border border-brand/10 bg-surface px-4 py-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.18)] sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 lg:px-8 lg:py-8">
         <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-center sm:gap-8 sm:text-left">
           {/* Icon */}
           <div
@@ -1001,7 +807,7 @@ export default function MockAnalysisPage() {
             Upload Scorecard
           </Button>
         </div>
-      </motion.section>
+      </section>
 
       <ConfirmModal
         open={confirmDeleteId !== null}
@@ -1018,6 +824,6 @@ export default function MockAnalysisPage() {
         }
         confirmLabel={isDeleting ? "Deleting…" : "Delete"}
       />
-    </motion.div>
+    </div>
   );
 }
