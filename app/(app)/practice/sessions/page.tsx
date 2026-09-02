@@ -7,10 +7,11 @@ import type { PlanTask } from "@/components/home/PlanTaskRow";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { Button } from "@/components/ui/Button";
-import { BellIcon, PlusIcon } from "@/components/ui/icons";
+import {PlusIcon } from "@/components/ui/icons";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { getTodayPlan, type PlannerTask } from "@/lib/api/planner";
+import { BellIcon } from "@/assets/icons";
 
 function toPracticeRow(task: PlannerTask): PlanTask {
   return {
