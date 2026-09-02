@@ -64,10 +64,11 @@ function formatDuration(minutes: number) {
 }
 
 function toPlanTask(task: PlannerTask): PlanTask {
+  const isSundayDpp = task.taskType === "PRACTICE" && task.title === "DPP Sunday" && !task.chapter;
   return {
     id: task.id,
-    subjectLabel: task.subject?.code?.[0] ?? "W",
-    subjectName: task.subject?.name ?? "Wellness",
+    subjectLabel: isSundayDpp ? "DPP" : task.subject?.code?.[0] ?? "W",
+    subjectName: isSundayDpp ? "DPP" : task.subject?.name ?? "Wellness",
     type: TASK_TYPE_STYLE[task.taskType] ?? "new-learning",
     title: task.title,
     meta: task.description ?? task.chapter?.name ?? "",
