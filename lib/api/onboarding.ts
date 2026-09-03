@@ -37,7 +37,7 @@ export type OnboardingProfile = {
 export type OnboardingChapterProgress = {
   id: string;
   name: string;
-  status: "NOT_STARTED" | "IN_REVISION" | "MASTERED";
+  status: "NOT_STARTED" | "LEARNING" | "IN_REVISION" | "MASTERED";
 };
 
 export type OnboardingSubjectProgress = {
@@ -196,7 +196,7 @@ export async function getStudentChapters() {
 export function saveChapterProgress(input: {
   chapterProgress: Array<{
     chapterId: string;
-    status: "NOT_STARTED" | "IN_REVISION" | "MASTERED";
+    status: "NOT_STARTED" | "LEARNING" | "IN_REVISION" | "MASTERED";
   }>;
 }) {
   return authRequest<{ success: true; message: string }>("/step5", {
