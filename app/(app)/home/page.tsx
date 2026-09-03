@@ -138,11 +138,11 @@ const QUICK_ACCESS = [
     href: "/home/mistake-notebook",
     label: "Mistake Notebook", icon: <BookIcon className="h-5 w-5" />
   },
-  {
-    href: "/home/focus-topic",
-    label: "This Week's Focus Topic",
-    icon: <LayersIcon className="h-5 w-5" />,
-  },
+  // {
+  //   href: "/home/focus-topic",
+  //   label: "This Week's Focus Topic",
+  //   icon: <LayersIcon className="h-5 w-5" />,
+  // },
   {
     href: "/home/focus-next",
     label: "Where to focus next", icon: <RadarIcon className="h-5 w-5" />

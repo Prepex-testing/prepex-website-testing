@@ -21,11 +21,21 @@ function cycleState(state: ChapterState): ChapterState {
   return "none";
 }
 
-function stateFromStatus(status: "NOT_STARTED" | "IN_REVISION" | "MASTERED"): ChapterState {
-  if (status === "MASTERED") return "done";
-  if (status === "IN_REVISION") return "partial";
+function stateFromStatus(status: "NOT_STARTED" | "LEARNING" | "IN_REVISION" | "MASTERED"): ChapterState {
+  // A fully-studied chapter persists as IN_REVISION (legacy rows may still
+  // be MASTERED) — either way it reloads as "done". A partially-studied one
+  // persists as LEARNING and reloads as "partial". Everything else is "none".
+  if (status === "MASTERED" || status === "IN_REVISION") return "done";
+  if (status === "LEARNING") return "partial";
   return "none";
 }
+
+// chapterState → the status saved for it in the /step5 payload.
+const STATUS_BY_STATE: Record<ChapterState, "NOT_STARTED" | "LEARNING" | "IN_REVISION"> = {
+  none: "NOT_STARTED",
+  partial: "LEARNING",
+  done: "IN_REVISION",
+};
 
 export default function WhichChaptersHaveYouStudiedPage() {
   const router = useRouter();
@@ -42,7 +52,7 @@ export default function WhichChaptersHaveYouStudiedPage() {
         const withChapters = data.filter((subject) => subject.chapters.length > 0);
         setSubjects(withChapters);
 
-        const savedStatusById = new Map<string, "NOT_STARTED" | "IN_REVISION" | "MASTERED">();
+        const savedStatusById = new Map<string, "NOT_STARTED" | "LEARNING" | "IN_REVISION" | "MASTERED">();
         for (const subject of progress?.data.subjects ?? []) {
           for (const chapter of subject.chapters) {
             savedStatusById.set(chapter.id, chapter.status);
@@ -100,12 +110,14 @@ export default function WhichChaptersHaveYouStudiedPage() {
   };
 
   const handleContinue = async () => {
-    const chapterProgress = Object.entries(chapterState)
-      .filter(([, state]) => state !== "none")
-      .map(([chapterId, state]) => ({
-        chapterId,
-        status: (state === "done" ? "MASTERED" : "IN_REVISION") as "MASTERED" | "IN_REVISION",
-      }));
+    // Every chapter is sent, mapped from its local state: done → IN_REVISION,
+    // partial → LEARNING, unmarked → NOT_STARTED.
+    const chapterProgress = subjects.flatMap((subject) =>
+      subject.chapters.map((chapter) => ({
+        chapterId: chapter.id,
+        status: STATUS_BY_STATE[chapterState[chapter.id] ?? "none"],
+      })),
+    );
 
     if (chapterProgress.length === 0) {
       router.push("/onboarding/analyzing");
