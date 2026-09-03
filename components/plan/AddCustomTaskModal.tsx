@@ -157,6 +157,11 @@ export function AddCustomTaskModal({
     setDurationValue(initialValues?.durationValue ?? "30");
     setTimePreferenceValue(initialValues?.timePreferenceValue ?? "");
     setNotes(initialValues?.notes ?? "");
+    // Clear the pickers too, or a fresh "Add Task" opens pre-filled with the
+    // previously created task's subject/topic. The loader effect below
+    // re-derives these from initialValues when a caller provides them.
+    setSubjectId(null);
+    setChapterId("");
     setError(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -311,8 +316,14 @@ export function AddCustomTaskModal({
       setTaskName("");
       setNotes("");
       onClose();
-    } catch {
-      setError("Couldn't add the task. Please try again.");
+    } catch (err) {
+      // Surface server-side validation messages verbatim (e.g. the max-5
+      // custom practice tasks per day limit); fall back to a generic message.
+      setError(
+        err instanceof Error && err.message
+          ? err.message
+          : "Couldn't add the task. Please try again.",
+      );
     } finally {
       setSubmitting(false);
     }
