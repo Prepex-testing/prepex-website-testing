@@ -347,32 +347,38 @@ function PracticeModeContent() {
         </div>
       </div>
 
-      <div className="flex w-full flex-wrap items-center justify-between gap-3">
-        <div className="flex h-7 items-center gap-3">
-          <p className="text-[20px] font-bold leading-7 text-ink whitespace-nowrap">
+      <div className="flex w-full flex-col items-center gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
+        {/* Question Info */}
+        <div className="flex w-full flex-wrap items-center justify-center gap-2 sm:w-auto sm:justify-start sm:gap-3">
+          <p className="whitespace-nowrap text-[16px] font-bold leading-6 text-ink sm:text-[20px] sm:leading-7">
             Question {questionNumber} of {total}
           </p>
-          <span className="flex h-4 items-center rounded-sm bg-subject-bg px-2 text-[12px] font-semibold uppercase tracking-[0.6px] leading-4 text-ink">
+
+          <span className="flex h-4 items-center rounded-sm bg-subject-bg px-2 text-[11px] font-semibold uppercase leading-4 tracking-[0.6px] text-ink sm:text-[12px]">
             {prettyDifficulty(currentQ.difficulty)}
           </span>
+
           {isMarked && (
-            <span className="flex h-4 items-center rounded-sm bg-tint-strong px-2 text-[11px] font-semibold uppercase tracking-[0.6px] leading-4 text-ink">
+            <span className="flex h-4 items-center rounded-sm bg-tint-strong px-2 text-[10px] font-semibold uppercase leading-4 tracking-[0.6px] text-ink sm:text-[11px]">
               Marked
             </span>
           )}
         </div>
 
-        <div className="flex h-7 items-center gap-8">
+        {/* Session Info */}
+        <div className="flex w-full items-center justify-center gap-5 sm:w-auto sm:justify-end sm:gap-8">
           <div className="flex items-center gap-2">
             <ClockIcon />
-            <span className="text-[18px] font-semibold leading-7 text-ink whitespace-nowrap">
+
+            <span className="whitespace-nowrap text-[14px] font-semibold leading-6 text-ink sm:text-[18px] sm:leading-7">
               {formatTime(elapsed)} elapsed
             </span>
           </div>
+
           <button
             type="button"
             onClick={() => setConfirmEndOpen(true)}
-            className="text-[14px] font-bold uppercase leading-5 tracking-[1.4px] text-muted whitespace-nowrap transition-colors hover:text-ink"
+            className="whitespace-nowrap text-[12px] font-bold uppercase leading-5 tracking-[1.2px] text-muted transition-colors hover:text-ink sm:text-[14px] sm:tracking-[1.4px]"
           >
             End Session
           </button>
@@ -380,14 +386,17 @@ function PracticeModeContent() {
       </div>
 
       {/* Progress dots (PRD 5.4.1) */}
-      <div className="flex flex-wrap items-center gap-[15px]">
+      <div className="flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:justify-start sm:gap-x-[15px]">
         {Array.from({ length: total }).map((_, index) => {
           const isDone = index < lockedCount;
           const isActive = index === lockedCount;
+
           return (
             <span
               key={index}
-              className={`h-2 w-2 rounded-full transition-colors duration-200 ${isDone || isActive ? "bg-question-dot-active" : "bg-question-dot-inactive"
+              className={`h-2 w-2 shrink-0 rounded-full transition-colors duration-200 ${isDone || isActive
+                ? "bg-question-dot-active"
+                : "bg-question-dot-inactive"
                 }`}
             />
           );
@@ -395,17 +404,19 @@ function PracticeModeContent() {
       </div>
 
       {/* Breadcrumb */}
-      <div className="flex min-h-8 w-full flex-wrap items-center gap-4">
+      <div className="flex min-h-8 w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:justify-start sm:gap-4">
         {breadcrumb.map((item, index) => (
           <React.Fragment key={`${item}-${index}`}>
             {index === 0 ? (
-              <span className="flex h-8 items-center rounded-lg bg-subject-bg px-4 text-[14px] font-semibold leading-5 text-subject-text">
+              <span className="flex h-8 shrink-0 items-center rounded-lg bg-subject-bg px-3 text-[12px] font-semibold leading-5 text-subject-text sm:px-4 sm:text-[14px]">
                 {item}
               </span>
             ) : (
               <>
-                <span className="h-[6px] w-[6px] rounded-full bg-muted" />
-                <span className="text-[14px] font-semibold leading-5 text-ink">{item}</span>
+                <span className="h-[6px] w-[6px] shrink-0 rounded-full bg-muted" />
+                <span className="text-[12px] font-semibold leading-5 text-ink sm:text-[14px]">
+                  {item}
+                </span>
               </>
             )}
           </React.Fragment>
@@ -464,51 +475,50 @@ function PracticeModeContent() {
         })}
       </div>
 
-     <div className="flex w-full flex-col items-center justify-between gap-6 rounded-2xl border border-brand/10 bg-surface px-4 py-5 sm:flex-row sm:px-6 sm:py-6 lg:px-10">
-  <div className="flex w-full flex-wrap items-center justify-center gap-6 sm:w-auto sm:justify-start sm:gap-8 lg:gap-12">
-    <button
-      type="button"
-      onClick={handleToggleMark}
-      aria-pressed={isMarked}
-      className={`flex h-8 items-center gap-3 transition-colors ${
-        isMarked
-          ? "text-[#666666] dark:text-[#FAF7F2]"
-          : "text-[#666666] hover:text-ink dark:text-[#FAF7F2] dark:hover:text-white"
-      }`}
-    >
-      <BookmarkIcon
-        filled={isMarked}
-        className="h-6 w-6 shrink-0 sm:h-7 sm:w-7 lg:h-8 lg:w-8"
-      />
+      <div className="flex w-full flex-col items-center justify-between gap-6 rounded-2xl border border-brand/10 bg-surface px-4 py-5 sm:flex-row sm:px-6 sm:py-6 lg:px-10">
+        <div className="flex w-full flex-wrap items-center justify-center gap-6 sm:w-auto sm:justify-start sm:gap-8 lg:gap-12">
+          <button
+            type="button"
+            onClick={handleToggleMark}
+            aria-pressed={isMarked}
+            className={`flex h-8 items-center gap-3 transition-colors ${isMarked
+              ? "text-[#666666] dark:text-[#FAF7F2]"
+              : "text-[#666666] hover:text-ink dark:text-[#FAF7F2] dark:hover:text-white"
+              }`}
+          >
+            <BookmarkIcon
+              filled={isMarked}
+              className="h-6 w-6 shrink-0 sm:h-7 sm:w-7 lg:h-8 lg:w-8"
+            />
 
-      <span className="text-[14px] font-bold leading-6 sm:text-[16px]">
-        Mark for review
-      </span>
-    </button>
+            <span className="text-[14px] font-bold leading-6 sm:text-[16px]">
+              Mark for review
+            </span>
+          </button>
 
-    <button
-      type="button"
-      onClick={handleSkip}
-      disabled={submitting || finishing}
-      className="flex h-8 items-center gap-3 text-[#666666] transition-colors hover:text-ink disabled:opacity-30 dark:text-[#FAF7F2] dark:hover:text-white"
-    >
-      <DoubleArrowIcon className="h-6 w-6 shrink-0 sm:h-7 sm:w-7 lg:h-8 lg:w-8" />
+          <button
+            type="button"
+            onClick={handleSkip}
+            disabled={submitting || finishing}
+            className="flex h-8 items-center gap-3 text-[#666666] transition-colors hover:text-ink disabled:opacity-30 dark:text-[#FAF7F2] dark:hover:text-white"
+          >
+            <DoubleArrowIcon className="h-6 w-6 shrink-0 sm:h-7 sm:w-7 lg:h-8 lg:w-8" />
 
-      <span className="text-[14px] font-bold leading-6 sm:text-[16px]">
-        {isLast ? "Skip & Finish" : "Skip Question"}
-      </span>
-    </button>
-  </div>
+            <span className="text-[14px] font-bold leading-6 sm:text-[16px]">
+              {isLast ? "Skip & Finish" : "Skip Question"}
+            </span>
+          </button>
+        </div>
 
-  <button
-    type="button"
-    onClick={handleSubmit}
-    disabled={selectedKey === null || submitting || finishing}
-    className="flex h-12 w-full items-center justify-center rounded-xl bg-cta text-[16px] font-bold leading-7 text-white transition-opacity hover:opacity-90 disabled:opacity-40 sm:h-14 sm:w-[200px] sm:text-[18px]"
-  >
-    {submitting ? "Saving…" : isLast ? "Submit & Finish" : "Submit answer"}
-  </button>
-</div>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={selectedKey === null || submitting || finishing}
+          className="flex h-12 w-full items-center justify-center rounded-xl bg-cta text-[16px] font-bold leading-7 text-white transition-opacity hover:opacity-90 disabled:opacity-40 sm:h-14 sm:w-[200px] sm:text-[18px]"
+        >
+          {submitting ? "Saving…" : isLast ? "Submit & Finish" : "Submit answer"}
+        </button>
+      </div>
 
       {/* PRD 130 — leaving a live session requires confirmation. */}
       <WhiteModal

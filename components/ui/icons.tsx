@@ -991,6 +991,8 @@ export function SearchIcon() {
 
 export function BookmarkIcon({
   filled = false,
+  width = 24,
+  height = 24,
   ...props
 }: SVGProps<SVGSVGElement> & {
   filled?: boolean;
@@ -998,8 +1000,11 @@ export function BookmarkIcon({
   return (
     <svg
       viewBox="0 0 16 16"
+      width={width}
+      height={height}
       fill={filled ? "currentColor" : "none"}
       aria-hidden="true"
+      preserveAspectRatio="xMidYMid meet"
       {...props}
     >
       <path
@@ -1807,18 +1812,16 @@ export function DoubleArrowIcon({
       height={height}
       fill="none"
       aria-hidden="true"
+      preserveAspectRatio="xMidYMid meet"
       {...props}
     >
-      <text
-        x="12"
-        y="17"
-        textAnchor="middle"
-        fontSize="24"
-        fontWeight="600"
-        fill="currentColor"
-      >
-        »
-      </text>
+      <path
+        d="M6 6L12 12L6 18M13 6L19 12L13 18"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

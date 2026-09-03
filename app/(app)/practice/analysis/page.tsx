@@ -7,8 +7,8 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
 import {
-  ArrowLeftIcon,
-  BellIcon,
+  // ArrowLeftIcon,
+  // BellIcon,
   BookmarkIcon,
   CheckIcon,
   XIcon,
@@ -28,6 +28,7 @@ import {
   type PracticeSessionDetail,
   type PracticeSessionQuestion,
 } from "@/lib/api/practice";
+import { ArrowLeftIcon, BellIcon } from "@/assets/icons";
 
 const ALL_TAGS = Object.keys(MISTAKE_TAG_LABELS) as MistakeTag[];
 
@@ -193,23 +194,45 @@ function QuestionAnalysisContent() {
       ) : (
         <>
           <div className="flex flex-col gap-3">
-            <p className="text-sm font-semibold text-muted">
-              {session.correctQuestions}/{session.totalQuestions} correct ·{" "}
-              {session.wrongQuestions} wrong · {session.skippedQuestions} skipped ·{" "}
-              {session.markedQuestions} marked
-            </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 sm:gap-3 md:gap-4">
               {FILTERS.map((f) => (
                 <button
                   key={f.id}
                   type="button"
                   onClick={() => selectFilter(f.id)}
                   aria-pressed={filter === f.id}
-                  className={`rounded-full border px-4 py-1.5 text-[13px] font-bold transition-colors ${
-                    filter === f.id
-                      ? "border-[#F59E0B] bg-[rgba(245,158,11,0.1)] text-[#F59E0B]"
-                      : "border-brand/20 text-ink hover:bg-tint-strong"
-                  }`}
+                  className={`
+          flex
+          h-8
+          shrink-0
+          items-center
+          justify-center
+          rounded-full
+          border
+          px-2.5
+          text-[9px]
+          font-semibold
+          leading-4
+          whitespace-nowrap
+          transition-all
+          duration-200
+
+          sm:h-10
+          sm:px-4
+          sm:text-xs
+          sm:leading-5
+
+          md:h-[42px]
+          md:px-5
+          md:text-[13px]
+
+          lg:text-sm
+
+          ${filter === f.id
+                      ? "border-brand bg-brand text-white dark:border-white dark:bg-white dark:text-[#1A1A4E]"
+                      : "border-brand bg-surface text-[#444655] hover:text-ink dark:border-secondary dark:bg-transparent dark:text-secondary dark:hover:border-white"
+                    }
+        `}
                 >
                   {f.label} ({counts[f.id]})
                 </button>
@@ -392,256 +415,265 @@ function QuestionCard({
 
   return (
     <>
-    <div className="rounded-2xl border border-brand/10 bg-surface p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-xs font-bold uppercase tracking-wide text-ink">
-          Q.{sq.displayOrder} · {q.topic}
-        </p>
-        <div className="flex flex-wrap items-center gap-2">
-          {q.difficulty && (
-            <span className="rounded-full bg-tint px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-ink">
-              {prettyDifficulty(q.difficulty)}
-            </span>
-          )}
-          {sq.markedForReview && (
-            <span className="flex items-center gap-1 rounded-full bg-tint px-3 py-1 text-[10px] font-bold uppercase text-ink">
-              <BookmarkIcon filled />
-              Marked
-            </span>
-          )}
-          <span
-            className={`flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase ${
-              isCorrect
+      <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+        <div className="flex min-h-[23px] flex-wrap items-center justify-between gap-2">
+          <p className="min-w-0 truncate text-[12px] font-bold uppercase leading-4 tracking-[1.2px] text-ink sm:text-[14px] sm:leading-5 sm:tracking-[1.4px]">
+            Q.{sq.displayOrder} · {q.topic}
+          </p>
+
+          <div className="flex shrink-0 flex-wrap items-center gap-1.5 sm:gap-2">
+            {q.difficulty && (
+              <span className="rounded-full bg-tint px-2.5 py-1 text-[9px] font-bold uppercase leading-[15px] tracking-wide text-ink sm:px-3 sm:text-[10px]">
+                {prettyDifficulty(q.difficulty)}
+              </span>
+            )}
+
+            {sq.markedForReview && (
+              <span className="flex items-center gap-1 rounded-full bg-tint px-2.5 py-1 text-[9px] font-bold uppercase leading-[15px] text-ink sm:px-3 sm:text-[10px]">
+                <BookmarkIcon
+                  filled
+                  className="h-3 w-3 sm:h-3.5 sm:w-3.5"
+                />
+                Marked
+              </span>
+            )}
+
+            <span
+              className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[9px] font-bold uppercase leading-[15px] sm:px-3 sm:text-[10px] ${isCorrect
                 ? "bg-[rgba(67,176,144,0.1)] text-[#28B485]"
                 : sq.result === "WRONG"
                   ? "bg-[rgba(245,158,11,0.1)] text-[#F59E0B]"
                   : "bg-tint text-muted"
-            }`}
-          >
-            {isCorrect ? <CheckIcon /> : sq.result === "WRONG" ? <XIcon /> : null}
-            {sq.result}
-          </span>
+                }`}
+            >
+              {isCorrect ? (
+                <CheckIcon />
+              ) : sq.result === "WRONG" ? (
+                <XIcon />
+              ) : null}
+
+              {sq.result}
+            </span>
+          </div>
         </div>
-      </div>
 
-      <p className="mt-4 text-sm leading-relaxed text-body-text">{q.questionText}</p>
+        <p className="mt-3 text-[15px] font-medium italic leading-6 text-body-text sm:mt-4 sm:text-[18px] sm:leading-[29.25px]">
+          {q.questionText}
+        </p>
+        {q.questionImageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={q.questionImageUrl}
+            alt="Question figure"
+            loading="lazy"
+            className="mt-3 max-h-72 w-auto rounded-xl border border-brand/10 object-contain"
+          />
+        )}
 
-      {q.questionImageUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={q.questionImageUrl}
-          alt="Question figure"
-          loading="lazy"
-          className="mt-3 max-h-72 w-auto rounded-xl border border-brand/10 object-contain"
-        />
-      )}
-
-      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {options.map(([key, value]) => {
-          const isYour = yourKey === key;
-          const isRight = correctKey === key;
-          return (
-            <div
-              key={key}
-              className={`rounded-xl border p-4 ${
-                isRight
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {options.map(([key, value]) => {
+            const isYour = yourKey === key;
+            const isRight = correctKey === key;
+            return (
+              <div
+                key={key}
+                className={`rounded-xl border p-4 ${isRight
                   ? "border-[1.5px] border-[#28B485] bg-[rgba(67,176,144,0.06)]"
                   : isYour
                     ? "border-[1.5px] border-[#F59E0B] bg-cta/5"
                     : "border-brand/10"
-              }`}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
-                  Option {key}
-                  {isYour && <span className="ml-1 normal-case text-[#F59E0B]">(Your answer)</span>}
-                  {isRight && <span className="ml-1 normal-case text-[#28B485]">(Correct)</span>}
-                </p>
-              </div>
-              <p className="mt-1.5 text-sm font-semibold text-ink">{value}</p>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-brand/10 pt-4">
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-wide text-[#F59E0B]">Your answer</p>
-          <p className="text-sm font-bold text-[#F59E0B]">{yourKey ?? "Skipped"}</p>
-        </div>
-        <div className="text-right">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-success">Correct</p>
-          <p className="text-sm font-bold text-success">{correctKey}</p>
-        </div>
-        {sq.timeTakenSeconds != null && (
-          <p className="text-xs text-muted">
-            Time: {Math.floor(sq.timeTakenSeconds / 60)}:
-            {String(sq.timeTakenSeconds % 60).padStart(2, "0")}
-          </p>
-        )}
-      </div>
-
-      {(q.solutionText || q.solutionImageUrl) && (
-        <div className="mt-4">
-          <button
-            type="button"
-            onClick={() => setShowSolution((v) => !v)}
-            className="text-[13px] font-bold text-ink underline"
-          >
-            {showSolution ? "Hide solution" : "View solution"}
-          </button>
-          {showSolution && (
-            <div className="mt-2 rounded-xl bg-tint/40 p-4 text-sm leading-relaxed whitespace-pre-line text-body-text">
-              {q.solutionText}
-              {q.solutionImageUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={q.solutionImageUrl}
-                  alt="Solution figure"
-                  loading="lazy"
-                  className="mt-3 max-h-72 w-auto rounded-lg border border-brand/10 object-contain"
-                />
-              )}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-
-    {/* Mistake-notebook context — for a question re-practised from the Mistake
-        Notebook (already tagged / reviewed). Reflects the live-edited values. */}
-    {isReviewedMistake && sq.mistakeEntry && (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-          <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-muted">
-            Mistake Tag
-          </p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {tags.length ? (
-              tags.map((t) => (
-                <span
-                  key={t}
-                  className="flex items-center gap-1.5 rounded-full bg-tint px-3 py-1 text-[12px] font-bold text-ink"
-                >
-                  {TAG_ICONS[t]}
-                  {MISTAKE_TAG_LABELS[t]}
-                </span>
-              ))
-            ) : (
-              <span className="text-[13px] text-muted">Not tagged yet</span>
-            )}
-          </div>
-          {tags[0] && (
-            <p className="mt-2 text-[13px] leading-5 text-muted">
-              {TAG_DESCRIPTIONS[tags[0]]}
-            </p>
-          )}
-        </div>
-
-        <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-          <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-muted">
-            Student Note
-          </p>
-          <p className="mt-2 text-[13px] italic leading-5 text-body-text">
-            {savedNote ? `“${savedNote}”` : "No note added."}
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-brand/10 bg-surface p-5 sm:col-span-2">
-          <div className="flex flex-wrap items-center gap-x-10 gap-y-3">
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-brand">
-                Review Count
-              </p>
-              <p className="mt-1 text-[22px] font-extrabold leading-7 text-ink">
-                {reviewCount}
-              </p>
-              <p className="text-[12px] text-muted">Times reviewed</p>
-            </div>
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-muted">
-                Last Reviewed
-              </p>
-              <p className="mt-1 text-[14px] font-bold text-ink">
-                {lastReviewedAt ? (
-                  <>
-                    {new Date(lastReviewedAt).toLocaleDateString(undefined, {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}{" "}
-                    <span className="font-medium text-muted">
-                      ({relativeDay(lastReviewedAt)})
-                    </span>
-                  </>
-                ) : (
-                  "Not reviewed yet"
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    )}
-
-    {/* Tag this mistake (PRD 5.5.2 / 5.5.3) — shown for any wrong answer in the
-        notebook. Re-tagging one already reviewed counts as a re-review. */}
-    {mistakeId && (
-      <div className="rounded-2xl border border-brand/10 bg-surface p-6">
-        <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-muted">
-          {isReviewedMistake ? "Re-tag this mistake" : "Tag this mistake"}
-        </p>
-
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {ALL_TAGS.map((tag) => {
-            const active = tags.includes(tag);
-            return (
-              <button
-                key={tag}
-                type="button"
-                disabled={busy}
-                onClick={() => toggleTag(tag)}
-                aria-pressed={active}
-                className={`flex flex-col items-center justify-center gap-2 rounded-xl border p-4 text-center transition-colors disabled:opacity-50 ${
-                  active
-                    ? "border-[1.5px] border-brand bg-tint/50 text-brand"
-                    : "border-brand/15 text-body-text hover:border-ink/40"
-                }`}
+                  }`}
               >
-                {TAG_ICONS[tag]}
-                <span className="text-[12px] font-semibold leading-4">
-                  {MISTAKE_TAG_LABELS[tag]}
-                </span>
-              </button>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
+                    Option {key}
+                    {isYour && <span className="ml-1 normal-case text-[#F59E0B]">(Your answer)</span>}
+                    {isRight && <span className="ml-1 normal-case text-[#28B485]">(Correct)</span>}
+                  </p>
+                </div>
+                <p className="mt-1.5 text-sm font-semibold text-ink">{value}</p>
+              </div>
             );
           })}
         </div>
 
-        <textarea
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          onBlur={saveNote}
-          placeholder="Add a personal note (e.g. “forgot the sign convention”)"
-          rows={2}
-          className="mt-4 w-full resize-none rounded-lg border border-brand/20 bg-transparent p-3 text-sm text-ink outline-none focus:border-ink/40"
-        />
-        <div className="mt-1 flex items-center justify-between">
-          <span className="text-[11px] font-semibold text-success">
-            ✓ Added to Mistake Notebook
-          </span>
-          {note !== savedNote && (
-            <button
-              type="button"
-              onClick={saveNote}
-              disabled={busy}
-              className="text-[12px] font-bold text-ink underline disabled:opacity-50"
-            >
-              Save note
-            </button>
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-brand/10 pt-4">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-[#F59E0B]">Your answer</p>
+            <p className="text-sm font-bold text-[#F59E0B]">{yourKey ?? "Skipped"}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-success">Correct</p>
+            <p className="text-sm font-bold text-success">{correctKey}</p>
+          </div>
+          {sq.timeTakenSeconds != null && (
+            <p className="text-xs text-muted">
+              Time: {Math.floor(sq.timeTakenSeconds / 60)}:
+              {String(sq.timeTakenSeconds % 60).padStart(2, "0")}
+            </p>
           )}
         </div>
+
+        {(q.solutionText || q.solutionImageUrl) && (
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => setShowSolution((v) => !v)}
+              className="text-[13px] font-bold text-ink underline"
+            >
+              {showSolution ? "Hide solution" : "View solution"}
+            </button>
+            {showSolution && (
+              <div className="mt-2 rounded-xl bg-tint/40 p-4 text-sm leading-relaxed whitespace-pre-line text-body-text">
+                {q.solutionText}
+                {q.solutionImageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={q.solutionImageUrl}
+                    alt="Solution figure"
+                    loading="lazy"
+                    className="mt-3 max-h-72 w-auto rounded-lg border border-brand/10 object-contain"
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
-    )}
+
+      {/* Mistake-notebook context — for a question re-practised from the Mistake
+        Notebook (already tagged / reviewed). Reflects the live-edited values. */}
+      {isReviewedMistake && sq.mistakeEntry && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="rounded-2xl border border-brand/10 bg-surface p-5">
+            <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-muted">
+              Mistake Tag
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {tags.length ? (
+                tags.map((t) => (
+                  <span
+                    key={t}
+                    className="flex items-center gap-1.5 rounded-full bg-tint px-3 py-1 text-[12px] font-bold text-ink"
+                  >
+                    {TAG_ICONS[t]}
+                    {MISTAKE_TAG_LABELS[t]}
+                  </span>
+                ))
+              ) : (
+                <span className="text-[13px] text-muted">Not tagged yet</span>
+              )}
+            </div>
+            {tags[0] && (
+              <p className="mt-2 text-[13px] leading-5 text-muted">
+                {TAG_DESCRIPTIONS[tags[0]]}
+              </p>
+            )}
+          </div>
+
+          <div className="rounded-2xl border border-brand/10 bg-surface p-5">
+            <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-muted">
+              Student Note
+            </p>
+            <p className="mt-2 text-[13px] italic leading-5 text-body-text">
+              {savedNote ? `“${savedNote}”` : "No note added."}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-brand/10 bg-surface p-5 sm:col-span-2">
+            <div className="flex flex-wrap items-center gap-x-10 gap-y-3">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-brand">
+                  Review Count
+                </p>
+                <p className="mt-1 text-[22px] font-extrabold leading-7 text-ink">
+                  {reviewCount}
+                </p>
+                <p className="text-[12px] text-muted">Times reviewed</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-muted">
+                  Last Reviewed
+                </p>
+                <p className="mt-1 text-[14px] font-bold text-ink">
+                  {lastReviewedAt ? (
+                    <>
+                      {new Date(lastReviewedAt).toLocaleDateString(undefined, {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}{" "}
+                      <span className="font-medium text-muted">
+                        ({relativeDay(lastReviewedAt)})
+                      </span>
+                    </>
+                  ) : (
+                    "Not reviewed yet"
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tag this mistake (PRD 5.5.2 / 5.5.3) — shown for any wrong answer in the
+        notebook. Re-tagging one already reviewed counts as a re-review. */}
+      {mistakeId && (
+        <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+          <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-muted">
+            {isReviewedMistake ? "Re-tag this mistake" : "Tag this mistake"}
+          </p>
+
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {ALL_TAGS.map((tag) => {
+              const active = tags.includes(tag);
+              return (
+                <button
+                  key={tag}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => toggleTag(tag)}
+                  aria-pressed={active}
+                  className={`flex flex-col items-center justify-center gap-2 rounded-xl border p-4 text-center transition-colors disabled:opacity-50 ${active
+                    ? "border-[1.5px] border-brand bg-tint/50 text-brand"
+                    : "border-brand/15 text-body-text hover:border-ink/40"
+                    }`}
+                >
+                  {TAG_ICONS[tag]}
+                  <span className="text-[12px] font-semibold leading-4">
+                    {MISTAKE_TAG_LABELS[tag]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            onBlur={saveNote}
+            placeholder="Add a personal note (e.g. “forgot the sign convention”)"
+            rows={2}
+            className="mt-4 w-full resize-none rounded-lg border border-brand/20 bg-transparent p-3 text-sm text-ink outline-none focus:border-ink/40"
+          />
+          <div className="mt-1 flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-success">
+              ✓ Added to Mistake Notebook
+            </span>
+            {note !== savedNote && (
+              <button
+                type="button"
+                onClick={saveNote}
+                disabled={busy}
+                className="text-[12px] font-bold text-ink underline disabled:opacity-50"
+              >
+                Save note
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }
