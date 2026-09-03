@@ -226,7 +226,7 @@ const TASK_TYPE_STYLE: Record<string, TaskType> = {
   PRACTICE: "practice",
   REVISION: "revision",
   LEARNING: "new-learning",
-  WELLNESS: "new-learning",
+  WELLNESS: "wellness",
 };
 
 const TASK_ACTION_LABEL: Record<string, string> = {
