@@ -9,8 +9,11 @@ import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import {
+
+  ArrowRightIcon,
+  // AlertTriangleIcons,
   // AlertTriangleIcon,
-  BellIcon,
+  // BellIcon,
   BoltIcon,
   BookOpenIcon,
   CalendarIcon,
@@ -30,7 +33,7 @@ import {
   type PracticeSessionDetail,
   type PracticeTopicAnalysis,
 } from "@/lib/api/practice";
-import { AlertTriangleIcon } from "@/assets/icons";
+import { AlertTriangleIcon, BellIcon, ConfirmIcon } from "@/assets/icons";
 
 const TAG_ORDER: MistakeTag[] = [
   "CONCEPTUAL_GAP",
@@ -242,22 +245,29 @@ function MistakeAnalysisContent() {
               className="rounded-2xl border border-brand/10 bg-surface p-6"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-[16px] font-bold text-ink">
-                  Mistake Patterns
-                  {patterns ? ` · Last ${patterns.windowDays} Days` : ""}
-                </p>
-                <span className="flex items-center gap-3">
+                <p className="flex w-full max-w-[326px] flex-wrap items-center gap-1 text-[18px] font-bold leading-[100%] tracking-normal text-ink sm:text-[22px]">
+                  <span className="font-bold">Mistake Patterns</span>
+
                   {patterns && (
-                    <span className="text-caption font-semibold text-muted">
+                    <span className="font-semibold">
+                      · Last {patterns.windowDays} Days
+                    </span>
+                  )}
+                </p>
+                <span className="flex shrink-0 items-center gap-3">
+                  {patterns && (
+                    <span className="whitespace-nowrap text-[10px] font-semibold leading-[15px] text-muted sm:text-[11px]">
                       ~{patterns.totalMarksLost} marks lost
                     </span>
                   )}
+
                   <button
                     type="button"
                     onClick={openNotebook}
-                    className="text-caption font-bold text-cta hover:underline"
+                    className="flex shrink-0 items-center gap-1 whitespace-nowrap text-[10px] font-bold leading-[15px] text-cta hover:underline sm:text-[11px]"
                   >
-                    Open notebook →
+                    <span>Open notebook</span>
+                    <ArrowRightIcon className="h-3 w-3" />
                   </button>
                 </span>
               </div>
@@ -269,22 +279,32 @@ function MistakeAnalysisContent() {
                     className="flex flex-col rounded-xl border border-brand/10 p-4"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-tint text-ink">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint p-3 text-ink sm:h-[42px] sm:w-[42px]">
                         {TAG_META[t.tag].icon}
                       </span>
                       <span
-                        className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.6px] ${TAG_META[t.tag].badgeClass}`}
+                        className={`flex h-[23px] w-full max-w-[62.17px] items-center justify-center rounded-[4px] px-2 py-1 text-[10px] font-extrabold uppercase leading-[15px] tracking-normal ${TAG_META[t.tag].badgeClass}`}
                       >
                         {TAG_META[t.tag].badge}
                       </span>
                     </div>
 
-                    <p className="mt-3 text-[14px] font-bold text-ink">{t.label}</p>
-                    <p className="mt-1 text-[18px] font-extrabold text-ink">
-                      {t.marks}{" "}
-                      <span className="text-caption font-semibold text-muted">Marks</span>
+                    <p className="mt-3 w-full max-w-[263px] text-[14px] font-semibold leading-[100%] tracking-normal text-ink">
+                      {t.label}
                     </p>
-                    <p className="mt-1 text-caption leading-4 text-muted">{t.action}</p>
+                    <p className="mt-3 flex items-center gap-2">
+                      <span className="text-[20px] font-bold leading-[100%] tracking-normal text-ink sm:text-[22px]">
+                        {t.marks}
+                      </span>
+
+                      <span className="text-[14px] font-semibold leading-5 tracking-normal text-muted">
+                        Marks
+                      </span>
+                    </p>
+
+                    <p className="mt-2 w-full max-w-[263px] text-[12px] font-normal leading-4 tracking-normal text-muted">
+                      {t.action}
+                    </p>
 
                     <p className="mt-3 border-t border-brand/10 pt-3 text-caption text-muted">
                       {t.count} question{t.count === 1 ? "" : "s"}
@@ -306,17 +326,16 @@ function MistakeAnalysisContent() {
               <div className="rounded-[24px] border border-brand/10 bg-surface px-6 py-7 sm:px-8 sm:py-8">
                 <div className="flex items-start gap-5">
 
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EDF0F8] text-[#17245F] sm:h-10 sm:w-10">
-                    <AlertTriangleIcon className="h-[18px] w-[21px] sm:h-[19px] sm:w-[22px]" />
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-tint text-ink sm:h-10 sm:w-10">
+                    <BookOpenIcon />
                   </span>
 
                   {/* Content */}
                   <div className="min-w-0 pt-[-1px]">
-                    <p className="text-[17px] font-extrabold uppercase leading-5 tracking-[1.2px] text-[#F59E0B]">
+                    <p className="text-[10px] font-extrabold uppercase leading-[15px] tracking-[1px] text-[#F59E0B]">
                       {weakTopic ? "Recovery Detected" : "Next Focus"}
                     </p>
-
-                    <h3 className="mt-2 text-[24px] font-bold leading-[1.35] text-[#17245F] sm:text-[27px]">
+                    <h3 className="mt-1 max-w-[173px] text-[14px] font-bold leading-5 tracking-normal text-[#17245F] sm:max-w-[220px] md:max-w-[280px]">
                       {weakTopic
                         ? `${weakTopic.topic} needs work`
                         : "Solid session — keep the streak"}
@@ -324,64 +343,67 @@ function MistakeAnalysisContent() {
                   </div>
                 </div>
 
-                <p className="mt-8 max-w-[540px] text-[19px] font-normal leading-[1.9] text-[#626B98] sm:text-[21px]">
+                <p className="mt-3 w-full max-w-[298px] text-[12px] font-normal leading-[19.5px] tracking-normal text-[#626B98] sm:mt-7 sm:max-w-[298px]">
                   {weakTopic
                     ? "System analysis suggests reviewing geometric properties of intersecting circles before next attempt."
                     : "No weak topics flagged this session."}
                 </p>
               </div>
 
-              {/* Mistake Notebook */}
-              <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-                <div className="flex items-start gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
-                    <BookOpenIcon />
-                  </span>
+              <div className="flex flex-col gap-4">
+                {/* Mistake Notebook */}
+                <div className="w-full rounded-2xl border border-brand/10 bg-surface p-4">
+                  <div className="flex items-center gap-4">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-tint text-ink sm:h-10 sm:w-10">
+                      <BookOpenIcon />
+                    </span>
 
-                  <div>
-                    <p className="text-[14px] font-bold text-ink">
-                      {wrong} question{wrong === 1 ? "" : "s"} added to Mistake Notebook
-                    </p>
+                    <div className="min-w-0">
+                      <p className="text-[14px] font-bold leading-[17.5px] tracking-normal text-ink">
+                        {wrong} question{wrong === 1 ? "" : "s"} added to Mistake Notebook
+                      </p>
 
-                    <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.6px] text-muted">
-                      Automated update
-                    </p>
+                      <p className="mt-1 text-[10px] font-semibold uppercase leading-[15px] tracking-normal text-muted">
+                        Automated update
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tomorrow's Plan */}
+                <div className="w-full rounded-2xl border border-brand/10 bg-surface p-4">
+                  <div className="flex items-center gap-4">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-tint text-ink sm:h-10 sm:w-10">
+                      <CalendarIcon className="h-5 w-5" />
+                    </span>
+
+                    <div className="min-w-0">
+                      <p className="text-[14px] font-bold leading-[17.5px] tracking-normal text-ink">
+                        Tomorrow&apos;s plan updated
+                      </p>
+
+                      <p className="mt-1 text-[10px] font-semibold uppercase leading-[15px] tracking-normal text-muted">
+                        AI scheduler
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Tomorrow's Plan */}
-              <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-                <div className="flex items-start gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
-                    <CalendarIcon className="h-5 w-5" />
-                  </span>
-
-                  <div>
-                    <p className="text-[14px] font-bold text-ink">
-                      Tomorrow&apos;s plan updated
-                    </p>
-
-                    <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.6px] text-muted">
-                      AI scheduler
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Biggest Score Leak */}
               {hasLeak && (
-                <div className="rounded-2xl border border-[#FFE8CC] bg-[#FEF8EF] p-5 dark:border-brand/10 dark:bg-surface">
-                  <p className="text-[13px] leading-5 text-body-text">
-                    <span className="font-bold">
-                      Biggest score leak: {topLeak.label}.
-                    </span>{" "}
-                    Focus here to recover{" "}
-                    <span className="font-bold text-[#F59E0B]">
-                      +{leakLow} to +{topLeak.marks}
-                    </span>{" "}
-                    marks.
-                  </p>
+                <div className="w-full rounded-2xl border border-[#FFE8CC] bg-[#FEF8EF] px-4 py-3 dark:border-brand/10 dark:bg-surface sm:px-6 sm:pb-[34px] sm:pt-4">
+                  <div className="w-full">
+                    <p className="text-[12px] font-normal leading-[17px] tracking-normal text-body-text sm:text-[14px] sm:leading-5">
+                      <span className="font-bold">
+                        Biggest score leak: {topLeak.label}.
+                      </span>{" "}
+                      Focus here to recover{" "}
+                      <span className="font-bold text-[#F59E0B]">
+                        +{leakLow} to +{topLeak.marks}
+                      </span>{" "}
+                      marks.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
