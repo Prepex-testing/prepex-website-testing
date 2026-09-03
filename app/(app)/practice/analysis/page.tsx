@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
+import { PageLoader } from "@/components/ui/PageLoader";
 import {
   ArrowLeftIcons,
   // BellIcon,
@@ -65,7 +66,7 @@ const FILTERS: { id: AnalysisFilter; label: string }[] = [
 
 export default function QuestionAnalysisPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<PageLoader label="Loading analysis…" />}>
       <QuestionAnalysisContent />
     </Suspense>
   );
@@ -163,6 +164,8 @@ function QuestionAnalysisContent() {
     );
   }
 
+  if (!session) return <PageLoader label="Loading analysis…" />;
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -189,11 +192,7 @@ function QuestionAnalysisContent() {
         </div>
       </div>
 
-      {!session ? (
-        <p className="text-sm text-muted">Loading analysis…</p>
-      ) : (
-        <>
-          <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3">
             <div className="flex min-h-[38px] min-w-0 flex-1 flex-wrap items-center gap-2">
               {FILTERS.map((f) => (
                 <button
@@ -236,7 +235,9 @@ function QuestionAnalysisContent() {
           </div>
 
           {visible.length === 0 ? (
-            <p className="text-sm text-muted">Nothing to show here.</p>
+            <div className="flex min-h-[240px] items-center justify-center rounded-2xl border border-brand/10 bg-surface p-8 text-center">
+              <p className="text-sm text-muted">Nothing to show here.</p>
+            </div>
           ) : solutionsFirst ? (
             /* "View Solutions" — every question at once, solutions expanded. */
             <div className="flex flex-col gap-6">
@@ -328,8 +329,6 @@ function QuestionAnalysisContent() {
               </Button>
             </div>
           )}
-        </>
-      )}
     </div>
   );
 }
@@ -693,9 +692,11 @@ function QuestionCard({
         </div>
       )}
 
-      {/* Tag this mistake (PRD 5.5.2 / 5.5.3) — shown for any wrong answer in the
-        notebook. Re-tagging one already reviewed counts as a re-review. */}
-      {mistakeId && (
+      {/* Tag this mistake (PRD 5.5.2 / 5.5.3) — shown only for a wrong answer
+        (re-practising from the Mistake Notebook and getting it right this
+        time still carries a mistakeEntry, but there's nothing to re-tag).
+        Re-tagging one already reviewed counts as a re-review. */}
+      {mistakeId && sq.result === "WRONG" && (
         <div className="w-full rounded-2xl border border-brand/10 bg-surface p-4 sm:p-6 lg:p-8">
           {/* Header */}
           <p className="text-[12px] font-semibold uppercase leading-[18px] tracking-[0.5px] text-muted sm:text-[14px] sm:leading-[18px]">

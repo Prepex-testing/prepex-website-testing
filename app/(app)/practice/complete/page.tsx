@@ -7,6 +7,7 @@ import { useTheme } from "@/components/theme/ThemeProvider";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
+import { PageLoader } from "@/components/ui/PageLoader";
 import {
   AlertTriangleIcon,
   CheckCircleIcon,
@@ -56,7 +57,7 @@ function masteryOf(t: PracticeTopicAnalysis): Mastery {
 
 export default function PracticeCompletePage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<PageLoader label="Loading your results…" />}>
       <PracticeCompleteContent />
     </Suspense>
   );
@@ -132,6 +133,8 @@ function PracticeCompleteContent() {
     );
   }
 
+  if (!session) return <PageLoader label="Loading your results…" />;
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -149,10 +152,7 @@ function PracticeCompleteContent() {
         </div>
       </div>
 
-      {!session ? (
-        <p className="text-sm text-muted">Loading your results…</p>
-      ) : (
-        <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6">
           {/* Score card */}
           <div className="flex w-full flex-col gap-6 rounded-2xl border border-brand/10 bg-surface p-4 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 flex-col gap-3">
@@ -297,7 +297,6 @@ function PracticeCompleteContent() {
             </Button>
           </div>
         </div>
-      )}
     </div>
   );
 }
