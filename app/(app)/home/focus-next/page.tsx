@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { ClockIcon, TargetIcon } from "@/components/ui/icons";
 import { BellIcon } from "@/assets/icons";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { getTop5WeakTopics, type WeakTopicSummary } from "@/lib/api/weakness";
 
 type FocusItem = {
@@ -62,6 +63,8 @@ export default function FocusNextPage() {
     router.push(`/home/focus-topic?chapterId=${chapterId}`);
   };
 
+  if (isLoading) return <PageLoader label="Loading focus topics…" />;
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -82,7 +85,7 @@ export default function FocusNextPage() {
         </div>
       </div>
 
-      {isLoading ? null : error ? (
+      {error ? (
         <p className="py-8 text-center text-sm text-warning">{error}</p>
       ) : items.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-2xl border border-brand/10 bg-surface p-10 text-center">

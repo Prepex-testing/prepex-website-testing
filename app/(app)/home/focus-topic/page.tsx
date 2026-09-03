@@ -8,6 +8,7 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { ListIcon, CheckCircleIcon } from "@/components/ui/icons";
+import { PageLoader } from "@/components/ui/PageLoader";
 import {
   ClockIcon,
   LayersIcon,
@@ -117,7 +118,7 @@ function FocusTopicContent() {
   );
 
   if (isLoading) {
-    return <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">{header}</div>;
+    return <PageLoader label="Loading focus topic…" />;
   }
 
   if (error || !detail) {

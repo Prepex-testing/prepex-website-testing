@@ -9,6 +9,7 @@ import { CircularProgress } from "@/components/ui/CircularProgress";
 import { RecoveryModeModal } from "@/components/home/RecoveryModeModal";
 import { AddBacklogModal } from "@/components/home/AddBacklogModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   getBacklog,
@@ -148,6 +149,9 @@ export default function BacklogPage() {
     health?.taskCount
       ? Math.round((health.activeTaskCount / health.taskCount) * 100)
       : 0;
+
+  // First load only — action-triggered refetches keep the page in place.
+  if (!health && !error) return <PageLoader label="Loading backlog…" />;
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
