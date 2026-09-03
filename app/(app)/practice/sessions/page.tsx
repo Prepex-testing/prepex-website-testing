@@ -8,6 +8,7 @@ import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { Button } from "@/components/ui/Button";
 import {PlusIcon } from "@/components/ui/icons";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { getTodayPlan, type PlannerTask } from "@/lib/api/planner";
@@ -58,6 +59,8 @@ export default function PracticeSessionsPage() {
   }, []);
 
   useEffect(refetch, [refetch]);
+
+  if (!tasks && !loadError) return <PageLoader label="Loading practice sessions…" />;
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">

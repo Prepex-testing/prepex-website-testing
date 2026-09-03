@@ -55,6 +55,7 @@ import {
   XIcon,
 } from "@/components/ui/icons";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { useTheme } from "@/components/theme/ThemeProvider";
 
 const TASKS: Task[] = [
@@ -300,6 +301,9 @@ export default function HomePage() {
   const [energyMood, setEnergyMood] = useState<Mood | null>(null);
   const [planData, setPlanData] = useState<TodayPlanResponse | null>(null);
   const [planLoadFailed, setPlanLoadFailed] = useState(false);
+  // First-paint gates — the page renders once all three initial fetches settle.
+  const [checkInLoaded, setCheckInLoaded] = useState(false);
+  const [consistencyLoaded, setConsistencyLoaded] = useState(false);
   const [isGeneratingPlan, setGeneratingPlan] = useState(false);
   const [streakCount, setStreakCount] = useState<number | null>(null);
   const [isInRecoveryMode, setInRecoveryMode] = useState(false);
@@ -343,7 +347,8 @@ export default function HomePage() {
   useEffect(() => {
     getStudyConsistency()
       .then(({ data }) => setConsistency(data))
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => setConsistencyLoaded(true));
   }, []);
 
   const consistencyWeeks = groupConsistencyByWeek(consistency?.days ?? []);
@@ -376,7 +381,8 @@ export default function HomePage() {
       })
       .catch(() => {
         // Best-effort — mood/streak stay unset (no dummy fallback) until this succeeds.
-      });
+      })
+      .finally(() => setCheckInLoaded(true));
   };
 
   // Section 4.2.2 — pick at most one tier/inquiry pop-up per session. Tier 4/5
@@ -525,6 +531,13 @@ export default function HomePage() {
   const completionPercent = summary?.completionPercentage ?? 0;
   const completedMinutes = summary ? summary.totalTimeCompletedSeconds / 60 : 78;
   const plannedMinutes = summary?.totalPlannedMinutes ?? 360;
+
+  // Hold the whole page until every initial fetch has settled, so no card
+  // paints with placeholder values before its data arrives. Later refetches
+  // (mood change, recovery toggle, …) keep the page mounted.
+  const isPageLoading =
+    (!planData && !planLoadFailed) || !checkInLoaded || !consistencyLoaded;
+  if (isPageLoading) return <PageLoader label="Loading your day…" />;
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">

@@ -7,6 +7,7 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { AlertTriangleIcon, ChevronRightIcon } from "@/components/ui/icons";
 import { ClockIcon, CalendarIcon, FileIcon, BellIcon } from "@/assets/icons";
+import { PageLoader } from "@/components/ui/PageLoader";
 import {
   getMistakePatterns,
   listDueMistakeGroups,
@@ -283,6 +284,8 @@ export default function MistakeNotebookPage() {
 
   const dueTodayCount = today?.entryCount ?? 0;
 
+  if (loading) return <PageLoader label="Loading your notebook…" />;
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -427,11 +430,7 @@ export default function MistakeNotebookPage() {
         </div>
       </div>
 
-      {loading ? (
-        <p className="text-sm text-muted">Loading your notebook…</p>
-      ) : (
-        <>
-          <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+      <div className="rounded-2xl border border-brand/10 bg-surface p-6">
             <p className="flex items-center gap-2 text-[12px] font-extrabold uppercase leading-4 tracking-[1.2px] text-[#F59E0B]">
               <ClockIcon />
               Due Today <span className="normal-case text-muted">({today?.total ?? 0})</span>
@@ -481,8 +480,6 @@ export default function MistakeNotebookPage() {
               />
             )}
           </div>
-        </>
-      )}
     </div>
   );
 }

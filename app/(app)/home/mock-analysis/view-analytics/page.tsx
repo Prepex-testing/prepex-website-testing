@@ -13,6 +13,7 @@ import { FileIcon, SparkleIcon, TrendingUpIcon } from "@/components/ui/icons";
 import { getMockById, type MockAnalysisItem } from "@/lib/api/mock";
 import type { ReactNode } from "react";
 import { PercentileGauge } from "@/components/ui/PercentileGauge";
+import { PageLoader } from "@/components/ui/PageLoader";
 
 /** e.g. "20 Aug 2026, Thu" */
 function formatTestDate(iso: string): string {
@@ -102,13 +103,9 @@ function ViewAnalyticsContent() {
     );
   }
 
-  // Loading state - just show header without any loading message
+  // Whole page waits on the fetch — no partial chrome before the data is in.
   if (isLoading) {
-    return (
-      <div className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8">
-        {header}
-      </div>
-    );
+    return <PageLoader label="Loading analysis…" />;
   }
 
   if (error || !mock) {

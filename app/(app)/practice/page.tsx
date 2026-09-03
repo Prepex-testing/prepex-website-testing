@@ -7,6 +7,7 @@ import { WhiteModal } from "@/components/ui/WhiteModal";
 import { ClockIcon, BookmarkIcon, DoubleArrowIcon } from "@/components/ui/icons";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { getTodayPlan } from "@/lib/api/planner";
 import {
   completePracticeSession,
@@ -28,7 +29,7 @@ function formatTime(totalSeconds: number): string {
 
 export default function PracticeModePage() {
   return (
-    <Suspense fallback={<CenteredMessage title="Loading practice…" />}>
+    <Suspense fallback={<PageLoader label="Loading practice…" />}>
       <PracticeModeContent />
     </Suspense>
   );
@@ -323,7 +324,7 @@ function PracticeModeContent() {
     );
   }
   if (!data || !current || !currentQ) {
-    return <CenteredMessage title="Loading practice…" />;
+    return <PageLoader label="Loading practice…" />;
   }
 
   const isMarked = markedIds.has(current.practiceSessionQuestionId);

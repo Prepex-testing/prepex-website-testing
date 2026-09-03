@@ -26,6 +26,7 @@ import {
   type RevisionTask,
 } from "@/lib/api/revision";
 import { withResumeLabel, CUSTOM_BADGE_STYLE } from "@/components/home/taskTypes";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { formatShortDate } from "@/lib/utils/datetime";
 import { getChapterTitle } from "@/lib/utils/text";
 
@@ -142,6 +143,7 @@ export default function RevisionPage() {
   const [isStatusMenuOpen, setStatusMenuOpen] = useState(false);
   const [subjectsByTab, setSubjectsByTab] = useState<SubjectsByTab>({ due: [], upcoming: [], mastered: [] });
   const [overview, setOverview] = useState<RevisionOverview | null>(null);
+  const [overviewFailed, setOverviewFailed] = useState(false);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
   const statusMenuRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
@@ -184,9 +186,14 @@ export default function RevisionPage() {
       ...(activeSubjectId !== "all" ? { subjectId: activeSubjectId } : {}),
       ...(activeStatus ? { status: activeStatus } : {}),
     })
-      .then(({ data }) => setOverview(data))
+      .then(({ data }) => {
+        setOverview(data);
+        setOverviewFailed(false);
+      })
       .catch(() => {
         // Best-effort — the list stays on its previous data until this succeeds.
+        // Flag the first failure so the page can drop its loading state.
+        setOverviewFailed(true);
       });
   };
 
@@ -214,6 +221,9 @@ export default function RevisionPage() {
       : activeTab === "upcoming"
         ? (overview.upcomingRevisions?.chapters ?? []).map((entry) => fromChapterProgress(entry, "upcoming"))
         : (overview.masteredChapters?.chapters ?? []).map((entry) => fromChapterProgress(entry, "mastered"));
+
+  // First load only — filter-change refetches keep the page in place.
+  if (!overview && !overviewFailed) return <PageLoader label="Loading revision…" />;
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">

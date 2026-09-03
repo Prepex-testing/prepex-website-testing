@@ -21,6 +21,7 @@ import {
   type MockAnalysisItem,
   type MockAnalysisListResponse,
 } from "@/lib/api/mock";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { useRouter } from "next/navigation";
 
 const RECENT_MOCKS_LIMIT = 5;
@@ -318,6 +319,12 @@ export default function MockAnalysisPage() {
         ),
     },
   ];
+
+  // First load only — pagination + delete refetches keep the page mounted
+  // and animate the table body instead.
+  if (!data && !error) {
+    return <PageLoader label="Loading mock analysis…" />;
+  }
 
   return (
     <div className="flex w-full flex-col gap-6 p-4 sm:p-6 lg:p-8">
