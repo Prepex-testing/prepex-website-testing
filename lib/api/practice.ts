@@ -222,6 +222,50 @@ export function listMistakes(
   }>(`/mistakes${qs ? `?${qs}` : ""}`);
 }
 
+// ---------------------------------------------------------------------------
+// Paginated chapter+tag groups for the notebook's "Due Today" / "All Due"
+// sections. One row per (chapter, tag); pagination is over the grouped rows.
+// ---------------------------------------------------------------------------
+
+export type DueMistakeBucket = "today" | "overdue";
+
+export type DueMistakeGroup = {
+  key: string;
+  chapterId: string;
+  chapterName: string;
+  subjectName: string;
+  tag: MistakeTag;
+  count: number;
+  topics: string[];
+  oldestDue: string;
+};
+
+export type DueMistakeGroupsResponse = {
+  bucket: DueMistakeBucket;
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  entryCount: number;
+  groups: DueMistakeGroup[];
+};
+
+export function listDueMistakeGroups(params: {
+  bucket: DueMistakeBucket;
+  page?: number;
+  limit?: number;
+  tag?: MistakeTag;
+  subjectId?: number;
+}) {
+  const q = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined) q.set(k, String(v));
+  });
+  return authRequest<{ success: true; data: DueMistakeGroupsResponse }>(
+    `/mistakes/due-groups?${q.toString()}`,
+  );
+}
+
 export type MistakeReviewHistoryItem = {
   id: string;
   feedback: MistakeReviewFeedback;

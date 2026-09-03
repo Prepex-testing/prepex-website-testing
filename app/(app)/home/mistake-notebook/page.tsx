@@ -5,17 +5,23 @@ import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { AlertTriangleIcon } from "@/components/ui/icons";
+import { AlertTriangleIcon, ChevronRightIcon } from "@/components/ui/icons";
 import { ClockIcon, CalendarIcon, FileIcon, BellIcon } from "@/assets/icons";
 import {
   getMistakePatterns,
+  listDueMistakeGroups,
   listMistakes,
   MISTAKE_TAG_LABELS,
   startMistakeSession,
+  type DueMistakeGroup,
+  type DueMistakeGroupsResponse,
   type MistakeListItem,
   type MistakePatternsResponse,
   type MistakeTag,
 } from "@/lib/api/practice";
+
+const TODAY_PAGE_SIZE = 5;
+const OVERDUE_PAGE_SIZE = 10;
 
 const TAG_STYLES: Record<MistakeTag, string> = {
   CONCEPTUAL_GAP: "bg-tint text-ink",
@@ -32,24 +38,13 @@ const TYPE_FILTERS: ("All" | MistakeTag)[] = [
   "WILD_GUESS",
 ];
 
-type DueTagGroup = {
-  key: string;
-  chapterId: string;
-  chapterName: string;
-  subjectName: string;
-  tag: MistakeTag;
-  entries: MistakeListItem[];
-  /** Earliest nextReviewDate in the group — shown in the "All Due" list. */
-  oldestDue: string;
-};
-
-function DueTagRow({ group, showDate }: { group: DueTagGroup; showDate?: boolean }) {
+function DueTagRow({ group, showDate }: { group: DueMistakeGroup; showDate?: boolean }) {
   const router = useRouter();
   const [starting, setStarting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const subjectLetter = group.subjectName.charAt(0).toUpperCase() || "?";
-  const n = group.entries.length;
+  const n = group.count;
   const dueOn = new Date(group.oldestDue).toLocaleDateString(undefined, {
     day: "numeric",
     month: "short",
@@ -96,11 +91,7 @@ function DueTagRow({ group, showDate }: { group: DueTagGroup; showDate?: boolean
           )}
         </p>
         <p className="truncate text-[13px] font-medium text-muted">
-          {group.entries
-            .map((e) => e.topic)
-            .filter((v, i, a) => a.indexOf(v) === i)
-            .slice(0, 4)
-            .join(" · ")}
+          {group.topics.slice(0, 4).join(" · ")}
         </p>
         {err && <p className="text-[12px] font-semibold text-danger">{err}</p>}
       </div>
@@ -117,11 +108,63 @@ function DueTagRow({ group, showDate }: { group: DueTagGroup; showDate?: boolean
   );
 }
 
+function Pager({
+  page,
+  totalPages,
+  shown,
+  total,
+  onPage,
+}: {
+  page: number;
+  totalPages: number;
+  shown: number;
+  total: number;
+  onPage: (next: number) => void;
+}) {
+  const arrowBtn =
+    "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-brand/15 text-ink transition hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent";
+  return (
+    <div className="mt-4 flex min-h-[68px] flex-col items-center justify-center gap-3 border-t border-brand/10 pt-4 md:relative md:flex-row md:justify-center">
+      <p className="text-center text-caption leading-4 text-muted">
+        Showing {shown} of {total} mistakes
+      </p>
+
+      <div className="flex items-center justify-center gap-3 md:absolute md:right-0">
+        <button
+          type="button"
+          onClick={() => onPage(Math.max(1, page - 1))}
+          disabled={page <= 1}
+          aria-label="Previous page"
+          className={arrowBtn}
+        >
+          <ChevronRightIcon className="h-4 w-4 rotate-180" />
+        </button>
+
+        <span className="whitespace-nowrap text-caption font-semibold text-ink">
+          Page {page} of {totalPages}
+        </span>
+
+        <button
+          type="button"
+          onClick={() => onPage(Math.min(totalPages, page + 1))}
+          disabled={page >= totalPages}
+          aria-label="Next page"
+          className={arrowBtn}
+        >
+          <ChevronRightIcon />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function MistakeNotebookPage() {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
-  const [items, setItems] = useState<MistakeListItem[]>([]);
+  // Full ACTIVE list — used only to populate the subject filter chips and the
+  // header "N entries" count. The row lists come from the paginated endpoint.
+  const [allItems, setAllItems] = useState<MistakeListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [patterns, setPatterns] = useState<MistakePatternsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -130,85 +173,115 @@ export default function MistakeNotebookPage() {
   const [subjectFilter, setSubjectFilter] = useState("All");
   const [typeFilter, setTypeFilter] = useState<"All" | MistakeTag>("All");
 
+  const [today, setToday] = useState<DueMistakeGroupsResponse | null>(null);
+  const [todayPage, setTodayPage] = useState(1);
+  const [overdue, setOverdue] = useState<DueMistakeGroupsResponse | null>(null);
+  const [overduePage, setOverduePage] = useState(1);
+
+  const subjectNameToId = useMemo(() => {
+    const m = new Map<string, number>();
+    allItems.forEach((i) => {
+      if (i.chapter?.subject) m.set(i.chapter.subject.name, i.chapter.subject.id);
+    });
+    return m;
+  }, [allItems]);
+
+  const subjects = useMemo(
+    () => ["All", ...[...subjectNameToId.keys()].sort()],
+    [subjectNameToId],
+  );
+
+  const tag = typeFilter === "All" ? undefined : typeFilter;
+  const subjectId = subjectFilter === "All" ? undefined : subjectNameToId.get(subjectFilter);
+
   useEffect(() => {
     let cancelled = false;
-    Promise.all([listMistakes({ status: "ACTIVE", limit: 50 }), getMistakePatterns()])
-      .then(([list, pat]) => {
+    const load = async () => {
+      try {
+        const [list, pat] = await Promise.all([
+          listMistakes({ status: "ACTIVE", limit: 50 }),
+          getMistakePatterns(),
+        ]);
         if (cancelled) return;
-        setItems(list.data.items);
+        setAllItems(list.data.items);
         setTotal(list.data.total);
         setPatterns(pat.data);
-      })
-      .catch((err) => {
+      } catch (err) {
         if (!cancelled)
           setError(err instanceof Error ? err.message : "Could not load your notebook.");
-      })
-      .finally(() => !cancelled && setLoading(false));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    void load();
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const subjects = useMemo(() => {
-    const set = new Set<string>();
-    items.forEach((i) => i.chapter?.subject?.name && set.add(i.chapter.subject.name));
-    return ["All", ...[...set].sort()];
-  }, [items]);
-
-  const filtered = useMemo(
-    () =>
-      items.filter((i) => {
-        if (subjectFilter !== "All" && i.chapter?.subject?.name !== subjectFilter) return false;
-        if (typeFilter !== "All" && !i.mistakeTags.includes(typeFilter)) return false;
-        return true;
-      }),
-    [items, subjectFilter, typeFilter],
-  );
-
-  const startOfToday = new Date();
-  startOfToday.setHours(0, 0, 0, 0);
-  const endOfToday = new Date();
-  endOfToday.setHours(23, 59, 59, 999);
-
-  // Reviews scheduled for today vs everything already overdue from before today.
-  const dueToday = filtered.filter((i) => {
-    const t = new Date(i.nextReviewDate).getTime();
-    return t >= startOfToday.getTime() && t <= endOfToday.getTime();
-  });
-  const pastDue = filtered.filter(
-    (i) => new Date(i.nextReviewDate).getTime() < startOfToday.getTime(),
-  );
-
-  // chapter+tag grouping — one "Start Practice" row per tag; a multi-tagged
-  // mistake appears under each of its tags. Untagged mistakes aren't
-  // practisable, so they don't produce a row. `oldestDue` drives the date
-  // shown in the "All Due" section.
-  const groupByChapterTag = (list: MistakeListItem[]): DueTagGroup[] => {
-    const map = new Map<string, DueTagGroup>();
-    for (const e of list) {
-      for (const tag of e.mistakeTags) {
-        const key = `${e.chapterId}::${tag}`;
-        const g = map.get(key) ?? {
-          key,
-          chapterId: e.chapterId,
-          chapterName: e.chapter?.name ?? e.topic,
-          subjectName: e.chapter?.subject?.name ?? "",
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const { data } = await listDueMistakeGroups({
+          bucket: "today",
+          page: todayPage,
+          limit: TODAY_PAGE_SIZE,
           tag,
-          entries: [],
-          oldestDue: e.nextReviewDate,
-        };
-        g.entries.push(e);
-        if (new Date(e.nextReviewDate) < new Date(g.oldestDue)) g.oldestDue = e.nextReviewDate;
-        map.set(key, g);
+          subjectId,
+        });
+        if (!cancelled) setToday(data);
+      } catch {
+        // Keep the previous page's rows on a transient failure.
       }
-    }
-    return [...map.values()];
+    };
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [todayPage, tag, subjectId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const { data } = await listDueMistakeGroups({
+          bucket: "overdue",
+          page: overduePage,
+          limit: OVERDUE_PAGE_SIZE,
+          tag,
+          subjectId,
+        });
+        if (!cancelled) setOverdue(data);
+      } catch {
+        // Keep the previous page's rows on a transient failure.
+      }
+    };
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [overduePage, tag, subjectId]);
+
+  // Any filter change restarts both lists from page 1.
+  const applySubjectFilter = (value: string) => {
+    setSubjectFilter(value);
+    setTodayPage(1);
+    setOverduePage(1);
+  };
+  const applyTypeFilter = (value: "All" | MistakeTag) => {
+    setTypeFilter(value);
+    setTodayPage(1);
+    setOverduePage(1);
+  };
+  const clearFilters = () => {
+    setSubjectFilter("All");
+    setTypeFilter("All");
+    setTodayPage(1);
+    setOverduePage(1);
   };
 
-  const dueGroups = groupByChapterTag(dueToday);
-  const pastDueGroups = groupByChapterTag(pastDue).sort(
-    (a, b) => new Date(a.oldestDue).getTime() - new Date(b.oldestDue).getTime(),
-  );
+  const dueTodayCount = today?.entryCount ?? 0;
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -237,7 +310,7 @@ export default function MistakeNotebookPage() {
             <span className="font-medium text-muted">{total} entries</span>
             <span className="text-muted">•</span>
             <span className="font-bold text-[#F59E0B] underline decoration-[#FED7AA] decoration-[2px] underline-offset-2">
-              {dueToday.length} due for review today
+              {dueTodayCount} due for review today
             </span>
           </div>
         </div>
@@ -302,10 +375,7 @@ export default function MistakeNotebookPage() {
           <p className="text-[14px] font-bold uppercase tracking-[0.7px]">Filters</p>
           <button
             type="button"
-            onClick={() => {
-              setSubjectFilter("All");
-              setTypeFilter("All");
-            }}
+            onClick={clearFilters}
             className="text-xs font-semibold text-muted transition-colors hover:text-ink"
           >
             Clear all
@@ -319,7 +389,7 @@ export default function MistakeNotebookPage() {
               {subjects.map((item) => (
                 <button
                   key={item}
-                  onClick={() => setSubjectFilter(item)}
+                  onClick={() => applySubjectFilter(item)}
                   className={`h-[34px] rounded-full border px-4 text-[12px] font-medium transition-all ${
                     subjectFilter === item
                       ? "border-brand bg-brand text-white"
@@ -340,7 +410,7 @@ export default function MistakeNotebookPage() {
               {TYPE_FILTERS.map((item) => (
                 <button
                   key={item}
-                  onClick={() => setTypeFilter(item)}
+                  onClick={() => applyTypeFilter(item)}
                   className={`h-[34px] rounded-full border px-4 text-[12px] font-medium transition-all ${
                     typeFilter === item
                       ? "border-brand bg-brand text-white"
@@ -364,36 +434,52 @@ export default function MistakeNotebookPage() {
           <div className="rounded-2xl border border-brand/10 bg-surface p-6">
             <p className="flex items-center gap-2 text-[12px] font-extrabold uppercase leading-4 tracking-[1.2px] text-[#F59E0B]">
               <ClockIcon />
-              Due Today <span className="normal-case text-muted">({dueToday.length})</span>
+              Due Today <span className="normal-case text-muted">({today?.total ?? 0})</span>
             </p>
             <div className="mt-4 flex flex-col gap-4">
-              {dueGroups.length === 0 ? (
+              {!today || today.groups.length === 0 ? (
                 <p className="text-sm text-muted">Nothing due today. 🎉</p>
               ) : (
-                dueGroups.map((group) => (
-                  <DueTagRow key={group.key} group={group} />
-                ))
+                today.groups.map((group) => <DueTagRow key={group.key} group={group} />)
               )}
             </div>
+            {today && (
+              <Pager
+                page={today.page}
+                totalPages={today.totalPages}
+                shown={today.groups.length}
+                total={today.total}
+                onPage={setTodayPage}
+              />
+            )}
           </div>
 
           <div className="rounded-2xl border border-brand/10 bg-surface p-6">
             <p className="flex items-center gap-2 text-[12px] font-extrabold uppercase leading-4 tracking-[1.2px] text-[#F59E0B]">
               <CalendarIcon />
-              All Due <span className="normal-case text-muted">({pastDueGroups.length})</span>
+              All Due <span className="normal-case text-muted">({overdue?.total ?? 0})</span>
             </p>
             <p className="mt-1 text-[12px] text-muted">
               Mistake practices that fell due before today — oldest first.
             </p>
             <div className="mt-4 flex flex-col gap-4">
-              {pastDueGroups.length === 0 ? (
+              {!overdue || overdue.groups.length === 0 ? (
                 <p className="text-sm text-muted">Nothing overdue. You&apos;re caught up.</p>
               ) : (
-                pastDueGroups.map((group) => (
+                overdue.groups.map((group) => (
                   <DueTagRow key={group.key} group={group} showDate />
                 ))
               )}
             </div>
+            {overdue && (
+              <Pager
+                page={overdue.page}
+                totalPages={overdue.totalPages}
+                shown={overdue.groups.length}
+                total={overdue.total}
+                onPage={setOverduePage}
+              />
+            )}
           </div>
         </>
       )}

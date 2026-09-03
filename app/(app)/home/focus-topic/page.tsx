@@ -1,100 +1,142 @@
 "use client";
 
+import { Suspense, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
-import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { ListIcon, CheckCircleIcon } from "@/components/ui/icons";
 import {
-  // ArrowLeftIcon,
-  // BellIcon,
-  ListIcon,
-  CheckCircleIcon,
-  // FileIcon,
-  TargetIcon,
-  // AlertTriangleIcon,
-  // ClockIcon,
-  // PlayIcon,
-  // PencilIcon,
-  // RefreshIcon,
-} from "@/components/ui/icons";
-import { ClockIcon, FileIcon, LayersIcon, AlertTriangleIcon, PlayIcon, NoteIcon, LoderIcon,ArrowLeftIcon ,BellIcon} from "@/assets/icons";
-type SignalLevel = "high" | "medium";
+  ClockIcon,
+  LayersIcon,
+  AlertTriangleIcon,
+  PlayIcon,
+  NoteIcon,
+  LoderIcon,
+  ArrowLeftIcon,
+  BellIcon,
+} from "@/assets/icons";
+import {
+  getFocusTopic,
+  getWeaknessTopicDetail,
+  type WeaknessSignal,
+  type WeaknessSignalKey,
+  type WeaknessSignalLevel,
+  type WeaknessTier,
+  type WeaknessTopicDetail,
+} from "@/lib/api/weakness";
 
-// HIGH -> navy/lavender pill (matches "Coordinate Geometry" tag treatment in both screenshots)
-// MEDIUM -> orange pill (matches "MEDIUM SIGNAL" in the screenshot)
-const SIGNAL_STYLES: Record<SignalLevel, string> = {
+const SIGNAL_STYLES: Record<WeaknessSignalLevel, string> = {
   high: "bg-tint text-ink",
   medium: "bg-warning/10 text-warning",
+  low: "bg-brand/5 text-muted",
 };
 
-const SIGNALS: {
-  icon: React.ReactNode;
-  title: string;
-  signal: SignalLevel | null;
-  description: string;
-  note?: string;
-}[] = [
-    {
-      icon: <FileIcon />,
-      title: "Mock data",
-      signal: "high",
-      description: "0/3 correct in last mock",
-    },
-    {
-      icon: <LayersIcon />,
-      title: "Practice accuracy",
-      signal: "high",
-      description: "38% across 13 attempts",
-    },
-    {
-      icon: <AlertTriangleIcon />,
-      title: "Revision difficulty",
-      signal: "medium",
-      description: "2 Hard ratings recently",
-    },
-    {
-      icon: <ClockIcon />,
-      title: "Task abandonment",
-      signal: null,
-      description: "Skipped 3 sessions on this topic",
-      note: "Corroborated by accuracy data",
-    },
-  ];
+const SIGNAL_ICONS: Record<WeaknessSignalKey, ReactNode> = {
+  practice: <LayersIcon />,
+  revision: <AlertTriangleIcon />,
+  abandonment: <ClockIcon />,
+  time: <ClockIcon />,
+};
 
-const FOCUS_ACTIONS = [
-  { icon: <PlayIcon />, text: "Watch foundation lecture (Library)" },
-  { icon: <NoteIcon />, text: "Practice 10 questions targeted" },
-  { icon: <LoderIcon />, text: "Add to revision rotation" },
-];
+const ACTION_ICONS: ReactNode[] = [<PlayIcon key="0" />, <NoteIcon key="1" />, <LoderIcon key="2" />];
+
+function priorityLabel(tier: WeaknessTier): string {
+  if (tier === "CRITICAL" || tier === "STRONG") return "High Priority";
+  if (tier === "MODERATE") return "Moderate Priority";
+  if (tier === "MILD") return "Mild Priority";
+  return "On Track";
+}
 
 export default function FocusTopicPage() {
+  return (
+    <Suspense fallback={null}>
+      <FocusTopicContent />
+    </Suspense>
+  );
+}
+
+function FocusTopicContent() {
+  const searchParams = useSearchParams();
+  const chapterIdParam = searchParams.get("chapterId");
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
+  const [detail, setDetail] = useState<WeaknessTopicDetail | null>(null);
+  const [isLoading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    // With a chapterId in the URL (from "Where to focus next"), load that topic.
+    // Without one (opened as "This Week's Focus Topic"), resolve the stabilised
+    // Top Focus Topic first, then load its detail.
+    const load = async () => {
+      try {
+        const chapterId =
+          chapterIdParam ?? (await getFocusTopic()).focusTopic?.chapterId ?? null;
+        const result = chapterId ? await getWeaknessTopicDetail(chapterId) : null;
+        if (!cancelled) setDetail(result);
+      } catch {
+        if (!cancelled) setError("Couldn't load this topic. Please try again.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [chapterIdParam]);
+
+  const header = (
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
+        <Link href="/home" aria-label="Back to Home" className="text-ink">
+          <ArrowLeftIcon />
+        </Link>
+        <h1 className="text-h1 text-ink">This Week&apos;s Focus Topic</h1>
+      </div>
+      <div className="flex shrink-0 items-center gap-4">
+        <ThemeToggle />
+        <button
+          type="button"
+          aria-label="Notifications"
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
+        >
+          <BellIcon />
+        </button>
+        <UserMenu />
+      </div>
+    </div>
+  );
+
+  if (isLoading) {
+    return <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">{header}</div>;
+  }
+
+  if (error || !detail) {
+    return (
+      <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
+        {header}
+        <p className="py-8 text-center text-sm text-warning">
+          {error ?? "No weakness data for this topic yet. Keep practising and check back soon."}
+        </p>
+      </div>
+    );
+  }
+
+  const score = Math.round(Number(detail.weaknessScore));
+  const subjectName = detail.chapter?.subject?.name ?? null;
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
-      {/* Page header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Link href="/home" aria-label="Back to Home" className="text-ink">
-            <ArrowLeftIcon />
-          </Link>
-          <h1 className="text-h1 text-ink">This Week&apos;s Focus Topic</h1>
-        </div>
-            <div className="flex shrink-0 items-center gap-4">
-          <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
-          <UserMenu />
-        </div>
-      </div>
+      {header}
 
       {/* Main card */}
       <div className="overflow-hidden rounded-2xl border border-brand/10 bg-surface">
@@ -103,34 +145,31 @@ export default function FocusTopicPage() {
           {/* Left */}
           <div className="min-w-0 flex-1">
             <p className="truncate text-[18px] font-bold leading-none text-ink">
-              Coord Geo · Common Tangents
+              {detail.chapter?.name ?? "Unknown topic"}
             </p>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span
-                className={`rounded-full px-3 py-1 text-[12px] font-bold leading-4 ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint-strong text-ink"}`}
-              >
-                Coordinate Geometry
-              </span>
+              {subjectName && (
+                <span
+                  className={`rounded-full px-3 py-1 text-[12px] font-bold leading-4 ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint-strong text-ink"}`}
+                >
+                  {subjectName}
+                </span>
+              )}
 
               <span className="flex items-center gap-1 rounded-full bg-cta/10 px-3 py-1 text-[12px] font-bold uppercase leading-4 tracking-[1.5px] text-cta">
                 <span className="h-1.5 w-1.5 rounded-full bg-cta" />
-                High Priority
+                {priorityLabel(detail.weaknessTier)}
               </span>
             </div>
           </div>
 
           {/* Right */}
           <div className="flex shrink-0 flex-col items-center">
-            <CircularProgress
-              percent={78}
-              label="Score"
-              suffix=""
-              size={88}
-            />
+            <CircularProgress percent={score} label="Score" suffix="" size={88} />
 
             <p className="mt-2 text-[11px] font-bold uppercase tracking-wide text-muted whitespace-nowrap">
-              Strong Signal
+              {detail.tierLabel} Signal
             </p>
           </div>
         </div>
@@ -143,36 +182,38 @@ export default function FocusTopicPage() {
               <ListIcon />
               Signal Breakdown
             </p>
-            <div className="flex flex-col divide-y divide-brand/10">
-              {SIGNALS.map((signal) => (
-                <div key={signal.title} className="flex items-start gap-3 py-3 first:pt-0">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full  bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
-                    {signal.icon}
-                  </span>
-                  <div className="flex flex-col gap-0.5">
-                    <p className="flex flex-wrap items-center gap-2 text-[14px] font-bold leading-5 text-ink">
-                      {signal.title}
-                      {signal.signal && (
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${SIGNAL_STYLES[signal.signal]}`}
-                        >
-                          {signal.signal} Signal
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-xs text-muted">{signal.description}</p>
-                    {signal.note && (
-                      <p className="mt-1 flex items-center gap-1 text-[10px] sm:text-[11px] md:text-[12px] font-medium leading-[17px] text-success">
-                        <CheckCircleIcon className="h-[14px] w-[14px] shrink-0 sm:h-4 sm:w-4" />
-                        <span className="truncate">
-                          {signal.note}
-                        </span>
+            {detail.signalBreakdown.length === 0 ? (
+              <p className="text-xs text-muted">Not enough signal data for this topic yet.</p>
+            ) : (
+              <div className="flex flex-col divide-y divide-brand/10">
+                {detail.signalBreakdown.map((signal: WeaknessSignal) => (
+                  <div key={signal.key} className="flex items-start gap-3 py-3 first:pt-0">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+                      {SIGNAL_ICONS[signal.key]}
+                    </span>
+                    <div className="flex flex-col gap-0.5">
+                      <p className="flex flex-wrap items-center gap-2 text-[14px] font-bold leading-5 text-ink">
+                        {signal.title}
+                        {signal.level && (
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${SIGNAL_STYLES[signal.level]}`}
+                          >
+                            {signal.level} Signal
+                          </span>
+                        )}
                       </p>
-                    )}
+                      <p className="text-xs text-muted">{signal.description}</p>
+                      {signal.note && (
+                        <p className="mt-1 flex items-center gap-1 text-[10px] sm:text-[11px] md:text-[12px] font-medium leading-[17px] text-success">
+                          <CheckCircleIcon className="h-[14px] w-[14px] shrink-0 sm:h-4 sm:w-4" />
+                          <span className="truncate">{signal.note}</span>
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right: Focus This Week */}
@@ -181,34 +222,34 @@ export default function FocusTopicPage() {
               Focus This Week
             </p>
             <div className="flex flex-col gap-4">
-              {FOCUS_ACTIONS.map((action) => (
-                <div key={action.text} className="flex items-center gap-3">
+              {detail.recommendedActions.map((action, index) => (
+                <div key={action.key} className="flex items-center gap-3">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
-                    {action.icon}
+                    {ACTION_ICONS[index % ACTION_ICONS.length]}
                   </span>
-                  <p className="text-[14px] font-semibold leading-5 text-ink">
-                    {action.text}
-                  </p>
+                  <p className="text-[14px] font-semibold leading-5 text-ink">{action.label}</p>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Footer CTA — fixed navy/orange, same in both themes per screenshots */}
-        <div className="bg-[#1A1A4E] p-8">
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl p-4">
-            <p className="text-[16px] font-bold leading-5 text-[#FAF7F2]">
-              Plan adjustment available
-            </p>
-            <Link
-              href="#"
-              className="flex h-[54px] w-[224px] items-center justify-center gap-2 rounded-lg bg-[#FF7A59] px-3 text-[16px] font-bold leading-5 text-[#FAF7F2] transition-opacity hover:opacity-90"
-            >
-              Apply targeted week
-            </Link>
+        {/* Footer CTA — offered once the topic is a real concern (PRD 14.6) */}
+        {detail.planAdjustmentAvailable && (
+          <div className="bg-[#1A1A4E] p-8">
+            <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl p-4">
+              <p className="text-[16px] font-bold leading-5 text-[#FAF7F2]">
+                Plan adjustment available
+              </p>
+              <Link
+                href="#"
+                className="flex h-[54px] w-[224px] items-center justify-center gap-2 rounded-lg bg-[#FF7A59] px-3 text-[16px] font-bold leading-5 text-[#FAF7F2] transition-opacity hover:opacity-90"
+              >
+                Apply targeted week
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
