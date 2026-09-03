@@ -66,7 +66,7 @@ export default function FocusNextPage() {
   if (isLoading) return <PageLoader label="Loading focus topics…" />;
 
   return (
-    <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
+    <div className="flex min-h-screen flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-h1 text-ink">Where to focus next</h1>
