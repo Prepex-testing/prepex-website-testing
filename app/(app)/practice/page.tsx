@@ -409,7 +409,7 @@ function PracticeModeContent() {
         {breadcrumb.map((item, index) => (
           <React.Fragment key={`${item}-${index}`}>
             {index === 0 ? (
-              <span className="flex h-8 shrink-0 items-center rounded-lg bg-subject-bg px-3 text-[12px] font-semibold leading-5 text-subject-text sm:px-4 sm:text-[14px]">
+              <span className="flex min-h-8 max-w-full shrink-0 items-center rounded-lg bg-subject-bg px-3 py-1 text-[12px] font-semibold leading-5 text-subject-text sm:px-4 sm:text-[14px]">
                 {item}
               </span>
             ) : (
@@ -424,7 +424,7 @@ function PracticeModeContent() {
         ))}
       </div>
 
-      <h2 className="text-[16px] font-bold leading-[1.4] tracking-normal text-ink sm:text-[20px] sm:leading-[1.3] lg:text-[24px] lg:leading-[1.25]">
+      <h2 className="text-[16px] font-medium leading-[1.4] tracking-normal text-ink sm:text-[20px] sm:leading-[1.3] lg:text-[24px] lg:leading-[1.25]">
         {currentQ.questionText}
       </h2>
 
@@ -489,7 +489,7 @@ function PracticeModeContent() {
           >
             <BookmarkIcon
               filled={isMarked}
-              className="h-6 w-6 shrink-0 sm:h-7 sm:w-7 lg:h-8 lg:w-8"
+              className="h-5 w-5 shrink-0 sm:h-[22px] sm:w-[22px] lg:h-6 lg:w-6"
             />
 
             <span className="text-[14px] font-bold leading-6 sm:text-[16px]">
@@ -503,8 +503,7 @@ function PracticeModeContent() {
             disabled={submitting || finishing}
             className="flex h-8 items-center gap-3 text-[#666666] transition-colors hover:text-ink disabled:opacity-30 dark:text-[#FAF7F2] dark:hover:text-white"
           >
-            <DoubleArrowIcon className="h-6 w-6 shrink-0 sm:h-7 sm:w-7 lg:h-8 lg:w-8" />
-
+            <DoubleArrowIcon className="h-5 w-5 shrink-0 sm:h-[22px] sm:w-[22px] lg:h-6 lg:w-6" />
             <span className="text-[14px] font-bold leading-6 sm:text-[16px]">
               {isLast ? "Skip & Finish" : "Skip Question"}
             </span>

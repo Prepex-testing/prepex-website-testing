@@ -269,6 +269,31 @@ export function ArrowLeftIcon() {
   );
 }
 
+export function ArrowLeftIcons({
+  width = 20,
+  height = 20,
+  ...props
+}: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 20 20"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <path
+        d="M12.5 15.5 7 10l5.5-5.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function GraduationCapIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
