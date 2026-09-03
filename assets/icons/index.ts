@@ -96,7 +96,7 @@ export { default as Lightbulb} from "./Lightbulb.svg";
 export { default as Right} from "./Right.svg";
 export { default as Star} from "./Star.svg";
 export { default as TrendingDownIcon} from "./TrendingDownIcon.svg";
-
+export { default as VectorIcons} from "./VectorIcons.svg";
 
 
 

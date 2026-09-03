@@ -245,19 +245,19 @@ export function TodaysPracticeModal({
         </span>
 
         {/* Content */}
-        <div className="min-w-0 w-full flex-1 sm:h-[88px] sm:max-w-[384px]">
+        <div className="min-w-0 w-full flex-1 sm:max-w-[384px]">
           {/* Subject */}
-          <p className="h-4 text-[12px] font-bold uppercase leading-4 tracking-[0.6px] text-muted">
+          <p className="h-4 truncate text-[12px] font-bold uppercase leading-4 tracking-[0.6px] text-muted">
             {info.subjectLabel}
           </p>
 
           {/* Title */}
-          <p className="mt-0 text-[16px] font-bold leading-[22.5px] text-ink sm:text-[18px]">
+          <p className="mt-0 line-clamp-2 text-[16px] font-bold leading-[22.5px] text-ink sm:text-[18px]">
             {loading ? "Loading session…" : info.title}
           </p>
 
           {/* Description */}
-          <p className="w-full text-[14px] font-normal leading-[22.75px] tracking-normal text-muted">
+          <p className="line-clamp-2 w-full text-[14px] font-normal leading-[22.75px] tracking-normal text-muted">
             {info.description}
           </p>
         </div>
