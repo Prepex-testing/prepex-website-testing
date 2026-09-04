@@ -29,15 +29,15 @@ import {
   type PracticeSessionDetail,
   type PracticeSessionQuestion,
 } from "@/lib/api/practice";
-import { ArrowLeftIcon, BellIcon, Open } from "@/assets/icons";
+import { ArrowLeftIcon, BellIcon, ConceptualIcon, DiceIcon, Open, TimeIcon, VectorIcon } from "@/assets/icons";
 
 const ALL_TAGS = Object.keys(MISTAKE_TAG_LABELS) as MistakeTag[];
 
 const TAG_ICONS: Record<MistakeTag, ReactNode> = {
-  SILLY_ERROR: <SillyErrorIcon />,
-  CONCEPTUAL_GAP: <ConceptualGapIcon />,
-  TIME_PRESSURE: <TimePressureIcon />,
-  WILD_GUESS: <WildGuessIcon />,
+  SILLY_ERROR: <VectorIcon />,
+  CONCEPTUAL_GAP: <ConceptualIcon />,
+  TIME_PRESSURE: <TimeIcon />,
+  WILD_GUESS: <DiceIcon />,
 };
 
 const TAG_DESCRIPTIONS: Record<MistakeTag, string> = {
@@ -193,142 +193,128 @@ function QuestionAnalysisContent() {
       </div>
 
       <div className="flex flex-col gap-3">
-            <div className="flex min-h-[38px] min-w-0 flex-1 flex-wrap items-center gap-2">
-              {FILTERS.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => selectFilter(f.id)}
-                  aria-pressed={filter === f.id}
-                  className={`
-          flex
-          h-9
-          shrink-0
-          items-center
-          justify-center
-          gap-1.5
-          rounded-full
-          border
-          px-4
-          text-[13px]
-          leading-none
-          whitespace-nowrap
-          transition-all
-          duration-200
+        <div className="flex min-h-[38px] min-w-0 flex-1 flex-wrap items-center gap-2">
+          {FILTERS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => selectFilter(f.id)}
+              aria-pressed={filter === f.id}
+              className={`flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full border px-4 text-[13px] leading-none whitespace-nowrap transition-all duration-200
 
-          ${filter === f.id
-                      ? "border-brand bg-brand text-white dark:border-white dark:bg-white dark:text-[#1A1A4E]"
-                      : "border-brand bg-surface text-[#444655] hover:text-ink dark:border-secondary dark:bg-transparent dark:text-secondary dark:hover:border-white"
-                    }
+         ${filter === f.id
+                  ? "border-brand bg-brand text-white dark:border-white dark:bg-white dark:text-[#1A1A4E]"
+                  : "border-[#8B8998] bg-surface text-[#8B8998] hover:text-ink dark:border-[#8B8998] dark:bg-transparent dark:text-[#8B8998] dark:hover:border-white"
+                }
         `}
-                >
-                  <span className="font-semibold">
-                    {f.label}
-                  </span>
+            >
+              <span className="font-semibold">
+                {f.label}
+              </span>
 
-                  <span className="font-medium opacity-70">
-                    ({counts[f.id]})
-                  </span>
-                </button>
-              ))}
+              <span className="font-medium opacity-70">
+                ({counts[f.id]})
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {visible.length === 0 ? (
+        <div className="flex min-h-[240px] items-center justify-center rounded-2xl border border-brand/10 bg-surface p-8 text-center">
+          <p className="text-sm text-muted">Nothing to show here.</p>
+        </div>
+      ) : solutionsFirst ? (
+        /* "View Solutions" — every question at once, solutions expanded. */
+        <div className="flex flex-col gap-6">
+          {visible.map((sq) => (
+            <QuestionCard
+              key={sq.practiceSessionQuestionId}
+              sq={sq}
+              openSolution
+              tags={tagsFor(sq)}
+              onTagsChange={(next) =>
+                setTagOverrides((m) => ({ ...m, [sq.practiceSessionQuestionId]: next }))
+              }
+            />
+          ))}
+        </div>
+      ) : (
+        /* "Question by Question" — one at a time. */
+        <div className="flex flex-col gap-4">
+          <div className="flex min-h-8 flex-wrap items-center justify-between gap-3">
+            {/* Question Counter */}
+            <p className="text-[13px] font-bold leading-none text-ink sm:text-[14px]">
+              Question {currentIndex + 1} of {visible.length}
+            </p>
+
+            {/* Prev / Next */}
+            <div className="flex h-8 shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIndex((i) => Math.max(0, i - 1))}
+                disabled={currentIndex === 0}
+                className="flex h-8 items-center gap-1.5 rounded-lg border border-[rgba(225,227,228,0.3)] bg-[#FFFFFF] px-3 text-[12px] font-semibold leading-none text-[#1A1A4E] transition-colors hover:bg-tint-strong disabled:opacity-30 disabled:hover:bg-transparent dark:border-[var(--border-divider,#FAF7F20F)] dark:bg-[#1A1A4E] dark:text-[#FAF7F2] sm:px-4 sm:text-[13px]"
+              >
+                <ArrowLeftIcons className="h-[14px] w-[14px] shrink-0" />
+                Prev
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setIndex((i) => Math.min(visible.length - 1, i + 1))
+                }
+                disabled={currentIndex >= visible.length - 1}
+                className="flex h-8 items-center gap-1.5 rounded-lg border border-[rgba(225,227,228,0.3)] bg-[#FFFFFF] px-3 text-[12px] font-semibold leading-none text-[#1A1A4E] transition-colors hover:bg-tint-strong disabled:opacity-30 disabled:hover:bg-transparent dark:border-[var(--border-divider,#FAF7F20F)] dark:bg-[#1A1A4E] dark:text-[#FAF7F2] sm:px-4 sm:text-[13px]"
+              >
+                Next
+
+                <span className="rotate-180">
+                  <ArrowLeftIcons className="h-[14px] w-[14px] shrink-0" />
+                </span>
+              </button>
             </div>
           </div>
 
-          {visible.length === 0 ? (
-            <div className="flex min-h-[240px] items-center justify-center rounded-2xl border border-brand/10 bg-surface p-8 text-center">
-              <p className="text-sm text-muted">Nothing to show here.</p>
-            </div>
-          ) : solutionsFirst ? (
-            /* "View Solutions" — every question at once, solutions expanded. */
-            <div className="flex flex-col gap-6">
-              {visible.map((sq) => (
-                <QuestionCard
-                  key={sq.practiceSessionQuestionId}
-                  sq={sq}
-                  openSolution
-                  tags={tagsFor(sq)}
-                  onTagsChange={(next) =>
-                    setTagOverrides((m) => ({ ...m, [sq.practiceSessionQuestionId]: next }))
-                  }
-                />
-              ))}
-            </div>
-          ) : (
-            /* "Question by Question" — one at a time. */
-            <div className="flex flex-col gap-4">
-              <div className="flex min-h-8 flex-wrap items-center justify-between gap-3">
-                {/* Question Counter */}
-                <p className="text-[13px] font-bold leading-none text-ink sm:text-[14px]">
-                  Question {currentIndex + 1} of {visible.length}
-                </p>
+          <QuestionCard
+            key={currentQuestion!.practiceSessionQuestionId}
+            sq={currentQuestion!}
+            openSolution={false}
+            tags={tagsFor(currentQuestion!)}
+            onTagsChange={(next) =>
+              setTagOverrides((m) => ({
+                ...m,
+                [currentQuestion!.practiceSessionQuestionId]: next,
+              }))
+            }
+          />
+        </div>
+      )}
 
-                {/* Prev / Next */}
-                <div className="flex h-8 shrink-0 items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIndex((i) => Math.max(0, i - 1))}
-                    disabled={currentIndex === 0}
-                    className="flex h-8 items-center gap-1.5 rounded-lg border border-[rgba(225,227,228,0.3)] bg-[#FFFFFF] px-3 text-[12px] font-semibold leading-none text-[#1A1A4E] transition-colors hover:bg-tint-strong disabled:opacity-30 disabled:hover:bg-transparent dark:border-[var(--border-divider,#FAF7F20F)] dark:bg-[#1A1A4E] dark:text-[#FAF7F2] sm:px-4 sm:text-[13px]"
-                  >
-                    <ArrowLeftIcons className="h-[14px] w-[14px] shrink-0" />
-                    Prev
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setIndex((i) => Math.min(visible.length - 1, i + 1))
-                    }
-                    disabled={currentIndex >= visible.length - 1}
-                    className="flex h-8 items-center gap-1.5 rounded-lg border border-[rgba(225,227,228,0.3)] bg-[#FFFFFF] px-3 text-[12px] font-semibold leading-none text-[#1A1A4E] transition-colors hover:bg-tint-strong disabled:opacity-30 disabled:hover:bg-transparent dark:border-[var(--border-divider,#FAF7F20F)] dark:bg-[#1A1A4E] dark:text-[#FAF7F2] sm:px-4 sm:text-[13px]"
-                  >
-                    Next
-
-                    <span className="rotate-180">
-                      <ArrowLeftIcons className="h-[14px] w-[14px] shrink-0" />
-                    </span>
-                  </button>
-                </div>
-              </div>
-
-              <QuestionCard
-                key={currentQuestion!.practiceSessionQuestionId}
-                sq={currentQuestion!}
-                openSolution={false}
-                tags={tagsFor(currentQuestion!)}
-                onTagsChange={(next) =>
-                  setTagOverrides((m) => ({
-                    ...m,
-                    [currentQuestion!.practiceSessionQuestionId]: next,
-                  }))
-                }
-              />
-            </div>
-          )}
-
-          {wrongToTag.length > 0 && (
-            <div className="flex flex-col items-center gap-3 rounded-2xl border border-brand/10 bg-surface p-6 text-center">
-              <p className="text-sm text-muted">
-                {allTagged
-                  ? "All wrong answers tagged — see how they add up."
-                  : `Tag every wrong answer to analyse the mistake pattern — ${untaggedCount} of ${wrongToTag.length} left.`}
-              </p>
-              <Button
-                variant="primary"
-                size="sm"
-                disabled={!allTagged}
-                onClick={() =>
-                  router.push(
-                    sessionId
-                      ? `/practice/mistake-analysis?sessionId=${sessionId}`
-                      : "/home/mistake-notebook",
-                  )
-                }
-              >
-                Analyse mistake pattern
-              </Button>
-            </div>
-          )}
+      {wrongToTag.length > 0 && (
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-brand/10 bg-surface p-6 text-center">
+          <p className="text-sm text-muted">
+            {allTagged
+              ? "All wrong answers tagged — see how they add up."
+              : `Tag every wrong answer to analyse the mistake pattern — ${untaggedCount} of ${wrongToTag.length} left.`}
+          </p>
+          <Button
+            variant="primary"
+            size="sm"
+            disabled={!allTagged}
+            onClick={() =>
+              router.push(
+                sessionId
+                  ? `/practice/mistake-analysis?sessionId=${sessionId}`
+                  : "/home/mistake-notebook",
+              )
+            }
+          >
+            Analyse mistake pattern
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -704,9 +690,13 @@ function QuestionCard({
           </p>
 
           {/* Tags */}
-          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
+          <div className="mt-6 grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {ALL_TAGS.map((tag) => {
               const active = tags.includes(tag);
+
+              const stateColor = active
+                ? "text-[#1A1A4E] dark:text-white"
+                : "text-[#333333] dark:text-muted";
 
               return (
                 <button
@@ -715,18 +705,22 @@ function QuestionCard({
                   disabled={busy && pendingTag === tag}
                   onClick={() => toggleTag(tag)}
                   aria-pressed={active}
-                  className={`flex h-[74px] w-full flex-col items-center justify-center gap-2 rounded-xl border px-3 py-4 text-center transition-colors disabled:opacity-50 ${active
-                    ? "border-[1.5px] border-brand bg-tint/50 text-brand"
-                    : "border-brand/15 text-body-text hover:border-ink/40"
-                    }`}
+                  className={`flex h-[100px] w-full flex-col items-center justify-center rounded-2xl border px-3 py-3 transition-colors ${active
+                    ? "border-[#1A1A4E] bg-[#EEF0F8] dark:border-white dark:bg-transparent"
+                    : "border-[#E5E7EB] bg-white hover:border-[#1A1A4E]/20 dark:border-[#FAF7F214] dark:bg-[#FAF7F214] dark:hover:bg-[#FAF7F21A]"
+                    } disabled:opacity-50`}
                 >
                   {/* Icon */}
-                  <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center [&>svg]:h-[18px] [&>svg]:w-[18px]">
+                  <span
+                    className={`flex items-center justify-center [&>svg]:h-9 [&>svg]:w-9 ${stateColor}`}
+                  >
                     {TAG_ICONS[tag]}
                   </span>
 
                   {/* Label */}
-                  <span className="text-[13px] font-semibold leading-[16px] tracking-normal">
+                  <span
+                    className={`mt-2 text-center font-['Plus_Jakarta_Sans'] text-[11px] font-bold leading-4 tracking-normal ${stateColor}`}
+                  >
                     {MISTAKE_TAG_LABELS[tag]}
                   </span>
                 </button>

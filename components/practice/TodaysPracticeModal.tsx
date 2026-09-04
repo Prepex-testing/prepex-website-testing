@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CheckIcons } from "@/assets/icons";
 import { Button } from "@/components/ui/Button";
 import { WhiteModal } from "@/components/ui/WhiteModal";
 import {
@@ -10,6 +9,7 @@ import {
   ListIcon,
   TrendingUpIcon,
   TargetIcon,
+  PracticeBenefitCheck,
 } from "@/components/ui/icons";
 import {
   getTaskQuestions,
@@ -23,6 +23,8 @@ const BENEFITS = [
   "Mistakes saved automatically",
   "Updated readiness score",
 ];
+
+
 
 type PracticeInfo = {
   subjectLabel: string;
@@ -247,7 +249,7 @@ export function TodaysPracticeModal({
         {/* Content */}
         <div className="min-w-0 w-full flex-1 sm:max-w-[384px]">
           {/* Subject */}
-          <p className="h-4 truncate text-[12px] font-bold uppercase leading-4 tracking-[0.6px] text-muted">
+          <p className="h-4 truncate text-[12px] font-bold uppercase leading-4 tracking-[0.6px] text-ink">
             {info.subjectLabel}
           </p>
 
@@ -297,16 +299,15 @@ export function TodaysPracticeModal({
         {BENEFITS.map((benefit) => (
           <p
             key={benefit}
-            className="flex h-5 w-full items-center gap-2 text-[14px] font-normal leading-5 tracking-normal text-body-text"
+            className="flex h-5 w-full items-center gap-2 text-[14px] font-normal leading-5 tracking-normal"
           >
             <span className="flex h-4 w-4 shrink-0 items-center justify-center text-ink">
-              <CheckIcons
-                width={16}
-                height={16}
-              />
+              <PracticeBenefitCheck />
             </span>
 
-            <span>{benefit}</span>
+            <span className="text-[#374151] dark:text-[#8B8998]">
+              {benefit}
+            </span>
           </p>
         ))}
       </div>

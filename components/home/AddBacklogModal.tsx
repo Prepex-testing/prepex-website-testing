@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { WhiteModal } from "@/components/ui/WhiteModal";
 import { Button } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Select";
+import { CustomSelect } from "@/components/ui/CustomSelect";
 import { ChevronDownIcon, PlusIcon, XIcon } from "@/components/ui/icons";
 import { getSubjectsChapters, type SubjectWithChapters } from "@/lib/api/profile";
 import { addBacklogTasks, type BacklogTaskTypeInput } from "@/lib/api/backlog";
@@ -81,8 +81,8 @@ function RadioGroup<T extends string>({
 
             <span
               className={`flex size-5 shrink-0 items-center justify-center rounded-full ${selected
-                  ? "border-2 border-ink"
-                  : "border-[1.5px] border-[#E5E7EB] dark:border-[#8B8998]"
+                ? "border-2 border-ink"
+                : "border-[1.5px] border-[#E5E7EB] dark:border-[#8B8998]"
                 }`}
             >
               {selected && <span className="size-2.5 rounded-full bg-ink" />}
@@ -285,7 +285,7 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
               className="flex w-full flex-col rounded-xl border border-[#E5E7EB] bg-[#F3F4F6] p-4 dark:border-[#8B8998] dark:bg-[#111145]"
             >
               {/* Header */}
-              <div className="flex w-full items-center justify-between gap-3">
+              <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 {/* Subject + Chapter */}
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
                   {/* Subject */}
@@ -300,12 +300,18 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
                 </div>
 
                 {/* Priority + Chevron */}
-                <div className="flex shrink-0 items-center gap-2">
+                <div className="flex w-full shrink-0 items-center justify-between gap-2 sm:w-auto sm:justify-end">
                   {/* Priority */}
                   <span
-                    className={`inline-flex h-[23px] items-center justify-center rounded-full border px-2.5 py-1 text-[11px] font-semibold leading-[15px] ${PRIORITY_BADGE_CLASSES[entry.priority]}`}
+                    className={`inline-flex h-[23px] max-w-full items-center justify-center rounded-full border px-2.5 py-1 text-[11px] font-semibold leading-[15px] ${PRIORITY_BADGE_CLASSES[entry.priority]}`}
                   >
-                    {PRIORITY_OPTIONS.find((option) => option.value === entry.priority)?.label}
+                    <span className="truncate">
+                      {
+                        PRIORITY_OPTIONS.find(
+                          (option) => option.value === entry.priority,
+                        )?.label
+                      }
+                    </span>
                   </span>
 
                   {/* Expand / Collapse */}
@@ -332,29 +338,25 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
               {isOpen && (
                 <div className="flex flex-col gap-4 border-t border-[#E5E7EB] pt-4 dark:border-[#8B8998]">
                   <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-                    <Select
+                    <CustomSelect
                       label="Subject"
                       options={subjects.map((subject) => ({
                         value: String(subject.id),
                         label: subject.name,
                       }))}
                       value={String(entry.subjectId)}
-                      onChange={(event) =>
-                        updateEntrySubject(entry.id, Number(event.target.value))
-                      }
+                      onChange={(value) => updateEntrySubject(entry.id, Number(value))}
                       placeholder="Subject"
                     />
 
-                    <Select
+                    <CustomSelect
                       label="Topic"
                       options={entryChapters.map((chapter) => ({
                         value: chapter.id,
                         label: chapter.name,
                       }))}
                       value={entry.chapterId}
-                      onChange={(event) =>
-                        updateEntryChapter(entry.id, event.target.value)
-                      }
+                      onChange={(value) => updateEntryChapter(entry.id, value)}
                       placeholder="Topic"
                     />
                   </div>
@@ -395,22 +397,22 @@ export function AddBacklogModal({ open, onClose, onAdded }: AddBacklogModalProps
           <p className="text-[13px] font-medium text-muted">For each, optionally add specifics:</p>
 
           <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-            <Select
+            <CustomSelect
               label="Subject"
               options={subjects.map((subject) => ({ value: String(subject.id), label: subject.name }))}
               value={draftSubjectId != null ? String(draftSubjectId) : ""}
-              onChange={(event) => {
-                setDraftSubjectId(Number(event.target.value));
+              onChange={(value) => {
+                setDraftSubjectId(Number(value));
                 setDraftChapterId("");
               }}
               placeholder="Subject"
             />
 
-            <Select
+            <CustomSelect
               label="Topic"
               options={draftChapters.map((chapter) => ({ value: chapter.id, label: chapter.name }))}
               value={draftChapterId}
-              onChange={(event) => setDraftChapterId(event.target.value)}
+              onChange={setDraftChapterId}
               placeholder="Topic"
             />
           </div>

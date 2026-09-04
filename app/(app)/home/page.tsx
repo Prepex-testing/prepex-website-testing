@@ -385,6 +385,11 @@ export default function HomePage() {
       .finally(() => setCheckInLoaded(true));
   };
 
+  const handleHomeTaskChanged = () => {
+    refetchPlan();
+    refetchCheckInStatus();
+  };
+
   // Section 4.2.2 — pick at most one tier/inquiry pop-up per session. Tier 4/5
   // also honour a per-day "seen" stamp so they don't re-nag every home visit
   // (Section 4.6).
@@ -788,7 +793,7 @@ export default function HomePage() {
                           setPracticeTaskId(taskId);
                           setPracticeModalOpen(true);
                         }}
-                        onTaskChanged={refetchPlan}
+                        onTaskChanged={handleHomeTaskChanged}
                       />
                     ))}
                   </div>

@@ -170,7 +170,7 @@ export default function TellUsAboutYouPage() {
         <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
           Tell us about you
         </h1>
-        <p className="text-[14px] font-semibold leading-[100%] text-muted sm:text-[16px]">
+        <p className="text-[14px] font-semibold leading-[100%] text-neutral-text sm:text-[16px]">
           We&apos;ll personalize your plan to fit your life
         </p>
       </div>

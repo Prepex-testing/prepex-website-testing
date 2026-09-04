@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { WhiteModal } from "@/components/ui/WhiteModal";
 import { RadioOption } from "@/components/ui/RadioOption";
-import { Select } from "@/components/ui/Select";
+import { CustomSelect } from "@/components/ui/CustomSelect";
 import { XIcon } from "@/components/ui/icons";
 
 const ACTIVITIES = [
@@ -63,7 +63,13 @@ export function CrossAppSessionModal({ open, onClose, onStart, task }: CrossAppS
       </div>
 
       <div className="mt-4">
-        <Select label="How long?" options={durationOptions} defaultValue={String(remainingMinutes)} />
+        <CustomSelect
+          label="How long?"
+          options={durationOptions}
+          value={String(remainingMinutes)}
+          onChange={() => {}}
+          placeholder="How long?"
+        />
       </div>
 
       <Button variant="primary" className="mt-6" onClick={() => onStart(activityLabel)}>

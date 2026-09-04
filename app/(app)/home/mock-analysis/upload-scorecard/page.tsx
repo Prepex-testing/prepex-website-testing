@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { DateInput } from "@/components/ui/DateInput";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
+import { CustomSelect } from "@/components/ui/CustomSelect";
 import { ApiError } from "@/lib/api/http";
 import {
   extractMockImage,
@@ -398,14 +398,12 @@ function MockDetailsFields({
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Select
+        <CustomSelect
           label="Source"
           placeholder="Select Source"
           options={SOURCE_OPTIONS}
           value={fields.source}
-          onChange={(event) =>
-            onChange("source", event.target.value)
-          }
+          onChange={(value) => onChange("source", value)}
           labelClassName="text-[13px] font-medium leading-5 text-body-text dark:text-ink sm:text-[14px] sm:leading-5"
         />
 

@@ -349,12 +349,12 @@ export default function RevisionPage() {
           <div
             ref={statusMenuRef}
             className="
-        relative
-        w-full
-        shrink-0
-        sm:w-auto
-        lg:ml-4
-      "
+    relative
+    w-full
+    shrink-0
+    sm:w-auto
+    lg:ml-4
+  "
           >
             <button
               type="button"
@@ -362,36 +362,36 @@ export default function RevisionPage() {
               aria-expanded={isStatusMenuOpen}
               onClick={() => setStatusMenuOpen((value) => !value)}
               className={`
-          flex
-          h-9
-          w-full
-          items-center
-          justify-between
-          rounded-lg
-          border
-          px-3
-          text-[11px]
-          font-medium
-          transition-all
-          duration-200
+      flex
+      h-9
+      w-full
+      items-center
+      justify-between
+      rounded-lg
+      border
+      px-3
+      text-[11px]
+      font-medium
+      transition-all
+      duration-200
 
-          sm:h-10
-          sm:w-auto
-          sm:min-w-[170px]
-          sm:px-4
-          sm:text-xs
+      sm:h-10
+      sm:w-auto
+      sm:min-w-[170px]
+      sm:px-4
+      sm:text-xs
 
-          md:h-[42px]
-          md:min-w-[182px]
-          md:text-[13px]
+      md:h-[42px]
+      md:min-w-[182px]
+      md:text-[13px]
 
-          lg:text-sm
+      lg:text-sm
 
-          ${isDark
+      ${isDark
                   ? "border-primary bg-primary text-card hover:bg-primary/90"
                   : "border-[#C4C5D8] bg-white text-[#444655] hover:text-ink"
                 }
-        `}
+    `}
             >
               <span className="min-w-0 truncate">
                 Status:{" "}
@@ -409,23 +409,26 @@ export default function RevisionPage() {
               <div
                 role="menu"
                 className="
-            absolute
-            left-0
-            top-full
-            z-40
-            mt-2
-            w-full
-            overflow-hidden
-            rounded-xl
-            border
-            border-brand/10
-            bg-surface
-            py-1
-            shadow-modal
-            sm:left-auto
-            sm:right-0
-            sm:w-44
-          "
+        absolute
+        left-0
+        top-full
+        z-40
+        mt-2
+        w-full
+        overflow-hidden
+        rounded-xl
+        border
+        border-brand/10
+        bg-surface
+        py-1
+        shadow-modal
+
+        sm:w-44
+        md:left-0
+        md:right-auto
+        lg:left-auto
+        lg:right-0
+      "
               >
                 <button
                   type="button"
@@ -435,21 +438,21 @@ export default function RevisionPage() {
                     setStatusMenuOpen(false);
                   }}
                   className={`
-              flex
-              w-full
-              items-center
-              px-3
-              py-2
-              text-left
-              text-[13px]
-              font-medium
-              hover:bg-tint-strong
-              sm:text-sm
-              ${activeStatus === null
+          flex
+          w-full
+          items-center
+          px-3
+          py-2
+          text-left
+          text-[13px]
+          font-medium
+          hover:bg-tint-strong
+          sm:text-sm
+          ${activeStatus === null
                       ? "text-ink"
                       : "text-muted"
                     }
-            `}
+        `}
                 >
                   All
                 </button>
@@ -464,21 +467,21 @@ export default function RevisionPage() {
                       setStatusMenuOpen(false);
                     }}
                     className={`
-                flex
-                w-full
-                items-center
-                px-3
-                py-2
-                text-left
-                text-[13px]
-                font-medium
-                hover:bg-tint-strong
-                sm:text-sm
-                ${activeStatus === option.id
+            flex
+            w-full
+            items-center
+            px-3
+            py-2
+            text-left
+            text-[13px]
+            font-medium
+            hover:bg-tint-strong
+            sm:text-sm
+            ${activeStatus === option.id
                         ? "text-ink"
                         : "text-muted"
                       }
-              `}
+          `}
                   >
                     {option.label}
                   </button>

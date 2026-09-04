@@ -194,7 +194,7 @@ export default function WhereDoYouStudyPage() {
         <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
           Do you attend coaching?
         </h1>
-        <p className="text-[14px] font-semibold leading-[100%] text-muted sm:text-[16px]">
+        <p className="text-[14px] font-semibold leading-[100%] text-neutral-text sm:text-[16px]">
           Tells us when you&apos;re in lecture vs free for self-study.
         </p>
       </div>

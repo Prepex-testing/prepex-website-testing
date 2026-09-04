@@ -1850,3 +1850,24 @@ export function DoubleArrowIcon({
     </svg>
   );
 }
+
+export function PracticeBenefitCheck() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle
+        cx="12"
+        cy="12"
+        r="9"
+        className="fill-[#1A1A4E] stroke-[#1A1A4E] dark:fill-white dark:stroke-white"
+        strokeWidth="2"
+      />
+      <path
+        d="M9 12L11 14L15 10"
+        className="stroke-white dark:stroke-[#1A1A4E]"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

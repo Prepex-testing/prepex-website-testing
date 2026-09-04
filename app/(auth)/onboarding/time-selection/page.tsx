@@ -157,7 +157,7 @@ export default function TimeSelectionPage() {
         <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
           How many hours can you study daily?
         </h1>
-        <p className="text-[14px] font-semibold leading-[100%] text-muted sm:text-[16px]">
+        <p className="text-[14px] font-semibold leading-[100%] text-neutral-text sm:text-[16px]">
           This is the daily target your plan respects. Your real life, not aspirational
         </p>
       </div>
