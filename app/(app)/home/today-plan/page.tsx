@@ -18,7 +18,7 @@ import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { getTodayPlan, reorderPlannerTask, type PlannerTask, type TodayPlanResponse } from "@/lib/api/planner";
 import { formatFullDate } from "@/lib/utils/datetime";
-import { CheckIcon, ClockIcon, ListIcon, CalendarIcon,BellIcon ,ArrowLeftIcon} from "@/assets/icons";
+import { CheckIcon, ClockIcon, ListIcon, CalendarIcon, BellIcon, ArrowLeftIcon } from "@/assets/icons";
 import {
   // ArrowLeftIcon,
   // BellIcon,
@@ -284,19 +284,19 @@ function TodayPlanContent() {
   const completionPercent = summary?.completionPercentage ?? 0;
   const statTiles = summary
     ? [
-        { label: "Completed", value: formatDuration(summary.totalTimeCompletedSeconds / 60), icon: <CheckIcon className="h-4 w-4" /> },
-        {
-          label: "Remaining",
-          value: formatDuration(Math.max(summary.totalPlannedMinutes - summary.totalTimeCompletedSeconds / 60, 0)),
-          icon: <ClockIcon className="h-4 w-4" />,
-        },
-        {
-          label: "Tasks Done",
-          value: `${summary.completedTaskCount} / ${summary.totalTaskCount}`,
-          icon: <ListIcon className="h-4 w-4" />,
-        },
-        { label: "Planned Study", value: formatDuration(summary.totalPlannedMinutes), icon: <CalendarIcon className="h-4 w-4" /> },
-      ]
+      { label: "Completed", value: formatDuration(summary.totalTimeCompletedSeconds / 60), icon: <CheckIcon className="h-4 w-4" /> },
+      {
+        label: "Remaining",
+        value: formatDuration(Math.max(summary.totalPlannedMinutes - summary.totalTimeCompletedSeconds / 60, 0)),
+        icon: <ClockIcon className="h-4 w-4" />,
+      },
+      {
+        label: "Tasks Done",
+        value: `${summary.completedTaskCount} / ${summary.totalTaskCount}`,
+        icon: <ListIcon className="h-4 w-4" />,
+      },
+      { label: "Planned Study", value: formatDuration(summary.totalPlannedMinutes), icon: <CalendarIcon className="h-4 w-4" /> },
+    ]
     : STAT_TILES;
 
   return (
@@ -339,7 +339,7 @@ function TodayPlanContent() {
             valueClassName={isDark ? "text-[#FAF7F2]" : "text-[#171658]"}
           />
 
-          <p className={`mt-6 text-xl font-semibold ${isDark ? "text-[#8B8998]" : "text-[#111827]"}`}>
+          <p className="mt-6 text-xl font-semibold text-ink">
             Daily Goal Progress
           </p>
 
@@ -393,52 +393,52 @@ function TodayPlanContent() {
           No plan available
         </div>
       ) : (
-      <div className="flex flex-col gap-6">
-        {morningTasks.length > 0 && (
-          <TimeBlockSection
-            icon={<CloudSunIcon />}
-            title="Morning"
-            meta={plan ? sectionMeta(morning) : "2 Tasks • 1h 45m"}
-          >
-            <div className="flex flex-col gap-3">
-              {morningTasks.map((task) => renderTaskRow(task))}
-            </div>
-          </TimeBlockSection>
-        )}
-        {afternoonTasks.length > 0 && (
-          <TimeBlockSection
-            icon={<SunIcon className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />}
-            title="Afternoon"
-            meta={plan ? sectionMeta(afternoon) : "1 Task • 1h 15m"}
-          >
-            <div className="flex flex-col gap-3">
-              {afternoonTasks.map((task) => renderTaskRow(task))}
-            </div>
-          </TimeBlockSection>
-        )}
-        {eveningTasks.length > 0 && (
-          <TimeBlockSection
-            icon={<CloudMoonIcon />}
-            title="Evening"
-            meta={plan ? sectionMeta(evening) : "2 Tasks • 2h 00m"}
-          >
-            <div className="flex flex-col gap-3">
-              {eveningTasks.map((task) => renderTaskRow(task))}
-            </div>
-          </TimeBlockSection>
-        )}
-        {nightTasks.length > 0 && (
-          <TimeBlockSection
-            icon={<MoonIcon className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />}
-            title="Night"
-            meta={sectionMeta(night)}
-          >
-            <div className="flex flex-col gap-3">
-              {nightTasks.map((task) => renderTaskRow(task))}
-            </div>
-          </TimeBlockSection>
-        )}
-      </div>
+        <div className="flex flex-col gap-6">
+          {morningTasks.length > 0 && (
+            <TimeBlockSection
+              icon={<CloudSunIcon />}
+              title="Morning"
+              meta={plan ? sectionMeta(morning) : "2 Tasks • 1h 45m"}
+            >
+              <div className="flex flex-col gap-3">
+                {morningTasks.map((task) => renderTaskRow(task))}
+              </div>
+            </TimeBlockSection>
+          )}
+          {afternoonTasks.length > 0 && (
+            <TimeBlockSection
+              icon={<SunIcon className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />}
+              title="Afternoon"
+              meta={plan ? sectionMeta(afternoon) : "1 Task • 1h 15m"}
+            >
+              <div className="flex flex-col gap-3">
+                {afternoonTasks.map((task) => renderTaskRow(task))}
+              </div>
+            </TimeBlockSection>
+          )}
+          {eveningTasks.length > 0 && (
+            <TimeBlockSection
+              icon={<CloudMoonIcon />}
+              title="Evening"
+              meta={plan ? sectionMeta(evening) : "2 Tasks • 2h 00m"}
+            >
+              <div className="flex flex-col gap-3">
+                {eveningTasks.map((task) => renderTaskRow(task))}
+              </div>
+            </TimeBlockSection>
+          )}
+          {nightTasks.length > 0 && (
+            <TimeBlockSection
+              icon={<MoonIcon className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />}
+              title="Night"
+              meta={sectionMeta(night)}
+            >
+              <div className="flex flex-col gap-3">
+                {nightTasks.map((task) => renderTaskRow(task))}
+              </div>
+            </TimeBlockSection>
+          )}
+        </div>
       )}
 
 
@@ -461,7 +461,7 @@ function TodayPlanContent() {
             onClick={() => setRegenerateOpen(true)}
             className="h-[50px] w-full text-[14px] font-bold"
           >
-           <RefreshIcon className="h-3.5 w-3.5 shrink-0 sm:h-3.5 sm:w-3.5 md:h-[13.33px] md:w-[13.33px]" />
+            <RefreshIcon className="h-3.5 w-3.5 shrink-0 sm:h-3.5 sm:w-3.5 md:h-[13.33px] md:w-[13.33px]" />
             Regenerate Today&apos;s Plan
           </Button>
 

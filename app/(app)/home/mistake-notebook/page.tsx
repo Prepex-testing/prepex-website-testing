@@ -393,13 +393,12 @@ export default function MistakeNotebookPage() {
                 <button
                   key={item}
                   onClick={() => applySubjectFilter(item)}
-                  className={`h-[34px] rounded-full border px-4 text-[12px] font-medium transition-all ${
-                    subjectFilter === item
-                      ? "border-brand bg-brand text-white"
-                      : isDark
-                        ? "border-muted bg-transparent text-white hover:bg-tint"
-                        : "border-brand bg-transparent text-ink hover:bg-tint"
-                  }`}
+                  className={`h-[34px] rounded-full border px-4 text-[12px] font-medium transition-all duration-300 ${subjectFilter === item
+                    ? "border-brand bg-brand text-white dark:border-white dark:bg-white dark:text-[#1A1A4E]"
+                    : isDark
+                      ? "border-muted bg-transparent text-white hover:bg-tint"
+                      : "border-brand bg-transparent text-ink hover:bg-tint"
+                    }`}
                 >
                   {item}
                 </button>
@@ -414,13 +413,12 @@ export default function MistakeNotebookPage() {
                 <button
                   key={item}
                   onClick={() => applyTypeFilter(item)}
-                  className={`h-[34px] rounded-full border px-4 text-[12px] font-medium transition-all ${
-                    typeFilter === item
-                      ? "border-brand bg-brand text-white"
-                      : isDark
-                        ? "border-muted bg-transparent text-white hover:bg-tint"
-                        : "border-brand bg-transparent text-ink hover:bg-tint"
-                  }`}
+                  className={`h-[34px] rounded-full border px-4 text-[12px] font-medium transition-all duration-300 ${typeFilter === item
+                    ? "border-brand bg-brand text-white dark:border-white dark:bg-white dark:text-[#1A1A4E]"
+                    : isDark
+                      ? "border-muted bg-transparent text-white hover:bg-tint"
+                      : "border-brand bg-transparent text-ink hover:bg-tint"
+                    }`}
                 >
                   {item === "All" ? "All" : MISTAKE_TAG_LABELS[item]}
                 </button>
@@ -431,55 +429,65 @@ export default function MistakeNotebookPage() {
       </div>
 
       <div className="rounded-2xl border border-brand/10 bg-surface p-6">
-            <p className="flex items-center gap-2 text-[12px] font-extrabold uppercase leading-4 tracking-[1.2px] text-[#F59E0B]">
-              <ClockIcon />
-              Due Today <span className="normal-case text-muted">({today?.total ?? 0})</span>
-            </p>
-            <div className="mt-4 flex flex-col gap-4">
-              {!today || today.groups.length === 0 ? (
-                <p className="text-sm text-muted">Nothing due today. 🎉</p>
-              ) : (
-                today.groups.map((group) => <DueTagRow key={group.key} group={group} />)
-              )}
+        <p className="flex items-center gap-2 text-[12px] font-extrabold uppercase leading-4 tracking-[1.2px] text-[#F59E0B]">
+          <ClockIcon />
+          Due Today <span className="normal-case text-muted">({today?.total ?? 0})</span>
+        </p>
+        <div className="mt-4 flex flex-col gap-4">
+          {!today || today.groups.length === 0 ? (
+            <div className="flex min-h-[120px] w-full items-center justify-center rounded-xl border border-brand/10 bg-surface px-4 py-6">
+              <p className="text-center text-sm font-medium text-muted">
+                Nothing due today. 🎉
+              </p>
             </div>
-            {today && (
-              <Pager
-                page={today.page}
-                totalPages={today.totalPages}
-                shown={today.groups.length}
-                total={today.total}
-                onPage={setTodayPage}
-              />
-            )}
-          </div>
+          ) : (
+            today.groups.map((group) => (
+              <DueTagRow key={group.key} group={group} />
+            ))
+          )}
+        </div>
+        {today && (
+          <Pager
+            page={today.page}
+            totalPages={today.totalPages}
+            shown={today.groups.length}
+            total={today.total}
+            onPage={setTodayPage}
+          />
+        )}
+      </div>
 
-          <div className="rounded-2xl border border-brand/10 bg-surface p-6">
-            <p className="flex items-center gap-2 text-[12px] font-extrabold uppercase leading-4 tracking-[1.2px] text-[#F59E0B]">
-              <CalendarIcon />
-              All Due <span className="normal-case text-muted">({overdue?.total ?? 0})</span>
-            </p>
-            <p className="mt-1 text-[12px] text-muted">
-              Mistake practices that fell due before today — oldest first.
-            </p>
-            <div className="mt-4 flex flex-col gap-4">
-              {!overdue || overdue.groups.length === 0 ? (
-                <p className="text-sm text-muted">Nothing overdue. You&apos;re caught up.</p>
-              ) : (
-                overdue.groups.map((group) => (
-                  <DueTagRow key={group.key} group={group} showDate />
-                ))
-              )}
+      <div className="rounded-2xl border border-brand/10 bg-surface p-6">
+        <p className="flex items-center gap-2 text-[12px] font-extrabold uppercase leading-4 tracking-[1.2px] text-[#F59E0B]">
+          <CalendarIcon />
+          All Due <span className="normal-case text-muted">({overdue?.total ?? 0})</span>
+        </p>
+        <p className="mt-1 text-[12px] text-muted">
+          Mistake practices that fell due before today — oldest first.
+        </p>
+        <div className="mt-4 flex flex-col gap-4">
+          {!overdue || overdue.groups.length === 0 ? (
+            <div className="flex min-h-[120px] w-full items-center justify-center rounded-xl border border-brand/10 bg-surface px-4 py-6">
+              <p className="text-center text-sm font-medium text-muted">
+                Nothing overdue. You&apos;re caught up.
+              </p>
             </div>
-            {overdue && (
-              <Pager
-                page={overdue.page}
-                totalPages={overdue.totalPages}
-                shown={overdue.groups.length}
-                total={overdue.total}
-                onPage={setOverduePage}
-              />
-            )}
-          </div>
+          ) : (
+            overdue.groups.map((group) => (
+              <DueTagRow key={group.key} group={group} showDate />
+            ))
+          )}
+        </div>
+        {overdue && (
+          <Pager
+            page={overdue.page}
+            totalPages={overdue.totalPages}
+            shown={overdue.groups.length}
+            total={overdue.total}
+            onPage={setOverduePage}
+          />
+        )}
+      </div>
     </div>
   );
 }

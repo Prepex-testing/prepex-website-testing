@@ -145,10 +145,14 @@ export default function BacklogPage() {
     ? BACKLOG_HEALTH_COLORS[health.tier]
     : " ";
 
-  const healthPercent =
-    health?.taskCount
-      ? Math.round((health.activeTaskCount / health.taskCount) * 100)
-      : 0;
+  const MAX_BACKLOG_TASKS = 30;
+
+  const healthPercent = health
+    ? Math.min(
+      Math.round((health.activeTaskCount / MAX_BACKLOG_TASKS) * 100),
+      100,
+    )
+    : 0;
 
   // First load only — action-triggered refetches keep the page in place.
   if (!health && !error) return <PageLoader label="Loading backlog…" />;
@@ -267,7 +271,7 @@ export default function BacklogPage() {
             <button
               type="button"
               onClick={() => setRecoveryOpen(true)}
-              className="flex h-12 w-[163px] shrink-0 items-center justify-center whitespace-nowrap rounded-lg border border-brand bg-surface px-6 text-[16px] font-semibold text-ink transition-colors hover:bg-tint-strong"
+              className="flex h-12 w-[163px] shrink-0 items-center justify-center whitespace-nowrap rounded-lg border border-ink bg-surface px-6 text-[16px] font-semibold text-ink transition-colors hover:bg-tint-strong"
             >
               Start Recovery
             </button>

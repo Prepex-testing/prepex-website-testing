@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { WhiteModal } from "@/components/ui/WhiteModal";
-import { Select } from "@/components/ui/Select";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { CustomSelect } from "@/components/ui/CustomSelect";
 import { EditIcon, MinusIcon, PencilIcon, PlusIcon, XIcon } from "@/components/ui/icons";
 import { addPlannerTask, editPlannerTask, type SuggestedWindow } from "@/lib/api/planner";
 import { addBacklogTaskToPlan } from "@/lib/api/backlog";
@@ -371,21 +371,21 @@ export function AddCustomTaskModal({
           />
 
           {/* Subject + Topic */}
-          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
             {isLocked ? (
               <StaticField
                 label="Subject"
                 value={initialValues?.subjectValue ?? ""}
               />
             ) : (
-              <Select
+              <CustomSelect
                 label="Subject"
                 options={subjects.map((subject) => ({
                   value: String(subject.id),
                   label: subject.name,
                 }))}
                 value={subjectId != null ? String(subjectId) : ""}
-                onChange={(event) => setSubjectId(Number(event.target.value))}
+                onChange={(value) => setSubjectId(Number(value))}
                 placeholder="Subject"
               />
             )}
@@ -396,14 +396,14 @@ export function AddCustomTaskModal({
                 value={initialValues?.topicValue ?? ""}
               />
             ) : (
-              <Select
+              <CustomSelect
                 label="Topic"
                 options={chapters.map((chapter) => ({
                   value: chapter.id,
                   label: chapter.name,
                 }))}
                 value={chapterId}
-                onChange={(event) => setChapterId(event.target.value)}
+                onChange={setChapterId}
                 placeholder={isLoadingChapters ? "Loading chapters..." : "Topic"}
               />
             )}
@@ -488,18 +488,21 @@ export function AddCustomTaskModal({
             </div>
 
             {/* Time Preference */}
-            <Select
+            <CustomSelect
               label="Time Preference"
               options={TIME_PREFERENCE_OPTIONS}
               value={timePreferenceValue}
-              onChange={(event) => setTimePreferenceValue(event.target.value)}
-              placeholder="Morning (5-11 AM)"
+              onChange={setTimePreferenceValue}
+              placeholder="Time"
             />
           </div>
 
           {/* Additional Notes */}
           <div className="flex w-full flex-col gap-1">
-            <label htmlFor="task-notes" className="text-body-lg font-medium text-body-text dark:text-ink">
+            <label
+              htmlFor="task-notes"
+              className="text-body-lg font-medium text-body-text dark:text-ink"
+            >
               Additional Notes <span className="font-normal text-muted">(optional)</span>
             </label>
 

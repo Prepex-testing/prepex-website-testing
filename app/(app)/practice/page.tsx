@@ -466,7 +466,7 @@ function PracticeModeContent() {
               </div>
 
               <span
-                className="ml-6 text-[24px] font-medium italic leading-8 tracking-[0px] text-ink"
+                className="ml-6 text-[16px] font-medium italic leading-8 tracking-[0px] text-ink sm:text-[20px] lg:text-[24px]"
                 style={{ fontFamily: "Liberation Serif, serif" }}
               >
                 {value}

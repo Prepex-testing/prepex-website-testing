@@ -27,6 +27,7 @@ export function Select({
   value,
   defaultValue,
   labelClassName = "text-body-lg font-medium leading-none text-body-text dark:text-ink",
+  className,
   ...props
 }: SelectProps) {
   const generatedId = useId();
@@ -40,7 +41,7 @@ export function Select({
       : { value };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex min-w-0 max-w-full flex-col gap-2">
       <label htmlFor={selectId} className={labelClassName}>
         {label}
         {required && <span className="text-cta"> *</span>}
@@ -50,7 +51,7 @@ export function Select({
         <select
           id={selectId}
           {...uncontrolledProps}
-          className={`${SELECT_TEXT_CLASS} ${selectedValue
+          className={`${SELECT_TEXT_CLASS} min-w-0 max-w-full truncate ${className ?? ""} ${selectedValue
               ? "font-medium text-[16px] text-ink"
               : "font-normal text-[14px] text-[#666666] dark:text-[#8B8998]"
             }`}

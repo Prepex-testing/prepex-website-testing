@@ -81,7 +81,7 @@ export default function PreparingForPage() {
         <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
           What are you preparing for?
         </h1>
-        <p className="text-[14px] font-semibold leading-[100%] text-muted sm:text-[16px]">
+        <p className="text-[14px] font-semibold leading-[100%] text-neutral-text sm:text-[16px]">
           This filters your syllabus, mocks, and partner matching to match
           your goal
         </p>
