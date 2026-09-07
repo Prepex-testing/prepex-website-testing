@@ -97,9 +97,8 @@ export default function BadDayPage() {
             <p className="text-center text-[14px] font-semibold leading-[20px] text-ink sm:text-[16px]">
               Let&apos;s start fresh today. Just a few small tasks.
             </p>
-
             {firstTask && (
-              <div className="w-full rounded-2xl border border-brand/10 bg-background p-5 text-left shadow-[0_1px_2px_0_rgba(26,26,78,0.06)]">
+              <div className="w-full rounded-2xl border border-brand/10 bg-background p-5 text-left shadow-[0_1px_2px_0_rgba(26,26,78,0.06)] dark:border-[var(--border-card,#FAF7F214)] dark:bg-[var(--border-divider,#FAF7F20F)]">
                 <p className="text-[15px] font-bold leading-[22px] text-ink">
                   {firstTask.title}
                 </p>
@@ -128,7 +127,7 @@ export default function BadDayPage() {
                 {restTasks.map((task, index) => (
                   <div
                     key={index}
-                    className="rounded-2xl border border-brand/10 bg-background p-5 text-left shadow-[0_1px_2px_0_rgba(26,26,78,0.06)]"
+                    className="rounded-2xl border border-brand/10 bg-background p-5 text-left shadow-[0_1px_2px_0_rgba(26,26,78,0.06)] dark:border-[var(--border-card,#FAF7F214)] dark:bg-[var(--border-divider,#FAF7F20F)]"
                   >
                     <p className="text-[15px] font-bold leading-[22px] text-ink">
                       {task.title}
