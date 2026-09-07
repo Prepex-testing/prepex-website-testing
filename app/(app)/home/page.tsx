@@ -323,7 +323,6 @@ export default function HomePage() {
   const [backlogRecovery, setBacklogRecovery] = useState<BacklogRecoveryStatus | null>(null);
   const [isRecoveryModeModalOpen, setRecoveryModeModalOpen] = useState(false);
   const [isActivatingBacklogRecovery, setActivatingBacklogRecovery] = useState(false);
-  const hasPromptedBacklogRecovery = useRef(false);
   const [isLateSignupPromptOpen, setLateSignupPromptOpen] = useState(false);
   const [isQuickSessionTaskOpen, setQuickSessionTaskOpen] = useState(false);
   const hasPromptedLateSignup = useRef(false);
@@ -384,11 +383,10 @@ export default function HomePage() {
           isAvailable: data.isBacklogAvailable,
           latest: data.latestBacklog,
         });
+        // Not auto-opened: backlogRecovery.suggested only surfaces the
+        // "Start Recovery" button (below) — the student decides when to open
+        // RecoveryModeModal, rather than it popping up on its own.
         setBacklogRecovery(data.backlogRecovery);
-        if (data.backlogRecovery.suggested && !hasPromptedBacklogRecovery.current) {
-          hasPromptedBacklogRecovery.current = true;
-          setRecoveryModeModalOpen(true);
-        }
         maybePromptBurnout(bs, data.checkinDate);
         const moodValue = data.checkin?.mood;
         if (moodValue) {
@@ -1088,7 +1086,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">
-          {!backlogRecovery?.active && (
+          {backlogRecovery?.suggested && (
             <Button
               onClick={() => setRecoveryModeModalOpen(true)}
               variant="secondary"
