@@ -22,6 +22,9 @@ export type PracticeQuestionView = {
   questionText: string;
   questionImageUrl: string | null;
   options: Record<string, string> | null;
+  isPYQ: boolean;
+  /** Free-text exam label, e.g. "JEE Main 2020 (06 Sep Shift 2)" — set when isPYQ is true. */
+  examDetail: string | null;
   // Present only once a session is completed (getPracticeSession).
   solutionText?: string | null;
   solutionImageUrl?: string | null;
