@@ -1,5 +1,6 @@
 import { CORE_API_BASE_URL } from "@/lib/api/config";
 import { authenticatedRequest } from "@/lib/api/authRequest";
+import type { BacklogRecoveryStatus } from "@/lib/api/backlog";
 
 function authRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
   return authenticatedRequest<T>(`${CORE_API_BASE_URL}/api/checkin${path}`, options);
@@ -118,6 +119,8 @@ export type CheckInStatus = {
     addedAt: string;
     daysOverdue: number;
   } | null;
+  /** Section 11.5.2 — Backlog Recovery Mode status/day-of-7, e.g. "Day 2 of 7". */
+  backlogRecovery: BacklogRecoveryStatus;
 };
 
 export function getCheckInStatus() {

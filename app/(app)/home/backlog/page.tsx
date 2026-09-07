@@ -16,9 +16,11 @@ import {
   holdBacklogTask,
   reviveBacklogTask,
   skipBacklogTask,
+  activateBacklogRecovery,
   type BacklogHealth,
   type BacklogTask,
 } from "@/lib/api/backlog";
+import { generatePlan } from "@/lib/api/planner";
 import {
   MoreIcon,
   ChevronDownIcon,
@@ -58,6 +60,7 @@ const taskTransition = {
 
 export default function BacklogPage() {
   const [isRecoveryOpen, setRecoveryOpen] = useState(false);
+  const [isActivatingRecovery, setActivatingRecovery] = useState(false);
   const [isAddBacklogOpen, setAddBacklogOpen] = useState(false);
   const [planningTask, setPlanningTask] = useState<BacklogTask | null>(null);
   const { resolvedTheme } = useTheme();
@@ -139,6 +142,22 @@ export default function BacklogPage() {
     } finally {
       setActioningId(null);
     }
+  };
+
+  // PRD 11.5.1 — student taps "Yes, recover for 7 days" on RecoveryModeModal.
+  const handleActivateRecovery = async () => {
+    setActivatingRecovery(true);
+    try {
+      await activateBacklogRecovery();
+      // Backlog mode is flag-driven — a plain "SCHEDULED" regen is enough
+      // for determineMode() to pick it up (same as home/page.tsx's handler).
+      await generatePlan("SCHEDULED");
+    } catch {
+      // Best-effort — the backlog list refresh below still reflects server state.
+    }
+    setActivatingRecovery(false);
+    setRecoveryOpen(false);
+    loadBacklog();
   };
 
   const healthColor = health
@@ -589,6 +608,8 @@ export default function BacklogPage() {
           setRecoveryOpen(false);
         }}
         onAddBacklogChapters={() => setAddBacklogOpen(true)}
+        onConfirm={handleActivateRecovery}
+        isSubmitting={isActivatingRecovery}
       />
       <AddBacklogModal
         open={isAddBacklogOpen}
