@@ -233,7 +233,7 @@ function ViewAnalyticsContent() {
             </span>
           </div>
 
-          <div
+          {/* <div
             className={`mt-6 flex w-full items-center gap-4 rounded-[16px] px-5 py-3 ${isDark ? "" : "bg-success-bg"}`}
           >
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-success/20">
@@ -249,7 +249,7 @@ function ViewAnalyticsContent() {
                 vs last mock
               </p>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Accuracy Card */}
