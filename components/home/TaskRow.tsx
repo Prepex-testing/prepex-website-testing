@@ -25,6 +25,8 @@ export type Task = {
   chapterName?: string;
   duration: string;
   estimatedMinutes: number;
+  /** Row doesn't render this — carried through for TodaysPracticeModal. */
+  difficulty?: "easy" | "medium" | "high";
   secondsCompleted?: number;
   status?: string;
   timeSlot: string;

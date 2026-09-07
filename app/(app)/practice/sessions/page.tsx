@@ -12,6 +12,7 @@ import { PageLoader } from "@/components/ui/PageLoader";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { getTodayPlan, type PlannerTask } from "@/lib/api/planner";
+import { prettyDifficulty } from "@/lib/api/practice";
 import { BellIcon } from "@/assets/icons";
 
 function toPracticeRow(task: PlannerTask): PlanTask {
@@ -44,6 +45,10 @@ export default function PracticeSessionsPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isPracticeModalOpen, setPracticeModalOpen] = useState(false);
   const [practiceTaskId, setPracticeTaskId] = useState<string | null>(null);
+  const [practiceTaskStats, setPracticeTaskStats] = useState<{
+    estimatedMinutes: number;
+    difficultyLabel: string;
+  } | null>(null);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
 
   const refetch = useCallback(() => {
@@ -94,6 +99,10 @@ export default function PracticeSessionsPage() {
               onTaskChanged={refetch}
               onStartPractice={(taskId) => {
                 setPracticeTaskId(taskId);
+                setPracticeTaskStats({
+                  estimatedMinutes: task.estimatedMinutes,
+                  difficultyLabel: prettyDifficulty(task.difficulty),
+                });
                 setPracticeModalOpen(true);
               }}
             />
@@ -116,6 +125,8 @@ export default function PracticeSessionsPage() {
         open={isPracticeModalOpen}
         onClose={() => setPracticeModalOpen(false)}
         taskId={practiceTaskId}
+        estimatedMinutes={practiceTaskStats?.estimatedMinutes}
+        taskDifficultyLabel={practiceTaskStats?.difficultyLabel}
         onStart={() => {
           setPracticeModalOpen(false);
           router.push(

@@ -11,11 +11,15 @@ import {
   TargetIcon,
   PracticeBenefitCheck,
 } from "@/components/ui/icons";
+import { ApiError } from "@/lib/api/http";
 import {
   getTaskQuestions,
   prettyDifficulty,
   type TaskQuestionsResponse,
 } from "@/lib/api/practice";
+
+const NOT_FOUND_MESSAGE =
+  "No practice questions available for this topic. Keep practicing with your available resources and check back later.";
 
 const BENEFITS = [
   "Instant feedback",
@@ -134,6 +138,16 @@ type TodaysPracticeModalProps = {
 
   /** Plan task to pull live session details from. */
   taskId?: string | null;
+
+  /**
+   * Duration/difficulty straight from the plan task (getTodayPlan), e.g. the
+   * same PlanTask/Task row the caller already has in hand. getTaskQuestions
+   * has no task-level duration or difficulty — only per-question data — so
+   * these are supplied by the caller to keep the modal's stats in sync with
+   * the task list rows on the practice, home, and today-plan pages.
+   */
+  estimatedMinutes?: number | null;
+  taskDifficultyLabel?: string | null;
 };
 
 export function TodaysPracticeModal({
@@ -141,11 +155,16 @@ export function TodaysPracticeModal({
   onClose,
   onStart,
   taskId,
+  estimatedMinutes,
+  taskDifficultyLabel,
 }: TodaysPracticeModalProps) {
   const [fetched, setFetched] = useState<{
     taskId: string;
     data: TaskQuestionsResponse;
   } | null>(null);
+
+  /** Set when the backend has no questions materialised for this task (404). */
+  const [notFoundTaskId, setNotFoundTaskId] = useState<string | null>(null);
 
   /*
    * Fetch questions whenever the modal opens
@@ -165,9 +184,13 @@ export function TodaysPracticeModal({
           });
         }
       })
-      .catch(() => {
-        // Best effort.
-        // FALLBACK UI will continue to be displayed.
+      .catch((err) => {
+        if (cancelled) return;
+        // A 404 means the task genuinely has no practice questions yet — show
+        // that explicitly. Any other error falls back to the generic UI.
+        if (err instanceof ApiError && err.status === 404) {
+          setNotFoundTaskId(taskId);
+        }
       });
 
     return () => {
@@ -184,12 +207,24 @@ export function TodaysPracticeModal({
       ? fetched.data
       : null;
 
-  const loading = !!taskId && !data;
+  const isNotFound = !!taskId && notFoundTaskId === taskId;
 
-  const info = useMemo(
-    () => (data ? deriveInfo(data) : FALLBACK),
-    [data],
-  );
+  const loading = !!taskId && !data && !isNotFound;
+
+  const info = useMemo(() => {
+    const base = data ? deriveInfo(data) : FALLBACK;
+
+    return {
+      ...base,
+      title: isNotFound ? "No Practice Questions" : base.title,
+      description: isNotFound ? NOT_FOUND_MESSAGE : base.description,
+      durationLabel:
+        estimatedMinutes != null
+          ? `${estimatedMinutes} Min${estimatedMinutes === 1 ? "" : "s"}`
+          : base.durationLabel,
+      difficultyLabel: taskDifficultyLabel ?? base.difficultyLabel,
+    };
+  }, [data, isNotFound, estimatedMinutes, taskDifficultyLabel]);
 
   /*
    * Dynamic stats.
@@ -231,7 +266,9 @@ export function TodaysPracticeModal({
         </h2>
 
         <p className="mt-1 text-xs text-muted sm:text-sm">
-          AI has prepared your next practice session.
+          {isNotFound
+            ? "This topic doesn't have practice questions ready yet."
+            : "AI has prepared your next practice session."}
         </p>
       </div>
 
@@ -265,69 +302,73 @@ export function TodaysPracticeModal({
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="mt-6 grid w-full grid-cols-2 gap-1 border-y border-[#F3F4F6] py-4 sm:mt-6 sm:gap-4 sm:py-5 dark:border-[#FAF7F20F]">
-        {stats.map((stat) => (
-          <div
-            key={stat.label}
-            className="flex h-[98px] w-full flex-col rounded-xl border border-[#EEF0F8] bg-white p-4 shadow-[0_2px_8px_#1A1A4E14] dark:border-[#FAF7F214] dark:bg-[#111145]"
-          >
-            {/* Stat label */}
-            <p className="flex h-4 w-full items-center gap-2 text-[12px] font-semibold uppercase leading-4 tracking-[0.6px] text-muted">
-              <span className="flex h-[15px] w-[15px] shrink-0 items-center justify-center">
-                {stat.icon}
-              </span>
+      {!isNotFound && (
+        <>
+          {/* Stats */}
+          <div className="mt-6 grid w-full grid-cols-2 gap-1 border-y border-[#F3F4F6] py-4 sm:mt-6 sm:gap-4 sm:py-5 dark:border-[#FAF7F20F]">
+            {stats.map((stat) => (
+              <div
+                key={stat.label}
+                className="flex h-[98px] w-full flex-col rounded-xl border border-[#EEF0F8] bg-white p-4 shadow-[0_2px_8px_#1A1A4E14] dark:border-[#FAF7F214] dark:bg-[#111145]"
+              >
+                {/* Stat label */}
+                <p className="flex h-4 w-full items-center gap-2 text-[12px] font-semibold uppercase leading-4 tracking-[0.6px] text-muted">
+                  <span className="flex h-[15px] w-[15px] shrink-0 items-center justify-center">
+                    {stat.icon}
+                  </span>
 
-              <span>{stat.label}</span>
-            </p>
+                  <span>{stat.label}</span>
+                </p>
 
-            {/* Stat value */}
-            <p className="mt-2 h-7 w-full text-[16px] font-bold leading-7 tracking-normal text-ink sm:text-[18px]">
-              {stat.value}
-            </p>
+                {/* Stat value */}
+                <p className="mt-2 h-7 w-full text-[16px] font-bold leading-7 tracking-normal text-ink sm:text-[18px]">
+                  {stat.value}
+                </p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* Benefits heading */}
-      <p className="mt-6 h-5 w-full text-[14px] font-bold leading-5 tracking-normal text-ink">
-        After this session you&apos;ll receive:
-      </p>
-
-      {/* Benefits */}
-      <div className="mt-2 flex w-full flex-col gap-3">
-        {BENEFITS.map((benefit) => (
-          <p
-            key={benefit}
-            className="flex h-5 w-full items-center gap-2 text-[14px] font-normal leading-5 tracking-normal"
-          >
-            <span className="flex h-4 w-4 shrink-0 items-center justify-center text-ink">
-              <PracticeBenefitCheck />
-            </span>
-
-            <span className="text-[#374151] dark:text-[#8B8998]">
-              {benefit}
-            </span>
+          {/* Benefits heading */}
+          <p className="mt-6 h-5 w-full text-[14px] font-bold leading-5 tracking-normal text-ink">
+            After this session you&apos;ll receive:
           </p>
-        ))}
-      </div>
 
-      {/* Start Practice */}
-      <Button
-        variant="primary"
-        className="mt-4 sm:mt-5"
-        onClick={onStart}
-      >
-        Start Practice
-      </Button>
+          {/* Benefits */}
+          <div className="mt-2 flex w-full flex-col gap-3">
+            {BENEFITS.map((benefit) => (
+              <p
+                key={benefit}
+                className="flex h-5 w-full items-center gap-2 text-[14px] font-normal leading-5 tracking-normal"
+              >
+                <span className="flex h-4 w-4 shrink-0 items-center justify-center text-ink">
+                  <PracticeBenefitCheck />
+                </span>
 
-      {/* Not Now */}
+                <span className="text-[#374151] dark:text-[#8B8998]">
+                  {benefit}
+                </span>
+              </p>
+            ))}
+          </div>
+
+          {/* Start Practice */}
+          <Button
+            variant="primary"
+            className="mt-4 sm:mt-5"
+            onClick={onStart}
+          >
+            Start Practice
+          </Button>
+        </>
+      )}
+
+      {/* Not Now / Close */}
       <button
         type="button"
         onClick={onClose}
         className="mt-2 w-full text-center text-sm font-semibold text-muted"
       >
-        Not Now
+        {isNotFound ? "Close" : "Not Now"}
       </button>
     </WhiteModal>
   );

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { TimeBlockSection } from "@/components/home/TimeBlockSection";
-import { PlanTaskRow } from "@/components/home/PlanTaskRow";
+import { PlanTaskRow, toRowDifficulty } from "@/components/home/PlanTaskRow";
 import type { PlanTask } from "@/components/home/PlanTaskRow";
 import type { TaskType } from "@/components/home/TaskRow";
 import { withResumeLabel } from "@/components/home/taskTypes";
@@ -17,6 +17,7 @@ import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { getTodayPlan, reorderPlannerTask, type PlannerTask, type TodayPlanResponse } from "@/lib/api/planner";
+import { prettyDifficulty } from "@/lib/api/practice";
 import { formatFullDate } from "@/lib/utils/datetime";
 import { CheckIcon, ClockIcon, ListIcon, CalendarIcon, BellIcon, ArrowLeftIcon } from "@/assets/icons";
 import {
@@ -82,7 +83,7 @@ function toPlanTask(task: PlannerTask): PlanTask {
     timeRange: task.scheduledStart && task.scheduledEnd
       ? `${task.scheduledStart} - ${task.scheduledEnd}`
       : formatWindow(task.suggestedWindow),
-    difficulty: "medium",
+    difficulty: toRowDifficulty(task.chapter?.chapterMetadata?.difficulty),
     actionLabel: task.taskType === "WELLNESS"
       ? "Wellness"
       : task.taskType === "PRACTICE" && task.questionCount
@@ -203,6 +204,10 @@ function TodayPlanContent() {
   const [isRegenerateOpen, setRegenerateOpen] = useState(false);
   const [isPracticeModalOpen, setPracticeModalOpen] = useState(false);
   const [practiceTaskId, setPracticeTaskId] = useState<string | null>(null);
+  const [practiceTaskStats, setPracticeTaskStats] = useState<{
+    estimatedMinutes: number;
+    difficultyLabel: string;
+  } | null>(null);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
   const [planData, setPlanData] = useState<TodayPlanResponse | null>(null);
   const [planLoadFailed, setPlanLoadFailed] = useState(false);
@@ -270,6 +275,10 @@ function TodayPlanContent() {
       task={task}
       onStartPractice={(taskId) => {
         setPracticeTaskId(taskId);
+        setPracticeTaskStats({
+          estimatedMinutes: task.estimatedMinutes,
+          difficultyLabel: prettyDifficulty(task.difficulty),
+        });
         setPracticeModalOpen(true);
       }}
       onTaskChanged={refetchPlan}
@@ -481,6 +490,8 @@ function TodayPlanContent() {
         open={isPracticeModalOpen}
         onClose={() => setPracticeModalOpen(false)}
         taskId={practiceTaskId}
+        estimatedMinutes={practiceTaskStats?.estimatedMinutes}
+        taskDifficultyLabel={practiceTaskStats?.difficultyLabel}
         onStart={() => {
           setPracticeModalOpen(false);
           router.push(practiceTaskId ? `/practice?taskId=${practiceTaskId}` : "/practice");

@@ -15,9 +15,18 @@ type RecoveryModeModalProps = {
   open: boolean;
   onClose: () => void;
   onAddBacklogChapters?: () => void;
+  /** Called when the student taps "Yes, recover for 7 days". */
+  onConfirm?: () => void;
+  isSubmitting?: boolean;
 };
 
-export function RecoveryModeModal({ open, onClose, onAddBacklogChapters }: RecoveryModeModalProps) {
+export function RecoveryModeModal({
+  open,
+  onClose,
+  onAddBacklogChapters,
+  onConfirm,
+  isSubmitting,
+}: RecoveryModeModalProps) {
   return (
     <WhiteModal
       open={open}
@@ -150,11 +159,12 @@ export function RecoveryModeModal({ open, onClose, onAddBacklogChapters }: Recov
               <Button
                 variant="primary"
                 size="sm"
-                onClick={onClose}
+                onClick={onConfirm}
+                disabled={isSubmitting}
                 className="h-[52px] w-full rounded-xl px-4 py-4 sm:w-[252px] sm:px-10"
               >
                 <span className="whitespace-nowrap">
-                  Yes, recover for 7 days
+                  {isSubmitting ? "Starting…" : "Yes, recover for 7 days"}
                 </span>
               </Button>
             </div>

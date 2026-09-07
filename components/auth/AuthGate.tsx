@@ -25,6 +25,15 @@ function isPublicPath(pathname: string) {
   );
 }
 
+// A still-logged-in user landing on one of these (e.g. a bookmark, or typing
+// the URL by hand) should bounce straight to /home instead of seeing the
+// splash/login flow again.
+const AUTHED_REDIRECT_PATHS = ["/", "/splash", "/login"];
+
+function isAuthedRedirectPath(pathname: string) {
+  return AUTHED_REDIRECT_PATHS.includes(pathname);
+}
+
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -41,11 +50,18 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState(() => ({ pathname, authorized: isPublic }));
 
   useEffect(() => {
+    const hasToken = !!getAccessToken();
+
     if (isPublic) {
+      if (hasToken && isAuthedRedirectPath(pathname)) {
+        setState({ pathname, authorized: false });
+        router.replace("/home");
+        return;
+      }
       setState({ pathname, authorized: true });
       return;
     }
-    if (getAccessToken()) {
+    if (hasToken) {
       setState({ pathname, authorized: true });
     } else {
       setState({ pathname, authorized: false });

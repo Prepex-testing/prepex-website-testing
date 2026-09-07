@@ -7,11 +7,14 @@ import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { TaskRow } from "@/components/home/TaskRow";
 import type { Task, TaskType } from "@/components/home/TaskRow";
+import { toRowDifficulty } from "@/components/home/PlanTaskRow";
+import { prettyDifficulty } from "@/lib/api/practice";
 import { withResumeLabel } from "@/components/home/taskTypes";
 import { QuickFocusModal } from "@/components/home/QuickFocusModal";
 import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
+import { RecoveryModeModal } from "@/components/home/RecoveryModeModal";
 import { CheckInModal, MOODS, type Mood } from "@/components/check-in/CheckInModal";
 import {
   moodIdToApiValue,
@@ -21,6 +24,7 @@ import {
   activateRecoveryMode,
   type BurnoutStatus,
 } from "@/lib/api/checkin";
+import { activateBacklogRecovery, type BacklogRecoveryStatus } from "@/lib/api/backlog";
 import { BurnoutSignalModal } from "@/components/home/BurnoutSignalModal";
 import { PlannerCheckInModal } from "@/components/home/PlannerCheckInModal";
 import { WellnessResourceModal } from "@/components/home/WellnessResourceModal";
@@ -256,6 +260,7 @@ function toHomeTask(task: PlannerTask): Task {
     chapterName: task.chapter?.name ?? "",
     duration: `${task.estimatedMinutes} min`,
     estimatedMinutes: task.estimatedMinutes,
+    difficulty: toRowDifficulty(task.chapter?.chapterMetadata?.difficulty),
     secondsCompleted: task.secondsCompleted,
     status: task.status,
     timeSlot: formatWindow(task.suggestedWindow),
@@ -295,6 +300,10 @@ export default function HomePage() {
   const [isQuickFocusOpen, setQuickFocusOpen] = useState(false);
   const [isPracticeModalOpen, setPracticeModalOpen] = useState(false);
   const [practiceTaskId, setPracticeTaskId] = useState<string | null>(null);
+  const [practiceTaskStats, setPracticeTaskStats] = useState<{
+    estimatedMinutes: number;
+    difficultyLabel: string;
+  } | null>(null);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
   const [isRegenerateOpen, setRegenerateOpen] = useState(false);
   const [isCheckInOpen, setCheckInOpen] = useState(false);
@@ -310,6 +319,11 @@ export default function HomePage() {
   const [recoveryWeekDay, setRecoveryWeekDay] = useState(0);
   const [isEndRecoveryOpen, setEndRecoveryOpen] = useState(false);
   const [isEndingRecovery, setEndingRecovery] = useState(false);
+  // Backlog Recovery Mode (PRD 11.5) — shares the end-recovery flow above.
+  const [backlogRecovery, setBacklogRecovery] = useState<BacklogRecoveryStatus | null>(null);
+  const [isRecoveryModeModalOpen, setRecoveryModeModalOpen] = useState(false);
+  const [isActivatingBacklogRecovery, setActivatingBacklogRecovery] = useState(false);
+  const hasPromptedBacklogRecovery = useRef(false);
   const [isLateSignupPromptOpen, setLateSignupPromptOpen] = useState(false);
   const [isQuickSessionTaskOpen, setQuickSessionTaskOpen] = useState(false);
   const hasPromptedLateSignup = useRef(false);
@@ -370,6 +384,11 @@ export default function HomePage() {
           isAvailable: data.isBacklogAvailable,
           latest: data.latestBacklog,
         });
+        setBacklogRecovery(data.backlogRecovery);
+        if (data.backlogRecovery.suggested && !hasPromptedBacklogRecovery.current) {
+          hasPromptedBacklogRecovery.current = true;
+          setRecoveryModeModalOpen(true);
+        }
         maybePromptBurnout(bs, data.checkinDate);
         const moodValue = data.checkin?.mood;
         if (moodValue) {
@@ -502,6 +521,7 @@ export default function HomePage() {
     try {
       await endRecoveryMode();
       setInRecoveryMode(false);
+      setBacklogRecovery((prev) => (prev ? { ...prev, active: false, day: 0 } : prev));
       setEndRecoveryOpen(false);
       refetchPlan();
     } catch {
@@ -509,6 +529,23 @@ export default function HomePage() {
     } finally {
       setEndingRecovery(false);
     }
+  };
+
+  // PRD 11.5.1 — student taps "Yes, recover for 7 days" on RecoveryModeModal.
+  // Backlog mode is flag-driven (not reason-driven like burnout's RECOVERY),
+  // so a plain "SCHEDULED" regen is enough for determineMode() to pick it up.
+  const handleActivateBacklogRecovery = async () => {
+    setActivatingBacklogRecovery(true);
+    try {
+      await activateBacklogRecovery();
+      await generatePlan("SCHEDULED");
+    } catch {
+      // Best-effort — the banner/plan refresh below still reflects server state.
+    }
+    setActivatingBacklogRecovery(false);
+    setRecoveryModeModalOpen(false);
+    refetchPlan();
+    refetchCheckInStatus();
   };
 
   const handleMoodSave = async (mood: Mood) => {
@@ -568,27 +605,36 @@ export default function HomePage() {
         </div>
       </div>
 
-      {isInRecoveryMode && (
+      {(isInRecoveryMode || backlogRecovery?.active) && (
         <div className="flex items-center justify-between gap-3 rounded-2xl border border-warning/30 bg-warning/10 px-4 py-4 sm:px-5">
           <div className="flex min-w-0 items-center gap-3">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-warning/20 text-warning">
               <AlertTriangleIcon />
             </span>
             <div className="min-w-0">
-              <p className="text-sm font-bold text-warning">Recovery Week</p>
-              <p className="text-xs text-muted">
-                {recoveryWeekDay > 0 ? `Day ${recoveryWeekDay} of 7` : "Your recovery plan is active"}
-              </p>
+              <p className="text-sm font-bold text-warning">Recovery Mode</p>
+              <p className="text-xs text-muted">Your recovery plan is active</p>
             </div>
           </div>
-          <button
-            type="button"
-            aria-label="End recovery mode"
-            onClick={() => setEndRecoveryOpen(true)}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-warning hover:bg-warning/20"
-          >
-            <XIcon />
-          </button>
+          <div className="flex shrink-0 items-center gap-3">
+            <span className="text-xs font-semibold text-warning">
+              {isInRecoveryMode
+                ? recoveryWeekDay > 0
+                  ? `Recovery Week · Day ${recoveryWeekDay} of 7`
+                  : "Recovery Week"
+                : backlogRecovery && backlogRecovery.day > 0
+                  ? `Backlog Recovery · Day ${backlogRecovery.day} of ${backlogRecovery.totalDays}`
+                  : "Backlog Recovery"}
+            </span>
+            <button
+              type="button"
+              aria-label="End recovery mode"
+              onClick={() => setEndRecoveryOpen(true)}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-warning hover:bg-warning/20"
+            >
+              <XIcon />
+            </button>
+          </div>
         </div>
       )}
 
@@ -791,6 +837,10 @@ export default function HomePage() {
                         task={task}
                         onStartPractice={(taskId) => {
                           setPracticeTaskId(taskId);
+                          setPracticeTaskStats({
+                            estimatedMinutes: task.estimatedMinutes,
+                            difficultyLabel: prettyDifficulty(task.difficulty),
+                          });
                           setPracticeModalOpen(true);
                         }}
                         onTaskChanged={handleHomeTaskChanged}
@@ -1037,14 +1087,26 @@ export default function HomePage() {
             <p className="text-xs text-[rgba(70,70,80,0.7)] dark:text-[#FAF7F2]!"><span className="truncate">{backlogStatus.latest.title}</span> • Pending for {backlogStatus.latest.daysOverdue} days</p>
           </div>
         </div>
-        <Button
-          href="/home/backlog"
-          variant="secondary"
-          size="sm"
-          className="w-full sm:w-auto sm:shrink-0 justify-center border! border-[#1A1A4E]! bg-white! text-[#1A1A4E]! shadow-[0px_1px_2px_0px_#0000000D] hover:bg-white! dark:border-transparent!"
-        >
-          Review Now
-        </Button>
+        <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">
+          {!backlogRecovery?.active && (
+            <Button
+              onClick={() => setRecoveryModeModalOpen(true)}
+              variant="secondary"
+              size="sm"
+              className="w-full sm:w-auto justify-center border! border-[#1A1A4E]! bg-white! text-[#1A1A4E]! shadow-[0px_1px_2px_0px_#0000000D] hover:bg-white! dark:border-transparent!"
+            >
+              Start Recovery
+            </Button>
+          )}
+          <Button
+            href="/home/backlog"
+            variant="secondary"
+            size="sm"
+            className="w-full sm:w-auto justify-center border! border-[#1A1A4E]! bg-white! text-[#1A1A4E]! shadow-[0px_1px_2px_0px_#0000000D] hover:bg-white! dark:border-transparent!"
+          >
+            Review Now
+          </Button>
+        </div>
       </div>
       )}
 
@@ -1124,10 +1186,18 @@ export default function HomePage() {
         open={isPracticeModalOpen}
         onClose={() => setPracticeModalOpen(false)}
         taskId={practiceTaskId}
+        estimatedMinutes={practiceTaskStats?.estimatedMinutes}
+        taskDifficultyLabel={practiceTaskStats?.difficultyLabel}
         onStart={() => {
           setPracticeModalOpen(false);
           router.push(practiceTaskId ? `/practice?taskId=${practiceTaskId}` : "/practice");
         }}
+      />
+      <RecoveryModeModal
+        open={isRecoveryModeModalOpen}
+        onClose={() => setRecoveryModeModalOpen(false)}
+        onConfirm={handleActivateBacklogRecovery}
+        isSubmitting={isActivatingBacklogRecovery}
       />
 
       {isGeneratingPlan && (

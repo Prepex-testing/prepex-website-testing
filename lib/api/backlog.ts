@@ -164,3 +164,25 @@ export function addBacklogTaskToPlan(
     },
   );
 }
+
+// ---------------------------------------------------------------------------
+// Backlog Recovery Mode (PRD 11.5)
+// ---------------------------------------------------------------------------
+
+export type BacklogRecoveryStatus = {
+  active: boolean;
+  /** 1-based day within the 7-day week, 0 when inactive. */
+  day: number;
+  totalDays: number;
+  endsOn: string | null;
+  /** Backlog crossed the auto-recovery threshold but the student hasn't opted in yet. */
+  suggested: boolean;
+};
+
+/** Student taps "Yes, recover for 7 days" on RecoveryModeModal. */
+export function activateBacklogRecovery() {
+  return authRequest<{ success: true; data: BacklogRecoveryStatus }>(
+    "/recovery/activate",
+    { method: "POST" },
+  );
+}
