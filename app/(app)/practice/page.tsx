@@ -209,7 +209,11 @@ function PracticeModeContent() {
   const breadcrumb = useMemo(() => {
     if (!data) return [];
     const chapter = data.taskTitle.replace(/\s*\(practice\)\s*$/i, "").trim();
-    return [chapter, currentQ?.topic].filter(Boolean) as string[];
+    return [
+      chapter,
+      currentQ?.topic,
+      currentQ?.isPYQ ? currentQ.examDetail : null,
+    ].filter(Boolean) as string[];
   }, [data, currentQ]);
 
   const finish = useCallback(async () => {
@@ -358,6 +362,12 @@ function PracticeModeContent() {
           <span className="flex h-4 items-center rounded-sm bg-subject-bg px-2 text-[11px] font-semibold uppercase leading-4 tracking-[0.6px] text-ink sm:text-[12px]">
             {prettyDifficulty(currentQ.difficulty)}
           </span>
+
+          {currentQ.isPYQ && (
+            <span className="flex h-4 items-center rounded-sm bg-tint-strong px-2 text-[10px] font-semibold uppercase leading-4 tracking-[0.6px] text-ink sm:text-[11px]">
+              PYQ
+            </span>
+          )}
 
           {isMarked && (
             <span className="flex h-4 items-center rounded-sm bg-tint-strong px-2 text-[10px] font-semibold uppercase leading-4 tracking-[0.6px] text-ink sm:text-[11px]">
