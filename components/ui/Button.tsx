@@ -14,7 +14,7 @@ const SIZE_CLASSES: Record<Size, string> = {
 
 const VARIANT_CLASSES: Record<Variant, string> = {
   primary:
-  "border border-primary-button-border bg-cta text-white hover:bg-[#E8623F] hover:shadow-hover active:bg-[#D9552F] disabled:border-[#D8D4CC] disabled:bg-[#D8D4CC] disabled:text-[#F5F2ED] disabled:hover:bg-[#D8D4CC] disabled:hover:shadow-none",
+  "border border-primary-button-border bg-cta text-white hover:bg-[#E8623F] hover:shadow-hover active:bg-[#D9552F] disabled:border-primary-button-disabled-bg disabled:bg-primary-button-disabled-bg disabled:text-primary-button-disabled-text disabled:hover:bg-primary-button-disabled-bg disabled:hover:shadow-none",
  secondary:
   "border-[1.5px] border-secondary-button-border bg-surface text-body-text hover:bg-tint-strong disabled:border-[#D8D4CC] disabled:bg-surface disabled:text-[#8B8998] disabled:hover:bg-surface",
   task: "border border-[var(--button-border)] bg-surface text-body-text hover:border-cta hover:bg-cta hover:text-white active:border-cta active:bg-cta active:text-white disabled:border-[#D8D4CC] disabled:bg-surface disabled:text-[#8B8998] disabled:hover:border-[#D8D4CC] disabled:hover:bg-surface disabled:hover:text-[#8B8998]",

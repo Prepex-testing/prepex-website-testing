@@ -190,7 +190,7 @@ export default function WeeklyGoalPage() {
                     <span
                       className={`mt-3 inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${STATUS_STYLE[goals.myStatus]}`}
                     >
-                      <CheckCircleIcon />
+                      <CheckCircleIcon className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5 md:h-[15.5px] md:w-[13.5px]" />
                       {STATUS_LABEL[goals.myStatus]}
                     </span>
                   )}
@@ -211,7 +211,7 @@ export default function WeeklyGoalPage() {
                     <span
                       className={`mt-3 inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${STATUS_STYLE[goals.partnerStatus]}`}
                     >
-                      <CheckCircleIcon />
+                      <CheckCircleIcon className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5 md:h-[15.5px] md:w-[13.5px]" />
                       {STATUS_LABEL[goals.partnerStatus]}
                     </span>
                   )}
