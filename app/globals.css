@@ -106,6 +106,10 @@
 
   --primary-button-border: #D6D6D6;
 
+  /* Disabled state of the filled `primary` Button variant. */
+  --primary-button-disabled-bg: #D8D4CC;
+  --primary-button-disabled-text: #F5F2ED;
+
   /* Weekly chart header */
   --weekly-title: #2D2E6E;
   --weekly-label: #6B7280;
@@ -249,6 +253,11 @@
 
   --primary-button-border: #8B8998;
 
+  /* The light-mode `#D8D4CC` fill is far too bright against the dark surface,
+     so it drops to 15% and the label falls back to the shared muted grey. */
+  --primary-button-disabled-bg: #D8D4CC26;
+  --primary-button-disabled-text: #8B8998;
+
   /* Weekly chart header */
   --weekly-title: #FAF7F2;
   --weekly-label: #FAF7F2;
@@ -371,6 +380,8 @@
 
   --color-modal-bg: var(--modal-bg);
   --color-primary-button-border: var(--primary-button-border);
+  --color-primary-button-disabled-bg: var(--primary-button-disabled-bg);
+  --color-primary-button-disabled-text: var(--primary-button-disabled-text);
 
   --color-weekly-title: var(--weekly-title);
   --color-weekly-label: var(--weekly-label);

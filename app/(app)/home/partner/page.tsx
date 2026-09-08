@@ -27,6 +27,8 @@ import {
   ArrowLeftIcon,
   BellIcon,
   LayersIcon,
+  BoltIcon,
+  Patners,
 } from "@/assets/icons";
 import {
   getPartnerStatus,
@@ -54,12 +56,16 @@ import {
   type GoalCompletionStatus,
 } from "@/lib/api/partner";
 
+// The source SVGs carry fixed pixel width/height attributes, so they need an
+// explicit class to scale with the chips that hold them.
+const CATEGORY_ICON = "h-5 w-5 shrink-0 sm:h-6 sm:w-6";
+
 const CATEGORY_META: Record<MessageCategory, { label: string; icon: React.ReactNode }> = {
-  ENCOURAGE: { label: "Encourage", icon: <EncourageIcon /> },
-  GOAL_SHARE: { label: "Goal Share", icon: <GoalIcon /> },
-  PUSH_BACK: { label: "Push Back", icon: <PushIcon /> },
-  CHECK_IN: { label: "Check-In", icon: <CheckInIcon className="h-6 w-6" /> },
-  CELEBRATE: { label: "Celebrate", icon: <CelebrateIcon /> },
+  ENCOURAGE: { label: "Encourage", icon: <EncourageIcon className={CATEGORY_ICON} /> },
+  GOAL_SHARE: { label: "Goal Share", icon: <GoalIcon className={CATEGORY_ICON} /> },
+  PUSH_BACK: { label: "Push Back", icon: <PushIcon className={CATEGORY_ICON} /> },
+  CHECK_IN: { label: "Check-In", icon: <Patners className={CATEGORY_ICON} /> },
+  CELEBRATE: { label: "Celebrate", icon: <CelebrateIcon className={CATEGORY_ICON} /> },
 };
 
 const CATEGORY_ORDER: MessageCategory[] = [
@@ -429,22 +435,29 @@ export default function PartnerPage() {
   const partner = status.partner;
   const isPaused = status.status === "PAUSED" || Boolean(status.settings?.pausedUntil);
 
-  // Each stat icon sits in a 24×24 frame (see STAT_ICON_FRAME below) with the
-  // glyph itself at 18×18 — a 3px inset on every side. The flame keeps its 27:30
-  // ratio, so 18 wide makes it 20.25 tall (a ~2px top inset). Both step down one
-  // notch below `sm` so the cards stay compact on mobile.
+  // Each stat icon sits in a 24×24 frame with the glyph at 18×18 — a 3px inset
+  // on every side. The flame keeps its 27:30 ratio, so 18 wide makes it 20.25
+  // tall (a ~2px top inset). The check and clock SVGs carry more internal
+  // padding than the calendar, so they get a larger box to read at the same
+  // optical size. All step down one notch below `sm` to stay compact on mobile.
   const STAT_ICON = "h-[15px] w-[15px] sm:h-[18px] sm:w-[18px]";
+  const STAT_ICON_LG = "h-[18px] w-[18px] sm:h-[21.5px] sm:w-[21.5px]";
   const STAT_FLAME_ICON = "h-[16.875px] w-[15px] sm:h-[20.25px] sm:w-[18px]";
+
+  // Progress-bar fills. `todayCompletionPct` is nullable when the partner keeps
+  // it hidden; the bar renders empty in that case.
+  const todayCompletionPct = profile?.todayCompletionPct ?? null;
+  const weeklyConsistencyPct = profile ? Math.round((profile.daysActiveThisWeek / 7) * 100) : 0;
 
   const statCards = [
     { value: `${profile?.currentStreak ?? partner?.streak ?? 0}`, label: "Day Streak", icon: <FlameIcon className={STAT_FLAME_ICON} /> },
     {
       value: profile?.todayCompletionPct !== null && profile?.todayCompletionPct !== undefined ? `${profile.todayCompletionPct}%` : "—",
       label: "Completion",
-      icon: <CheckIcons className={STAT_ICON} />,
+      icon: <CheckIcons className={STAT_ICON_LG} />,
     },
     { value: `${profile?.daysActiveThisWeek ?? 0}/7`, label: "Days Active", icon: <CalendarIcon className={STAT_ICON} /> },
-    { value: profile?.daysToExam !== null && profile?.daysToExam !== undefined ? `${profile.daysToExam}` : "—", label: "Days left", icon: <ClockIcon className={STAT_ICON} /> },
+    { value: profile?.daysToExam !== null && profile?.daysToExam !== undefined ? `${profile.daysToExam}` : "—", label: "Days left", icon: <ClockIcon className={STAT_ICON_LG} /> },
   ];
 
   const availableTemplates = templates?.templates[category] ?? [];
@@ -454,12 +467,12 @@ export default function PartnerPage() {
       {headerBar}
 
       {inactivity?.suggestion && (
-        <div className="flex flex-col gap-3 rounded-2xl border border-warning/30 bg-warning/10 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-3">
+        <div className="flex flex-col gap-3 rounded-2xl border border-warning/30 bg-warning/10 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <div className="flex min-w-0 items-start gap-3 sm:items-center">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning/20 text-warning">
               <AlertTriangleIcon />
             </span>
-            <p className="text-sm font-semibold text-ink">{inactivity.suggestion}</p>
+            <p className="min-w-0 break-words text-sm font-semibold text-ink">{inactivity.suggestion}</p>
           </div>
           {inactivity.suggestedAction === "check_in" && (
             <Button variant="secondary" size="sm" onClick={handleQuickCheckIn} className="w-auto shrink-0">
@@ -474,22 +487,22 @@ export default function PartnerPage() {
         </div>
       )}
 
-      <div className="rounded-3xl border border-brand/10 bg-surface p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-8">
+      <div className="rounded-3xl border border-brand/10 bg-surface p-5 shadow-sm sm:p-6 lg:p-8">
+        <div className="flex flex-col gap-6 sm:gap-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+            <div className="flex w-full flex-col items-center gap-4 text-center sm:flex-row sm:items-center sm:gap-5 sm:text-left">
               <div
-                className={`flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-brand/10 text-2xl font-extrabold ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+                className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-brand/10 text-xl font-extrabold sm:h-20 sm:w-20 sm:text-2xl ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
               >
                 {partner?.fullName?.trim()?.[0]?.toUpperCase() ?? "?"}
               </div>
 
-              <div className="min-w-0">
+              <div className="min-w-0 w-full sm:w-auto">
                 <span className="inline-flex rounded-md bg-tint px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.5px] text-ink">
                   YOUR PARTNER
                 </span>
 
-                <h2 className="mt-2 text-[24px] font-bold leading-8 text-ink">
+                <h2 className="mt-2 break-words text-[20px] font-bold leading-7 text-ink sm:text-[24px] sm:leading-8">
                   {partner?.fullName ?? "—"}
                 </h2>
 
@@ -503,13 +516,14 @@ export default function PartnerPage() {
                         : ""}
                 </p>
 
-                <p className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted">
+                <p className="mt-2 flex flex-wrap items-center justify-center gap-3 text-sm text-muted sm:justify-start sm:gap-4">
                   {partner?.city && (
                     <span className="flex items-center gap-1">
                       <Location className="h-4 w-4 shrink-0" />
                       {partner.city}
                     </span>
                   )}
+
                   {partner?.examName && <span>{partner.examName}</span>}
                 </p>
               </div>
@@ -520,16 +534,18 @@ export default function PartnerPage() {
             {statCards.map((stat) => (
               <div
                 key={stat.label}
-                className="flex items-center gap-4 rounded-2xl border border-brand/10 bg-surface p-6 shadow-sm transition-colors"
+                className="flex items-center gap-3 rounded-2xl border border-brand/10 bg-surface p-4 shadow-sm transition-colors sm:gap-4 sm:p-5 xl:p-6"
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink sm:h-12 sm:w-12 dark:bg-[#FAF7F2]/8">
                   <span className="flex h-5 w-5 items-center justify-center sm:h-6 sm:w-6">
                     {stat.icon}
                   </span>
                 </div>
-                <div>
-                  <p className="text-[36px] font-extrabold leading-none text-ink">{stat.value}</p>
-                  <p className="mt-1 text-xs font-bold text-muted">{stat.label}</p>
+                <div className="min-w-0">
+                  <p className="truncate text-[28px] font-extrabold leading-none text-ink sm:text-[32px] xl:text-[36px]">
+                    {stat.value}
+                  </p>
+                  <p className="mt-1 truncate text-xs font-bold text-muted">{stat.label}</p>
                 </div>
               </div>
             ))}
@@ -537,11 +553,11 @@ export default function PartnerPage() {
         </div>
       </div>
 
-      <div className="rounded-3xl border border-brand/10 bg-surface p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 items-center gap-6">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-brand/10 bg-tint shadow-sm">
-              <CalendarIcon className="h-8 w-8" />
+      <div className="rounded-3xl border border-brand/10 bg-surface p-5 shadow-sm sm:p-6 lg:p-8">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+          <div className="flex min-w-0 items-center gap-4 sm:gap-6">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand/10 bg-tint shadow-sm sm:h-16 sm:w-16">
+              <CalendarIcon className="h-6 w-6 sm:h-8 sm:w-8" />
             </div>
             <div className="min-w-0">
               <h3 className="text-[18px] font-semibold leading-none text-ink">Goal Setting Sunday</h3>
@@ -564,11 +580,11 @@ export default function PartnerPage() {
             </div>
           </div>
 
-          <div className="flex shrink-0 flex-col items-start gap-3 lg:items-end">
+          <div className="flex w-full shrink-0 flex-col items-stretch gap-3 sm:w-auto sm:items-start lg:items-end">
             <Button
               variant="primary"
               onClick={() => router.push("/home/partner/weekly-goal")}
-              className="h-12 rounded-xl border border-brand bg-transparent! px-8 text-base font-bold text-ink! hover:bg-cta! hover:text-white!"
+              className="h-12 rounded-xl border border-brand bg-transparent! px-6 text-sm font-bold text-ink! hover:bg-cta! hover:text-white! sm:px-8 sm:text-base"
             >
               {goals?.myGoal ? "View Weekly Goal" : "Set Weekly Goal"}
             </Button>
@@ -580,31 +596,56 @@ export default function PartnerPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <div className="rounded-2xl border border-brand/10 bg-surface p-5">
+        <div className="min-w-0 rounded-2xl border border-brand/10 bg-surface p-4 sm:p-5">
           <p className="text-sm font-bold text-ink">Partner&apos;s Focus This Week</p>
-          <p className="mt-2 text-3xl font-extrabold text-ink">
+          <p className="mt-4 text-3xl font-extrabold text-ink">
             {profile ? formatHours(profile.focusSecondsThisWeek) : "—"}
           </p>
+          <div className="mt-3 h-2 w-full max-w-full rounded-full bg-tint-strong sm:h-2.5 md:h-3">
+            <div
+              className="h-2 rounded-full bg-brand transition-[width] dark:bg-[#FAF7F2] sm:h-2.5 md:h-3"
+              style={{ width: `${weeklyConsistencyPct}%` }}
+            />
+          </div>
           <p className="mt-2 text-xs text-ink">
             {profile ? `Active ${profile.daysActiveThisWeek} of 7 days this week` : ""}
           </p>
         </div>
 
         <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-          <p className="text-sm font-bold text-ink">Partner Pulse</p>
-          <div className="mt-3 flex flex-col gap-3">
-            <div className={`flex items-center justify-between text-xs ${isDark ? "text-white" : "text-[#64748B]"}`}>
-              <span className="font-semibold">Today&apos;s Completion</span>
-              <span>
-                {profile?.todayCompletionPct !== null && profile?.todayCompletionPct !== undefined
-                  ? `${profile.todayCompletionPct}%`
-                  : "Hidden"}
-              </span>
+          <p className="flex items-center gap-2 text-sm font-bold text-ink">
+            <BoltIcon className="h-4 w-4 shrink-0" />
+            Partner Pulse
+          </p>
+          <div className="mt-4 flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5">
+              <div className={`flex items-center justify-between text-xs ${isDark ? "text-white" : "text-[#64748B]"}`}>
+                <span className="font-semibold">Focus Today</span>
+                <span>
+                  {todayCompletionPct !== null ? `${todayCompletionPct}%` : "Hidden"}
+                </span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-tint-strong">
+                <div
+                  className="h-2 rounded-full bg-brand transition-[width] dark:bg-[#FAF7F2]"
+                  style={{ width: `${todayCompletionPct ?? 0}%` }}
+                />
+              </div>
             </div>
-            <div className={`flex items-center justify-between text-xs ${isDark ? "text-white" : "text-[#64748B]"}`}>
-              <span className="font-semibold">Weekly Consistency</span>
-              <span>{profile ? `${Math.round((profile.daysActiveThisWeek / 7) * 100)}%` : "—"}</span>
+
+            <div className="flex flex-col gap-1.5">
+              <div className={`flex items-center justify-between text-xs ${isDark ? "text-white" : "text-[#64748B]"}`}>
+                <span className="font-semibold">Weekly Consistency</span>
+                <span>{profile ? `${weeklyConsistencyPct}%` : "—"}</span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-tint-strong">
+                <div
+                  className="h-2 rounded-full bg-brand transition-[width] dark:bg-[#FAF7F2]"
+                  style={{ width: `${weeklyConsistencyPct}%` }}
+                />
+              </div>
             </div>
+
             <div className={`flex items-center justify-between text-xs ${isDark ? "text-white" : "text-[#64748B]"}`}>
               <span>Last Active</span>
               <span className="flex items-center gap-1">
@@ -620,34 +661,41 @@ export default function PartnerPage() {
         </div>
       </div>
 
-      <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="flex w-full flex-col rounded-2xl border border-brand/10 bg-surface p-6 shadow-sm sm:p-8">
+      <div className="grid w-full grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2 lg:gap-6">
+        <div className="flex w-full min-w-0 flex-col rounded-2xl border border-brand/10 bg-surface p-4 shadow-sm sm:p-5 md:p-6 lg:p-6 xl:p-8">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-lg font-bold text-ink">Recent Signals</h2>
+            <h2 className="text-base font-bold text-ink sm:text-lg">Recent Signals</h2>
           </div>
 
-          <div className="mt-6 flex flex-col gap-5 sm:mt-8">
+          <div className="mt-5 flex flex-col gap-4 sm:mt-6 sm:gap-5">
             {messages.length === 0 ? (
               <p className="text-sm text-muted">No signals yet — send the first one.</p>
             ) : (
               messages.map((signal) => (
                 <div
                   key={signal.id}
-                  className="flex items-start gap-4 border-b border-brand/10 pb-5 last:border-0 last:pb-0"
+                  className="flex items-start gap-2.5 border-b border-brand/10 pb-4 last:border-0 last:pb-0 sm:gap-3 sm:pb-5 md:gap-4"
                 >
                   <div
-                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${isDark ? "bg-[#FAF7F2]/8 text-[#FAF7F2]" : "bg-[#EEF0F8] text-[#1A1A4E]"}`}
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg sm:h-10 sm:w-10 md:h-12 md:w-12 ${isDark ? "bg-[#FAF7F2]/8 text-[#FAF7F2]" : "bg-[#EEF0F8] text-[#1A1A4E]"}`}
                   >
                     {CATEGORY_META[signal.category].icon}
                   </div>
+
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted">
+                    <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+                      <p className="min-w-0 truncate text-[9px] font-bold uppercase tracking-wider text-muted sm:text-[10px]">
                         {signal.isMine ? "You" : partner?.fullName ?? "Partner"} · {CATEGORY_META[signal.category].label}
                       </p>
-                      <span className="shrink-0 text-xs text-muted">{timeAgo(signal.createdAt)}</span>
+
+                      <span className="shrink-0 text-[10px] text-muted sm:text-xs">
+                        {timeAgo(signal.createdAt)}
+                      </span>
                     </div>
-                    <p className="mt-1 text-base font-bold text-ink">{signal.text}</p>
+
+                    <p className="mt-1 break-words text-[13px] font-bold leading-5 text-ink sm:text-sm sm:leading-6 md:text-base">
+                      {signal.text}
+                    </p>
                   </div>
                 </div>
               ))
@@ -655,11 +703,14 @@ export default function PartnerPage() {
           </div>
         </div>
 
-        <div className="flex w-full flex-col rounded-2xl border border-brand/10 bg-surface p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-ink">Send Signal</h2>
-          <p className="mt-1 text-sm text-muted">Choose a signal type</p>
+        <div className="flex w-full min-w-0 flex-col rounded-2xl border border-brand/10 bg-surface p-4 shadow-sm sm:p-5 md:p-6 lg:p-6 xl:p-8">
+          <h2 className="text-base font-bold text-ink sm:text-lg">Send Signal</h2>
 
-          <div className="mt-5 grid grid-cols-5 gap-2 sm:gap-3">
+          <p className="mt-1 text-xs text-muted sm:text-sm">
+            Choose a signal type
+          </p>
+
+          <div className="mt-4 grid w-full grid-cols-5 gap-x-1 gap-y-3 sm:mt-5 sm:gap-x-2 sm:gap-y-4 md:gap-3 lg:gap-x-1.5 lg:gap-y-3 xl:gap-3">
             {CATEGORY_ORDER.map((cat) => (
               <button
                 key={cat}
@@ -668,23 +719,27 @@ export default function PartnerPage() {
                   setCategory(cat);
                   setTemplateId(null);
                 }}
-                className="flex flex-col items-center gap-2"
+                aria-pressed={category === cat}
+                className="flex min-w-0 flex-col items-center gap-1 sm:gap-1.5 md:gap-2"
               >
                 <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl transition-colors sm:h-14 sm:w-14 ${isDark ? "bg-[#FAF7F2]/8 text-[#FAF7F2]" : "bg-[#EEF0F8] text-[#1A1A4E]"} ${category === cat ? "ring-2 ring-brand ring-offset-2 ring-offset-surface" : ""}`}
+                  className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors sm:h-10 sm:w-10 sm:rounded-xl md:h-14 md:w-14 lg:h-10 lg:w-10 xl:h-14 xl:w-14 ${isDark ? "bg-[#FAF7F2]/8 text-[#FAF7F2]" : "bg-[#EEF0F8] text-[#1A1A4E]"} ${category === cat ? `ring-2 ring-offset-1 ring-offset-surface md:ring-offset-2 ${isDark ? "ring-[#FAF7F2]" : "ring-brand"}` : ""}`}
                 >
                   {CATEGORY_META[cat].icon}
                 </div>
-                <span className="text-center text-[10px] font-medium leading-tight text-ink sm:text-xs">
+
+                <span className="w-full whitespace-nowrap text-center font-[Plus_Jakarta_Sans] text-[8px] font-semibold leading-[100%] tracking-[0%] text-ink sm:text-[10px] md:text-[12px] lg:text-[10px] xl:text-[12px]">
                   {CATEGORY_META[cat].label}
                 </span>
               </button>
             ))}
           </div>
 
-          <h3 className="mt-8 text-sm font-semibold text-ink">Choose a message</h3>
+          <h3 className="mt-6 font-[Plus_Jakarta_Sans] text-[13px] font-bold leading-[100%] tracking-[0%] text-ink sm:mt-7 sm:text-[14px] md:mt-8 md:text-[16px]">
+            Choose a message
+          </h3>
 
-          <div className="mt-4 flex flex-col gap-3">
+          <div className="mt-3 flex flex-col gap-2.5 sm:mt-4 sm:gap-3">
             {availableTemplates.length === 0 ? (
               <p className="text-sm text-muted">Loading templates…</p>
             ) : (
@@ -696,73 +751,83 @@ export default function PartnerPage() {
                   label={option.text}
                   selected={templateId === option.id}
                   onSelect={() => setTemplateId(option.id)}
+                  labelClassName="text-[12px] font-semibold leading-[100%] tracking-normal sm:text-[13px] md:text-[14px]"
                 />
               ))
             )}
           </div>
 
-          {sendError && <p className="mt-3 text-sm text-warning">{sendError}</p>}
+          {sendError && (
+            <p className="mt-3 text-xs text-warning sm:text-sm">
+              {sendError}
+            </p>
+          )}
 
           <Button
             variant="primary"
-            className="mt-10 h-14 w-full rounded-xl text-base font-bold"
+            className="mt-6 h-10 w-full rounded-xl text-xs font-bold sm:mt-8 sm:h-12 sm:text-sm md:mt-10 md:h-14 md:text-base"
             onClick={handleSend}
             disabled={!templateId || isSending || !status.settings?.messagingEnabled}
           >
             {isSending ? "Sending…" : "Send Signal"}
           </Button>
+
           {status.settings && !status.settings.messagingEnabled && (
-            <p className="mt-2 text-center text-xs text-muted">
+            <p className="mt-2 text-center text-[10px] text-muted sm:text-xs">
               You&apos;ve disabled messaging in settings.
             </p>
           )}
         </div>
       </div>
 
-      <div className="rounded-2xl border border-brand/10 bg-surface p-6 shadow-sm sm:p-8">
-        <h2 className="text-lg font-bold text-ink">Settings</h2>
-        <div className="mt-4 flex flex-col gap-4">
-          <div className="flex items-center justify-between gap-4">
-            <div>
+      <div className="rounded-2xl border border-brand/10 bg-surface p-4 shadow-sm sm:p-6 lg:p-8">
+        <h2 className="text-base font-bold text-ink sm:text-lg">Settings</h2>
+
+        <div className="mt-4 flex flex-col gap-4 sm:mt-5 sm:gap-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-ink">Allow messages</p>
-              <p className="text-xs text-muted">Disable to pause messaging both ways.</p>
+              <p className="text-xs leading-5 text-muted">Disable to pause messaging both ways.</p>
             </div>
-            <Button variant="secondary" size="sm" onClick={toggleMessaging} className="w-auto shrink-0">
+            <Button variant="secondary" size="sm" onClick={toggleMessaging} className="w-full shrink-0 sm:w-auto">
               {status.settings?.messagingEnabled ? "On" : "Off"}
             </Button>
           </div>
-          <div className="flex items-center justify-between gap-4">
-            <div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-ink">Hide my completion %</p>
-              <p className="text-xs text-muted">Partner sees only that you were active today.</p>
+              <p className="text-xs leading-5 text-muted">Partner sees only that you were active today.</p>
             </div>
-            <Button variant="secondary" size="sm" onClick={toggleHideCompletion} className="w-auto shrink-0">
+            <Button variant="secondary" size="sm" onClick={toggleHideCompletion} className="w-full shrink-0 sm:w-auto">
               {status.settings?.hideCompletionPct ? "Hidden" : "Visible"}
             </Button>
           </div>
-          <div className="flex items-center justify-between gap-4">
-            <div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-ink">Pause connection</p>
-              <p className="text-xs text-muted">
+              <p className="text-xs leading-5 text-muted">
                 {status.settings?.pausedUntil
                   ? `Paused until ${new Date(status.settings.pausedUntil).toLocaleDateString()}`
                   : "Temporary pause for 1–4 weeks."}
               </p>
             </div>
-            <Button variant="secondary" size="sm" onClick={togglePause} className="w-auto shrink-0">
+            <Button variant="secondary" size="sm" onClick={togglePause} className="w-full shrink-0 sm:w-auto">
               {status.settings?.pausedUntil ? "Resume" : "Pause 1 week"}
             </Button>
           </div>
-          <div className="flex items-center justify-between gap-4 border-t border-brand/10 pt-4">
-            <div>
+
+          <div className="flex flex-col gap-3 border-t border-brand/10 pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-ink">Disconnect partner</p>
-              <p className="text-xs text-muted">Permanent. 30-day cooldown before a new match.</p>
+              <p className="text-xs leading-5 text-muted">Permanent. 30-day cooldown before a new match.</p>
             </div>
             <Button
               variant="secondary"
               size="sm"
               onClick={() => setDisconnectOpen(true)}
-              className="w-auto shrink-0 border-[#F59E0B]! text-[#F59E0B]! hover:bg-[#F59E0B33]!"
+              className="w-full shrink-0 border-[#F59E0B]! text-[#F59E0B]! hover:bg-[#F59E0B33]! sm:w-auto"
             >
               Disconnect
             </Button>

@@ -8,11 +8,13 @@ type ModalProps = {
   onClose: () => void;
   ariaLabel: string;
   children: ReactNode;
-  size?: "md" | "lg" | "xl";
+  size?: "md" | "wide" | "lg" | "xl";
 };
 
 const SIZE_CLASSES: Record<NonNullable<ModalProps["size"]>, string> = {
   md: "sm:max-w-md",
+  /** 564px panel — exactly 500px of content once the sm+ `p-8` is subtracted. */
+  wide: "sm:max-w-[564px]",
   lg: "sm:max-w-2xl",
   xl: "sm:max-w-4xl",
 };
