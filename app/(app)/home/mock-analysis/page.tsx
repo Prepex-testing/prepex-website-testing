@@ -393,7 +393,7 @@ export default function MockAnalysisPage() {
 
             <button
               type="button"
-              onClick={() => router.push("/development-in-progress")}
+              onClick={() => router.push("/plan")}
               className="flex shrink-0 items-center gap-2 text-body-lg font-semibold leading-6 text-ink"
             >
               View Calendar
