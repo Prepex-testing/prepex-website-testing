@@ -8,11 +8,18 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
+import { LineChart, type LineChartSeries } from "@/components/ui/LineChart";
 import { CalendarIcon, ClockIcon, TargetIcon, ArrowLeftIcon, BellIcon } from "@/assets/icons";
 import { FileIcon, SparkleIcon, TrendingUpIcon } from "@/components/ui/icons";
-import { getMockById, type MockAnalysisItem } from "@/lib/api/mock";
+import {
+  getMockById,
+  getMockInsights,
+  type MockAnalysisItem,
+  type MockComparedSlice,
+  type MockDelta,
+  type MockInsights,
+} from "@/lib/api/mock";
 import type { ReactNode } from "react";
-import { PercentileGauge } from "@/components/ui/PercentileGauge";
 import { PageLoader } from "@/components/ui/PageLoader";
 
 /** e.g. "20 Aug 2026, Thu" */
@@ -24,6 +31,113 @@ function formatTestDate(iso: string): string {
   const year = date.getFullYear();
   const weekday = date.toLocaleDateString("en-US", { weekday: "short" });
   return `${day} ${month} ${year}, ${weekday}`;
+}
+
+/** "12 Aug" — compact enough for a chart's x axis. */
+function formatShortDate(iso: string | null): string {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "—";
+  return `${date.getDate()} ${date.toLocaleDateString("en-US", { month: "short" })}`;
+}
+
+/**
+ * Severity is a single theme ink stepped from strong to light — no red/amber/
+ * green. What a card *means* is carried by its written label ("Act now",
+ * "Watch"), so the shade only sets how loudly it competes for attention.
+ */
+const SEVERITY_STYLES: Record<string, { wrap: string; badge: string; label: string }> = {
+  CRITICAL: {
+    wrap: "border-ink/25 bg-ink/8",
+    badge: "bg-ink text-surface",
+    label: "Act now",
+  },
+  WARNING: {
+    wrap: "border-brand/25 bg-brand/8",
+    badge: "bg-brand/25 text-ink",
+    label: "Watch",
+  },
+  POSITIVE: {
+    wrap: "border-brand/15 bg-brand/4",
+    badge: "bg-brand/12 text-ink",
+    label: "Working",
+  },
+  INFO: {
+    wrap: "border-brand/10 bg-tint-strong",
+    badge: "bg-brand/10 text-ink",
+    label: "Note",
+  },
+};
+
+/**
+ * Up/down is fully carried by the arrow and the signed number, so the shade
+ * doesn't have to mean "good" or "bad": a gain gets the solid ink pill, a drop
+ * a light tint of the same ink, and no move the flat neutral.
+ */
+const TREND_EMPHASIS: Record<string, string> = {
+  IMPROVED: "bg-ink text-surface",
+  DECLINED: "bg-brand/15 text-ink",
+  SAME: "bg-tint-strong text-muted",
+};
+
+/** Signed delta chip — arrow + sign, so the direction never rests on shade. */
+function DeltaChip({ delta, unit = "pts" }: { delta: MockDelta; unit?: string }) {
+  const styles = TREND_EMPHASIS[delta.trend] ?? TREND_EMPHASIS.SAME!;
+  const arrow = delta.trend === "IMPROVED" ? "↑" : delta.trend === "DECLINED" ? "↓" : "→";
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${styles}`}
+    >
+      {arrow} {Math.abs(delta.deltaPoints)} {unit}
+    </span>
+  );
+}
+
+/** One subject row: current marks, the bar, and how it moved across mocks. */
+function SubjectRow({ slice }: { slice: MockComparedSlice }) {
+  const percent = Math.round(slice.accuracy ?? 0);
+  const previous = slice.previousMocks[0];
+  const twoAgo = slice.previousMocks[1];
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[11px] font-bold uppercase tracking-wide text-muted">
+          {slice.name}
+        </span>
+        {slice.vsPrevious && <DeltaChip delta={slice.vsPrevious} />}
+      </div>
+
+      <div className="flex items-center justify-between text-sm">
+        <span className="font-bold">
+          <span className="text-ink">{slice.score}</span>
+          <span className="text-muted/50">/{slice.maxScore}</span>
+        </span>
+        <span className="font-bold text-ink">{percent}%</span>
+      </div>
+
+      <div className="h-1.5 rounded-full bg-tint-strong">
+        <div
+          className="h-1.5 rounded-full bg-brand dark:bg-[#FAF7F2]"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+
+      {/* The trail across the last two mocks — the same numbers the chart
+          plots, written out, so the detail doesn't depend on reading a line. */}
+      {previous && (
+        <p className="text-[11px] leading-4 text-muted">
+          {twoAgo ? `${Math.round(twoAgo.accuracy)}% → ` : ""}
+          {Math.round(previous.accuracy)}% → <span className="font-semibold text-ink">{percent}%</span>
+          {slice.vsPrevious?.deltaPercent != null && slice.vsPrevious.deltaPoints !== 0 && (
+            <> ({slice.vsPrevious.deltaPercent > 0 ? "+" : ""}
+              {slice.vsPrevious.deltaPercent}% vs last mock)</>
+          )}
+        </p>
+      )}
+    </div>
+  );
 }
 
 export default function ViewAnalyticsPage() {
@@ -41,6 +155,7 @@ function ViewAnalyticsContent() {
   const isDark = resolvedTheme === "dark";
 
   const [mock, setMock] = useState<MockAnalysisItem | null>(null);
+  const [insights, setInsights] = useState<MockInsights | null>(null);
   const [isLoading, setLoading] = useState(!!mockId);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,9 +165,16 @@ function ViewAnalyticsContent() {
     setLoading(true);
     setError(null);
 
-    getMockById(mockId)
-      .then(({ data }) => {
-        if (!cancelled) setMock(data);
+    Promise.all([
+      getMockById(mockId),
+      // Derived analytics are additive — the page still renders the mock's own
+      // numbers if this one fails.
+      getMockInsights(mockId).catch(() => null),
+    ])
+      .then(([mockRes, insightRes]) => {
+        if (cancelled) return;
+        setMock(mockRes.data);
+        setInsights(insightRes?.data ?? null);
       })
       .catch(() => {
         if (!cancelled) setError("Couldn't load this mock's analysis. Please try again.");
@@ -135,13 +257,58 @@ function ViewAnalyticsContent() {
   const hasScore = mock.totalScore != null && mock.maxScore != null;
   const accuracyPercent = Math.round(Number(mock.accuracyPercentage)) || 0;
 
-  const subjectPerformance = mock.subjectAnalysis.map((subject) => ({
-    id: subject.id,
-    label: subject.subject.name,
-    score: subject.score,
-    maxScore: subject.maxScore,
-    percent: Math.round(Number(subject.accuracyPercentage)) || 0,
+  // Stable subject order (by id) so each subject keeps the same stroke pattern
+  // in the chart no matter which mocks it appears in.
+  const subjectOrder = [
+    ...new Set(
+      [
+        ...(insights?.progression ?? []).flatMap((point) =>
+          point.subjects.map((s) => s.subjectId),
+        ),
+        ...mock.subjectAnalysis.map((s) => s.subjectId),
+      ].sort((a, b) => a - b),
+    ),
+  ];
+
+  // Fall back to the mock's own subject rows when insights didn't load, so the
+  // section never disappears.
+  const subjectSlices: MockComparedSlice[] =
+    insights?.subjects ??
+    mock.subjectAnalysis.map((s) => ({
+      key: String(s.subjectId),
+      name: s.subject.name,
+      score: s.score,
+      maxScore: s.maxScore,
+      accuracy: Math.round(Number(s.accuracyPercentage)) || 0,
+      previousMocks: [],
+      vsPrevious: null,
+      vsTwoMocksAgo: null,
+    }));
+
+  const progression = insights?.progression ?? [];
+  const chartLabels = progression.map((p) => formatShortDate(p.attemptedDate));
+  const currentIndex = progression.findIndex((p) => p.isCurrent);
+
+  const totalSeries: LineChartSeries[] = [
+    {
+      id: "total",
+      label: "Total score",
+      points: progression.map((p) => p.percentage),
+    },
+  ];
+
+  // One line per subject across every mock that recorded it; a mock entered
+  // without a subject split leaves a gap rather than a false zero.
+  const subjectSeries: LineChartSeries[] = subjectOrder.map((subjectId) => ({
+    id: String(subjectId),
+    label:
+      progression.flatMap((p) => p.subjects).find((s) => s.subjectId === subjectId)?.name ??
+      `Subject ${subjectId}`,
+    points: progression.map(
+      (p) => p.subjects.find((s) => s.subjectId === subjectId)?.accuracy ?? null,
+    ),
   }));
+  const mocksWithSubjectSplit = progression.filter((p) => p.subjects.length > 0).length;
 
   const subjectTestStrategy = mock.subjectAnalysis
     .filter((subject) => subject.timeTakenMinutes != null || subject.testDurationMinutes != null)
@@ -155,6 +322,10 @@ function ViewAnalyticsContent() {
   const hasMissingSubjectTime =
     mock.subjectAnalysis.length === 0 ||
     mock.subjectAnalysis.some((subject) => subject.timeTakenMinutes == null);
+
+  const marksDelta = insights?.marksDelta ?? null;
+  const guidance = insights?.guidance ?? [];
+  const wins = insights?.wins ?? [];
 
   return (
     <div className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8">
@@ -183,7 +354,12 @@ function ViewAnalyticsContent() {
 
           <div>
             <h2 className="text-[18px] font-bold leading-[28px] text-ink">{mock.mockName}</h2>
-            <p className="text-[14px] font-medium leading-[20px] text-muted">{subtitle}</p>
+            <p className="text-[14px] font-medium leading-[20px] text-muted">
+              {subtitle}
+              {insights?.mockNumber != null && insights.totalMockCount > 1 && (
+                <> · Mock {insights.mockNumber} of {insights.totalMockCount}</>
+              )}
+            </p>
           </div>
         </div>
 
@@ -233,23 +409,53 @@ function ViewAnalyticsContent() {
             </span>
           </div>
 
-          {/* <div
-            className={`mt-6 flex w-full items-center gap-4 rounded-[16px] px-5 py-3 ${isDark ? "" : "bg-success-bg"}`}
-          >
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-success/20">
-              <span className="text-success [&>svg]:h-6 [&>svg]:w-6">
-                <TrendingUpIcon />
-              </span>
+          {/* Real movement against the previous mock. marksDelta is only sent
+              when both papers were out of the same total; otherwise the
+              comparison falls back to percentage points, which is always
+              comparable. */}
+          {insights?.totalComparison && insights.previousMock ? (
+            <div
+              className={`mt-6 flex w-full items-center gap-4 rounded-[16px] px-5 py-3 ${
+                insights.totalComparison.trend === "IMPROVED" ? "bg-brand/8" : "bg-tint-strong"
+              }`}
+            >
+              {/* The icon flips for a decline, so direction is legible from the
+                  shape before any shade is read. */}
+              <div
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] ${
+                  insights.totalComparison.trend === "IMPROVED" ? "bg-ink" : "bg-brand/15"
+                }`}
+              >
+                <span
+                  className={`[&>svg]:h-6 [&>svg]:w-6 ${
+                    insights.totalComparison.trend === "IMPROVED"
+                      ? "text-surface"
+                      : insights.totalComparison.trend === "DECLINED"
+                        ? "rotate-180 text-ink"
+                        : "text-ink"
+                  }`}
+                >
+                  <TrendingUpIcon />
+                </span>
+              </div>
+              <div>
+                <p className="text-[18px] font-bold leading-[24px] text-ink">
+                  {marksDelta != null
+                    ? `${marksDelta > 0 ? "↑" : marksDelta < 0 ? "↓" : "→"} ${Math.abs(marksDelta)} Marks`
+                    : `${insights.totalComparison.deltaPoints > 0 ? "↑" : insights.totalComparison.deltaPoints < 0 ? "↓" : "→"} ${Math.abs(
+                        insights.totalComparison.deltaPoints,
+                      )} pts`}
+                </p>
+                <p className="text-[16px] leading-[20px] text-muted">
+                  vs {insights.previousMock.mockName ?? "last mock"}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-[18px] font-bold leading-[24px] text-success">
-                ↑ 12 Marks
-              </p>
-              <p className="text-[16px] leading-[20px] text-muted">
-                vs last mock
-              </p>
-            </div>
-          </div> */}
+          ) : (
+            <p className="mt-6 w-full rounded-[16px] bg-tint-strong px-5 py-3 text-center text-[14px] text-muted">
+              First scored mock — this becomes your baseline.
+            </p>
+          )}
         </div>
 
         {/* Accuracy Card */}
@@ -263,97 +469,151 @@ function ViewAnalyticsContent() {
               isDark ? undefined : { from: "#1A1A4E", to: "#4C1D95" }
             }
           />
+          {/* This ring plots marks scored as a share of marks available — that's
+              accuracy, not a percentile (mocks carry no cohort data). */}
           <p className="mt-5 text-[16px] font-semibold leading-none text-muted">
-            Percentile
+            Accuracy
           </p>
+          {insights?.totalComparison && (
+            <div className="mt-3">
+              <DeltaChip delta={insights.totalComparison} />
+            </div>
+          )}
         </div>
-
-        {/* Percentile Card */}
-        {/* <div className="flex flex-col items-center justify-center rounded-[16px] border border-brand/10 bg-surface px-8 py-7 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
-          <PercentileGauge
-            value={82}
-            size={250}
-            showLabel={false}
-            progressColor={isDark ? "#4C1D95" : undefined}
-          />
-          <p className="-mt-3 text-[16px] font-semibold text-muted">
-            Percentile
-          </p>
-        </div> */}
       </div>
+
+      {/* What to do about it — every line is derived from the entered numbers,
+          so it can't reference a topic the student never sat. */}
+      {guidance.length > 0 && (
+        <div className="flex flex-col gap-4 rounded-2xl border border-brand/10 bg-surface p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-icon-chip-bg text-ink [&>svg]:h-5 [&>svg]:w-5 dark:bg-[#FAF7F2]/8">
+              <SparkleIcon />
+            </span>
+            <p className="text-sm font-bold uppercase tracking-[0.4px] text-ink">
+              What to do next
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {guidance.map((item, index) => {
+              const styles = SEVERITY_STYLES[item.severity] ?? SEVERITY_STYLES.INFO!;
+              return (
+                <div key={index} className={`rounded-xl border p-4 ${styles.wrap}`}>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Severity carries a text label, never colour alone. */}
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.5px] ${styles.badge}`}
+                    >
+                      {styles.label}
+                    </span>
+                    <p className="text-[15px] font-bold text-ink">{item.title}</p>
+                  </div>
+                  <p className="mt-1.5 text-[14px] leading-5 text-body-text">{item.message}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Wins — improvements since the last mock, so progress is visible next
+          to the things that need work. */}
+      {wins.length > 0 && (
+        <div className="flex flex-col gap-4 rounded-2xl border border-brand/20 bg-brand/5 p-6">
+          <p className="text-sm font-bold uppercase tracking-[0.4px] text-ink">
+            Wins since your last mock
+          </p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {wins.map((win) => (
+              <div
+                key={`${win.kind}-${win.key}`}
+                className="rounded-xl border border-brand/15 bg-surface p-4"
+              >
+                <p className="text-[14px] font-bold text-ink">{win.name}</p>
+                <p className="mt-1 text-[13px] text-muted">
+                  {Math.round(win.from)}% →{" "}
+                  <span className="font-bold text-ink">
+                    {win.to != null ? Math.round(win.to) : "—"}%
+                  </span>{" "}
+                  <span className="font-semibold text-ink">
+                    (↑ {Math.abs(win.deltaPoints)} pts)
+                  </span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Trend charts — paired in one row, same as Subject Performance and
+          Subject-wise Test Strategy below. Either can stand alone: a student
+          with no subject splits yet still gets the progression card. */}
+      {(progression.length > 1 || (subjectSeries.length > 0 && mocksWithSubjectSplit > 1)) && (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {/* Score progression across every mock entered */}
+          {progression.length > 1 && (
+            <div className="flex flex-col gap-4 rounded-2xl border border-brand/10 bg-surface p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.4px] text-ink">
+                  Score Progression
+                </p>
+                <p className="mt-1 text-[12px] text-muted">
+                  Total score as a percentage, across all {progression.length} mocks
+                  you&apos;ve entered — oldest first.
+                </p>
+              </div>
+              <LineChart
+                labels={chartLabels}
+                series={totalSeries}
+                highlightIndex={currentIndex >= 0 ? currentIndex : undefined}
+              />
+            </div>
+          )}
+
+          {/* Subject split across mocks */}
+          {subjectSeries.length > 0 && mocksWithSubjectSplit > 1 && (
+            <div className="flex flex-col gap-4 rounded-2xl border border-brand/10 bg-surface p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.4px] text-ink">
+                  Subject Split Across Mocks
+                </p>
+                <p className="mt-1 text-[12px] text-muted">
+                  Accuracy per subject. A gap means that mock was entered without a
+                  subject breakdown.
+                </p>
+              </div>
+              <LineChart
+                labels={chartLabels}
+                series={subjectSeries}
+                highlightIndex={currentIndex >= 0 ? currentIndex : undefined}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Subject Performance + Subject-wise Test Strategy */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Subject Performance */}
-        {subjectPerformance.length > 0 && (
+        {subjectSlices.length > 0 && (
           <div className="flex flex-col gap-6 rounded-2xl border border-brand/10 bg-surface p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
-            <p className="text-sm font-bold uppercase tracking-[0.4px] text-ink">
-              Subject Performance
-            </p>
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.4px] text-ink">
+                Subject Performance
+              </p>
+              <p className="mt-1 text-[12px] text-muted">
+                Accuracy this mock, and how it moved across your last two.
+              </p>
+            </div>
 
-            <div className="flex flex-col gap-4">
-              {subjectPerformance.map((subject) => (
-                <div
-                  key={subject.id}
-                  className="flex flex-col gap-2"
-                >
-                  <span className="text-[10px] font-bold uppercase tracking-wide text-muted">
-                    {subject.label}
-                  </span>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-bold">
-                      <span className="text-ink">
-                        {subject.score}
-                      </span>
-                      <span className="text-muted/50">
-                        /{subject.maxScore}
-                      </span>
-                    </span>
-
-                    <span className="flex items-center gap-1 font-bold text-ink">
-                      <span>{subject.percent}%</span>
-                    </span>
-                  </div>
-
-                  <div className="h-1.5 rounded-full bg-tint-strong">
-                    <div
-                      className="h-1.5 rounded-full bg-brand dark:bg-[#FAF7F2]"
-                      style={{
-                        width: `${subject.percent}%`,
-                      }}
-                    />
-                  </div>
-                </div>
+            <div className="flex flex-col gap-5">
+              {subjectSlices.map((slice) => (
+                <SubjectRow key={slice.key} slice={slice} />
               ))}
             </div>
           </div>
         )}
-
-        {/* AI Insight */}
-        {/* <motion.div
-        {...fadeIn}
-        transition={{ ...fadeTransition, delay: 0.22 }}
-        className="flex items-start gap-4 rounded-2xl border border-brand/20 bg-surface p-6"
-      >
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-icon-chip-bg text-ink [&>svg]:h-6 [&>svg]:w-6 dark:bg-[#FAF7F2]/8">
-          <SparkleIcon />
-        </span>
-        <div>
-          <p className="text-sm font-bold uppercase tracking-wide text-ink">AI Insight</p>
-          <p
-            className="mt-1 text-[18px] leading-6 text-body-text"
-            style={{ color: isDark ? "var(--muted)" : "#374151" }}
-          >
-            Insight detected: You spent <strong className="font-bold">90 min</strong> on{" "}
-            <strong className="font-bold">Maths</strong> (your middle subject), leaving only{" "}
-            <strong className="font-bold">45 min</strong> for{" "}
-            <strong className="font-bold">Chemistry</strong>. <br />Your{" "}
-            <strong className="font-bold">12 &lsquo;Time Pressure&rsquo; errors</strong> were all
-            in Chemistry.
-          </p>
-        </div>
-      </motion.div> */}
 
         {/* Subject-wise Test Strategy */}
         {subjectTestStrategy.length > 0 && (
@@ -406,9 +666,7 @@ function ViewAnalyticsContent() {
                       <div className="mt-1 h-1.5 rounded-full bg-tint-strong">
                         <div
                           className="h-1.5 rounded-full bg-brand"
-                          style={{
-                            width: `${percent}%`,
-                          }}
+                          style={{ width: `${percent}%` }}
                         />
                       </div>
                     </div>
@@ -417,22 +675,22 @@ function ViewAnalyticsContent() {
               })}
             </div>
 
-            {/* Strategy Note */}
-            <div
-              className={`w-full max-w-[320px] rounded-lg border p-4 ${isDark
-                ? "border-brand/10 bg-[var(--sub)]"
-                : "border-brand/10 bg-tint-strong"
-                }`}
-            >
-              <p className="text-[11px] font-bold uppercase tracking-[1.1px] text-ink">
-                Strategy Note
-              </p>
+            {/* Strategy Note — derived from the per-subject minutes actually
+                entered, so it only appears when those minutes say something. */}
+            {insights?.timeNote && (
+              <div
+                className={`w-full rounded-lg border p-4 ${isDark
+                  ? "border-brand/10 bg-[var(--sub)]"
+                  : "border-brand/10 bg-tint-strong"
+                  }`}
+              >
+                <p className="text-[11px] font-bold uppercase tracking-[1.1px] text-ink">
+                  Strategy Note
+                </p>
 
-              <p className="mt-2 leading-5 text-link">
-                Excessive time in Maths impacted Chemistry quality. Rebalance next
-                time.
-              </p>
-            </div>
+                <p className="mt-2 leading-5 text-link">{insights.timeNote}</p>
+              </div>
+            )}
           </div>
         )}
       </div>
