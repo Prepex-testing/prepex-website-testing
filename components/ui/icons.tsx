@@ -1851,9 +1851,25 @@ export function DoubleArrowIcon({
   );
 }
 
-export function PracticeBenefitCheck() {
+interface PracticeBenefitCheckProps extends SVGProps<SVGSVGElement> {
+  size?: number;
+}
+
+export function PracticeBenefitCheck({
+  size = 24,
+  className,
+  ...props
+}: PracticeBenefitCheckProps) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      className={className}
+      {...props}
+    >
       <circle
         cx="12"
         cy="12"
