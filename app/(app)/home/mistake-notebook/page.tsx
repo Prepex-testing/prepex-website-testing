@@ -19,6 +19,7 @@ import {
   type MistakeListItem,
   type MistakePatternsResponse,
   type MistakeTag,
+  type MistakeTagFilter,
 } from "@/lib/api/practice";
 
 const TODAY_PAGE_SIZE = 5;
@@ -31,12 +32,18 @@ const TAG_STYLES: Record<MistakeTag, string> = {
   WILD_GUESS: "bg-info-bg text-info",
 };
 
-const TYPE_FILTERS: ("All" | MistakeTag)[] = [
+const TAG_FILTER_LABELS: Record<MistakeTagFilter, string> = {
+  ...MISTAKE_TAG_LABELS,
+  UNTAGGED: "Untagged",
+};
+
+const TYPE_FILTERS: ("All" | MistakeTagFilter)[] = [
   "All",
   "SILLY_ERROR",
   "CONCEPTUAL_GAP",
   "TIME_PRESSURE",
   "WILD_GUESS",
+  "UNTAGGED",
 ];
 
 function DueTagRow({ group, showDate }: { group: DueMistakeGroup; showDate?: boolean }) {
@@ -77,11 +84,15 @@ function DueTagRow({ group, showDate }: { group: DueMistakeGroup; showDate?: boo
             {group.subjectName ? `${group.subjectName} · ` : ""}
             {group.chapterName}
           </span>
-          <span
-            className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.25px] ${TAG_STYLES[group.tag]}`}
-          >
-            {MISTAKE_TAG_LABELS[group.tag]}
-          </span>
+          {/* No chip at all until the entries carry a tag — an untagged group
+              is just "this chapter's mistakes", with nothing to label. */}
+          {group.tag && (
+            <span
+              className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.25px] ${TAG_STYLES[group.tag]}`}
+            >
+              {MISTAKE_TAG_LABELS[group.tag]}
+            </span>
+          )}
           <span className="rounded-full bg-tint-strong px-2 py-0.5 text-[11px] font-bold text-ink">
             {n} question{n === 1 ? "" : "s"}
           </span>
@@ -172,7 +183,7 @@ export default function MistakeNotebookPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [subjectFilter, setSubjectFilter] = useState("All");
-  const [typeFilter, setTypeFilter] = useState<"All" | MistakeTag>("All");
+  const [typeFilter, setTypeFilter] = useState<"All" | MistakeTagFilter>("All");
 
   const [today, setToday] = useState<DueMistakeGroupsResponse | null>(null);
   const [todayPage, setTodayPage] = useState(1);
@@ -270,7 +281,7 @@ export default function MistakeNotebookPage() {
     setTodayPage(1);
     setOverduePage(1);
   };
-  const applyTypeFilter = (value: "All" | MistakeTag) => {
+  const applyTypeFilter = (value: "All" | MistakeTagFilter) => {
     setTypeFilter(value);
     setTodayPage(1);
     setOverduePage(1);
@@ -420,7 +431,7 @@ export default function MistakeNotebookPage() {
                       : "border-brand bg-transparent text-ink hover:bg-tint"
                     }`}
                 >
-                  {item === "All" ? "All" : MISTAKE_TAG_LABELS[item]}
+                  {item === "All" ? "All" : TAG_FILTER_LABELS[item]}
                 </button>
               ))}
             </div>

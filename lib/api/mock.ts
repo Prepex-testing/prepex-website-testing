@@ -173,6 +173,111 @@ export function getMockById(id: string) {
   return authRequest<{ success: true; data: MockAnalysisItem }>(`/${id}`);
 }
 
+// ---------------------------------------------------------------------------
+// Derived analytics for one mock — GET /api/mock/:id/insights
+//
+// Everything here is computed by the API from what the student typed in
+// (total score, total time, per-subject marks). Mocks carry no
+// question-by-question data, so nothing below assumes any.
+// ---------------------------------------------------------------------------
+
+export type MockTrend = "IMPROVED" | "DECLINED" | "SAME";
+
+export type MockDelta = {
+  /** Percentage-point move, e.g. 40% → 60% is +20. */
+  deltaPoints: number;
+  /** Relative change against the earlier value; null when that value was 0. */
+  deltaPercent: number | null;
+  trend: MockTrend;
+};
+
+export type MockSliceHistoryPoint = {
+  mockId: string;
+  mockName: string | null;
+  attemptedDate: string | null;
+  score: number;
+  maxScore: number;
+  accuracy: number;
+};
+
+/** One subject (or chapter) of this mock, with how it moved across mocks. */
+export type MockComparedSlice = {
+  key: string;
+  name: string;
+  score: number;
+  maxScore: number;
+  accuracy: number | null;
+  /** Nearest first, at most two — mocks that also carried this slice. */
+  previousMocks: MockSliceHistoryPoint[];
+  vsPrevious: MockDelta | null;
+  vsTwoMocksAgo: MockDelta | null;
+};
+
+export type MockProgressionPoint = {
+  mockId: string;
+  mockName: string | null;
+  attemptedDate: string | null;
+  totalScore: number;
+  maxScore: number;
+  percentage: number | null;
+  isCurrent: boolean;
+  subjects: {
+    subjectId: number;
+    name: string;
+    score: number;
+    maxScore: number;
+    accuracy: number | null;
+  }[];
+};
+
+export type MockWin = {
+  kind: "SUBJECT" | "CHAPTER";
+  key: string;
+  name: string;
+  from: number;
+  to: number | null;
+  deltaPoints: number;
+  deltaPercent: number | null;
+};
+
+export type MockGuidance = {
+  severity: "CRITICAL" | "WARNING" | "POSITIVE" | "INFO";
+  title: string;
+  message: string;
+};
+
+export type MockInsights = {
+  mockId: string;
+  mockName: string | null;
+  attemptedDate: string | null;
+  totalScore: number;
+  maxScore: number;
+  percentage: number | null;
+  mockNumber: number | null;
+  totalMockCount: number;
+  previousMock: {
+    mockId: string;
+    mockName: string | null;
+    attemptedDate: string | null;
+    totalScore: number;
+    maxScore: number;
+    percentage: number | null;
+  } | null;
+  totalComparison: MockDelta | null;
+  /** Raw marks gained/lost vs the last mock; null unless both were out of the same total. */
+  marksDelta: number | null;
+  subjects: MockComparedSlice[];
+  chapters: MockComparedSlice[];
+  progression: MockProgressionPoint[];
+  wins: MockWin[];
+  guidance: MockGuidance[];
+  timeNote: string | null;
+};
+
+export function getMockInsights(id: string) {
+  return authRequest<{ success: true; data: MockInsights }>(`/${id}/insights`);
+}
+
 export function getMockAnalysisList(params: { page?: number; limit?: number } = {}) {
   const query = new URLSearchParams();
   if (params.page !== undefined) query.set("page", String(params.page));

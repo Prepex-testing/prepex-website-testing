@@ -53,12 +53,21 @@ function PracticeModeContent() {
   const [data, setData] = useState<TaskQuestionsResponse | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Remaining question queue (front = current). Each question is shown once —
-  // answering or skipping removes it for good; the session ends when it drains.
+  // Remaining question queue (front = current). Each question is shown once in
+  // the main pass — answering or skipping removes it for good.
   const [queue, setQueue] = useState<PracticeSessionQuestion[]>([]);
+  // Every playable question in the session, in order. The main queue drains as
+  // the student works through it, so this is what a review pass draws from.
+  const [allQuestions, setAllQuestions] = useState<PracticeSessionQuestion[]>([]);
+  // Second pass over the questions flagged for review. Non-empty = reviewing.
+  const [reviewQueue, setReviewQueue] = useState<PracticeSessionQuestion[]>([]);
+  const [reviewTotal, setReviewTotal] = useState(0);
   const [lockedCount, setLockedCount] = useState(0);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [markedIds, setMarkedIds] = useState<Set<string>>(new Set());
+  // Answers chosen this session, so a question revisited in the review pass
+  // comes back with what the student already picked rather than blank.
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [elapsed, setElapsed] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [finishing, setFinishing] = useState(false);
@@ -144,7 +153,22 @@ function PracticeModeContent() {
           router.replace(`/practice/complete?sessionId=${res.data.sessionId}`);
           return;
         }
+        // Marks and answers survive a resume — both are persisted per question,
+        // so a session picked up later still knows what was flagged.
+        setMarkedIds(
+          new Set(
+            withQuestion.filter((q) => q.markedForReview).map((q) => q.practiceSessionQuestionId),
+          ),
+        );
+        setAnswers(
+          Object.fromEntries(
+            withQuestion
+              .filter((q) => typeof q.studentAnswer === "string")
+              .map((q) => [q.practiceSessionQuestionId, q.studentAnswer as string]),
+          ),
+        );
         setData(res.data);
+        setAllQuestions(withQuestion);
         setQueue(playable);
         setLockedCount(answeredCount);
         questionStartRef.current = Date.now();
@@ -202,8 +226,19 @@ function PracticeModeContent() {
   }, [data]);
 
   const total = data?.totalQuestions ?? queue.length;
-  const current = queue[0];
+  const isReviewing = reviewQueue.length > 0;
+  const current = isReviewing ? reviewQueue[0] : queue[0];
   const currentQ = current?.question ?? null;
+
+  // What a review pass would cover: everything flagged for review that the
+  // student has already seen. Questions still ahead in the main pass are
+  // excluded — they'll be answered normally before the pass is offered.
+  const reviewPool = useMemo(() => {
+    const stillAhead = new Set(queue.slice(1).map((q) => q.practiceSessionQuestionId));
+    return allQuestions.filter(
+      (q) => markedIds.has(q.practiceSessionQuestionId) && !stillAhead.has(q.practiceSessionQuestionId),
+    );
+  }, [allQuestions, markedIds, queue]);
 
   const options = useMemo(() => optionEntries(currentQ?.options), [currentQ]);
   const breadcrumb = useMemo(() => {
@@ -242,41 +277,97 @@ function PracticeModeContent() {
     setPendingHref(null);
   }, []);
 
-  const advanceQueue = useCallback(
-    (nextQueue: PracticeSessionQuestion[]) => {
-      setSelectedKey(null);
+  // Moves onto `next`, restoring whatever was already chosen for it (blank in
+  // the main pass, the earlier answer during a review pass).
+  const goTo = useCallback(
+    (next: PracticeSessionQuestion | undefined) => {
+      setSelectedKey(next ? (answers[next.practiceSessionQuestionId] ?? null) : null);
       questionStartRef.current = Date.now();
-      if (nextQueue.length === 0) {
-        void finish();
-      }
     },
-    [finish],
+    [answers],
   );
 
-  const handleSubmit = useCallback(async () => {
-    if (!data || !current || selectedKey === null || submitting) return;
-    setSubmitting(true);
+  // Records the current question before moving on. With an option chosen that's
+  // the answer — re-answering in the review pass overwrites the earlier one on
+  // the same row, so the analysis reflects the reviewed answer. With nothing
+  // chosen it records a skip, which is what submitting an empty answer means
+  // and is also what keeps the question's "marked" flag on the server (so a
+  // resumed session still knows what to offer for review).
+  // Returns false if the save failed, so callers don't advance past it.
+  const saveCurrentAnswer = useCallback(async (): Promise<boolean> => {
+    if (!data || !current) return true;
     const timeTakenSeconds = Math.max(1, Math.round((Date.now() - questionStartRef.current) / 1000));
     try {
       await submitPracticeAnswer(data.sessionId, {
         questionId: current.questionId,
-        studentAnswer: selectedKey,
         timeTakenSeconds,
         markedForReview: markedIds.has(current.practiceSessionQuestionId),
+        ...(selectedKey === null ? { skipped: true } : { studentAnswer: selectedKey }),
       });
     } catch (err) {
-      setSubmitting(false);
       setLoadError(err instanceof Error ? err.message : "Could not save your answer.");
-      return;
+      return false;
     }
-    setSubmitting(false);
-    setLockedCount((c) => c + 1);
-    setQueue((q) => {
-      const next = q.slice(1);
-      advanceQueue(next);
+    setAnswers((prev) => {
+      const next = { ...prev };
+      if (selectedKey === null) delete next[current.practiceSessionQuestionId];
+      else next[current.practiceSessionQuestionId] = selectedKey;
       return next;
     });
-  }, [data, current, selectedKey, submitting, markedIds, advanceQueue]);
+    return true;
+  }, [data, current, selectedKey, markedIds]);
+
+  const handleSubmit = useCallback(async () => {
+    if (!data || !current || submitting || finishing) return;
+    setSubmitting(true);
+    const saved = await saveCurrentAnswer();
+    setSubmitting(false);
+    if (!saved) return;
+
+    if (isReviewing) {
+      // A reviewed question was already counted in the main pass — only the
+      // answer changes, never the progress count.
+      const next = reviewQueue.slice(1);
+      setReviewQueue(next);
+      if (next.length === 0) void finish();
+      else goTo(next[0]);
+      return;
+    }
+
+    setLockedCount((c) => c + 1);
+    const next = queue.slice(1);
+    setQueue(next);
+    if (next.length === 0) void finish();
+    else goTo(next[0]);
+  }, [data, current, submitting, finishing, saveCurrentAnswer, isReviewing, reviewQueue, queue, finish, goTo]);
+
+  // Starts the second pass over everything flagged for review, saving whatever
+  // is selected on the current question first so nothing is lost.
+  const handleStartReview = useCallback(async () => {
+    if (submitting || finishing || reviewPool.length === 0) return;
+    setSubmitting(true);
+    const saved = await saveCurrentAnswer();
+    setSubmitting(false);
+    if (!saved) return;
+
+    // The current question counts as played the moment the pass begins.
+    if (!isReviewing) setLockedCount((c) => Math.min(c + 1, total));
+    setQueue([]);
+    setReviewQueue(reviewPool);
+    setReviewTotal(reviewPool.length);
+    goTo(reviewPool[0]);
+  }, [submitting, finishing, reviewPool, saveCurrentAnswer, isReviewing, total, goTo]);
+
+  // Always available: saves the current selection then ends the session, so a
+  // student is never forced through the whole review pass to submit.
+  const handleSubmitAndFinish = useCallback(async () => {
+    if (submitting || finishing) return;
+    setSubmitting(true);
+    const saved = await saveCurrentAnswer();
+    setSubmitting(false);
+    if (!saved) return;
+    void finish();
+  }, [submitting, finishing, saveCurrentAnswer, finish]);
 
   // Skip records the question as SKIPPED and drops it from the session — it is
   // never shown again, and the session ends once the queue drains.
@@ -297,13 +388,28 @@ function PracticeModeContent() {
       return;
     }
     setSubmitting(false);
-    setLockedCount((c) => c + 1);
-    setQueue((q) => {
-      const next = q.slice(1);
-      advanceQueue(next);
+    // Skipping in review clears the answer that was there, so drop the local
+    // copy too — otherwise coming back to it would re-select a dead answer.
+    setAnswers((prev) => {
+      const next = { ...prev };
+      delete next[current.practiceSessionQuestionId];
       return next;
     });
-  }, [data, current, submitting, finishing, markedIds, advanceQueue]);
+
+    if (isReviewing) {
+      const next = reviewQueue.slice(1);
+      setReviewQueue(next);
+      if (next.length === 0) void finish();
+      else goTo(next[0]);
+      return;
+    }
+
+    setLockedCount((c) => c + 1);
+    const next = queue.slice(1);
+    setQueue(next);
+    if (next.length === 0) void finish();
+    else goTo(next[0]);
+  }, [data, current, submitting, finishing, markedIds, isReviewing, reviewQueue, queue, finish, goTo]);
 
   // PRD 123 — Mark for review flags the question without skipping.
   const handleToggleMark = useCallback(() => {
@@ -332,8 +438,14 @@ function PracticeModeContent() {
   }
 
   const isMarked = markedIds.has(current.practiceSessionQuestionId);
-  const isLast = queue.length === 1;
+  // Last of whichever pass is running — the point at which the primary button
+  // becomes "submit and finish".
+  const isLast = isReviewing ? reviewQueue.length === 1 : queue.length === 1;
   const questionNumber = Math.min(lockedCount + 1, total);
+  const reviewNumber = reviewTotal - reviewQueue.length + 1;
+  // The review pass is offered on the last question of the main pass, once
+  // something has actually been flagged.
+  const canStartReview = !isReviewing && queue.length === 1 && reviewPool.length > 0;
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -356,7 +468,9 @@ function PracticeModeContent() {
         {/* Question Info */}
         <div className="flex w-full flex-wrap items-center justify-center gap-2 sm:w-auto sm:justify-start sm:gap-3">
           <p className="whitespace-nowrap text-[16px] font-bold leading-6 text-ink sm:text-[20px] sm:leading-7">
-            Question {questionNumber} of {total}
+            {isReviewing
+              ? `Reviewing ${reviewNumber} of ${reviewTotal}`
+              : `Question ${questionNumber} of ${total}`}
           </p>
 
           <span className="flex h-4 items-center rounded-sm bg-subject-bg px-2 text-[11px] font-semibold uppercase leading-4 tracking-[0.6px] text-ink sm:text-[12px]">
@@ -396,11 +510,13 @@ function PracticeModeContent() {
         </div>
       </div>
 
-      {/* Progress dots (PRD 5.4.1) */}
+      {/* Progress dots (PRD 5.4.1) — during a review pass they track the marked
+          questions being revisited, not the session as a whole. */}
       <div className="flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:justify-start sm:gap-x-[15px]">
-        {Array.from({ length: total }).map((_, index) => {
-          const isDone = index < lockedCount;
-          const isActive = index === lockedCount;
+        {Array.from({ length: isReviewing ? reviewTotal : total }).map((_, index) => {
+          const passed = isReviewing ? reviewNumber - 1 : lockedCount;
+          const isDone = index < passed;
+          const isActive = index === passed;
 
           return (
             <span
@@ -520,14 +636,51 @@ function PracticeModeContent() {
           </button>
         </div>
 
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={selectedKey === null || submitting || finishing}
-          className="flex h-12 w-full items-center justify-center rounded-xl bg-cta text-[16px] font-bold leading-7 text-white transition-opacity hover:opacity-90 disabled:opacity-40 sm:h-14 sm:w-[200px] sm:text-[18px]"
-        >
-          {submitting ? "Saving…" : isLast ? "Submit & Finish" : "Submit answer"}
-        </button>
+        <div className="flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row sm:gap-4">
+          {/* Sits to the left of Submit on the last question, once something has
+              been flagged — starts a second pass over just those questions. */}
+          {canStartReview && (
+            <button
+              type="button"
+              onClick={handleStartReview}
+              disabled={submitting || finishing}
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-brand bg-transparent px-5 text-[15px] font-bold leading-7 text-ink transition-colors hover:bg-tint-strong disabled:opacity-40 sm:h-14 sm:w-auto sm:text-[16px]"
+            >
+              <BookmarkIcon filled className="h-5 w-5 shrink-0" />
+              Review marked ({reviewPool.length})
+            </button>
+          )}
+
+          {/* Escape hatch during a review pass: finishing never requires working
+              through every marked question. */}
+          {isReviewing && !isLast && (
+            <button
+              type="button"
+              onClick={handleSubmitAndFinish}
+              disabled={submitting || finishing}
+              className="flex h-12 w-full items-center justify-center rounded-xl border border-brand bg-transparent px-5 text-[15px] font-bold leading-7 text-ink transition-colors hover:bg-tint-strong disabled:opacity-40 sm:h-14 sm:w-auto sm:text-[16px]"
+            >
+              Submit & Finish
+            </button>
+          )}
+
+          {/* Never disabled by the absence of a selection — with nothing picked
+              it simply moves on (or ends the session) instead of blocking. */}
+          <button
+            type="button"
+            onClick={isLast ? handleSubmitAndFinish : handleSubmit}
+            disabled={submitting || finishing}
+            className="flex h-12 w-full items-center justify-center rounded-xl bg-cta text-[16px] font-bold leading-7 text-white transition-opacity hover:opacity-90 disabled:opacity-40 sm:h-14 sm:w-[200px] sm:text-[18px]"
+          >
+            {submitting
+              ? "Saving…"
+              : finishing
+                ? "Finishing…"
+                : isLast
+                  ? "Submit & Finish"
+                  : "Submit answer"}
+          </button>
+        </div>
       </div>
 
       {/* PRD 130 — leaving a live session requires confirmation. */}
