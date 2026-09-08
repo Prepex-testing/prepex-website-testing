@@ -1871,3 +1871,40 @@ export function PracticeBenefitCheck() {
     </svg>
   );
 }
+export function ShareIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="12" cy="3.5" r="1.8" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="4" cy="8" r="1.8" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="12" cy="12.5" r="1.8" stroke="currentColor" strokeWidth="1.3" />
+      <path d="m5.6 7.1 4.8-2.6M5.6 8.9l4.8 2.6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function InstagramIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="2.4" y="2.4" width="11.2" height="11.2" rx="3.4" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="8" cy="8" r="2.8" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="11.5" cy="4.6" r="0.85" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function WhatsAppIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M2.6 13.4l.8-2.8a5.4 5.4 0 1 1 2.1 2l-2.9.8Z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M6.1 5.6c.2-.1.4 0 .5.2l.5 1c.1.2 0 .4-.1.5l-.3.3c-.1.1-.1.2 0 .4.3.5.7.9 1.2 1.2.2.1.3.1.4 0l.3-.3c.1-.1.3-.2.5-.1l1 .5c.2.1.3.3.2.5-.2.6-.8 1-1.4.9C7.4 10.4 5.6 8.6 5.2 7c-.1-.6.3-1.2.9-1.4Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}

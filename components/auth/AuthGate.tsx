@@ -17,6 +17,9 @@ const PUBLIC_PATHS = [
   "/forgot-password",
   "/reset-password",
   "/auth/callback",
+  // Shared Win Journal cards (PRD 7.5.1) — the whole point is that someone
+  // without a Prepex account can open the link.
+  "/win",
 ];
 
 function isPublicPath(pathname: string) {
