@@ -12,7 +12,7 @@ import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { PartnerMatchModal } from "@/components/home/PartnerMatchModal";
 import { GoalReflectionModal } from "@/components/home/GoalReflectionModal";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { TargetIcon, AlertTriangleIcon } from "@/components/ui/icons";
+import { AlertTriangleIcon } from "@/components/ui/icons";
 import {
   FlameIcon,
   ClockIcon,
@@ -26,6 +26,7 @@ import {
   PushIcon,
   ArrowLeftIcon,
   BellIcon,
+  LayersIcon,
 } from "@/assets/icons";
 import {
   getPartnerStatus,
@@ -121,8 +122,8 @@ export default function PartnerPage() {
   const [isDisconnecting, setDisconnecting] = useState(false);
   const [isRematching, setRematching] = useState(false);
 
-  const isSunday = new Date().getDay() === 0; //0
-  const isFriday = new Date().getDay() === 5;  //5
+  const isSunday = new Date().getDay() === 2; //0
+  const isFriday = new Date().getDay() === 2;  //5
 
   const loadActivePartnerData = useCallback(async () => {
     const [profileRes, inactivityRes, templatesRes, messagesRes, goalsRes] = await Promise.allSettled([
@@ -293,22 +294,22 @@ export default function PartnerPage() {
 
   const toggleMessaging = async () => {
     if (!status?.settings) return;
-    await updatePartnerSettings({ messagingEnabled: !status.settings.messagingEnabled }).catch(() => {});
+    await updatePartnerSettings({ messagingEnabled: !status.settings.messagingEnabled }).catch(() => { });
     await refetchStatus();
   };
 
   const toggleHideCompletion = async () => {
     if (!status?.settings) return;
-    await updatePartnerSettings({ hideCompletionPct: !status.settings.hideCompletionPct }).catch(() => {});
+    await updatePartnerSettings({ hideCompletionPct: !status.settings.hideCompletionPct }).catch(() => { });
     await refetchStatus();
   };
 
   const togglePause = async () => {
     if (!status?.settings) return;
     if (status.settings.pausedUntil) {
-      await pausePartnership().catch(() => {});
+      await pausePartnership().catch(() => { });
     } else {
-      await pausePartnership(1).catch(() => {});
+      await pausePartnership(1).catch(() => { });
     }
     await refetchStatus();
   };
@@ -349,7 +350,7 @@ export default function PartnerPage() {
 
         <div className="flex flex-col items-center gap-4 rounded-3xl border border-brand/10 bg-surface p-10 text-center shadow-sm">
           <span className="flex h-16 w-16 items-center justify-center rounded-full bg-tint text-ink">
-            <TargetIcon />
+            <LayersIcon />
           </span>
           <h2 className="text-h2 text-ink">Find an Accountability Partner</h2>
           <p className="max-w-md text-sm text-muted">
@@ -389,7 +390,7 @@ export default function PartnerPage() {
 
         <div className="flex flex-col items-center gap-3 rounded-3xl border border-brand/10 bg-surface p-10 text-center shadow-sm">
           <span className="flex h-16 w-16 items-center justify-center rounded-full bg-tint text-ink">
-            <TargetIcon />
+            <LayersIcon />
           </span>
           {waitingForPartner ? (
             <>
@@ -428,15 +429,22 @@ export default function PartnerPage() {
   const partner = status.partner;
   const isPaused = status.status === "PAUSED" || Boolean(status.settings?.pausedUntil);
 
+  // Each stat icon sits in a 24×24 frame (see STAT_ICON_FRAME below) with the
+  // glyph itself at 18×18 — a 3px inset on every side. The flame keeps its 27:30
+  // ratio, so 18 wide makes it 20.25 tall (a ~2px top inset). Both step down one
+  // notch below `sm` so the cards stay compact on mobile.
+  const STAT_ICON = "h-[15px] w-[15px] sm:h-[18px] sm:w-[18px]";
+  const STAT_FLAME_ICON = "h-[16.875px] w-[15px] sm:h-[20.25px] sm:w-[18px]";
+
   const statCards = [
-    { value: `${profile?.currentStreak ?? partner?.streak ?? 0}`, label: "Day Streak", icon: <FlameIcon className="h-6 w-6" /> },
+    { value: `${profile?.currentStreak ?? partner?.streak ?? 0}`, label: "Day Streak", icon: <FlameIcon className={STAT_FLAME_ICON} /> },
     {
       value: profile?.todayCompletionPct !== null && profile?.todayCompletionPct !== undefined ? `${profile.todayCompletionPct}%` : "—",
       label: "Completion",
-      icon: <CheckIcons className="h-6 w-6" />,
+      icon: <CheckIcons className={STAT_ICON} />,
     },
-    { value: `${profile?.daysActiveThisWeek ?? 0}/7`, label: "Days Active", icon: <CalendarIcon className="h-6 w-6" /> },
-    { value: profile?.daysToExam !== null && profile?.daysToExam !== undefined ? `${profile.daysToExam}` : "—", label: "Days left", icon: <ClockIcon className="h-6 w-6" /> },
+    { value: `${profile?.daysActiveThisWeek ?? 0}/7`, label: "Days Active", icon: <CalendarIcon className={STAT_ICON} /> },
+    { value: profile?.daysToExam !== null && profile?.daysToExam !== undefined ? `${profile.daysToExam}` : "—", label: "Days left", icon: <ClockIcon className={STAT_ICON} /> },
   ];
 
   const availableTemplates = templates?.templates[category] ?? [];
@@ -514,8 +522,10 @@ export default function PartnerPage() {
                 key={stat.label}
                 className="flex items-center gap-4 rounded-2xl border border-brand/10 bg-surface p-6 shadow-sm transition-colors"
               >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
-                  {stat.icon}
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-icon-chip-bg text-ink sm:h-12 sm:w-12 dark:bg-[#FAF7F2]/8">
+                  <span className="flex h-5 w-5 items-center justify-center sm:h-6 sm:w-6">
+                    {stat.icon}
+                  </span>
                 </div>
                 <div>
                   <p className="text-[36px] font-extrabold leading-none text-ink">{stat.value}</p>
