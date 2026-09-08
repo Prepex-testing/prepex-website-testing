@@ -123,10 +123,6 @@ const JOURNAL_STATS = [
   { value: "19", label: "Study Hours" },
 ];
 
-// TEMPORARY (current sprint): every Quick Access item except "Revision"
-// redirects to /development-in-progress while development focuses on Home.
-// Each overridden item's original `href` (or `isModal` trigger, for Quick
-// Focus) is commented alongside the override so it can be restored later.
 const QUICK_ACCESS = [
   {
     href: "/practice/sessions",
@@ -152,32 +148,24 @@ const QUICK_ACCESS = [
     label: "Where to focus next", icon: <RadarIcon className="h-5 w-5" />
   },
   {
-    // href: "/home/partner",
-    href: "/development-in-progress",
+    href: "/home/partner",
     label: "Partner", icon: <UserIcon className="h-5 w-5" />
   },
   {
-    // href: "/home/leaderboard",
-    href: "/development-in-progress",
+    href: "/home/leaderboard",
     label: "Leader Board", icon: <TrophyIcon className="h-5 w-5" />
   },
   {
-    // href: "/home/resource-library",
-    href: "/development-in-progress",
+    href: "/home/resource-library",
     label: "Resource Library", icon: <BriefcaseIcon className="h-5 w-5" />
   },
   { href: "/home/revision", label: "Revision", icon: <RevisionIcon className="h-5 w-5" /> },
   {
-    // TEMPORARY: originally isModal: true (no href) — opened QuickFocusModal
-    // instead of navigating. Restore by removing href/isModal:false below
-    // and uncommenting isModal: true.
-    href: "/development-in-progress",
+    isModal: true,
     label: "Quick Focus", icon: <QuickIcon className="h-5 w-5" />,
-    isModal: false,
   },
   {
-    // href: "/home/journal",
-    href: "/development-in-progress",
+    href: "/home/journal",
     label: "Weekly Win Journal",
     subtitle: "Reflect & celebrate wins",
     icon: <PencilIcon />,
@@ -678,7 +666,7 @@ export default function HomePage() {
 
           {/* Streak Card */}
           <Link
-            href="/development-in-progress"
+            href="/home/streak"
             className="block rounded-2xl border border-brand/10 bg-surface p-3 transition-colors hover:border-brand/30 @4xl:p-6"
           >
             <div className="flex min-w-0 flex-row items-center justify-between gap-2 @4xl:gap-4">

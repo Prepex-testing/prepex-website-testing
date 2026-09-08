@@ -28,8 +28,7 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    // href: "/plan",
-    href: "/development-in-progress",
+    href: "/plan",
     activeMatch: "/plan",
     label: "Plan",
     icon: (
@@ -49,10 +48,7 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    // TEMPORARY (current sprint): original destination, restore by
-    // uncommenting the line below and removing the override under it.
-    // href: "/stats",
-    href: "/development-in-progress",
+    href: "/stats",
     activeMatch: "/stats",
     label: "Stats",
     icon: (
@@ -62,10 +58,7 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    // TEMPORARY (current sprint): original destination, restore by
-    // uncommenting the line below and removing the override under it.
-    // href: "/profile",
-    href: "/development-in-progress",
+    href: "/profile",
     activeMatch: "/profile",
     label: "Profile",
     icon: (

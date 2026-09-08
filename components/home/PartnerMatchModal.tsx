@@ -4,20 +4,36 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { WhiteModal } from "@/components/ui/WhiteModal";
 import { CheckCircleIcon, ChevronDownIcon, XIcon } from "@/components/ui/icons";
+import type { PartnerSummary } from "@/lib/api/partner";
 
-const MATCH_REASONS = [
-  "Same Targeting: JEE Main + Advanced",
-  "Daily Hours Overlap: 6-7 hrs ≈ Yours: 6 hrs",
-  "Time Window Overlap: Evening + Night",
+// Describes how matching works in general — not per-match reasoning (the API
+// doesn't return a reason breakdown for a specific match, only the result).
+const MATCHING_CRITERIA = [
+  "Same exam target — required for every match",
+  "Similar daily hours and exam date",
+  "Similar streak pattern (both consistent, or both rebuilding)",
 ];
 
 type PartnerMatchModalProps = {
   open: boolean;
   onClose: () => void;
   onAccept: () => void;
+  onDecline: () => void;
+  partner: PartnerSummary | null;
+  isSubmitting?: boolean;
+  /** PRD 6.2.4 — declines are capped at 2 lifetime attempts. */
+  declinesRemaining?: number;
 };
 
-export function PartnerMatchModal({ open, onClose, onAccept }: PartnerMatchModalProps) {
+export function PartnerMatchModal({
+  open,
+  onClose,
+  onAccept,
+  onDecline,
+  partner,
+  isSubmitting,
+  declinesRemaining,
+}: PartnerMatchModalProps) {
   const [showReasons, setShowReasons] = useState(true);
 
   return (
@@ -36,11 +52,13 @@ export function PartnerMatchModal({ open, onClose, onAccept }: PartnerMatchModal
 
       <div className="mt-3 flex items-center gap-3">
         <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand text-lg font-bold text-white">
-          R
+          {partner?.fullName?.trim()?.[0]?.toUpperCase() ?? "?"}
         </span>
         <div>
-          <p className="text-h2 text-ink">Priya Sharma</p>
-          <p className="text-sm text-muted">from Maharashtra</p>
+          <p className="text-h2 text-ink">{partner?.fullName ?? "—"}</p>
+          <p className="text-sm text-muted">
+            {partner?.city ? `from ${partner.city}` : "Location hidden"}
+          </p>
         </div>
       </div>
 
@@ -49,19 +67,15 @@ export function PartnerMatchModal({ open, onClose, onAccept }: PartnerMatchModal
           <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
             Targeting
           </p>
-          <p className="text-sm font-bold text-ink">JEE Main + Advanced</p>
-        </div>
-        <div className="py-3">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
-            Daily Hours
-          </p>
-          <p className="text-sm font-bold text-ink">6–7 hours</p>
+          <p className="text-sm font-bold text-ink">{partner?.examName ?? "—"}</p>
         </div>
         <div className="py-3">
           <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
             Streak
           </p>
-          <p className="text-sm font-bold text-ink">3 days • returning after a 7-day gap</p>
+          <p className="text-sm font-bold text-ink">
+            {partner ? `${partner.streak} day${partner.streak === 1 ? "" : "s"}` : "—"}
+          </p>
         </div>
         <div className="py-3">
           <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
@@ -87,7 +101,7 @@ export function PartnerMatchModal({ open, onClose, onAccept }: PartnerMatchModal
 
       {showReasons && (
         <div className="mt-2 flex flex-col gap-2 rounded-xl bg-tint-strong p-3">
-          {MATCH_REASONS.map((reason) => (
+          {MATCHING_CRITERIA.map((reason) => (
             <p key={reason} className="flex items-start gap-2 text-xs text-ink">
               <CheckCircleIcon />
               {reason}
@@ -98,22 +112,24 @@ export function PartnerMatchModal({ open, onClose, onAccept }: PartnerMatchModal
 
       <div className="mt-5 flex items-center gap-3">
         <div className="flex-1">
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={onDecline} disabled={isSubmitting}>
             Decline &amp; Rematch
           </Button>
         </div>
         <div className="flex-1">
-          <Button variant="primary" onClick={onAccept}>
+          <Button variant="primary" onClick={onAccept} disabled={isSubmitting}>
             Accept Partner
           </Button>
         </div>
       </div>
 
-      <p className="mt-3 text-center text-xs text-muted">
-        2 declines left before we pause matching for a week.
-        <br />
-        This keeps the pool fair for everyone.
-      </p>
+      {declinesRemaining !== undefined && (
+        <p className="mt-3 text-center text-xs text-muted">
+          {declinesRemaining > 0
+            ? `${declinesRemaining} decline${declinesRemaining === 1 ? "" : "s"} left before matching needs a manual review.`
+            : "This was your last decline — further matches need a manual review."}
+        </p>
+      )}
     </WhiteModal>
   );
 }
