@@ -1,30 +1,133 @@
 "use client";
 
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CircularProgress } from "@/components/ui/CircularProgress";
-import { ArrowLeftIcon, BellIcon, BoltIcon, ClockIcon, CheckIcon, BoltIcons, BatteryIcon } from "@/components/ui/icons";
+import { PageLoader } from "@/components/ui/PageLoader";
+import {
+  ArrowLeftIcon,
+  BellIcon,
+  CheckIcon,
+  BoltIcons,
+  BatteryIcon,
+} from "@/components/ui/icons";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import {
+  getDayView,
+  formatDayLabel,
+  todayDateKey,
+  shiftDateKey,
+  type DayView,
+} from "@/lib/api/calendar";
 
-const FOCUS_BREAKDOWN = [
-  { subject: "Physics", value: "45m", total: "60m" },
-  { subject: "Wellness", value: "10m", total: "10m" },
-  { subject: "Maths", value: "50m", total: "45m" },
-];
+const MOOD_LABEL: Record<string, string> = {
+  DRAINED: "Drained",
+  HEAVY: "Heavy",
+  STEADY: "Steady",
+  GOOD: "Good",
+  STRONG: "Strong",
+};
 
-const TASK_LOG = [
-  { subject: "Physics", title: "Newton's Laws (revision)", status: "done" as const },
-  { subject: "Wellness", title: "Wellness · 10-min mindful walk", status: "done" as const },
-  { subject: "Maths", title: "5 easy practice questions", status: "done" as const },
-  { subject: "Chemistry", title: "Postponed for recovery", status: "skipped" as const },
-];
+/** Bar heights for the 7-day energy strip. A day with no check-in gets a stub. */
+const MOOD_HEIGHT: Record<string, number> = {
+  DRAINED: 25,
+  HEAVY: 40,
+  STEADY: 55,
+  GOOD: 75,
+  STRONG: 100,
+};
 
-const ENERGY_TREND = [30, 55, 40, 65, 45, 60, 25];
+function formatDuration(seconds: number): string {
+  const total = Math.round(seconds / 60);
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
 
-export default function DayPlanPage() {
+function formatMinutes(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+/** The badge next to the date — what kind of day this was. */
+function dayBadge(view: DayView): string | null {
+  if (view.noStudyDay) return "NO-STUDY DAY";
+  if (view.mockDay) return "MOCK DAY";
+  if (view.summary?.isRecoveryWeek) return "RECOVERY DAY";
+  if (view.summary?.isBadDayPlan) return "BAD DAY PROTOCOL";
+  if (view.isToday) return "TODAY";
+  return null;
+}
+
+function dayNarrative(view: DayView): string | null {
+  if (view.noStudyDay) {
+    return "You marked this as a No-Study Day. No plan was generated, and your streak stayed protected.";
+  }
+  if (view.summary?.isBadDayPlan) {
+    return "Bad Day Protocol was active. The plan shrank to the smallest thing worth finishing.";
+  }
+  if (view.summary?.isRecoveryWeek) {
+    return "Plan was lighter today. Energy was heavy, so recovery activated automatically.";
+  }
+  if (view.mockDay) {
+    return "Mock day. The plan stayed light so the test had your full attention.";
+  }
+  return view.plan?.aiSummary ?? null;
+}
+
+function DayPlanContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+
+  const today = useMemo(() => todayDateKey(), []);
+  const date = searchParams.get("date") ?? today;
+
+  const [view, setView] = useState<DayView | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      setLoading(true);
+      try {
+        const { data } = await getDayView(date);
+        if (cancelled) return;
+        // A future date has no history to show — send it to planning instead
+        // of rendering an empty history page.
+        if (data.isFuture) {
+          router.replace(`/plan/plan-day?date=${date}`);
+          return;
+        }
+        setView(data);
+      } catch {
+        if (!cancelled) setView(null);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [date, router]);
+
+  const step = (delta: number) => {
+    router.replace(`/plan/day-plan?date=${shiftDateKey(date, delta)}`);
+  };
+
+  if (loading) return <PageLoader label="Loading this day…" />;
+
+  const summary = view?.summary;
+  const badge = view ? dayBadge(view) : null;
+  const narrative = view ? dayNarrative(view) : null;
+  const tasks = view?.plan?.tasks ?? [];
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -49,24 +152,23 @@ export default function DayPlanPage() {
       </div>
 
       <div className="flex w-full flex-wrap items-center gap-3 gap-y-2">
-        {/* Date */}
         <h2 className="font-['Plus_Jakarta_Sans'] text-[18px] font-bold leading-[23px] text-ink">
-          Wednesday, May 14, 2026
+          {formatDayLabel(date)}
         </h2>
 
-        {/* Previous */}
         <button
           type="button"
-          className="flex h-[30px] w-[30px] items-center justify-center rounded-sm border border-brand/10 bg-surface text-ink"
+          onClick={() => step(-1)}
+          className="flex h-[30px] w-[30px] items-center justify-center rounded-sm border border-brand/10 bg-surface text-ink transition-colors hover:bg-tint-strong"
           aria-label="Previous day"
         >
           <ArrowLeftIcon />
         </button>
 
-        {/* Next */}
         <button
           type="button"
-          className="flex h-[30px] w-[30px] items-center justify-center rounded-sm border border-brand/10 bg-surface text-ink"
+          onClick={() => step(1)}
+          className="flex h-[30px] w-[30px] items-center justify-center rounded-sm border border-brand/10 bg-surface text-ink transition-colors hover:bg-tint-strong"
           aria-label="Next day"
         >
           <span className="rotate-180">
@@ -74,213 +176,238 @@ export default function DayPlanPage() {
           </span>
         </button>
 
-        {/* Recovery Badge */}
-        <span
-          className={`rounded-full px-3 py-1 font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase tracking-[0.6px] ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
-        >
-          RECOVERY DAY
-        </span>
-      </div>
-
-      <div className="flex items-center gap-4 rounded-2xl border border-brand/10 bg-surface p-6">
-        {/* Icon */}
-        <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${isDark ? "bg-white" : "bg-tint-strong"}`}
-        >
-          <div className="flex h-6 w-6 items-center justify-center">
-            <BoltIcons className={`h-4.5 w-4 ${isDark ? "text-[#1A1A4E]" : "text-ink"}`} />
-          </div>
-        </div>
-
-        {/* Text */}
-        <div className="min-w-0 flex-1">
-          <p className="text-[18px] font-medium leading-[29.25px] tracking-normal text-ink">
-            Plan was lighter today. Energy was heavy,
-            <br className="hidden sm:block" />
-            so recovery activated automatically.
-          </p>
-        </div>
-      </div>
-
-      <div className="grid w-full grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
-        <div className="flex h-[247px] w-full flex-col items-center justify-center gap-2 rounded-2xl border border-brand/10 bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-          <div className="flex h-[132px] w-[132px] items-center justify-center">
-            <CircularProgress
-              percent={75}
-              displayValue="3/4"
-              suffix=""
-              size={132}
-              progressColor="#28B485"
-            />
-          </div>
-
-          <p className="font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase tracking-[1.2px] leading-4 text-muted">
-            TASKS COMPLETED
-          </p>
-
-          <p className="font-['Plus_Jakarta_Sans'] text-[30px] font-bold leading-9 text-ink">
-            3 of 4
-          </p>
-        </div>
-
-        {/* ===================== FOCUS TIME ===================== */}
-
-        <div className="flex h-[247px] w-full flex-col rounded-2xl border border-brand/10 bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-          {/* Top Section */}
-          <div className="flex flex-col items-center">
-            <p
-              className={`font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase tracking-[1.2px] leading-4 ${isDark ? "text-white" : "text-muted"}`}
-            >
-              FOCUS TIME
-            </p>
-
-            <h2 className="mt-3 font-['Plus_Jakarta_Sans'] text-[30px] font-bold leading-[36px] text-ink">
-              1h 45m
-            </h2>
-
-            <p className="mt-3 text-[12px] leading-4 text-muted">
-              vs 3h 20m average
-            </p>
-
-            <button
-              type="button"
-              className="mt-2 text-[10px] font-semibold leading-[15px] text-ink underline"
-            >
-              Toggle vs average
-            </button>
-          </div>
-
-          {/* Push Divider Down */}
-          <div className="flex-1" />
-
-          {/* Divider with side gap */}
-          <div className="mx-2 border-t border-brand/10" />
-
-          {/* Bottom List */}
-          <div className="mx-2 mt-6 flex flex-col gap-3">
-            {FOCUS_BREAKDOWN.map((item) => (
-              <div
-                key={item.subject}
-                className="flex items-center justify-between"
-              >
-                <span className={`text-[12px] leading-4 ${isDark ? "text-white" : "text-muted"}`}>
-                  {item.subject}
-                </span>
-
-                <span className="text-[12px] font-semibold leading-4 text-ink">
-                  {item.value} / {item.total}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ===================== DAILY ENERGY ===================== */}
-
-        <div className="flex h-[247px] w-full flex-col items-center rounded-2xl border border-brand/10 bg-surface px-5 pt-5 pb-7 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-          <p
-            className={`font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase tracking-[1.2px] leading-4 ${isDark ? "text-white" : "text-muted"}`}
+        {badge && (
+          <span
+            className={`rounded-full px-3 py-1 font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase tracking-[0.6px] ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
           >
-            DAILY ENERGY
+            {badge}
+          </span>
+        )}
+      </div>
+
+      {!view || (!view.plan && !view.checkin && !view.noStudyDay) ? (
+        <div className="rounded-2xl border border-brand/10 bg-surface p-10 text-center">
+          <p className="text-lg font-semibold text-ink">Nothing recorded for this day</p>
+          <p className="mt-2 text-sm text-muted">
+            No plan was generated and no check-in was logged.
           </p>
+        </div>
+      ) : (
+        <>
+          {narrative && (
+            <div className="flex items-center gap-4 rounded-2xl border border-brand/10 bg-surface p-6">
+              <div
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${isDark ? "bg-white" : "bg-tint-strong"}`}
+              >
+                <div className="flex h-6 w-6 items-center justify-center">
+                  <BoltIcons className={`h-4.5 w-4 ${isDark ? "text-[#1A1A4E]" : "text-ink"}`} />
+                </div>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[18px] font-medium leading-[29.25px] tracking-normal text-ink">
+                  {narrative}
+                </p>
+              </div>
+            </div>
+          )}
 
-          <div className="mt-3 flex items-center justify-center gap-2">
-            <BatteryIcon className="text-cta" />
-
-            <span className="font-['Plus_Jakarta_Sans'] text-[20px] font-bold uppercase leading-7 text-cta">
-              DRAINED
-            </span>
-          </div>
-
-          <div className="mt-10 flex flex-col items-center">
-            <div className="flex h-10 items-end gap-1">
-              {ENERGY_TREND.map((value, index) => (
-                <div
-                  key={index}
-                  className={`w-[8px] rounded-sm ${index === 3 ? "bg-brand" : "bg-tint-strong"
-                    }`}
-                  style={{ height: `${value}%` }}
+          <div className="grid w-full grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
+            {/* Tasks completed */}
+            <div className="flex h-[247px] w-full flex-col items-center justify-center gap-2 rounded-2xl border border-brand/10 bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+              <div className="flex h-[132px] w-[132px] items-center justify-center">
+                <CircularProgress
+                  percent={summary?.completionRate ?? 0}
+                  displayValue={`${summary?.tasksDone ?? 0}/${summary?.tasksTotal ?? 0}`}
+                  suffix=""
+                  size={132}
+                  progressColor="#28B485"
                 />
-              ))}
+              </div>
+
+              <p className="font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase leading-4 tracking-[1.2px] text-muted">
+                TASKS COMPLETED
+              </p>
+
+              <p className="font-['Plus_Jakarta_Sans'] text-[30px] font-bold leading-9 text-ink">
+                {summary?.tasksDone ?? 0} of {summary?.tasksTotal ?? 0}
+              </p>
             </div>
 
-            <p className="mt-3 font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase tracking-[1.2px] text-muted">
-              7-DAY TREND
-            </p>
-          </div>
-        </div>
-      </div>
+            {/* Focus time */}
+            <div className="flex h-[247px] w-full flex-col rounded-2xl border border-brand/10 bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+              <div className="flex flex-col items-center">
+                <p
+                  className={`font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase leading-4 tracking-[1.2px] ${isDark ? "text-white" : "text-muted"}`}
+                >
+                  FOCUS TIME
+                </p>
 
-      <div className="w-full rounded-2xl border border-brand/10 bg-surface p-6 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
-        {/* Header */}
-        <div className="flex h-[45px] items-start border-b border-brand/10 pb-4">
-          <h2 className="font-['Plus_Jakarta_Sans'] text-[18px] font-bold uppercase leading-7 tracking-[-0.45px] text-ink">
-            TASK LOG
-          </h2>
-        </div>
+                <h2 className="mt-3 font-['Plus_Jakarta_Sans'] text-[30px] font-bold leading-[36px] text-ink">
+                  {formatDuration(summary?.focusSeconds ?? 0)}
+                </h2>
 
-        {/* Task List */}
-        <div className="mt-4 flex flex-col gap-4">
-          {TASK_LOG.map((task) => (
-            <div
-              key={task.title}
-              className="flex h-[70px] items-center justify-between rounded-lg border border-brand/10 px-3 py-3"
-            >
-              {/* Left Content */}
-              <div className="flex flex-1 items-center gap-4 overflow-hidden">
-                {/* Status Icon */}
-                <div className="flex h-4 w-4 shrink-0 items-center justify-center">
-                  {task.status === "done" ? (
-                    <div className="flex h-4 w-4 items-center justify-center rounded bg-success">
-                      <CheckIcon />
-                    </div>
-                  ) : (
-                    <div className="flex h-4 w-4 items-center justify-center rounded bg-muted/30">
-                      <div className="h-2 w-2 rounded-full bg-surface" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Text */}
-                <div className="min-w-0 flex-1">
-                  <p className="font-['Plus_Jakarta_Sans'] text-[16px] font-semibold leading-6 text-ink">
-                    {task.subject}
-                  </p>
-
-                  <p className="truncate font-['Plus_Jakarta_Sans'] text-[14px] font-normal leading-5 text-muted">
-                    {task.title}
-                  </p>
-                </div>
+                <p className="mt-3 text-[12px] leading-4 text-muted">
+                  of {formatMinutes(summary?.plannedMinutes ?? 0)} planned
+                </p>
               </div>
 
-              {/* Right Badge */}
-              <div className="ml-4 shrink-0">
-                {task.status === "done" ? (
-                  <span className="rounded-sm bg-success/10 px-3 py-1 font-['Plus_Jakarta_Sans'] text-[12px] font-semibold uppercase leading-4 text-success">
-                    DONE
-                  </span>
+              <div className="flex-1" />
+              <div className="mx-2 border-t border-brand/10" />
+
+              <div className="mx-2 mt-4 flex max-h-[92px] flex-col gap-3 overflow-y-auto">
+                {(summary?.focusBySubject ?? []).length > 0 ? (
+                  summary!.focusBySubject.map((item) => (
+                    <div key={item.subject} className="flex items-center justify-between">
+                      <span className={`text-[12px] leading-4 ${isDark ? "text-white" : "text-muted"}`}>
+                        {item.subject}
+                      </span>
+                      <span className="text-[12px] font-semibold leading-4 text-ink">
+                        {formatDuration(item.seconds)} / {formatMinutes(item.plannedMinutes)}
+                      </span>
+                    </div>
+                  ))
                 ) : (
-                  <span className="rounded-sm bg-tint px-3 py-1 font-['Plus_Jakarta_Sans'] text-[12px] font-semibold leading-4 text-ink">
-                    Skipped
-                  </span>
+                  <p className="text-[12px] leading-4 text-muted">No focus time logged.</p>
                 )}
               </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      <div className="rounded-2xl border border-brand/10 bg-surface p-5">
-        <p
-          className={`text-xs font-bold uppercase tracking-wide ${isDark ? "text-white" : "text-muted"}`}
-        >
-          Streak Status
-        </p>
-        <p className="mt-1 text-lg font-bold text-ink">Maintained</p>
-        <p className="text-xs text-muted">
-          50% daily quota reached despite recovery mode. You listened to your body
-        </p>
-      </div>
+            {/* Daily energy */}
+            <div className="flex h-[247px] w-full flex-col items-center rounded-2xl border border-brand/10 bg-surface px-5 pb-7 pt-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+              <p
+                className={`font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase leading-4 tracking-[1.2px] ${isDark ? "text-white" : "text-muted"}`}
+              >
+                DAILY ENERGY
+              </p>
+
+              <div className="mt-3 flex items-center justify-center gap-2">
+                <BatteryIcon className="text-cta" />
+                <span className="font-['Plus_Jakarta_Sans'] text-[20px] font-bold uppercase leading-7 text-cta">
+                  {view.checkin ? (MOOD_LABEL[view.checkin.mood] ?? view.checkin.mood) : "NO CHECK-IN"}
+                </span>
+              </div>
+
+              <div className="mt-10 flex flex-col items-center">
+                <div className="flex h-10 items-end gap-1">
+                  {view.energyTrend.map((point) => (
+                    <div
+                      key={point.date}
+                      title={`${point.date}: ${point.mood ? (MOOD_LABEL[point.mood] ?? point.mood) : "no check-in"}`}
+                      className={`w-[8px] rounded-sm ${point.isSelected ? "bg-brand" : "bg-tint-strong"}`}
+                      style={{ height: `${point.mood ? (MOOD_HEIGHT[point.mood] ?? 40) : 10}%` }}
+                    />
+                  ))}
+                </div>
+
+                <p className="mt-3 font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase tracking-[1.2px] text-muted">
+                  7-DAY TREND
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Task log */}
+          <div className="w-full rounded-2xl border border-brand/10 bg-surface p-6 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
+            <div className="flex h-[45px] items-start border-b border-brand/10 pb-4">
+              <h2 className="font-['Plus_Jakarta_Sans'] text-[18px] font-bold uppercase leading-7 tracking-[-0.45px] text-ink">
+                TASK LOG
+              </h2>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-4">
+              {tasks.length === 0 ? (
+                <p className="text-sm text-muted">No tasks were planned for this day.</p>
+              ) : (
+                tasks.map((task) => {
+                  const done = task.status === "COMPLETED";
+                  const skipped = task.status === "SKIPPED";
+                  return (
+                    <div
+                      key={task.id}
+                      className="flex min-h-[70px] items-center justify-between rounded-lg border border-brand/10 px-3 py-3"
+                    >
+                      <div className="flex flex-1 items-center gap-4 overflow-hidden">
+                        <div className="flex h-4 w-4 shrink-0 items-center justify-center">
+                          {done ? (
+                            <div className="flex h-4 w-4 items-center justify-center rounded bg-success">
+                              <CheckIcon />
+                            </div>
+                          ) : (
+                            <div className="flex h-4 w-4 items-center justify-center rounded bg-muted/30">
+                              <div className="h-2 w-2 rounded-full bg-surface" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <p className="flex items-center gap-2 font-['Plus_Jakarta_Sans'] text-[16px] font-semibold leading-6 text-ink">
+                            <span className="truncate">{task.subject?.name ?? "Study"}</span>
+                            {task.isAnchor && (
+                              <span className="shrink-0 rounded-sm bg-tint px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink">
+                                Custom
+                              </span>
+                            )}
+                          </p>
+                          <p className="truncate font-['Plus_Jakarta_Sans'] text-[14px] font-normal leading-5 text-muted">
+                            {task.title}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="ml-4 shrink-0">
+                        {done ? (
+                          <span className="rounded-sm bg-success/10 px-3 py-1 font-['Plus_Jakarta_Sans'] text-[12px] font-semibold uppercase leading-4 text-success">
+                            DONE
+                          </span>
+                        ) : (
+                          <span className="rounded-sm bg-tint px-3 py-1 font-['Plus_Jakarta_Sans'] text-[12px] font-semibold leading-4 text-ink">
+                            {skipped ? "Skipped" : "Pending"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Streak status */}
+          <div className="rounded-2xl border border-brand/10 bg-surface p-5">
+            <p
+              className={`text-xs font-bold uppercase tracking-wide ${isDark ? "text-white" : "text-muted"}`}
+            >
+              Streak Status
+            </p>
+            <p className="mt-1 text-lg font-bold text-ink">
+              {summary?.streakStatus === "PROTECTED"
+                ? "Protected"
+                : summary?.streakStatus === "MAINTAINED"
+                  ? "Maintained"
+                  : summary?.streakStatus === "BROKEN"
+                    ? "Reset"
+                    : "—"}
+            </p>
+            <p className="text-xs text-muted">
+              {summary?.streakStatus === "PROTECTED"
+                ? "You marked this a No-Study Day ahead of time, so it bridged your streak without spending a Streak Freeze."
+                : summary?.streakStatus === "MAINTAINED"
+                  ? `${view.checkin?.streakCount ?? 0} days and counting. You showed up.`
+                  : summary?.streakStatus === "BROKEN"
+                    ? "The streak reset here. It starts again the next day you check in."
+                    : "No check-in was logged for this day."}
+            </p>
+          </div>
+        </>
+      )}
     </div>
+  );
+}
+
+export default function DayPlanPage() {
+  return (
+    <Suspense fallback={<PageLoader label="Loading this day…" />}>
+      <DayPlanContent />
+    </Suspense>
   );
 }

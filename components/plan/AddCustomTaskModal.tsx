@@ -8,6 +8,7 @@ import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 import { EditIcon, MinusIcon, PencilIcon, PlusIcon, XIcon } from "@/components/ui/icons";
 import { addPlannerTask, editPlannerTask, type SuggestedWindow } from "@/lib/api/planner";
+import { addAnchorTask } from "@/lib/api/calendar";
 import { addBacklogTaskToPlan } from "@/lib/api/backlog";
 import { getCheckInStatus } from "@/lib/api/checkin";
 import {
@@ -16,17 +17,28 @@ import {
 } from "@/lib/api/profile";
 import { AddTask } from "@/assets/icons";
 
-const HEADER_TEXT: Record<"add" | "edit" | "planFromBacklog", { title: string; subtitle: string }> = {
+type TaskModalMode = "add" | "edit" | "planFromBacklog" | "anchor";
+
+const HEADER_TEXT: Record<TaskModalMode, { title: string; subtitle: string }> = {
   add: { title: "Add Task", subtitle: "Structure your study plan with precision" },
   edit: { title: "Edit Task", subtitle: "Update the details for this task" },
   planFromBacklog: { title: "Add Backlog to plan", subtitle: "Schedule this backlog item into your plan" },
+  anchor: {
+    title: "Add Anchor Task",
+    subtitle: "AI will build the rest of that day around this",
+  },
 };
 
-const SUBMIT_LABEL: Record<"add" | "edit" | "planFromBacklog", { idle: string; busy: string }> = {
+const SUBMIT_LABEL: Record<TaskModalMode, { idle: string; busy: string }> = {
   add: { idle: "Add Task", busy: "Adding..." },
   edit: { idle: "Save Changes", busy: "Saving..." },
   planFromBacklog: { idle: "Add to Plan", busy: "Adding..." },
+  anchor: { idle: "Add Anchor Task", busy: "Adding..." },
 };
+
+/** PRD 9.6 — an anchor has to be worth planning around; the API rejects
+ *  anything under 10 minutes. */
+const MIN_ANCHOR_MINUTES = 10;
 
 const TASK_TYPES = ["New Learning", "Revision", "Practice", "DPP", "Other"];
 
@@ -73,7 +85,7 @@ export type TaskFormInitialValues = {
 type AddCustomTaskModalProps = {
   open: boolean;
   onClose: () => void;
-  mode?: "add" | "edit" | "planFromBacklog";
+  mode?: TaskModalMode;
   /** Task being edited — required in edit mode, used as the PATCH target. */
   taskId?: string;
   /** Backlog task being scheduled — required in planFromBacklog mode, used as the POST target. */
@@ -87,6 +99,10 @@ type AddCustomTaskModalProps = {
   lockedTaskType?: string;
   /** Overrides the modal header title (add mode) — e.g. "Add Custom Practice Task". */
   title?: string;
+  /** anchor mode only — the future date (YYYY-MM-DD) the anchor is pinned to. */
+  anchorDate?: string;
+  /** anchor mode only — receives the server's over-target warning, if any. */
+  onAnchorAdded?: (warning: string | null) => void;
 };
 
 /** Read-only stand-in for a Select, styled to match — used in edit mode where
@@ -123,6 +139,8 @@ export function AddCustomTaskModal({
   onPlanned,
   lockedTaskType,
   title,
+  anchorDate,
+  onAnchorAdded,
 }: AddCustomTaskModalProps) {
   const headerTitle = title ?? HEADER_TEXT[mode].title;
   const [taskType, setTaskType] = useState(lockedTaskType ?? initialValues?.taskType ?? "Practice");
@@ -290,6 +308,46 @@ export function AddCustomTaskModal({
         onClose();
       } catch {
         setError("Couldn't add this task to your plan. Please try again.");
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    if (mode === "anchor") {
+      if (!anchorDate || !taskName.trim()) return;
+
+      if (Number(durationValue) < MIN_ANCHOR_MINUTES) {
+        setError(`Anchor tasks need at least ${MIN_ANCHOR_MINUTES} minutes.`);
+        return;
+      }
+
+      setSubmitting(true);
+      setError(null);
+      try {
+        const topicName = chapters.find((chapter) => chapter.id === chapterId)?.name;
+        const { data } = await addAnchorTask({
+          date: anchorDate,
+          title: topicName ? `${taskName.trim()} . ${topicName}` : taskName.trim(),
+          taskType: (TASK_TYPE_API_VALUES[taskType] ?? "CUSTOM") as "CUSTOM",
+          durationMinutes: Number(durationValue),
+          subjectId: subjectId ?? undefined,
+          chapterId: chapterId || undefined,
+          preferredWindow: SUGGESTED_WINDOW_VALUES[timePreferenceValue],
+          notes: notes.trim() || undefined,
+        });
+        // The over-target case is surfaced, not blocked — the student decides
+        // what to do about it (PRD 9.5.3).
+        onAnchorAdded?.(data.warning);
+        setTaskName("");
+        setNotes("");
+        onClose();
+      } catch (err) {
+        setError(
+          err instanceof Error && err.message
+            ? err.message
+            : "Couldn't add the anchor task. Please try again.",
+        );
       } finally {
         setSubmitting(false);
       }
