@@ -368,7 +368,7 @@ export default function MistakeNotebookPage() {
                 </div>
                 {p.suggestedAction && (
                   <p className="mt-1 text-[13px] text-body-text">
-                    <span className="font-semibold">Action:</span> {p.suggestedAction}
+                    <span className="font-semibold">Suggestion:</span> {p.suggestedAction}
                   </p>
                 )}
               </div>
