@@ -65,6 +65,8 @@ export type TaskQuestionsResponse = {
   status: string;
   totalQuestions: number;
   attemptedQuestions: number;
+  /** Seconds already banked against this session — seeds a resumed timer. */
+  elapsedSeconds: number;
   questions: PracticeSessionQuestion[];
 };
 
@@ -162,11 +164,24 @@ export function getPracticeSession(sessionId: string) {
   );
 }
 
+/**
+ * Checkpoints the player's running timer. Called periodically while a session
+ * is open and once more on the way out, so exiting and reopening resumes the
+ * timer instead of restarting it, and the plan reflects practice time before
+ * the session is finished.
+ */
+export function updatePracticeSessionProgress(sessionId: string, elapsedSeconds: number) {
+  return authRequest<{ success: true; data: { sessionId: string; elapsedSeconds: number } }>(
+    `/sessions/${sessionId}/progress`,
+    { method: "PATCH", body: JSON.stringify({ elapsedSeconds }) },
+  );
+}
+
 /** Finalises the session → topic analysis + auto-populates the mistake notebook. */
-export function completePracticeSession(sessionId: string) {
+export function completePracticeSession(sessionId: string, elapsedSeconds?: number) {
   return authRequest<{ success: true; data: PracticeSessionDetail }>(
     `/sessions/${sessionId}/complete`,
-    { method: "POST" },
+    { method: "POST", body: JSON.stringify(elapsedSeconds === undefined ? {} : { elapsedSeconds }) },
   );
 }
 

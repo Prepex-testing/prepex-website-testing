@@ -34,3 +34,21 @@ export const COMPLETED_ACTION_LABELS: Record<TaskType, string> = {
 export function withResumeLabel(label: string, status: string): string {
   return status === "IN_PROGRESS" ? label.replace(/^Start /, "Resume ") : label;
 }
+
+/**
+ * "Start Practice" → "Continue Practice" once any time is banked against the
+ * task.
+ *
+ * Checked on seconds rather than status alone: a practice task only leaves
+ * PENDING when the player checkpoints its timer, and a session resumed from
+ * another device may have banked seconds before this client sees the status
+ * change.
+ */
+export function withPracticeProgressLabel(
+  label: string,
+  secondsCompleted: number | undefined,
+  status: string | undefined,
+): string {
+  const started = (secondsCompleted ?? 0) > 0 || status === "IN_PROGRESS";
+  return started ? label.replace(/^Start /, "Continue ") : label;
+}

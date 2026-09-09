@@ -9,7 +9,7 @@ import { TaskRow } from "@/components/home/TaskRow";
 import type { Task, TaskType } from "@/components/home/TaskRow";
 import { toRowDifficulty } from "@/components/home/PlanTaskRow";
 import { prettyDifficulty } from "@/lib/api/practice";
-import { withResumeLabel } from "@/components/home/taskTypes";
+import { withPracticeProgressLabel, withResumeLabel } from "@/components/home/taskTypes";
 import { QuickFocusModal } from "@/components/home/QuickFocusModal";
 import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
@@ -256,7 +256,12 @@ function toHomeTask(task: PlannerTask): Task {
       ? `${task.scheduledStart} - ${task.scheduledEnd}`
       : undefined,
     hasResource: Boolean(task.chapter),
-    actionLabel: task.taskType === "WELLNESS" ? "Wellness" : withResumeLabel(TASK_ACTION_LABEL[task.taskType] ?? "Start Session", task.status),
+    actionLabel:
+      task.taskType === "WELLNESS"
+        ? "Wellness"
+        : task.taskType === "PRACTICE"
+          ? withPracticeProgressLabel("Start Practice", task.secondsCompleted, task.status)
+          : withResumeLabel(TASK_ACTION_LABEL[task.taskType] ?? "Start Session", task.status),
     isCompleted: task.status === "COMPLETED",
     isCustom: Boolean(task.isAnchor),
     isWellness: task.taskType === "WELLNESS",

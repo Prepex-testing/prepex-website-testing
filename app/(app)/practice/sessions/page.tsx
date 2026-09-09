@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PlanTaskRow, toRowDifficulty } from "@/components/home/PlanTaskRow";
+import { withPracticeProgressLabel } from "@/components/home/taskTypes";
 import type { PlanTask } from "@/components/home/PlanTaskRow";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
@@ -34,7 +35,7 @@ function toPracticeRow(task: PlannerTask): PlanTask {
         ? `${task.scheduledStart} - ${task.scheduledEnd}`
         : "",
     difficulty: toRowDifficulty(task.chapter?.chapterMetadata?.difficulty),
-    actionLabel: "Start Practice",
+    actionLabel: withPracticeProgressLabel("Start Practice", task.secondsCompleted, task.status),
     isCompleted: task.status === "COMPLETED",
   };
 }
