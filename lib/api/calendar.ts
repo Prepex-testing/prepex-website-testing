@@ -119,7 +119,12 @@ export type DaySummary = {
   focusSeconds: number;
   plannedMinutes: number;
   focusBySubject: DayFocusBySubject[];
-  streakStatus: "PROTECTED" | "MAINTAINED" | "BROKEN" | "NONE";
+  /**
+   * PENDING is today, still open: the day-boundary job has not judged it yet
+   * and none of the three criteria are met so far. NONE means there is nothing
+   * to say about the day at all.
+   */
+  streakStatus: "PROTECTED" | "MAINTAINED" | "BROKEN" | "PENDING" | "NONE";
   mode: string | null;
   isRecoveryWeek: boolean;
   isBadDayPlan: boolean;

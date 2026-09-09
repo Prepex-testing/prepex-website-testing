@@ -395,16 +395,20 @@ function DayPlanContent() {
                   ? "Maintained"
                   : summary?.streakStatus === "BROKEN"
                     ? "Reset"
-                    : "—"}
+                    : summary?.streakStatus === "PENDING"
+                      ? "In progress"
+                      : "—"}
             </p>
             <p className="text-xs text-muted">
               {summary?.streakStatus === "PROTECTED"
                 ? "You marked this a No-Study Day ahead of time, so it bridged your streak without spending a Streak Freeze."
                 : summary?.streakStatus === "MAINTAINED"
-                  ? `${view.checkin?.streakCount ?? 0} days and counting. You showed up.`
+                  ? `${view.streakCount ?? 0} days and counting. You showed up.`
                   : summary?.streakStatus === "BROKEN"
                     ? "The streak reset here. It starts again the next day you check in."
-                    : "No check-in was logged for this day."}
+                    : summary?.streakStatus === "PENDING"
+                      ? `${view.streakCount ?? 0} days and counting. Today still counts once you meet any one of the three criteria.`
+                      : "No check-in was logged for this day."}
             </p>
           </div>
         </>
