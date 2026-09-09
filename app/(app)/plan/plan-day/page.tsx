@@ -5,14 +5,14 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
+import { CustomSelect } from "@/components/ui/CustomSelect";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { ArrowLeftIcon, BellIcon, PlusIcon, XIcon } from "@/components/ui/icons";
-import { StarIcon, MinusIcon, PinIcon } from "@/assets/icons";
+import { PlusIcon, XIcon } from "@/components/ui/icons";
+import { StarIcon, MinusIcon, PinIcon, ArrowLeftIcon, BellIcon } from "@/assets/icons";
 import {
   getDayView,
   markNoStudyDay,
@@ -111,10 +111,10 @@ function PlanDayContent() {
         data.warning
           ? { tone: "warning", message: data.warning }
           : {
-              tone: "info",
-              message:
-                "Marked as a No-Study Day. No plan will generate, and your streak is protected without using a Streak Freeze.",
-            },
+            tone: "info",
+            message:
+              "Marked as a No-Study Day. No plan will generate, and your streak is protected without using a Streak Freeze.",
+          },
       );
     } catch {
       setNotice({ tone: "error", message: "Couldn't mark this day. Please try again." });
@@ -229,12 +229,12 @@ function PlanDayContent() {
           </Link>
           <h1 className="text-h1 text-ink">Plan this day</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
@@ -244,20 +244,20 @@ function PlanDayContent() {
 
       <p className="text-lg font-bold text-ink">{formatShortDayLabel(date)}</p>
 
-      <div className="relative overflow-hidden rounded-lg bg-surface py-6 pl-8 pr-6 shadow-sm">
-        <span className={`absolute left-0 top-0 h-full w-1 ${isNoStudy ? "bg-cta" : "bg-brand"}`} />
+      <div
+        className={`rounded-lg  bg-surface py-6 pl-7 pr-6 shadow-sm ${isNoStudy ? "border-cta" : "border-brand"}`}
+      >
         <p className="text-lg font-bold text-ink">{statusLine}</p>
       </div>
 
       {notice && (
         <p
-          className={`rounded-xl p-4 text-sm font-medium ${
-            notice.tone === "error"
+          className={`rounded-xl p-4 text-sm font-medium ${notice.tone === "error"
               ? "bg-danger-bg text-danger"
               : notice.tone === "warning"
                 ? "bg-warning-bg text-warning"
                 : "bg-tint text-ink"
-          }`}
+            }`}
           role="status"
           aria-live="polite"
         >
@@ -272,9 +272,8 @@ function PlanDayContent() {
         {/* No-Study Day                                                     */}
         {/* ---------------------------------------------------------------- */}
         <div
-          className={`rounded-2xl border-2 bg-surface p-8 ${
-            isNoStudy ? (isDark ? "border-white" : "border-brand") : "border-brand/10"
-          }`}
+          className={`rounded-2xl border-2 bg-surface p-8 ${isNoStudy ? (isDark ? "border-white" : "border-brand") : "border-brand/10"
+            }`}
         >
           <span className={ICON_BADGE_CLASSES}>
             <MinusIcon />
@@ -320,11 +319,10 @@ function PlanDayContent() {
                       key={reason}
                       type="button"
                       onClick={() => toggleReason(reason)}
-                      className={`inline-flex h-[26.5px] items-center justify-center rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                        selected
+                      className={`inline-flex h-[26.5px] items-center justify-center rounded-full border px-3 py-1 text-xs font-medium transition-colors ${selected
                           ? "border-[#1A1A4E] bg-[#1A1A4E] text-white dark:border-white dark:bg-white dark:text-[#1A1A4E]"
                           : "border-[#1A1A4E] bg-surface text-[#1A1A4E] hover:bg-tint-strong dark:border-white dark:text-white"
-                      }`}
+                        }`}
                     >
                       {reason}
                     </button>
@@ -349,9 +347,8 @@ function PlanDayContent() {
         {/* Mock Day                                                         */}
         {/* ---------------------------------------------------------------- */}
         <div
-          className={`rounded-2xl border-2 bg-surface p-8 ${
-            view.scheduledMock ? (isDark ? "border-white" : "border-brand") : "border-brand/10"
-          }`}
+          className={`rounded-2xl border-2 bg-surface p-8 ${view.scheduledMock ? (isDark ? "border-white" : "border-brand") : "border-brand/10"
+            }`}
         >
           <span className={ICON_BADGE_CLASSES}>
             <StarIcon />
@@ -393,11 +390,16 @@ function PlanDayContent() {
                 onChange={(event) => setMockName(event.target.value)}
               />
               <div className="grid grid-cols-2 gap-3">
-                <Select
+                <CustomSelect
                   label="Duration"
                   options={MOCK_DURATION_OPTIONS}
                   value={mockDuration}
-                  onChange={(event) => setMockDuration(event.target.value)}
+                  onChange={setMockDuration}
+                  placeholder="Select duration"
+                  // Steps down on mobile — this field shares a 2-column grid,
+                  // so the default 16px truncates on narrow screens.
+                  valueTextClassName="text-[14px] sm:text-[16px]"
+                  placeholderTextClassName="text-[12px] sm:text-[14px]"
                 />
                 <Input
                   label="Institute"
@@ -424,9 +426,8 @@ function PlanDayContent() {
         {/* Custom day — anchor tasks                                        */}
         {/* ---------------------------------------------------------------- */}
         <div
-          className={`rounded-2xl border-2 bg-surface p-8 ${
-            view.anchorTasks.length > 0 ? (isDark ? "border-white" : "border-brand") : "border-brand/10"
-          }`}
+          className={`rounded-2xl border-2 bg-surface p-8 ${view.anchorTasks.length > 0 ? (isDark ? "border-white" : "border-brand") : "border-brand/10"
+            }`}
         >
           <span className={ICON_BADGE_CLASSES}>
             <PinIcon />

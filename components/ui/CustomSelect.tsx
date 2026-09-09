@@ -15,6 +15,10 @@ type CustomSelectProps = {
   onChange: (value: string) => void;
   placeholder: string;
   labelClassName?: string;
+  /** Replaces the trigger's font-size class once a value is picked. */
+  valueTextClassName?: string;
+  /** Replaces the trigger's font-size class while the placeholder shows. */
+  placeholderTextClassName?: string;
 };
 
 export function CustomSelect({
@@ -24,6 +28,8 @@ export function CustomSelect({
   onChange,
   placeholder,
   labelClassName = "text-body-lg font-medium leading-none text-body-text dark:text-ink",
+  valueTextClassName = "text-[16px]",
+  placeholderTextClassName = "text-[14px]",
 }: CustomSelectProps) {
   const [isOpen, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -50,7 +56,7 @@ export function CustomSelect({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         onClick={() => setOpen((open) => !open)}
-        className={`flex h-12.25 min-w-0 w-full max-w-full items-center justify-between gap-2 rounded-xl border border-input-border bg-surface px-4 py-3 text-left font-['Plus_Jakarta_Sans'] outline-none transition-colors focus:border-input-border ${selectedLabel ? "text-[16px] font-medium text-ink" : "text-[14px] font-normal text-[#666666] dark:text-[#8B8998]"}`}
+        className={`flex h-12.25 min-w-0 w-full max-w-full items-center justify-between gap-2 rounded-xl border border-input-border bg-surface px-4 py-3 text-left font-['Plus_Jakarta_Sans'] outline-none transition-colors focus:border-input-border ${selectedLabel ? `${valueTextClassName} font-medium text-ink` : `${placeholderTextClassName} font-normal text-[#666666] dark:text-[#8B8998]`}`}
       >
         <span className="min-w-0 flex-1 truncate">{selectedLabel ?? placeholder}</span>
         <ChevronDownIcon className="h-6 w-3 shrink-0 text-muted" />
