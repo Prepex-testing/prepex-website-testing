@@ -15,6 +15,7 @@ import {
   type SuggestedWindow,
 } from "@/lib/api/planner";
 import { addBacklogTaskToPlan } from "@/lib/api/backlog";
+import { addAnchorTask } from "@/lib/api/calendar";
 import { getCheckInStatus } from "@/lib/api/checkin";
 import {
   getSubjectsChapters,
