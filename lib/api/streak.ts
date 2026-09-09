@@ -118,7 +118,7 @@ export type Leaderboard = {
 };
 
 /** Page sizes offered by the rows-per-page control. */
-export const LEADERBOARD_PAGE_SIZES = [10, 20, 50] as const;
+export const LEADERBOARD_PAGE_SIZES = [5, 10, 20, 50] as const;
 
 // -- Fetchers ---------------------------------------------------------------
 

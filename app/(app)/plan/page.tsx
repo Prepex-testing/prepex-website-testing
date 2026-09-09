@@ -8,7 +8,7 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { BellIcon, FlameIcon } from "@/assets/icons";
+import { BellIcon, FlameIcon, PinIcon } from "@/assets/icons";
 import {
   // BellIcon,
   CheckCircleIcon,
@@ -22,7 +22,9 @@ import {
   NoStudyIcon,
   CheckInIcon,
   ArrowLeftIcon,
-  PinIcon,
+  // PinIcon,
+  RecoveryIcon,
+  AlertTriangleIcon,
 } from "@/components/ui/icons";
 import {
   getMonthCalendar,
@@ -49,11 +51,11 @@ type VisualType =
 
 const VISUAL_ICON: Record<VisualType, ReactNode> = {
   complete: <CompleteIcon className="h-4 w-4 md:h-[18px] md:w-[18px]" />,
-  partial: <ClockIcon />,
+  partial: <AlertTriangleIcon />,
   missed: <MinusIcon />,
   mock: <StarIcon className="h-4 w-4 md:h-[12px] md:w-[12px] lg:h-5 lg:w-5" />,
-  recovery: <RefreshIcon />,
-  "bad-day": <RefreshIcon />,
+  recovery: <RecoveryIcon className="h-5 w-5 text-brand" />,
+  "bad-day": <RecoveryIcon className="h-5 w-5 text-brand" />,
   journal: <JournalIcon />,
   "no-study": <NoStudyIcon />,
   custom: <PinIcon />,
@@ -83,11 +85,6 @@ function visualTypeFor(day: CalendarDay): VisualType | null {
       return "bad-day";
     case "WIN_JOURNAL":
       return "journal";
-    // CUSTOM is deliberately not handled here. The backend reports it whenever
-    // a day has anchors and nothing else outranks them, which meant a finished
-    // day with a coaching class on it painted a pin and lost its tick. The
-    // anchor is now a separate corner marker, so the centre glyph is free to
-    // say how the day actually went.
     default:
       break;
   }
@@ -97,19 +94,10 @@ function visualTypeFor(day: CalendarDay): VisualType | null {
   return null;
 }
 
-/** A custom anchor is worth marking on any day, not only one where nothing
- *  else outranks it — so it rides alongside the primary glyph rather than
- *  replacing it. `primaryType` only reports CUSTOM when a day has anchors and
- *  no mock / no-study / recovery / journal, which hid it on most days. */
 function hasCustomAnchor(day: CalendarDay): boolean {
   return day.anchorCount > 0;
 }
 
-/**
- * Every tag a day carries. Filtering works on this rather than the single
- * primary glyph, so "Custom" matches a completed day that also has an anchor
- * instead of only the handful where the anchor happens to win precedence.
- */
 function visualTagsFor(day: CalendarDay): VisualType[] {
   const tags: VisualType[] = [];
   const primary = visualTypeFor(day);
@@ -129,7 +117,7 @@ const FILTERS: { label: string; visual: VisualType; icon: ReactNode }[] = [
     visual: "partial",
     icon: (
       <span className="flex h-4 w-4 items-center justify-center text-warning [&>svg]:h-full [&>svg]:w-full">
-        <ClockIcon />
+        <AlertTriangleIcon />
       </span>
     ),
   },
@@ -142,7 +130,7 @@ const FILTERS: { label: string; visual: VisualType; icon: ReactNode }[] = [
     label: "Recovery",
     visual: "recovery",
     // Sized and coloured to match the glyph this chip stands for in the grid.
-    icon: <RefreshIcon className="h-4 w-4 text-brand" />,
+    icon: <RecoveryIcon className="h-5 w-5 text-brand" />,
   },
   { label: "Journal", visual: "journal", icon: <JournalIcon /> },
   { label: "No Study", visual: "no-study", icon: <NoStudyIcon /> },

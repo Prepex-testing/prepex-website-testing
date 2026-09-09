@@ -34,7 +34,8 @@ export default function LeaderboardPage() {
 
   const [scope, setScope] = useState<LeaderboardScope>("global");
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  // 5 rows by default — "Rows per page" can widen it from there.
+  const [limit, setLimit] = useState(5);
   const [board, setBoard] = useState<Leaderboard | null>(null);
   const [error, setError] = useState<string | null>(null);
 
