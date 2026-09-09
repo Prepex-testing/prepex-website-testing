@@ -25,6 +25,7 @@ import {
   // PinIcon,
   RecoveryIcon,
   AlertTriangleIcon,
+  PlusIcon,
 } from "@/components/ui/icons";
 import {
   getMonthCalendar,
@@ -61,17 +62,26 @@ const VISUAL_ICON: Record<VisualType, ReactNode> = {
   custom: <PinIcon />,
 };
 
+// An empty `bg` means "no tint of its own" — the cell falls back to
+// CELL_NEUTRAL_BG below.
 const VISUAL_STYLE: Record<VisualType, { bg: string; icon: string }> = {
   complete: { bg: "bg-success/10", icon: "text-success" },
   partial: { bg: "bg-warning-bg", icon: "text-warning" },
-  missed: { bg: "bg-surface", icon: "text-muted" },
+  missed: { bg: "", icon: "text-muted" },
   mock: { bg: "bg-brand/10", icon: "text-brand" },
-  recovery: { bg: "bg-surface", icon: "text-brand" },
-  "bad-day": { bg: "bg-surface", icon: "text-brand" },
-  journal: { bg: "bg-surface", icon: "text-brand" },
-  "no-study": { bg: "bg-surface", icon: "text-cta" },
-  custom: { bg: "bg-surface", icon: "text-brand" },
+  recovery: { bg: "", icon: "text-brand" },
+  "bad-day": { bg: "", icon: "text-brand" },
+  journal: { bg: "", icon: "text-brand" },
+  "no-study": { bg: "", icon: "text-cta" },
+  custom: { bg: "", icon: "text-brand" },
 };
+
+// Calendar cell chrome (Figma). Today gets a 2px border; every other day a 1px
+// one, and box-sizing keeps the extra pixel from shifting the grid.
+const CELL_NEUTRAL_BG = "bg-white dark:bg-[#FAF7F214]";
+const CELL_BORDER = "border border-[#E2E8F0] dark:border-[#FAF7F214]";
+const CELL_TODAY =
+  "border-2 border-[#1A1A4E] bg-[#EEF0F8] dark:border-[#FAF7F2] dark:bg-[#FAF7F20F]";
 
 function visualTypeFor(day: CalendarDay): VisualType | null {
   switch (day.primaryType) {
@@ -339,42 +349,43 @@ export default function PlanPage() {
               </div>
             </div>
 
-            <div className="w-full rounded-2xl bg-surface p-6 shadow-sm">
-              {/* Month stats */}
-              <div className="flex w-full flex-wrap items-center gap-x-6 gap-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-cta">
-                    <FlameIcon className="h-4 w-4 md:h-[20px] md:w-[14px]" />
+            <div className="w-full rounded-2xl bg-surface p-4 shadow-sm sm:p-5 md:p-6">
+              {/* Month stats — a 2-column grid on phones so each stat keeps its
+                  own cell instead of wrapping mid-row and running together. */}
+              <div className="grid w-full grid-cols-2 gap-x-3 gap-y-2.5 sm:flex sm:flex-wrap sm:items-center sm:gap-x-4 md:gap-x-6">
+                <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+                  <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center text-cta [&>svg]:h-full [&>svg]:w-full sm:h-4 sm:w-4 md:h-[18px] md:w-[18px]">
+                    <FlameIcon />
                   </span>
-                  <span className="text-sm font-semibold text-ink">
+                  <span className="truncate text-[12px] font-semibold text-ink sm:text-[13px] md:text-sm">
                     {summary?.currentStreak ?? 0} Day Streak
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-success">
-                    <CheckCircleIcon className="h-4 w-4 md:h-[20px] md:w-[16px]" />
+                <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+                  <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center text-success [&>svg]:h-full [&>svg]:w-full sm:h-4 sm:w-4 md:h-[18px] md:w-[18px]">
+                    <CheckCircleIcon />
                   </span>
-                  <span className="text-sm font-semibold text-ink">
+                  <span className="truncate text-[12px] font-semibold text-ink sm:text-[13px] md:text-sm">
                     {summary?.completionRate ?? 0}% Completion
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-brand">
-                    <StarIcon className="h-4 w-4 md:h-[12px] md:w-[12px] lg:h-5 lg:w-5" />
+                <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+                  <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center text-brand [&>svg]:h-full [&>svg]:w-full sm:h-4 sm:w-4 md:h-[18px] md:w-[18px]">
+                    <StarIcon />
                   </span>
-                  <span className="text-sm font-semibold text-ink">
+                  <span className="truncate text-[12px] font-semibold text-ink sm:text-[13px] md:text-sm">
                     {summary?.mockCount ?? 0} Mock Tests
                   </span>
                 </div>
 
                 {summary && summary.noStudyUsed > 0 && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-cta">
+                  <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+                    <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center text-cta [&>svg]:h-full [&>svg]:w-full sm:h-4 sm:w-4 md:h-[18px] md:w-[18px]">
                       <NoStudyIcon />
                     </span>
-                    <span className="text-sm font-semibold text-ink">
+                    <span className="truncate text-[12px] font-semibold text-ink sm:text-[13px] md:text-sm">
                       {summary.noStudyUsed} of {summary.noStudyLimit} No-Study
                     </span>
                   </div>
@@ -382,7 +393,9 @@ export default function PlanPage() {
               </div>
 
               {/* Legend doubles as a filter */}
-              <div className="mt-6 flex flex-wrap gap-2">
+              {/* `shrink-0` on the label keeps each chip whole — without it a
+                  narrow row squeezes chips until their text collides. */}
+              <div className="mt-4 flex flex-wrap gap-1.5 sm:mt-5 sm:gap-2 md:mt-6">
                 {FILTERS.map((item) => {
                   const active = activeFilters.includes(item.visual);
                   return (
@@ -391,21 +404,28 @@ export default function PlanPage() {
                       type="button"
                       onClick={() => toggleFilter(item.visual)}
                       aria-pressed={active}
-                      className={`inline-flex h-[34px] items-center justify-center gap-2 rounded-full border px-4 py-[6px] text-[14px] font-medium leading-5 transition-colors ${active
+                      className={`inline-flex h-7 shrink-0 items-center justify-center gap-1 rounded-full border px-2.5 text-[11px] font-medium leading-none transition-colors sm:h-8 sm:gap-1.5 sm:px-3 sm:text-[12px] md:h-[34px] md:gap-2 md:px-4 md:text-[14px] ${active
                         ? "border-brand bg-tint-strong text-ink"
                         : `border-brand/15 bg-surface ${isDark ? "text-white" : "text-muted"} hover:bg-tint-strong`
                         }`}
                     >
-                      {item.icon}
-                      {item.label}
+                      {/* `[&>*]` covers both shapes in FILTERS — a bare icon and
+                          one already wrapped in a coloured span — so the glyphs
+                          come out the same size despite their mixed sources. */}
+                      <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center [&>*]:h-full [&>*]:w-full sm:h-4 sm:w-4">
+                        {item.icon}
+                      </span>
+                      <span className="whitespace-nowrap">{item.label}</span>
                     </button>
                   );
                 })}
               </div>
 
               {/* Calendar grid */}
-              <div className="mt-4 overflow-x-auto pb-1 sm:mt-6">
-                <div className="sm:min-w-[500px]">
+              {/* No `min-w` and no `overflow-x-auto`: the month always fits the
+                  viewport, so a phone never gets a horizontal scrollbar. */}
+              <div className="mt-4 pb-1 sm:mt-6">
+                <div className="w-full">
                   <div className="mb-2 grid grid-cols-7 gap-1 text-center sm:mb-3 sm:gap-2 md:gap-3">
                     {WEEKDAYS.map((day) => (
                       <span
@@ -453,54 +473,72 @@ export default function PlanPage() {
                             type="button"
                             onClick={() => openDay(day)}
                             aria-label={`${day.isFuture ? "Plan" : "View"} ${day.date}`}
-                            className={`block w-full text-left transition-opacity ${dimmed ? "opacity-30" : ""}`}
+                            className={`block h-full w-full text-left transition-opacity ${dimmed ? "opacity-30" : ""}`}
                           >
+                            {/* Two flow rows rather than absolute corners: the
+                                date/pin header takes its own height and the
+                                glyph stack centres in whatever is left, so a
+                                cell carrying both an icon and a score (a mock
+                                day) can never ride up into the date. */}
                             <div
-                              className={`relative min-h-[46px] w-full rounded-lg border p-1.5 transition-colors sm:min-h-[68px] sm:rounded-xl sm:p-2 md:min-h-[92px] md:p-3 xl:min-h-[104px] ${day.isToday
-                                ? "border-brand bg-tint-strong ring-1 ring-brand"
-                                : `border-brand/10 ${style?.bg ?? "bg-surface"} hover:border-brand/40`
+                              className={`flex h-full min-h-[46px] w-full flex-col rounded-lg p-1.5 transition-colors sm:min-h-[68px] sm:rounded-xl sm:p-2 md:min-h-[92px] md:p-2.5 xl:min-h-[104px] ${day.isToday
+                                ? CELL_TODAY
+                                : `${CELL_BORDER} ${style?.bg || CELL_NEUTRAL_BG} hover:border-brand/40`
                                 }`}
                             >
-                              <span className="absolute left-1.5 top-1.5 text-[10px] font-semibold leading-none text-ink sm:left-2 sm:top-2 sm:text-[11px] md:left-3 md:top-3 md:text-xs">
-                                {cell.date}
-                              </span>
-
-                              {/* The custom pin, not an anonymous dot — a day
-                                  with an anchor now reads as Custom against the
-                                  legend even when a mock or completion glyph
-                                  owns the centre of the cell. */}
-                              {showCustomMark && (
-                                <span
-                                  className="absolute right-1.5 top-1.5 flex h-2.5 w-2.5 items-center justify-center text-brand [&>svg]:h-full [&>svg]:w-full sm:right-2 sm:top-2 sm:h-3 sm:w-3 md:right-3 md:top-3 md:h-3.5 md:w-3.5"
-                                  title={`${day.anchorCount} custom anchor task${day.anchorCount === 1 ? "" : "s"}`}
-                                >
-                                  <PinIcon />
+                              <div className="flex w-full items-start justify-between gap-1">
+                                <span className="text-[9px] font-semibold leading-none text-ink sm:text-[10px] md:text-[11px]">
+                                  {cell.date}
                                 </span>
-                              )}
 
-                              {visual && (
-                                <div className="flex h-full flex-col items-center pt-3 sm:pt-3.5 md:pt-4">
-                                  {/* Sized on the wrapper: most of these icon
-                                      components take no props, so their own
-                                      dimensions can't be overridden directly. */}
+                                {/* The custom pin, not an anonymous dot — a day
+                                    with an anchor reads as Custom against the
+                                    legend even when a mock or completion glyph
+                                    owns the centre of the cell. */}
+                                {showCustomMark && (
                                   <span
-                                    className={`mb-0.5 flex h-3.5 w-3.5 items-center justify-center [&>svg]:h-full [&>svg]:w-full sm:mb-1 sm:h-4 sm:w-4 md:h-[18px] md:w-[18px] ${style?.icon ?? "text-ink"}`}
+                                    className="flex h-2.5 w-2.5 shrink-0 items-center justify-center text-brand [&>svg]:h-full [&>svg]:w-full sm:h-3 sm:w-3 md:h-3.5 md:w-3.5"
+                                    title={`${day.anchorCount} custom anchor task${day.anchorCount === 1 ? "" : "s"}`}
+                                  >
+                                    <PinIcon />
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Every glyph shares one 20x20 box (16/18 on
+                                  smaller screens) so the month reads evenly —
+                                  sized on the wrapper because most of these
+                                  icon components take no props of their own. */}
+                              <div className="flex flex-1 flex-col items-center justify-center">
+                                {visual ? (
+                                  <span
+                                    className={`flex h-4 w-4 items-center justify-center [&>svg]:h-full [&>svg]:w-full sm:h-[18px] sm:w-[18px] md:h-5 md:w-5 ${style?.icon ?? "text-ink"}`}
                                   >
                                     {VISUAL_ICON[visual]}
                                   </span>
+                                ) : day.isFuture ? (
+                                  // Nothing scheduled yet — the plus marks the
+                                  // day as a target to add to, since the whole
+                                  // cell is already the button that opens
+                                  // planning.
+                                  <span className="flex h-4 w-4 items-center justify-center text-muted sm:h-[18px] sm:w-[18px] md:h-5 md:w-5">
+                                    <span className="flex h-2.5 w-2.5 items-center justify-center [&>svg]:h-full [&>svg]:w-full sm:h-[11px] sm:w-[11px] md:h-3 md:w-3">
+                                      <PlusIcon />
+                                    </span>
+                                  </span>
+                                ) : null}
 
-                                  {day.mock?.hasResult && (
-                                    <>
-                                      <span className="text-[11px] font-extrabold leading-none text-ink sm:text-[14px] md:text-[18px]">
-                                        {day.mock.totalScore}
-                                      </span>
-                                      <span className="mt-0.5 hidden text-[8px] font-medium uppercase tracking-[0.08em] text-muted sm:inline sm:text-[9px] md:text-[10px]">
-                                        MARKS
-                                      </span>
-                                    </>
-                                  )}
-                                </div>
-                              )}
+                                {day.mock?.hasResult && (
+                                  <>
+                                    <span className="mt-0.5 text-[10px] font-extrabold leading-none text-ink sm:text-[12px] md:text-[15px]">
+                                      {day.mock.totalScore}
+                                    </span>
+                                    <span className="mt-0.5 hidden text-[8px] font-medium uppercase leading-none tracking-[0.08em] text-muted sm:inline sm:text-[9px] md:text-[10px]">
+                                      MARKS
+                                    </span>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </button>
                         );
