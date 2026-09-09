@@ -185,12 +185,12 @@ export default function LeaderboardPage() {
           ) : (
             <div className="overflow-x-auto">
               {/*
-                PRD 10.5.3: display name, aggregate score and streak only. The
-                metrics that feed the score — focus minutes, completion, tasks
-                done, practice accuracy — are deliberately absent, as are real
-                names and any mock score.
+                Real names and mock scores never appear here (PRD 10.5.3).
+                Focus (hrs) is shown by explicit product decision: it is
+                lifetime hours on NEW_LEARNING tasks, a different figure from
+                the today's-plan focus minutes that feed the Effort Score.
               */}
-              <table className="w-full min-w-[520px] border-collapse text-left">
+              <table className="w-full min-w-[620px] border-collapse text-left">
                 <thead>
                   <tr
                     className={`text-[10px] font-medium uppercase tracking-[0.6px] ${
@@ -200,6 +200,7 @@ export default function LeaderboardPage() {
                     <th className="py-3 pl-4 sm:pl-6">Rank</th>
                     <th className="py-3 pl-8">Student</th>
                     <th className="py-3 pl-8">Streak</th>
+                    <th className="py-3 pl-8">Focus (hrs)</th>
                     <th className="py-3 pl-8 pr-4 sm:pr-6">Effort Score</th>
                   </tr>
                 </thead>
@@ -253,6 +254,9 @@ export default function LeaderboardPage() {
                           <FlameIcon />
                           {entry.streak}d
                         </span>
+                      </td>
+                      <td className="py-4 pl-8 text-base font-medium text-body-text">
+                        {entry.focusHours}
                       </td>
                       <td className="py-4 pl-8 pr-4 sm:pr-6">
                         <p className="text-base font-bold leading-6 text-ink">{entry.effortScore}</p>

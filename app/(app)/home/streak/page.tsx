@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
@@ -12,17 +12,37 @@ import {
   CheckIcon,
   XIcon,
   CheckCircleIcon,
+  BookIcon,
 } from "@/components/ui/icons";
 import { FlameIcon, ClockIcon, StarIcon, ShieldIcon, BoltIcon, BellIcon } from "@/assets/icons";
 import {
   getStreakInfo,
   getStreakCalendar,
-  formatFocus,
   monthLabel,
   type StreakInfo,
   type StreakCalendar,
   type StreakDayStatus,
 } from "@/lib/api/streak";
+
+/**
+ * One icon per Effort Score component. Sized on a wrapper rather than by prop:
+ * several of these icon components accept no props at all, so their own
+ * dimensions can't be overridden directly.
+ */
+function effortIcon(node: ReactNode): ReactNode {
+  return (
+    <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center [&>svg]:h-full [&>svg]:w-full">
+      {node}
+    </span>
+  );
+}
+
+const EFFORT_ICONS: Record<string, ReactNode> = {
+  STUDY_TIME: effortIcon(<ClockIcon />),
+  PRACTICE: effortIcon(<BoltIcon />),
+  ACCURACY: effortIcon(<CheckCircleIcon />),
+  REVISION: effortIcon(<BookIcon />),
+};
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -119,7 +139,7 @@ export default function StreakPage() {
     );
   }
 
-  const { today } = info;
+  const effort = info.effortScore;
 
   const statCards = [
     {
@@ -162,34 +182,6 @@ export default function StreakPage() {
       caption: info.nextMilestone
         ? `${info.daysToNextMilestone} more ${info.daysToNextMilestone === 1 ? "day" : "days"} to ${info.nextMilestone.label}`
         : "Every milestone reached",
-    },
-  ];
-
-  // The three locked criteria (PRD 10.2.1), any one of which carries the day.
-  const criteria = [
-    {
-      icon: <ClockIcon className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />,
-      label: "Focus time",
-      met: today.meetsFocus,
-      valueLabel: formatFocus(today.focusSeconds),
-      targetLabel: formatFocus(today.thresholds.focusSeconds),
-      percent: Math.min(100, (today.focusSeconds / today.thresholds.focusSeconds) * 100),
-    },
-    {
-      icon: <CheckCircleIcon className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />,
-      label: "Tasks completed",
-      met: today.meetsTasks,
-      valueLabel: `${today.taskCompletionPct}%`,
-      targetLabel: `${today.thresholds.taskCompletionPct}%`,
-      percent: Math.min(100, (today.taskCompletionPct / today.thresholds.taskCompletionPct) * 100),
-    },
-    {
-      icon: <BoltIcon className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />,
-      label: "Questions answered",
-      met: today.meetsPractice,
-      valueLabel: String(today.answeredQuestions),
-      targetLabel: String(today.thresholds.answeredQuestions),
-      percent: Math.min(100, (today.answeredQuestions / today.thresholds.answeredQuestions) * 100),
     },
   ];
 
@@ -385,53 +377,57 @@ export default function StreakPage() {
           </div>
         </div>
 
-        {/* Today's qualification */}
+        {/* Effort Score (Today) */}
         <div className="flex flex-col gap-5 rounded-[20px] border border-brand/10 bg-surface p-5 shadow-[0px_1px_2px_0px_#0000000D] sm:gap-8 sm:rounded-[24px] sm:p-8 lg:col-span-5">
-          <div>
-            <p className="text-[16px] font-extrabold leading-[24px] text-ink sm:text-[18px] sm:leading-[28px]">
-              Today&apos;s Streak{" "}
-              <span className="text-[13px] font-semibold text-muted sm:text-[14px]">
-                (any one counts)
-              </span>
-            </p>
-            <p className="mt-1 text-xs text-muted">
-              {info.noStudyProtectedToday
-                ? "Marked as a No-Study Day — your streak is protected."
-                : today.qualifies
-                  ? "Today counts. Nothing more needed."
-                  : "Meet any one of these and today counts."}
-            </p>
-          </div>
+          <p className="text-[16px] font-extrabold leading-[24px] text-ink sm:text-[18px] sm:leading-[28px]">
+            Effort Score{" "}
+            <span className="text-[13px] font-semibold text-muted sm:text-[14px]">(Today)</span>
+          </p>
 
-          <div className="flex flex-1 flex-col gap-4">
-            {criteria.map((c) => (
-              <div key={c.label} className="flex flex-col gap-2">
-                <div className="flex items-center justify-between gap-2 text-xs">
-                  <span className="flex min-w-0 items-center gap-1.5 font-semibold text-ink">
-                    {c.icon}
-                    <span className="truncate">{c.label}</span>
-                    {c.met && <CheckIcon />}
-                  </span>
-                  <span className="shrink-0 whitespace-nowrap text-muted">
-                    {c.valueLabel} / {c.targetLabel}
-                  </span>
+          <div className="flex flex-col gap-5 sm:flex-row sm:gap-10">
+            {/* Score + band */}
+            <div className="flex min-w-[64px] flex-row items-center justify-start gap-2 text-center sm:flex-col sm:justify-center sm:gap-1">
+              <span className="text-[30px] font-extrabold leading-[36px] text-ink sm:text-[36px] sm:leading-[40px]">
+                {effort.total}
+              </span>
+              <span className="px-1 text-[11px] font-semibold text-muted sm:text-[10px]">
+                {effort.band}
+              </span>
+            </div>
+
+            {/* Components */}
+            <div className="flex flex-1 flex-col gap-3 sm:gap-4">
+              {effort.components.map((c) => (
+                <div key={c.key} className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between gap-2 text-xs">
+                    <span className="flex min-w-0 items-center gap-1.5 font-semibold text-ink">
+                      {EFFORT_ICONS[c.key]}
+                      <span className="truncate">{c.label}</span>
+                    </span>
+                    <span className="shrink-0 whitespace-nowrap text-muted">
+                      {c.earned} / {c.max}
+                    </span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-tint-strong">
+                    <div
+                      className={`h-1.5 rounded-full ${isDark ? "bg-white" : "bg-brand"}`}
+                      style={{ width: `${c.max > 0 ? (c.earned / c.max) * 100 : 0}%` }}
+                    />
+                  </div>
+                  {/* What the points were measured against, so the bar is
+                      readable rather than an unexplained fraction. */}
+                  <p className="text-[10px] leading-3 text-muted">
+                    {c.target > 0
+                      ? `${c.actual}${c.unit === "%" ? "%" : ` ${c.unit}`} of ${c.target}${c.unit === "%" ? "%" : ` ${c.unit}`}`
+                      : `Nothing of this kind planned today`}
+                  </p>
                 </div>
-                <div className="h-1.5 rounded-full bg-tint-strong">
-                  <div
-                    className={`h-1.5 rounded-full ${
-                      c.met ? "bg-success" : isDark ? "bg-white" : "bg-brand"
-                    }`}
-                    style={{ width: `${c.percent}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           <div className="rounded-xl bg-tint-strong p-3 text-xs leading-5 text-muted">
-            {info.streakFreezeAvailable
-              ? "A Streak Freeze is ready if today falls short — it applies on its own."
-              : "Focus time counts only while Prepex is in the foreground."}
+            {effort.hint}
           </div>
         </div>
       </div>

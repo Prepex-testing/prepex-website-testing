@@ -40,6 +40,33 @@ export type StreakInfo = {
     };
   };
 
+  /**
+   * Today's Effort Score panel — four weighted components that sum to `total`
+   * out of `max`.
+   *
+   * Distinct from the leaderboard's PRD 10.5.1 Effort Score, which is an
+   * unbounded all-up figure. This one scores a single day so the bars have
+   * something to fill against.
+   */
+  effortScore: {
+    total: number;
+    max: number;
+    /** Plain-language band, e.g. "Good Effort". */
+    band: string;
+    components: {
+      key: "STUDY_TIME" | "PRACTICE" | "ACCURACY" | "REVISION";
+      label: string;
+      /** What the student did, in `unit`. */
+      actual: number;
+      /** What today asked of them. 0 = nothing of this kind was planned. */
+      target: number;
+      unit: string;
+      earned: number;
+      max: number;
+    }[];
+    hint: string;
+  };
+
   milestone: Milestone | null;
   nextMilestone: Milestone | null;
   daysToNextMilestone: number | null;
@@ -86,6 +113,8 @@ export type LeaderboardEntry = {
   rank: number;
   displayName: string;
   streak: number;
+  /** Lifetime hours banked on NEW_LEARNING tasks. */
+  focusHours: number;
   effortScore: number;
   isFoundingMember: boolean;
   isMe: boolean;
