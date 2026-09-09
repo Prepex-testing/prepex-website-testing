@@ -312,6 +312,14 @@ export function GraduationCapIcon() {
 export function RefreshIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
+      // An intrinsic size so the icon is still visible when rendered bare, the
+      // way JournalIcon and NoStudyIcon already are. Without it the SVG has no
+      // width of its own and collapses inside an auto-width flex parent — which
+      // is why it showed in the calendar grid (a fixed-size wrapper) but not on
+      // the Recovery filter chip. Any className sizing still wins, since CSS
+      // beats presentation attributes, and {...props} can override outright.
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
