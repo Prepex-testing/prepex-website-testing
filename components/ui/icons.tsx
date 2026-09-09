@@ -1064,21 +1064,6 @@ export function ShieldIcon() {
   );
 }
 
-export function PinIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path
-        d="M8 1.5a3.5 3.5 0 0 1 3.5 3.5c0 2.5-3.5 6.5-3.5 6.5S4.5 7.5 4.5 5A3.5 3.5 0 0 1 8 1.5Z"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinejoin="round"
-      />
-      <circle cx="8" cy="5" r="1.3" fill="currentColor" />
-      <path d="M6 14.5h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 export function AtomIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -1264,15 +1249,26 @@ export function MockIcon() {
   );
 }
 
-export function RecoveryIcon() {
+
+
+interface RecoveryIconProps extends SVGProps<SVGSVGElement> {
+  size?: number;
+}
+
+export function RecoveryIcon({
+  size = 18,
+  className,
+  ...props
+}: RecoveryIconProps) {
   return (
     <svg
-      width="18"
-      height="18"
+      width={size}
+      height={size}
       viewBox="0 0 18 18"
       fill="none"
       aria-hidden="true"
-      className="text-[#1A1A4E] dark:text-white"
+      className={`text-[#1A1A4E] dark:text-white ${className ?? ""}`}
+      {...props}
     >
       <path
         d="M9 14.5c-2.8-1.8-5.5-4.2-5.5-7.2A3 3 0 0 1 9 5a3 3 0 0 1 5.5 2.3c0 3-2.7 5.4-5.5 7.2Z"
