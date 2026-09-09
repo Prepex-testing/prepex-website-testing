@@ -158,6 +158,12 @@ export type DayView = {
   energyTrend: EnergyTrendPoint[];
   // Past / today
   summary: DaySummary | null;
+  /**
+   * The day's evaluated streak. Lives here rather than only on `checkin`
+   * because a day can be earned with no check-in at all; null means the
+   * day-boundary job hasn't judged this day yet.
+   */
+  streakCount: number | null;
   checkin: DayCheckin | null;
   plan: { id: string; plannerMode: string | null; aiSummary: string | null; tasks: PlannerTask[] } | null;
   // Future only

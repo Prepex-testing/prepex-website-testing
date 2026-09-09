@@ -67,6 +67,12 @@ export type TaskQuestionsResponse = {
   attemptedQuestions: number;
   /** Seconds already banked against this session — seeds a resumed timer. */
   elapsedSeconds: number;
+  /**
+   * Ceiling the timer stops at, after which the session auto-completes — twice
+   * the task's estimate. Null when the session has no plan task behind it
+   * (Mistake Review, custom practice), which credits no time and so has no cap.
+   */
+  maxElapsedSeconds: number | null;
   questions: PracticeSessionQuestion[];
 };
 

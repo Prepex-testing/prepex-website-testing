@@ -192,11 +192,23 @@ function PracticeModeContent() {
   }, [taskIdParam, sessionIdParam, router]);
 
   // ---- continuous timer (PRD 121) --------------------------------------------
+  // Stops dead at the session's ceiling (twice the task's estimate) rather than
+  // running forever in an abandoned tab — the effect below then completes the
+  // session. The server clamps to the same ceiling, so a client that ignores
+  // this cannot bank more anyway.
+  const maxElapsed = data?.maxElapsedSeconds ?? null;
+
   useEffect(() => {
     if (!data) return;
-    const timer = setInterval(() => setElapsed((v) => v + 1), 1000);
+    // One stable interval for the life of the session — keeping `elapsed` out
+    // of the deps stops the tick from being torn down and rebuilt each second,
+    // which would drift. Past the ceiling it settles on the ceiling, and React
+    // bails out of the identical state so it stops re-rendering too.
+    const timer = setInterval(() => {
+      setElapsed((v) => (maxElapsed !== null && v >= maxElapsed ? maxElapsed : v + 1));
+    }, 1000);
     return () => clearInterval(timer);
-  }, [data]);
+  }, [data, maxElapsed]);
 
   // Mirror the running timer to the server on a slow cadence. This is what
   // makes a resumed session continue rather than restart, and what puts
@@ -293,6 +305,17 @@ function PracticeModeContent() {
     }
     router.push(`/practice/complete?sessionId=${data.sessionId}`);
   }, [data, finishing, router]);
+
+  // Reaching the ceiling ends the session on the spot: the timer has stopped,
+  // so leaving it open would only bank time that no longer counts. Guarded by a
+  // ref so the completion fires exactly once.
+  const autoCompletedRef = useRef(false);
+  useEffect(() => {
+    if (!data || maxElapsed === null || autoCompletedRef.current) return;
+    if (elapsed < maxElapsed) return;
+    autoCompletedRef.current = true;
+    void finish();
+  }, [data, elapsed, maxElapsed, finish]);
 
   // Leave without completing — the session stays IN_PROGRESS and can be
   // resumed later. Answers already submitted are kept.
