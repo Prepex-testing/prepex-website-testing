@@ -12,7 +12,7 @@ import { TimeBlockSection } from "@/components/home/TimeBlockSection";
 import { PlanTaskRow, toRowDifficulty } from "@/components/home/PlanTaskRow";
 import type { PlanTask } from "@/components/home/PlanTaskRow";
 import type { TaskType } from "@/components/home/TaskRow";
-import { withResumeLabel } from "@/components/home/taskTypes";
+import { withPracticeProgressLabel, withResumeLabel } from "@/components/home/taskTypes";
 import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
@@ -87,7 +87,7 @@ function toPlanTask(task: PlannerTask): PlanTask {
     actionLabel: task.taskType === "WELLNESS"
       ? "Wellness"
       : task.taskType === "PRACTICE" && task.questionCount
-        ? `Start Practice`
+        ? withPracticeProgressLabel("Start Practice", task.secondsCompleted, task.status)
         : withResumeLabel(TASK_ACTION_LABEL[task.taskType] ?? "Start Session", task.status),
     isCompleted: task.status === "COMPLETED",
     isCustom: Boolean(task.isAnchor),
