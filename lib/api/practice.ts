@@ -88,10 +88,16 @@ export function getSessionQuestions(sessionId: string) {
  * with several tags appears in each tag's session until it is answered
  * correctly in any of them, at which point it graduates out of the notebook.
  */
-export function startMistakeSession(chapterId: string, tag?: MistakeTag) {
+/** Plays one notebook group: a `tag` selects that pattern across the chapter,
+ * and no tag selects the chapter's still-untagged mistakes — the two groupings
+ * the notebook lists. */
+export function startMistakeSession(chapterId: string, tag?: MistakeTag | null) {
   return authRequest<{ success: true; data: TaskQuestionsResponse }>(
     `/mistakes/session`,
-    { method: "POST", body: JSON.stringify(tag ? { chapterId, tag } : { chapterId }) },
+    {
+      method: "POST",
+      body: JSON.stringify({ chapterId, ...(tag ? { tag } : { untagged: true }) }),
+    },
   );
 }
 
@@ -232,12 +238,16 @@ export function listMistakes(
 
 export type DueMistakeBucket = "today" | "overdue";
 
+/** A mistake tag, or the pseudo-tag for entries that have none yet. */
+export type MistakeTagFilter = MistakeTag | "UNTAGGED";
+
 export type DueMistakeGroup = {
   key: string;
   chapterId: string;
   chapterName: string;
   subjectName: string;
-  tag: MistakeTag;
+  /** null on the untagged group — one per chapter, spanning every topic. */
+  tag: MistakeTag | null;
   count: number;
   topics: string[];
   oldestDue: string;
@@ -257,7 +267,7 @@ export function listDueMistakeGroups(params: {
   bucket: DueMistakeBucket;
   page?: number;
   limit?: number;
-  tag?: MistakeTag;
+  tag?: MistakeTagFilter;
   subjectId?: number;
 }) {
   const q = new URLSearchParams();

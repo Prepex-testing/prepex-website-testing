@@ -179,7 +179,21 @@ export type AddPlannerTaskInput = {
   subjectId?: number;
   description?: string;
   suggestedWindow?: SuggestedWindow;
+  /** PRACTICE/DPP only — narrows which questions get drawn for the task.
+   * Each is optional; omitting one applies no filter on that dimension, and
+   * questionCount is a ceiling (fewer matching questions => fewer drawn). */
+  difficulty?: QuestionDifficulty[];
+  source?: QuestionSource[];
+  questionCount?: number;
 };
+
+export type QuestionDifficulty = "EASY" | "MEDIUM" | "HARD" | "VERY_HARD";
+
+export type QuestionSource =
+  | "CURATED_PREPEX"
+  | "JEE_MAIN_PYQ"
+  | "JEE_ADVANCED_PYQ"
+  | "OWN_GENERATED";
 
 export function addPlannerTask(input: AddPlannerTaskInput) {
   return authRequest<{ success: true; data: unknown }>("/addtask", {

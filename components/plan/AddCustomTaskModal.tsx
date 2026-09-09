@@ -7,8 +7,13 @@ import { WhiteModal } from "@/components/ui/WhiteModal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 import { EditIcon, MinusIcon, PencilIcon, PlusIcon, XIcon } from "@/components/ui/icons";
-import { addPlannerTask, editPlannerTask, type SuggestedWindow } from "@/lib/api/planner";
-import { addAnchorTask } from "@/lib/api/calendar";
+import {
+  addPlannerTask,
+  editPlannerTask,
+  type QuestionDifficulty,
+  type QuestionSource,
+  type SuggestedWindow,
+} from "@/lib/api/planner";
 import { addBacklogTaskToPlan } from "@/lib/api/backlog";
 import { getCheckInStatus } from "@/lib/api/checkin";
 import {
@@ -60,6 +65,26 @@ const SUGGESTED_WINDOW_VALUES: Record<string, SuggestedWindow> = {
 const DURATION_STEP_MINUTES = 5;
 const MIN_DURATION_MINUTES = 5;
 const MAX_DURATION_MINUTES = 1400;
+
+// Practice-only question filters. All three are optional — whatever the
+// student leaves untouched is simply not sent, and the API applies no filter
+// on that dimension.
+const DIFFICULTY_OPTIONS: { value: QuestionDifficulty; label: string }[] = [
+  { value: "EASY", label: "Easy" },
+  { value: "MEDIUM", label: "Medium" },
+  { value: "HARD", label: "Hard" },
+  { value: "VERY_HARD", label: "Very Hard" },
+];
+
+const SOURCE_OPTIONS: { value: QuestionSource; label: string }[] = [
+  { value: "CURATED_PREPEX", label: "Prepex Curated" },
+  { value: "JEE_MAIN_PYQ", label: "JEE Main PYQ" },
+  { value: "JEE_ADVANCED_PYQ", label: "JEE Advanced PYQ" },
+  { value: "OWN_GENERATED", label: "Own Generated" },
+];
+
+// Mirrors the API's own ceiling (addManualTaskSchema.questionCount).
+const MAX_PRACTICE_QUESTION_COUNT = 50;
 
 const TIME_PREFERENCE_OPTIONS = [
   { value: "morning", label: "Morning (5-11 AM)" },
@@ -127,6 +152,49 @@ function StaticField({ label, value }: { label: string; value: string }) {
   );
 }
 
+/** Multi-select pill row, styled to match the Task Type picker. Selecting
+ * nothing is a valid state — it means "don't filter on this". */
+function FilterPills<T extends string>({
+  label,
+  options,
+  selected,
+  onToggle,
+}: {
+  label: string;
+  options: { value: T; label: string }[];
+  selected: T[];
+  onToggle: (value: T) => void;
+}) {
+  return (
+    <div className="w-full">
+      <p className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">
+        {label} <span className="font-normal text-muted">(optional)</span>
+      </p>
+
+      <div className="mt-1.5 flex w-full flex-wrap gap-2">
+        {options.map((option) => {
+          const isSelected = selected.includes(option.value);
+
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => onToggle(option.value)}
+              aria-pressed={isSelected}
+              className={`rounded-full border px-3 py-1.5 text-xs font-semibold leading-5 transition-colors sm:px-4 sm:py-2 sm:text-sm ${isSelected
+                ? "border-task-type-bg bg-task-type-bg text-task-type-selected-text shadow-task-type"
+                : "border-task-type-border bg-transparent text-task-type-text hover:bg-tint-strong"
+                }`}
+            >
+              {option.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function AddCustomTaskModal({
   open,
   onClose,
@@ -150,6 +218,9 @@ export function AddCustomTaskModal({
     initialValues?.timePreferenceValue ?? "",
   );
   const [notes, setNotes] = useState(initialValues?.notes ?? "");
+  const [difficulties, setDifficulties] = useState<QuestionDifficulty[]>([]);
+  const [sources, setSources] = useState<QuestionSource[]>([]);
+  const [questionCount, setQuestionCount] = useState("");
   const [subjects, setSubjects] = useState<SubjectWithChapters[]>([]);
   const [subjectId, setSubjectId] = useState<number | null>(null);
   const [chapterId, setChapterId] = useState("");
@@ -175,6 +246,9 @@ export function AddCustomTaskModal({
     setDurationValue(initialValues?.durationValue ?? "30");
     setTimePreferenceValue(initialValues?.timePreferenceValue ?? "");
     setNotes(initialValues?.notes ?? "");
+    setDifficulties([]);
+    setSources([]);
+    setQuestionCount("");
     // Clear the pickers too, or a fresh "Add Task" opens pre-filled with the
     // previously created task's subject/topic. The loader effect below
     // re-derives these from initialValues when a caller provides them.
@@ -224,6 +298,28 @@ export function AddCustomTaskModal({
     loadSubjectsChapters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, isLocked]);
+
+  // Question filters only apply to a task whose questions are drawn fresh from
+  // the bank — i.e. a new PRACTICE/DPP task. Editing a task or scheduling a
+  // backlog item never re-picks questions, so they'd be inert there.
+  const showPracticeFilters = mode === "add" && TASK_TYPE_API_VALUES[taskType] === "PRACTICE";
+
+  function toggleIn<T>(setter: (update: (current: T[]) => T[]) => void, value: T) {
+    setter((current) =>
+      current.includes(value) ? current.filter((item) => item !== value) : [...current, value],
+    );
+  }
+
+  // Empty is the meaningful default here — it means "no cap", so the task gets
+  // as many matching questions as the chapter actually has. 0 and anything
+  // past the API's own ceiling are never valid counts, so they can't be typed.
+  const handleQuestionCountChange = (raw: string) => {
+    const digits = raw.replace(/\D/g, "");
+    const parsed = Number(digits);
+    setQuestionCount(
+      digits === "" || parsed < 1 ? "" : String(Math.min(MAX_PRACTICE_QUESTION_COUNT, parsed)),
+    );
+  };
 
   const chapters = subjects.find((subject) => subject.id === subjectId)?.chapters ?? [];
 
@@ -369,6 +465,11 @@ export function AddCustomTaskModal({
         suggestedWindow: SUGGESTED_WINDOW_VALUES[timePreferenceValue],
         subjectId: subjectId ?? undefined,
         chapterId: chapterId || undefined,
+        ...(showPracticeFilters && {
+          ...(difficulties.length > 0 && { difficulty: difficulties }),
+          ...(sources.length > 0 && { source: sources }),
+          ...(questionCount && { questionCount: Number(questionCount) }),
+        }),
       });
       onTaskAdded?.();
       setTaskName("");
@@ -509,6 +610,50 @@ export function AddCustomTaskModal({
                 </div>
               </div>
             )
+          )}
+
+          {/* Practice question filters */}
+          {showPracticeFilters && (
+            <div className="flex w-full flex-col gap-4 rounded-xl border border-input-border bg-surface p-3 sm:p-4">
+              <p className="text-body-lg font-semibold leading-5 text-ink">
+                Question Filters
+              </p>
+
+              <FilterPills
+                label="Difficulty"
+                options={DIFFICULTY_OPTIONS}
+                selected={difficulties}
+                onToggle={(value) => toggleIn(setDifficulties, value)}
+              />
+
+              <FilterPills
+                label="Source"
+                options={SOURCE_OPTIONS}
+                selected={sources}
+                onToggle={(value) => toggleIn(setSources, value)}
+              />
+
+              <div className="flex w-full flex-col gap-1">
+                <label
+                  htmlFor="practice-question-count"
+                  className="text-body-lg font-medium leading-5 text-body-text dark:text-ink"
+                >
+                  Number of Questions <span className="font-normal text-muted">(optional)</span>
+                </label>
+
+                <input
+                  id="practice-question-count"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={MAX_PRACTICE_QUESTION_COUNT}
+                  placeholder="10"
+                  value={questionCount}
+                  onChange={(event) => handleQuestionCountChange(event.target.value)}
+                  className="mt-1 h-11.75 w-full rounded-xl border border-input-border bg-surface px-4 font-['Plus_Jakarta_Sans'] text-[14px] font-medium leading-[14px] text-ink outline-none [appearance:textfield] placeholder:text-[14px] placeholder:font-normal placeholder:leading-5 placeholder:text-[#666666] dark:placeholder:text-[#8B8998] focus:border-input-border sm:text-[16px] sm:leading-[16px] sm:placeholder:text-[16px] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                />
+              </div>
+            </div>
           )}
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
