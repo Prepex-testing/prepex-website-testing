@@ -16,10 +16,14 @@ import {
   optionEntries,
   prettyDifficulty,
   submitPracticeAnswer,
+  updatePracticeSessionProgress,
   type PracticeSessionQuestion,
   type TaskQuestionsResponse,
 } from "@/lib/api/practice";
 import { BellIcon } from "@/assets/icons";
+
+/** How often the running timer is checkpointed to the server. */
+const PROGRESS_CHECKPOINT_MS = 15_000;
 
 function formatTime(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60);
@@ -167,6 +171,10 @@ function PracticeModeContent() {
               .map((q) => [q.practiceSessionQuestionId, q.studentAnswer as string]),
           ),
         );
+        // Resume the timer where the last visit left it. Without this a
+        // session that was exited and reopened restarts from 00:00 even though
+        // its answers and marks carry over.
+        setElapsed(res.data.elapsedSeconds ?? 0);
         setData(res.data);
         setAllQuestions(withQuestion);
         setQueue(playable);
@@ -188,6 +196,29 @@ function PracticeModeContent() {
     if (!data) return;
     const timer = setInterval(() => setElapsed((v) => v + 1), 1000);
     return () => clearInterval(timer);
+  }, [data]);
+
+  // Mirror the running timer to the server on a slow cadence. This is what
+  // makes a resumed session continue rather than restart, and what puts
+  // practice time on the plan before the session is finished — so a crash or a
+  // closed tab loses at most one checkpoint's worth instead of the whole
+  // session. Reads elapsed through a ref so the interval isn't torn down and
+  // rebuilt every tick.
+  const elapsedRef = useRef(0);
+  useEffect(() => {
+    elapsedRef.current = elapsed;
+  }, [elapsed]);
+
+  useEffect(() => {
+    if (!data) return;
+    const sessionId = data.sessionId;
+    const checkpoint = setInterval(() => {
+      if (resolvedRef.current) return;
+      updatePracticeSessionProgress(sessionId, elapsedRef.current).catch(() => {
+        // Best-effort — the next checkpoint (or completion) carries the total.
+      });
+    }, PROGRESS_CHECKPOINT_MS);
+    return () => clearInterval(checkpoint);
   }, [data]);
 
   // ---- leave-guard: intercept nav clicks + browser back while a session is
@@ -256,7 +287,7 @@ function PracticeModeContent() {
     resolvedRef.current = true;
     setFinishing(true);
     try {
-      await completePracticeSession(data.sessionId);
+      await completePracticeSession(data.sessionId, elapsedRef.current);
     } catch {
       // Non-fatal — the analysis screen will surface the real state.
     }
@@ -269,8 +300,16 @@ function PracticeModeContent() {
     resolvedRef.current = true;
     setExiting(true);
     setConfirmEndOpen(false);
+    // Bank the timer before leaving so reopening picks up from here, not from
+    // the last periodic checkpoint. Not awaited — the request outlives this
+    // navigation and the student shouldn't wait on it.
+    if (data) {
+      updatePracticeSessionProgress(data.sessionId, elapsedRef.current).catch(() => {
+        // Best-effort — the last checkpoint still stands.
+      });
+    }
     router.push(pendingHref ?? "/practice/sessions");
-  }, [pendingHref, router]);
+  }, [data, pendingHref, router]);
 
   const handleContinueSession = useCallback(() => {
     setConfirmEndOpen(false);
