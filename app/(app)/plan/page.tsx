@@ -683,7 +683,9 @@ function PastPanel({ view, isDark }: { view: DayView | null; isDark: boolean }) 
                   ? "Maintained"
                   : summary.streakStatus === "BROKEN"
                     ? "Reset"
-                    : "—"
+                    : summary.streakStatus === "PENDING"
+                      ? "In progress"
+                      : "—"
             }
             isDark={isDark}
           />
