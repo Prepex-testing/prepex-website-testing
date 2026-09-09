@@ -8,9 +8,9 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { FlameIcon } from "@/assets/icons";
+import { BellIcon, FlameIcon } from "@/assets/icons";
 import {
-  BellIcon,
+  // BellIcon,
   CheckCircleIcon,
   StarIcon,
   RefreshIcon,
@@ -266,19 +266,19 @@ export default function PlanPage() {
         <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
           <div className="flex flex-col gap-3">
             {/* Month header */}
-            <div className="w-full rounded-2xl bg-surface p-6 shadow-sm">
-              <div className="flex w-full flex-col flex-wrap gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-col justify-between">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h2 className="text-2xl font-bold leading-none tracking-normal text-ink sm:text-[28px]">
+            <div className="w-full rounded-2xl bg-surface p-4 shadow-sm sm:p-5 md:p-6">
+              <div className="flex w-full flex-col gap-3">
+                <div className="flex w-full flex-col">
+                  <div className="flex w-full items-center gap-2 sm:gap-3">
+                    <h2 className="min-w-0 flex-1 font-[Plus_Jakarta_Sans] text-[20px] font-bold leading-6 tracking-normal text-ink sm:text-[24px] sm:leading-7 md:flex-none md:text-[28px] md:leading-none">
                       {monthLabel(year, month)}
                     </h2>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex shrink-0 items-center gap-1">
                       <button
                         type="button"
                         onClick={() => stepMonth(-1)}
-                        className="flex h-[30px] w-[30px] items-center justify-center rounded-sm border border-brand/10 bg-surface text-ink transition-colors hover:bg-tint-strong"
+                        className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-sm border border-brand/10 bg-surface text-ink transition-colors hover:bg-tint-strong"
                         aria-label="Previous month"
                       >
                         <ArrowLeftIcon />
@@ -287,7 +287,7 @@ export default function PlanPage() {
                       <button
                         type="button"
                         onClick={() => stepMonth(1)}
-                        className="flex h-[30px] w-[30px] items-center justify-center rounded-sm border border-brand/10 bg-surface text-ink transition-colors hover:bg-tint-strong"
+                        className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-sm border border-brand/10 bg-surface text-ink transition-colors hover:bg-tint-strong"
                         aria-label="Next month"
                       >
                         <span className="rotate-180">
@@ -296,7 +296,8 @@ export default function PlanPage() {
                       </button>
                     </div>
                   </div>
-                  <p className="mt-2 text-body-lg font-medium leading-none tracking-normal text-muted">
+
+                  <p className="mt-2 font-[Plus_Jakarta_Sans] text-[13px] font-medium leading-5 tracking-normal text-muted sm:text-[14px] sm:leading-5 md:text-body-lg md:leading-none">
                     Past, present and what you&apos;ve planned ahead
                   </p>
                 </div>
@@ -355,11 +356,10 @@ export default function PlanPage() {
                       type="button"
                       onClick={() => toggleFilter(item.visual)}
                       aria-pressed={active}
-                      className={`inline-flex h-[34px] items-center justify-center gap-2 rounded-full border px-4 py-[6px] text-[14px] font-medium leading-5 transition-colors ${
-                        active
-                          ? "border-brand bg-tint-strong text-ink"
-                          : `border-brand/15 bg-surface ${isDark ? "text-white" : "text-muted"} hover:bg-tint-strong`
-                      }`}
+                      className={`inline-flex h-[34px] items-center justify-center gap-2 rounded-full border px-4 py-[6px] text-[14px] font-medium leading-5 transition-colors ${active
+                        ? "border-brand bg-tint-strong text-ink"
+                        : `border-brand/15 bg-surface ${isDark ? "text-white" : "text-muted"} hover:bg-tint-strong`
+                        }`}
                     >
                       {item.icon}
                       {item.label}
@@ -369,20 +369,20 @@ export default function PlanPage() {
               </div>
 
               {/* Calendar grid */}
-              <div className="mt-6 overflow-x-auto pb-1">
-                <div className="min-w-[500px]">
-                  <div className="mb-3 grid grid-cols-7 gap-3 text-center">
+              <div className="mt-4 overflow-x-auto pb-1 sm:mt-6">
+                <div className="sm:min-w-[500px]">
+                  <div className="mb-2 grid grid-cols-7 gap-1 text-center sm:mb-3 sm:gap-2 md:gap-3">
                     {WEEKDAYS.map((day) => (
                       <span
                         key={day}
-                        className="text-[11px] font-semibold uppercase tracking-wide text-muted"
+                        className="truncate text-[9px] font-semibold uppercase tracking-wide text-muted sm:text-[10px] md:text-[11px]"
                       >
                         {day}
                       </span>
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-7 gap-3">
+                  <div className="grid grid-cols-7 gap-1 sm:gap-2 md:gap-3">
                     {rows.map((row, rowIndex) =>
                       row.map((cell, cellIndex) => {
                         const key = `${rowIndex}-${cellIndex}`;
@@ -391,7 +391,7 @@ export default function PlanPage() {
                           return (
                             <div
                               key={key}
-                              className="min-h-[92px] w-full rounded-xl border border-transparent"
+                              className="min-h-[46px] w-full rounded-lg border border-transparent sm:min-h-[68px] sm:rounded-xl md:min-h-[92px] xl:min-h-[104px]"
                             />
                           );
                         }
@@ -413,35 +413,39 @@ export default function PlanPage() {
                             className={`block w-full text-left transition-opacity ${dimmed ? "opacity-30" : ""}`}
                           >
                             <div
-                              className={`relative min-h-[92px] w-full rounded-xl border px-3 py-3 transition-colors ${
-                                day.isToday
-                                  ? "border-brand bg-tint-strong ring-1 ring-brand"
-                                  : `border-brand/10 ${style?.bg ?? "bg-surface"} hover:border-brand/40`
-                              }`}
+                              className={`relative min-h-[46px] w-full rounded-lg border p-1.5 transition-colors sm:min-h-[68px] sm:rounded-xl sm:p-2 md:min-h-[92px] md:p-3 xl:min-h-[104px] ${day.isToday
+                                ? "border-brand bg-tint-strong ring-1 ring-brand"
+                                : `border-brand/10 ${style?.bg ?? "bg-surface"} hover:border-brand/40`
+                                }`}
                             >
-                              <span className="absolute left-3 top-3 text-xs font-semibold leading-none text-ink">
+                              <span className="absolute left-1.5 top-1.5 text-[10px] font-semibold leading-none text-ink sm:left-2 sm:top-2 sm:text-[11px] md:left-3 md:top-3 md:text-xs">
                                 {cell.date}
                               </span>
 
                               {day.anchorCount > 0 && day.primaryType !== "CUSTOM" && (
                                 <span
-                                  className="absolute right-3 top-3 h-1.5 w-1.5 rounded-full bg-brand"
+                                  className="absolute right-1.5 top-1.5 h-1 w-1 rounded-full bg-brand sm:right-2 sm:top-2 sm:h-1.5 sm:w-1.5 md:right-3 md:top-3"
                                   title={`${day.anchorCount} anchor task${day.anchorCount === 1 ? "" : "s"}`}
                                 />
                               )}
 
                               {visual && (
-                                <div className="flex h-full flex-col items-center pt-4">
-                                  <span className={`mb-1 ${style?.icon ?? "text-ink"}`}>
+                                <div className="flex h-full flex-col items-center pt-3 sm:pt-3.5 md:pt-4">
+                                  {/* Sized on the wrapper: most of these icon
+                                      components take no props, so their own
+                                      dimensions can't be overridden directly. */}
+                                  <span
+                                    className={`mb-0.5 flex h-3.5 w-3.5 items-center justify-center [&>svg]:h-full [&>svg]:w-full sm:mb-1 sm:h-4 sm:w-4 md:h-[18px] md:w-[18px] ${style?.icon ?? "text-ink"}`}
+                                  >
                                     {VISUAL_ICON[visual]}
                                   </span>
 
                                   {day.mock?.hasResult && (
                                     <>
-                                      <span className="text-[18px] font-extrabold leading-none text-ink">
+                                      <span className="text-[11px] font-extrabold leading-none text-ink sm:text-[14px] md:text-[18px]">
                                         {day.mock.totalScore}
                                       </span>
-                                      <span className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-muted">
+                                      <span className="mt-0.5 hidden text-[8px] font-medium uppercase tracking-[0.08em] text-muted sm:inline sm:text-[9px] md:text-[10px]">
                                         MARKS
                                       </span>
                                     </>
@@ -634,9 +638,8 @@ function PastPanel({ view, isDark }: { view: DayView | null; isDark: boolean }) 
               <div key={task.id} className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <CompleteIcon
-                    className={`h-4 w-4 shrink-0 md:h-[18px] md:w-[18px] ${
-                      task.status === "COMPLETED" ? "text-success" : "text-muted/40"
-                    }`}
+                    className={`h-4 w-4 shrink-0 md:h-[18px] md:w-[18px] ${task.status === "COMPLETED" ? "text-success" : "text-muted/40"
+                      }`}
                   />
                   <span
                     className={`truncate text-[13px] font-medium leading-5 ${isDark ? "text-white/70" : "text-[#475569]"}`}

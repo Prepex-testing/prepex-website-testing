@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/Input";
 import {
   BookIcon,
   ClockIcon,
-  FlameIcon,
+  // FlameIcon,
   FileIcon,
   PencilIcon,
   PlusIcon,
@@ -20,6 +20,7 @@ import {
   InfoIcon2,
 } from "@/components/ui/icons";
 import { getSubjectsChapters, type SubjectWithChapters } from "@/lib/api/profile";
+import { FlameIcon, NoteIcon, RevisionIcon, TargetIcon } from "@/assets/icons";
 
 // These icon components accept no props and render at a hardcoded 16x16 (27x30
 // for FlameIcon), so each is wrapped in a sized box that scales the SVG to the
@@ -33,11 +34,11 @@ function SuggestionIcon({ children }: { children: ReactNode }) {
 }
 
 const SUGGESTIONS = [
-  { id: "finish-topic", icon: <SuggestionIcon><BookIcon /></SuggestionIcon>, label: "Finish [topic]" },
+  { id: "finish-topic", icon: <SuggestionIcon><RevisionIcon /></SuggestionIcon>, label: "Finish [topic]" },
   { id: "hit-hours", icon: <SuggestionIcon><ClockIcon /></SuggestionIcon>, label: "Hit __ focus hours total" },
   { id: "maintain-streak", icon: <SuggestionIcon><FlameIcon /></SuggestionIcon>, label: "Maintain streak through week" },
-  { id: "attempt-mock", icon: <SuggestionIcon><FileIcon /></SuggestionIcon>, label: "Attempt mock" },
-  { id: "write-own", icon: <SuggestionIcon><PencilIcon /></SuggestionIcon>, label: "Write your own (one line, free)" },
+  { id: "attempt-mock", icon: <SuggestionIcon><TargetIcon /></SuggestionIcon>, label: "Attempt mock" },
+  { id: "write-own", icon: <SuggestionIcon><NoteIcon /></SuggestionIcon>, label: "Write your own (one line, free)" },
 ] as const;
 
 type SuggestionId = (typeof SUGGESTIONS)[number]["id"];

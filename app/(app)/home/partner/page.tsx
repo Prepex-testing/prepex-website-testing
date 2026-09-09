@@ -128,8 +128,8 @@ export default function PartnerPage() {
   const [isDisconnecting, setDisconnecting] = useState(false);
   const [isRematching, setRematching] = useState(false);
 
-  const isSunday = new Date().getDay() === 2; //0
-  const isFriday = new Date().getDay() === 2;  //5
+  const isSunday = new Date().getDay() === 3; //0
+  const isFriday = new Date().getDay() === 3;  //5
 
   const loadActivePartnerData = useCallback(async () => {
     const [profileRes, inactivityRes, templatesRes, messagesRes, goalsRes] = await Promise.allSettled([

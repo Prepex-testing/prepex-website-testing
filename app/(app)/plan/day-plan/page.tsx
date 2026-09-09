@@ -7,7 +7,7 @@ import { CircularProgress } from "@/components/ui/CircularProgress";
 import { PageLoader } from "@/components/ui/PageLoader";
 import {
   ArrowLeftIcon,
-  BellIcon,
+  // BellIcon,
   CheckIcon,
   BoltIcons,
   BatteryIcon,
@@ -22,6 +22,7 @@ import {
   shiftDateKey,
   type DayView,
 } from "@/lib/api/calendar";
+import { BellIcon } from "@/assets/icons";
 
 const MOOD_LABEL: Record<string, string> = {
   DRAINED: "Drained",
@@ -138,12 +139,12 @@ function DayPlanContent() {
           </Link>
           <h1 className="text-h1 text-ink">Day Plan</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
           <button
             type="button"
             aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
           >
             <BellIcon />
           </button>
@@ -151,38 +152,41 @@ function DayPlanContent() {
         </div>
       </div>
 
-      <div className="flex w-full flex-wrap items-center gap-3 gap-y-2">
-        <h2 className="font-['Plus_Jakarta_Sans'] text-[18px] font-bold leading-[23px] text-ink">
+      <div className="flex w-full flex-wrap items-center gap-2 sm:gap-3">
+        <h2 className="w-full font-['Plus_Jakarta_Sans'] text-[15px] font-bold leading-5 text-ink sm:w-auto sm:text-[16px] sm:leading-[21px] md:text-[18px] md:leading-[23px]">
           {formatDayLabel(date)}
         </h2>
 
-        <button
-          type="button"
-          onClick={() => step(-1)}
-          className="flex h-[30px] w-[30px] items-center justify-center rounded-sm border border-brand/10 bg-surface text-ink transition-colors hover:bg-tint-strong"
-          aria-label="Previous day"
-        >
-          <ArrowLeftIcon />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => step(1)}
-          className="flex h-[30px] w-[30px] items-center justify-center rounded-sm border border-brand/10 bg-surface text-ink transition-colors hover:bg-tint-strong"
-          aria-label="Next day"
-        >
-          <span className="rotate-180">
-            <ArrowLeftIcon />
-          </span>
-        </button>
-
-        {badge && (
-          <span
-            className={`rounded-full px-3 py-1 font-['Plus_Jakarta_Sans'] text-[12px] font-bold uppercase tracking-[0.6px] ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
+        <div className="flex w-full items-center gap-2 sm:w-auto sm:gap-3">
+          <button
+            type="button"
+            onClick={() => step(-1)}
+            className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-sm border border-brand/10 bg-surface text-ink transition-colors hover:bg-tint-strong"
+            aria-label="Previous day"
           >
-            {badge}
-          </span>
-        )}
+            <ArrowLeftIcon />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => step(1)}
+            className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-sm border border-brand/10 bg-surface text-ink transition-colors hover:bg-tint-strong"
+            aria-label="Next day"
+          >
+            <span className="rotate-180">
+              <ArrowLeftIcon />
+            </span>
+          </button>
+
+          {badge && (
+            <span
+              className={`shrink-0 rounded-full px-3 py-1 font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-[0.5px] sm:text-[11px] sm:tracking-[0.6px] md:text-[12px] ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"
+                }`}
+            >
+              {badge}
+            </span>
+          )}
+        </div>
       </div>
 
       {!view || (!view.plan && !view.checkin && !view.noStudyDay) ? (
@@ -195,16 +199,21 @@ function DayPlanContent() {
       ) : (
         <>
           {narrative && (
-            <div className="flex items-center gap-4 rounded-2xl border border-brand/10 bg-surface p-6">
+            <div className="flex w-full items-start gap-3 rounded-2xl border border-brand/10 bg-surface p-4 sm:items-center sm:gap-4 sm:p-5 md:p-6">
               <div
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${isDark ? "bg-white" : "bg-tint-strong"}`}
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10 ${isDark ? "bg-white" : "bg-tint-strong"
+                  }`}
               >
-                <div className="flex h-6 w-6 items-center justify-center">
-                  <BoltIcons className={`h-4.5 w-4 ${isDark ? "text-[#1A1A4E]" : "text-ink"}`} />
+                <div className="flex h-5 w-5 items-center justify-center sm:h-6 sm:w-6">
+                  <BoltIcons
+                    className={`h-4 w-4 sm:h-4.5 sm:w-4 ${isDark ? "text-[#1A1A4E]" : "text-ink"
+                      }`}
+                  />
                 </div>
               </div>
+
               <div className="min-w-0 flex-1">
-                <p className="text-[18px] font-medium leading-[29.25px] tracking-normal text-ink">
+                <p className="break-words font-[Plus_Jakarta_Sans] text-[14px] font-medium leading-5 tracking-normal text-ink sm:text-[16px] sm:leading-6 md:text-[18px] md:leading-[29.25px]">
                   {narrative}
                 </p>
               </div>
