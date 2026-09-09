@@ -83,8 +83,11 @@ function visualTypeFor(day: CalendarDay): VisualType | null {
       return "bad-day";
     case "WIN_JOURNAL":
       return "journal";
-    case "CUSTOM":
-      return "custom";
+    // CUSTOM is deliberately not handled here. The backend reports it whenever
+    // a day has anchors and nothing else outranks them, which meant a finished
+    // day with a coaching class on it painted a pin and lost its tick. The
+    // anchor is now a separate corner marker, so the centre glyph is free to
+    // say how the day actually went.
     default:
       break;
   }
@@ -94,6 +97,27 @@ function visualTypeFor(day: CalendarDay): VisualType | null {
   return null;
 }
 
+/** A custom anchor is worth marking on any day, not only one where nothing
+ *  else outranks it — so it rides alongside the primary glyph rather than
+ *  replacing it. `primaryType` only reports CUSTOM when a day has anchors and
+ *  no mock / no-study / recovery / journal, which hid it on most days. */
+function hasCustomAnchor(day: CalendarDay): boolean {
+  return day.anchorCount > 0;
+}
+
+/**
+ * Every tag a day carries. Filtering works on this rather than the single
+ * primary glyph, so "Custom" matches a completed day that also has an anchor
+ * instead of only the handful where the anchor happens to win precedence.
+ */
+function visualTagsFor(day: CalendarDay): VisualType[] {
+  const tags: VisualType[] = [];
+  const primary = visualTypeFor(day);
+  if (primary) tags.push(primary);
+  if (hasCustomAnchor(day)) tags.push("custom");
+  return tags;
+}
+
 const FILTERS: { label: string; visual: VisualType; icon: ReactNode }[] = [
   {
     label: "Complete",
@@ -101,13 +125,36 @@ const FILTERS: { label: string; visual: VisualType; icon: ReactNode }[] = [
     icon: <CompleteIcon className="h-4 w-4 text-success md:h-[18px] md:w-[18px]" />,
   },
   {
+    label: "Partial",
+    visual: "partial",
+    icon: (
+      <span className="flex h-4 w-4 items-center justify-center text-warning [&>svg]:h-full [&>svg]:w-full">
+        <ClockIcon />
+      </span>
+    ),
+  },
+  {
     label: "Mock",
     visual: "mock",
     icon: <StarIcon className="h-4 w-4 text-[#4C1D95] dark:text-white md:h-[12px] md:w-[12px] lg:h-5 lg:w-5" />,
   },
-  { label: "Recovery", visual: "recovery", icon: <RefreshIcon /> },
+  {
+    label: "Recovery",
+    visual: "recovery",
+    // Sized and coloured to match the glyph this chip stands for in the grid.
+    icon: <RefreshIcon className="h-4 w-4 text-brand" />,
+  },
   { label: "Journal", visual: "journal", icon: <JournalIcon /> },
   { label: "No Study", visual: "no-study", icon: <NoStudyIcon /> },
+  {
+    label: "Custom",
+    visual: "custom",
+    icon: (
+      <span className="flex h-4 w-4 items-center justify-center text-brand [&>svg]:h-full [&>svg]:w-full">
+        <PinIcon />
+      </span>
+    ),
+  },
 ];
 
 const WEEKDAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
@@ -397,11 +444,19 @@ export default function PlanPage() {
                         }
 
                         const day = cell.day;
-                        const visual = visualTypeFor(day);
+                        const anchored = hasCustomAnchor(day);
+                        // An anchored day with no status of its own (a future
+                        // one, typically) puts the pin front and centre; a day
+                        // that has a status keeps it and wears the pin in the
+                        // corner.
+                        const primary = visualTypeFor(day);
+                        const visual = primary ?? (anchored ? "custom" : null);
+                        const tags = visualTagsFor(day);
+                        const showCustomMark = anchored && visual !== "custom";
                         // Filters dim rather than hide: the month should keep
                         // its shape so a student can still see where they are.
                         const dimmed =
-                          activeFilters.length > 0 && (!visual || !activeFilters.includes(visual));
+                          activeFilters.length > 0 && !tags.some((t) => activeFilters.includes(t));
                         const style = visual ? VISUAL_STYLE[visual] : null;
 
                         return (
@@ -422,11 +477,17 @@ export default function PlanPage() {
                                 {cell.date}
                               </span>
 
-                              {day.anchorCount > 0 && day.primaryType !== "CUSTOM" && (
+                              {/* The custom pin, not an anonymous dot — a day
+                                  with an anchor now reads as Custom against the
+                                  legend even when a mock or completion glyph
+                                  owns the centre of the cell. */}
+                              {showCustomMark && (
                                 <span
-                                  className="absolute right-1.5 top-1.5 h-1 w-1 rounded-full bg-brand sm:right-2 sm:top-2 sm:h-1.5 sm:w-1.5 md:right-3 md:top-3"
-                                  title={`${day.anchorCount} anchor task${day.anchorCount === 1 ? "" : "s"}`}
-                                />
+                                  className="absolute right-1.5 top-1.5 flex h-2.5 w-2.5 items-center justify-center text-brand [&>svg]:h-full [&>svg]:w-full sm:right-2 sm:top-2 sm:h-3 sm:w-3 md:right-3 md:top-3 md:h-3.5 md:w-3.5"
+                                  title={`${day.anchorCount} custom anchor task${day.anchorCount === 1 ? "" : "s"}`}
+                                >
+                                  <PinIcon />
+                                </span>
                               )}
 
                               {visual && (
