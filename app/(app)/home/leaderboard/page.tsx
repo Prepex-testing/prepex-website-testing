@@ -7,7 +7,7 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { PageLoader } from "@/components/ui/PageLoader";
 // import { FlameIcon } from "@/components/ui/icons";
-import { ClockIcon, TrophyIcons, UserIcon, BellIcon, ArrowLeftIcon, FlameIcon } from "@/assets/icons";
+import { ClockIcon, TrophyIcons, UserIcon, BellIcon, ArrowLeftIcon, FlameIcon, TrendingUpIcon, TrendingDownIcon } from "@/assets/icons";
 import { ChevronDownIcon } from "@/components/ui/icons";
 import {
   getLeaderboard,
@@ -437,7 +437,50 @@ export default function LeaderboardPage() {
       </div>
 
       {/* Insight tiles — derived from rank alone, so they leak nothing extra */}
-      <div className="grid w-full grid-cols-1 gap-4 pt-4 sm:grid-cols-2 sm:gap-6">
+      <div className="grid w-full grid-cols-1 gap-4 pt-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+        <div className="flex min-h-[137px] flex-col justify-between gap-4 rounded-2xl border border-brand/10 bg-surface p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-bold leading-4 text-muted">Rank Velocity</p>
+            <span className="text-[10px] font-medium text-muted">
+              {board.myPreviousRank !== null ? `Was #${board.myPreviousRank}` : "Since yesterday"}
+            </span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
+                isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"
+              }`}
+            >
+              {/* Arrow follows the direction of travel: a drop points down.
+                  A flat week keeps the upward arrow rather than inventing a
+                  third icon for "no change". */}
+              {board.myRankVelocity !== null && board.myRankVelocity < 0 ? (
+                <TrendingDownIcon />
+              ) : (
+                <TrendingUpIcon />
+              )}
+            </span>
+            <div>
+              <p className="text-2xl font-bold leading-8 text-ink">
+                {board.myRankVelocity === null
+                  ? "—"
+                  : board.myRankVelocity > 0
+                    ? `+${board.myRankVelocity}`
+                    : board.myRankVelocity}
+              </p>
+              <p className="text-xs font-medium text-muted">
+                {board.myRankVelocity === null
+                  ? "Not ranked yesterday"
+                  : board.myRankVelocity === 0
+                    ? "Holding steady"
+                    : Math.abs(board.myRankVelocity) === 1
+                      ? "Position"
+                      : "Positions"}
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="flex min-h-[137px] flex-col justify-between gap-4 rounded-2xl border border-brand/10 bg-surface p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-bold leading-4 text-muted">Percentile</p>

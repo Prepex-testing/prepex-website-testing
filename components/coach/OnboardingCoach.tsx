@@ -28,7 +28,8 @@ import {
  *
  * A step only renders while its target is on screen, so a home-anchored step
  * waits for Home rather than pointing at nothing; nav-anchored steps show
- * anywhere, since the sidebar and bottom nav are on every screen.
+ * anywhere, since the sidebar and bottom nav are on every screen. It also
+ * stands down entirely while a modal is open, so pop-ups are dealt with first.
  *
  * Not a tutorial in the 16.7 sense: it never gates a feature, every step is
  * skippable, and dismissing the tour is one tap.
@@ -49,6 +50,15 @@ function findAnchor(anchor: string): HTMLElement | null {
   return nodes.find((node) => node.getBoundingClientRect().width > 0) ?? null;
 }
 
+/**
+ * True while any of the app's pop-ups is open. Both Modal and WhiteModal —
+ * which every dialog in the app is built on — mark themselves `aria-modal`,
+ * and the coachmark deliberately does not, so this never matches itself.
+ */
+function isModalOpen(): boolean {
+  return document.querySelector('[role="dialog"][aria-modal="true"]') !== null;
+}
+
 export function OnboardingCoach() {
   const pathname = usePathname();
   const [state, setState] = useState<CoachState | null>(null);
@@ -60,6 +70,7 @@ export function OnboardingCoach() {
   const [measured, setMeasured] = useState<{
     key: string;
     rect: Rect | null;
+    modalOpen: boolean;
   } | null>(null);
 
   const step: CoachStep | null = state?.active ? state.step : null;
@@ -93,15 +104,17 @@ export function OnboardingCoach() {
     let pendingMeasure = 0;
 
     const measure = () => {
+      const modalOpen = isModalOpen();
       const el = findAnchor(anchor);
       if (!el) {
-        setMeasured({ key: measureKey, rect: null });
+        setMeasured({ key: measureKey, rect: null, modalOpen });
         return;
       }
       const r = el.getBoundingClientRect();
       setMeasured({
         key: measureKey,
         rect: { top: r.top, left: r.left, width: r.width, height: r.height },
+        modalOpen,
       });
     };
 
@@ -186,6 +199,12 @@ export function OnboardingCoach() {
   // they're shown next time Home is open — while the nav-anchored steps, whose
   // targets are in the sidebar/bottom nav, show on any screen. `current` being
   // null means the anchor hasn't been measured on this route yet.
+  // A pop-up gets the screen to itself. Stacking the coachmark over a modal
+  // put it in front of content the student can't reach (and doubled the two
+  // backdrops), so it stands down until the dialog is closed — the step isn't
+  // consumed, and the mutation observer brings it straight back afterwards.
+  if (current?.modalOpen) return null;
+
   const rect = current?.rect ?? null;
   if (!rect) return null;
 
@@ -262,10 +281,6 @@ export function OnboardingCoach() {
               step and the next one arrives on its own day. Turning the coach
               off entirely is the × above. */}
           <div className="mt-3 flex items-center justify-between gap-3">
-            <span className="text-[12px] font-semibold text-warning/70 dark:text-muted">
-              {step.index} of {step.total}
-            </span>
-
             <button
               type="button"
               disabled={busy}

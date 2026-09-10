@@ -138,6 +138,10 @@ export type Leaderboard = {
   rangeStart: number;
   rangeEnd: number;
   myRank: number | null;
+  /** Rank a day ago; null if the student wasn't ranked then (new signup). */
+  myPreviousRank: number | null;
+  /** Positions gained (+) or lost (-) since then; null when incomparable. */
+  myRankVelocity: number | null;
   myScore: number;
   myStreak: number;
   myPercentile: number | null;
