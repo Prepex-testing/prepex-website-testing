@@ -73,6 +73,14 @@ type SidebarProps = {
   onCollapse?: () => void;
 };
 
+// data-coach anchors for the Onboarding Coach (Section 16). The sidebar and
+// the mobile bottom nav both carry these, and the coach uses whichever is
+// actually laid out at the time.
+export const NAV_COACH_ANCHOR: Record<string, string> = {
+  Practice: "nav-practice",
+  Stats: "nav-stats",
+};
+
 export function Sidebar({ onCollapse }: SidebarProps) {
   const pathname = usePathname();
 
@@ -105,6 +113,7 @@ export function Sidebar({ onCollapse }: SidebarProps) {
             <Link
               key={item.label}
               href={item.href}
+              data-coach={NAV_COACH_ANCHOR[item.label]}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                 active
                   ? "bg-sidebar-active-bg text-sidebar-active-fg"

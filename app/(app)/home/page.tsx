@@ -123,6 +123,16 @@ const JOURNAL_STATS = [
   { value: "19", label: "Study Hours" },
 ];
 
+// data-coach anchors for the Onboarding Coach (Section 16). Keyed by label so
+// the Quick Access list stays a plain array; absent labels get no anchor.
+const QUICK_ACCESS_COACH_ANCHOR: Record<string, string> = {
+  Revision: "quick-revision",
+  "Weekly Win Journal": "quick-journal",
+  "Mock Test Analysis": "quick-mock",
+  "Mistake Notebook": "quick-mistakes",
+  Partner: "quick-partner",
+};
+
 const QUICK_ACCESS = [
   {
     href: "/practice/sessions",
@@ -159,10 +169,10 @@ const QUICK_ACCESS = [
     href: "/home/resource-library",
     label: "Resource Library", icon: <BriefcaseIcon className="h-5 w-5" />
   },
-  { href: "/home/revision", label: "Revision", icon: <RevisionIcon className="h-5 w-5" /> },
-  {
-    isModal: true,
-    label: "Quick Focus", icon: <QuickIcon className="h-5 w-5" />,
+  { 
+    href: "/home/revision", 
+    label: "Revision", icon: <RevisionIcon className="h-5 w-5" /> 
+
   },
   {
     href: "/home/journal",
@@ -575,7 +585,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+        <div data-coach="page-header">
           <h1 className="text-2xl font-bold text-ink lg:text-h1">Good Morning, {firstName}</h1>
           <p
             className={`text-sm text-muted transition-opacity duration-300 ${examCountdown ? "opacity-100" : "opacity-0"}`}
@@ -633,7 +643,10 @@ export default function HomePage() {
         <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-3">
 
           {/* Today's Energy Card */}
-          <div className="relative rounded-2xl border border-brand/10 bg-surface p-3 @4xl:p-6">
+          <div
+            data-coach="energy-card"
+            className="relative rounded-2xl border border-brand/10 bg-surface p-3 @4xl:p-6"
+          >
             <div className="flex min-w-0 flex-row items-center justify-between gap-2 @4xl:gap-4">
 
               <div className="flex min-w-0 flex-1 flex-row items-center gap-2 @4xl:gap-4">
@@ -672,6 +685,7 @@ export default function HomePage() {
           {/* Streak Card */}
           <Link
             href="/home/streak"
+            data-coach="streak-card"
             className="block rounded-2xl border border-brand/10 bg-surface p-3 transition-colors hover:border-brand/30 @4xl:p-6"
           >
             <div className="flex min-w-0 flex-row items-center justify-between gap-2 @4xl:gap-4">
@@ -822,10 +836,11 @@ export default function HomePage() {
               ) : (
                 <>
                   <div className="flex flex-col gap-3">
-                    {planTasks.map((task) => (
+                    {planTasks.map((task, taskIndex) => (
                       <TaskRow
                         key={task.id}
                         task={task}
+                        coachAnchor={taskIndex === 0 ? "start-session" : undefined}
                         onStartPractice={(taskId) => {
                           setPracticeTaskId(taskId);
                           setPracticeTaskStats({
@@ -880,24 +895,12 @@ export default function HomePage() {
                 const classes =
                   "flex h-15 items-center justify-between rounded-xl border border-quick-access-border bg-card px-4 shadow-quick-access transition-colors hover:bg-tint";
 
-                if (item.isModal) {
-                  return (
-                    <button
-                      key={item.label}
-                      type="button"
-                      onClick={() => setQuickFocusOpen(true)}
-                      className={classes}
-                    >
-                      {content}
-                    </button>
-                  );
-                }
-
                 return (
                   <Link
                     key={item.label}
                     href={item.href as string}
                     className={classes}
+                    data-coach={QUICK_ACCESS_COACH_ANCHOR[item.label]}
                   >
                     {content}
                   </Link>
@@ -1068,7 +1071,10 @@ export default function HomePage() {
       </div>
 
       {backlogStatus.isAvailable && backlogStatus.latest && (
-      <div className="flex flex-col gap-4 rounded-2xl border border-[#F59E0B] bg-[#FFFBEB] p-6 dark:border-transparent! dark:bg-[#111145] sm:flex-row sm:items-center sm:justify-between">
+      <div
+        data-coach="backlog-alert"
+        className="flex flex-col gap-4 rounded-2xl border border-[#F59E0B] bg-[#FFFBEB] p-6 dark:border-transparent! dark:bg-[#111145] sm:flex-row sm:items-center sm:justify-between"
+      >
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-[#F59E0B] shadow-[0px_1px_2px_0px_#0000000D]">
             <DotIcon />

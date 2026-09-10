@@ -42,12 +42,16 @@ type TaskRowProps = {
   task: Task;
   onStartPractice?: (taskId: string) => void;
   onTaskChanged?: () => void;
+  /** data-coach anchor for the action button — set on the first row only, so
+   *  the Onboarding Coach's Focus Mode step has something to point at. */
+  coachAnchor?: string;
 };
 
 export function TaskRow({
   task,
   onStartPractice,
   onTaskChanged,
+  coachAnchor,
 }: TaskRowProps) {
   const [done, setDone] = useState(false);
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
@@ -235,6 +239,7 @@ export function TaskRow({
       "
     >
       <Button
+        data-coach={coachAnchor}
         variant={isPrimaryActionDisabled ? "secondary" : "outline"}
         size="sm"
         disabled={isPrimaryActionDisabled}

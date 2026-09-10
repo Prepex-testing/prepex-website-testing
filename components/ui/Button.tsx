@@ -32,6 +32,8 @@ type ButtonProps = {
   href?: string;
   children: ReactNode;
   className?: string;
+  /** Onboarding Coach anchor (Section 16) — forwarded on both branches. */
+  "data-coach"?: string;
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
 export function Button({
@@ -51,6 +53,7 @@ export function Button({
         href={href}
         className={classes}
         onClick={onClick as unknown as MouseEventHandler<HTMLAnchorElement>}
+        data-coach={props["data-coach"]}
       >
         {children}
       </Link>
