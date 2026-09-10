@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { BookmarkIcon, ChevronDownIcon, ChevronRightIcon, PlayIcon } from "@/components/ui/icons";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { TargetIcon, ComputerIcon, ArrowLeftIcon } from "@/assets/icons";
 import {
   getResourceLibrary,
@@ -330,6 +331,14 @@ function ChapterLibrary() {
     );
   }
 
+  // All four sections in flight at once only happens on the chapter's first
+  // load — paging or the PYQ toggle moves one section at a time — so this
+  // holds the page back until there's something real to paint, without
+  // blanking it on every later fetch.
+  if (notes.loading && formulas.loading && lectures.loading && questions.loading) {
+    return <PageLoader label="Loading this chapter…" />;
+  }
+
   const renderSection = (key: SectionKey) => {
     if (key === "NOTE") {
       const rows: LibraryNote[] = notes.data?.notes ?? [];
@@ -621,13 +630,6 @@ function ChapterLibrary() {
                 .join(" · ") || "Chapter"}
             </p>
           </div>
-
-          <Link
-            href="/practice"
-            className="inline-flex h-11 w-full shrink-0 items-center justify-center rounded-lg bg-[#FF7A59] px-5 text-[15px] font-bold text-white transition-all hover:bg-[#FF6A45] sm:h-12 sm:w-[209px] sm:px-6 sm:text-[16px]"
-          >
-            Practice this chapter
-          </Link>
         </div>
       </div>
 
@@ -732,14 +734,7 @@ function QuestionCard({
 
 export default function ResourceChapterPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex flex-col gap-4 p-4 sm:p-6 lg:p-8">
-          <span className="h-8 w-40 animate-pulse rounded-lg bg-tint-strong" />
-          <span className="h-[200px] animate-pulse rounded-2xl bg-tint-strong" />
-        </div>
-      }
-    >
+    <Suspense fallback={<PageLoader label="Loading this chapter…" />}>
       <ChapterLibrary />
     </Suspense>
   );

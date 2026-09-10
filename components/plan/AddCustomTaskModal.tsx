@@ -648,7 +648,7 @@ export function AddCustomTaskModal({
                   inputMode="numeric"
                   min={1}
                   max={MAX_PRACTICE_QUESTION_COUNT}
-                  placeholder="10"
+                  placeholder="0"
                   value={questionCount}
                   onChange={(event) => handleQuestionCountChange(event.target.value)}
                   className="mt-1 h-11.75 w-full rounded-xl border border-input-border bg-surface px-4 font-['Plus_Jakarta_Sans'] text-[14px] font-medium leading-[14px] text-ink outline-none [appearance:textfield] placeholder:text-[14px] placeholder:font-normal placeholder:leading-5 placeholder:text-[#666666] dark:placeholder:text-[#8B8998] focus:border-input-border sm:text-[16px] sm:leading-[16px] sm:placeholder:text-[16px] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"

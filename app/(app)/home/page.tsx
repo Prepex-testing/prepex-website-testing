@@ -585,7 +585,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div data-coach="page-header">
+        <div>
           <h1 className="text-2xl font-bold text-ink lg:text-h1">Good Morning, {firstName}</h1>
           <p
             className={`text-sm text-muted transition-opacity duration-300 ${examCountdown ? "opacity-100" : "opacity-0"}`}
@@ -796,7 +796,12 @@ export default function HomePage() {
                   <SparkleIcon className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[18px] leading-[18px] font-bold text-[#333333] dark:text-[#FAF7F2]">
+                  {/* The coach's welcome step points here rather than at the
+                      greeting — the plan is what it's introducing. */}
+                  <p
+                    data-coach="page-header"
+                    className="w-fit text-[18px] leading-[18px] font-bold text-[#333333] dark:text-[#FAF7F2]"
+                  >
                     AI Plan for Today
                   </p>
                   <p className="mt-1.5 text-[10px] leading-[15px] text-muted">
