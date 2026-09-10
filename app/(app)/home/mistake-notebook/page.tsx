@@ -3,10 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { AlertTriangleIcon, ChevronRightIcon } from "@/components/ui/icons";
-import { ClockIcon, CalendarIcon, FileIcon, BellIcon } from "@/assets/icons";
+import { ClockIcon, CalendarIcon, FileIcon } from "@/assets/icons";
 import { PageLoader } from "@/components/ui/PageLoader";
 import {
   getMistakePatterns,
@@ -303,13 +304,7 @@ export default function MistakeNotebookPage() {
         <h1 className="text-h1 text-ink">Mistake Notebook</h1>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

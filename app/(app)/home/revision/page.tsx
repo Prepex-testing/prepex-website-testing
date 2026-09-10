@@ -1,5 +1,6 @@
 "use client";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
 
@@ -8,10 +9,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
-import { Container, BellIcon, ArrowLeftIcon } from "@/assets/icons";
+import { Container, ArrowLeftIcon } from "@/assets/icons";
 import {
   // ArrowLeftIcon,
-  // BellIcon,
   ClockIcon,
   CheckCircleIcon,
   ChevronDownIcon,
@@ -244,13 +244,7 @@ export default function RevisionPage() {
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

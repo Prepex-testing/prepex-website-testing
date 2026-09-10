@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CircularProgress } from "@/components/ui/CircularProgress";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { PageLoader } from "@/components/ui/PageLoader";
 import {
   ArrowLeftIcon,
@@ -22,7 +23,6 @@ import {
   shiftDateKey,
   type DayView,
 } from "@/lib/api/calendar";
-import { BellIcon } from "@/assets/icons";
 
 const MOOD_LABEL: Record<string, string> = {
   DRAINED: "Drained",
@@ -141,13 +141,7 @@ function DayPlanContent() {
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

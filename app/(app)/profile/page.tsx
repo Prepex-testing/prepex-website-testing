@@ -23,6 +23,7 @@ import {
   RefreshIcon,
 } from "@/components/ui/icons";
 import { Button } from "@/components/ui/Button";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { AvatarProgressRing } from "@/components/ui/AvatarProgressRing";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { SettingRow } from "@/components/profile/SettingRow";
@@ -33,7 +34,7 @@ import { useTheme } from "@/components/theme/ThemeProvider";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { performLogout } from "@/lib/api/auth";
-import { QuickIcon, Coaching, GraduationCapIcon, UserIcons, CalendarIcons, ClockIcon, CalendarIcon, Patners, UserIcon, EditIcons, BellIcon } from "@/assets/icons";
+import { QuickIcon, Coaching, GraduationCapIcon, UserIcons, CalendarIcons, ClockIcon, CalendarIcon, Patners, UserIcon, EditIcons } from "@/assets/icons";
 const PROFILE_COMPLETE = 72;
 
 const DETAILS = [
@@ -118,13 +119,7 @@ export default function ProfilePage() {
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

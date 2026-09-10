@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BellIcon } from "@/components/ui/icons";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 
@@ -31,13 +31,7 @@ export default function StatsLayout({
         <div className="flex items-center gap-4">
           <ThemeToggle />
 
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-muted transition hover:bg-tint"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-muted transition hover:bg-tint" />
 
           <UserMenu />
         </div>

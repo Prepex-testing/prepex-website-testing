@@ -4,12 +4,13 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { LineChart, type LineChartSeries } from "@/components/ui/LineChart";
-import { CalendarIcon, ClockIcon, TargetIcon, ArrowLeftIcon, BellIcon } from "@/assets/icons";
+import { CalendarIcon, ClockIcon, TargetIcon, ArrowLeftIcon } from "@/assets/icons";
 import { FileIcon, SparkleIcon, TrendingUpIcon } from "@/components/ui/icons";
 import {
   getMockById,
@@ -198,13 +199,7 @@ function ViewAnalyticsContent() {
       </div>
       <div className="flex shrink-0 items-center gap-4">
         <ThemeToggle />
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-        >
-          <BellIcon />
-        </button>
+        <NotificationBell />
         <UserMenu />
       </div>
     </div>

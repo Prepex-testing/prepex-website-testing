@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowLeftIcon, BellIcon } from "@/components/ui/icons";
+import { ArrowLeftIcon } from "@/components/ui/icons";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 
@@ -19,13 +20,7 @@ export function ProfileSubpageHeader({ title, backHref = "/profile" }: ProfileSu
       </div>
       <div className="flex shrink-0 items-center gap-4">
         <ThemeToggle />
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
-        >
-          <BellIcon />
-        </button>
+        <NotificationBell className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong" />
         <UserMenu />
       </div>
     </div>

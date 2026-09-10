@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Stepper } from "@/components/ui/Stepper";
-import { BellIcon, CheckIcon } from "@/components/ui/icons";
+import { CheckIcon } from "@/components/ui/icons";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 
@@ -88,13 +89,7 @@ export default function CustomPracticeBuilderPage() {
         <h1 className="text-h1 text-ink">Custom Practice Builder</h1>
         <div className="flex items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-tint-strong" />
           <UserMenu />
         </div>
       </div>

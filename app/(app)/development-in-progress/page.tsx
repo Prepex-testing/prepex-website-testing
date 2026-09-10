@@ -8,8 +8,9 @@
 // so this can be reverted once the sprint restriction is lifted.
 
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
-import { BellIcon, ClockIcon } from "@/components/ui/icons";
+import { ClockIcon } from "@/components/ui/icons";
 
 export default function DevelopmentInProgressPage() {
   return (
@@ -18,13 +19,7 @@ export default function DevelopmentInProgressPage() {
         <h1 className="text-h1 text-ink">Coming Soon</h1>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

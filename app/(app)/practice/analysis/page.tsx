@@ -4,12 +4,12 @@ import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
 import { PageLoader } from "@/components/ui/PageLoader";
 import {
   ArrowLeftIcons,
-  // BellIcon,
   BookmarkIcon,
   CheckIcon,
   XIcon,
@@ -29,7 +29,7 @@ import {
   type PracticeSessionDetail,
   type PracticeSessionQuestion,
 } from "@/lib/api/practice";
-import { ArrowLeftIcon, BellIcon, ConceptualIcon, DiceIcon, Open, TimeIcon, VectorIcon } from "@/assets/icons";
+import { ArrowLeftIcon, ConceptualIcon, DiceIcon, Open, TimeIcon, VectorIcon } from "@/assets/icons";
 
 const ALL_TAGS = Object.keys(MISTAKE_TAG_LABELS) as MistakeTag[];
 
@@ -181,13 +181,7 @@ function QuestionAnalysisContent() {
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>
