@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_ITEMS } from "@/components/layout/Sidebar";
+import { NAV_ITEMS, NAV_COACH_ANCHOR } from "@/components/layout/Sidebar";
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -23,6 +23,7 @@ export function BottomNav() {
           <Link
             key={item.label}
             href={item.href}
+            data-coach={NAV_COACH_ANCHOR[item.label]}
             aria-current={active ? "page" : undefined}
             className={`flex min-h-[56px] flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-semibold transition-colors ${
               active ? "text-ink" : "text-muted"

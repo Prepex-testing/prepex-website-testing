@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { FocusSidebar } from "@/components/layout/FocusSidebar";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { useCheckInGate } from "@/components/check-in/CheckInGate";
+import { OnboardingCoach } from "@/components/coach/OnboardingCoach";
 
 // Immersive "focus" experiences: narrower sidebar, no check-in interruptions.
 // (The practice player also intercepts nav clicks to confirm leaving.)
@@ -84,7 +85,15 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </div>
       <div className="min-w-0 flex-1 pb-[calc(56px+env(safe-area-inset-bottom))] lg:pb-0">
-        {isCheckInVerified ? children : null}
+        {isCheckInVerified ? (
+          <>
+            {/* Section 16 — one coaching message a day, above whatever screen
+                the student is on. Suppressed in the immersive focus paths,
+                where interrupting a running session would violate 16.7. */}
+            {!isFocusMode && <OnboardingCoach />}
+            {children}
+          </>
+        ) : null}
       </div>
       <BottomNav />
     </div>

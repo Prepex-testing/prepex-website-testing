@@ -20,7 +20,12 @@ export type ProfileChapter = {
   id: string;
   subjectId: number;
   name: string;
-  sequenceOrder: number;
+  // Null for the many chapters that were never given a syllabus position —
+  // the API returns null here, so callers must handle it rather than
+  // rendering a bare "Chapter ".
+  sequenceOrder: number | null;
+  /** NCERT class the chapter belongs to — 11 or 12, or null. */
+  class: number | null;
   isActive: boolean;
   subject: ProfileSubject;
   chapterMetadata: ChapterMetadata;
