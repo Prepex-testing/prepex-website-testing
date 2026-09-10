@@ -212,7 +212,7 @@ export function AddCustomTaskModal({
   onAnchorAdded,
 }: AddCustomTaskModalProps) {
   const headerTitle = title ?? HEADER_TEXT[mode].title;
-  const [taskType, setTaskType] = useState(lockedTaskType ?? initialValues?.taskType ?? "Practice");
+  const [taskType, setTaskType] = useState(lockedTaskType ?? initialValues?.taskType ?? "New Learning");
   const [taskName, setTaskName] = useState(initialValues?.taskName ?? "");
   const [durationValue, setDurationValue] = useState(initialValues?.durationValue ?? "30");
   const [timePreferenceValue, setTimePreferenceValue] = useState(
@@ -242,7 +242,7 @@ export function AddCustomTaskModal({
   // for a different task would keep showing the previous task's form values.
   useEffect(() => {
     if (!open) return;
-    setTaskType(lockedTaskType ?? initialValues?.taskType ?? "Practice");
+    setTaskType(lockedTaskType ?? initialValues?.taskType ?? "New Learning");
     setTaskName(initialValues?.taskName ?? "");
     setDurationValue(initialValues?.durationValue ?? "30");
     setTimePreferenceValue(initialValues?.timePreferenceValue ?? "");

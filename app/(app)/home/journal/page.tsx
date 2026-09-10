@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
-import { Logo } from "@/components/ui/Logo";
+import { Logo, Logo2 } from "@/components/ui/Logo";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { CopyIcon, DownloadIcon, WhatsAppIcon } from "@/components/ui/icons";
@@ -233,7 +233,7 @@ function WeeklyWinJournalContent() {
               }}
             >
               <div className="flex flex-col items-center text-center">
-                <Logo size="compact" />
+                <Logo2 size="compact" />
 
                 <p className="mt-6 text-[11px] font-extrabold uppercase tracking-[2.4px] leading-[14.4px] text-[#FAF7F2] sm:text-xs">
                   Your Week in Wins
@@ -336,11 +336,6 @@ function WeeklyWinJournalContent() {
                   </p>
                 </div>
               )}
-
-              {/* Matches the footer burned into the shared PNG */}
-              <p className="mt-8 text-center text-[11px] font-bold uppercase tracking-[2.4px] text-[#8B8998]">
-                Prepex.io
-              </p>
             </div>
           </div>
 

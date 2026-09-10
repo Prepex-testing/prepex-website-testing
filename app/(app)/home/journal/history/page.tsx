@@ -76,21 +76,23 @@ function HistoryCard({ card }: { card: JournalCard }) {
   const progress = deriveProgress(card);
 
   return (
-    <div className="rounded-2xl border border-brand/10 bg-surface p-6">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex w-full max-w-[672px] flex-col gap-1">
+    <div className="rounded-2xl border border-brand/10 bg-surface p-4 sm:p-5 lg:p-6">
+      <div className="flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+        <div className="flex w-full flex-col gap-1 lg:max-w-[672px]">
           <span
             className={`inline-flex w-fit items-center rounded-full px-2 py-1 text-[9px] font-extrabold uppercase leading-[13.5px] tracking-[0.45px] ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
           >
             {deriveBadge(card)}
           </span>
 
-          <p className="mt-1 text-[20px] font-extrabold leading-[28px] text-ink">
+          <p className="mt-1 text-[16px] font-extrabold leading-[24px] text-ink sm:text-[18px] sm:leading-[26px] lg:text-[20px] lg:leading-[28px]">
             {card.hero.title}
           </p>
 
           {card.hero.description && (
-            <p className="text-[13px] leading-[20px] text-muted">{card.hero.description}</p>
+            <p className="text-[12px] leading-[18px] text-[#464650] sm:text-[13px] sm:leading-[20px] dark:text-[#8B8998]">
+              {card.hero.description}
+            </p>
           )}
 
           <div className="mt-2 flex w-full max-w-[320px] items-center justify-between text-[10px] font-semibold uppercase tracking-wide text-muted">
@@ -107,10 +109,10 @@ function HistoryCard({ card }: { card: JournalCard }) {
           </div>
         </div>
 
-        <div className="flex w-full shrink-0 flex-row items-center justify-between gap-4 lg:w-[160px] lg:flex-col lg:items-end lg:justify-between lg:gap-[54px]">
-          <span className="flex items-center gap-1.5 text-xs text-muted">
+        <div className="flex w-full shrink-0 flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 lg:w-[160px] lg:flex-col lg:items-end lg:justify-between lg:gap-[54px]">
+          <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-muted sm:text-xs [&>svg]:shrink-0">
             <CalendarIcon />
-            {formatRange(card)}
+            <span className="truncate">{formatRange(card)}</span>
           </span>
 
           <Link
@@ -180,8 +182,10 @@ export default function WinJournalHistoryPage() {
             <ArrowLeftIcon />
           </Link>
           <div>
-            <h1 className="text-h1 text-ink">Win Journal History</h1>
-            <p className="flex items-center gap-1 text-xs text-muted">
+            <h1 className="text-[22px] font-extrabold leading-tight text-ink sm:text-h1 sm:leading-normal">
+              Win Journal History
+            </h1>
+            <p className="flex items-center gap-1  text-[12px] font-medium leading-[18px] tracking-normal text-muted sm:text-[13px] sm:leading-5 md:text-[14px] md:leading-[21px]">
               <ClockIcon />
               {cards.length} {cards.length === 1 ? "week" : "weeks"} tracked
             </p>
@@ -205,8 +209,8 @@ export default function WinJournalHistoryPage() {
       )}
 
       {!featured ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-brand/10 bg-surface p-10 text-center">
-          <h2 className="text-xl font-bold text-ink">No cards yet</h2>
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-brand/10 bg-surface p-6 text-center sm:p-8 lg:p-10">
+          <h2 className="text-lg font-bold text-ink sm:text-xl">No cards yet</h2>
           <p className="max-w-md text-sm text-muted">
             Your first Win Journal lands this Friday evening. Every week you study gets its own
             card here.
@@ -217,12 +221,15 @@ export default function WinJournalHistoryPage() {
         </div>
       ) : (
         <>
-          <div className="relative min-h-[312px] overflow-hidden rounded-2xl border border-brand/10 bg-surface px-6 py-8 sm:px-8 lg:px-10 lg:pb-10 lg:pt-12">
-            <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-tint-strong opacity-40" />
+          {/* No `min-h`: the card grows with its own text. A fixed floor left a
+              tall empty band under short hero copy, and the asymmetric
+              pt-12/pb-10 only existed to centre content inside that floor. */}
+          <div className="relative rounded-2xl border border-brand/10 bg-surface px-4 py-5 sm:px-6 sm:py-6 lg:px-10 lg:py-8">
+            <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56   opacity-40" />
 
-            <div className="relative flex h-full flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex w-full max-w-[568px] flex-col gap-4">
-                <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex h-full flex-col gap-5 sm:gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
+              <div className="flex w-full flex-col gap-3 sm:gap-4 lg:max-w-[568px]">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                   <span
                     className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase ${isDark ? "bg-white text-[#1A1A4E]" : "bg-tint text-ink"}`}
                   >
@@ -233,11 +240,11 @@ export default function WinJournalHistoryPage() {
                   </span>
                 </div>
 
-                <h2 className="text-[32px] font-extrabold leading-none text-ink">
+                <h2 className="text-[22px] font-extrabold leading-tight text-ink sm:text-[26px] lg:text-[32px] lg:leading-none">
                   {featured.hero.title}
                 </h2>
 
-                <p className="max-w-[568px] text-[18px] leading-[29px] text-muted">
+                <p className="max-w-[568px] text-[14px] leading-[22px] text-muted sm:text-[16px] sm:leading-[26px] lg:text-[18px] lg:leading-[29px]">
                   {featured.hero.description}
                 </p>
               </div>
@@ -246,7 +253,7 @@ export default function WinJournalHistoryPage() {
                 <Button
                   href={`/home/journal?id=${featured.id}`}
                   variant="secondary"
-                  className={`h-[55px] w-full rounded-xl px-8 text-[18px] font-bold hover:bg-[#FF7A59]! hover:text-white! sm:w-[236px] ${isDark ? "" : "text-[#1A1A4E]!"}`}
+                  className={`h-12 w-full rounded-xl px-6 text-[15px] font-bold hover:bg-[#FF7A59]! hover:text-white! sm:h-[52px] sm:w-[236px] sm:text-[16px] lg:h-[55px] lg:px-8 lg:text-[18px] ${isDark ? "" : "text-[#1A1A4E]!"}`}
                 >
                   View Full Card
                 </Button>
@@ -256,11 +263,14 @@ export default function WinJournalHistoryPage() {
 
           {byMonth.map(([month, monthCards]) => (
             <div key={month} className="flex flex-col gap-3">
-              <p
-                className={`text-xs font-bold uppercase tracking-wide ${isDark ? "text-white" : "text-muted"}`}
-              >
-                {month}
-              </p>
+              <div className="flex items-center gap-3">
+                <p
+                  className={`shrink-0 text-xs font-bold uppercase tracking-wide ${isDark ? "text-white" : "text-muted"}`}
+                >
+                  {month}
+                </p>
+                <span className="h-px flex-1 bg-[#E1E3E4] dark:bg-[#FAF7F20F]" />
+              </div>
               {monthCards.map((card) => (
                 <HistoryCard key={card.id} card={card} />
               ))}

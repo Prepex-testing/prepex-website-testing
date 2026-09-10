@@ -24,11 +24,6 @@ import {
   type StreakDayStatus,
 } from "@/lib/api/streak";
 
-/**
- * One icon per Effort Score component. Sized on a wrapper rather than by prop:
- * several of these icon components accept no props at all, so their own
- * dimensions can't be overridden directly.
- */
 function effortIcon(node: ReactNode): ReactNode {
   return (
     <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center [&>svg]:h-full [&>svg]:w-full">
@@ -49,14 +44,15 @@ const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const CALENDAR_LEGEND: { status: StreakDayStatus; label: string; caption: string }[] = [
   { status: "QUALIFIED", label: "Qualified", caption: "Criteria met" },
   { status: "FREEZE_USED", label: "Freeze Used", caption: "Streak held" },
-  { status: "NO_STUDY", label: "No-Study Day", caption: "Planned rest" },
   { status: "MISSED", label: "Missed", caption: "Below threshold" },
+  { status: "NO_STUDY", label: "No-Study Day", caption: "Planned rest" },
 ];
 
 function statusIcon(status: StreakDayStatus) {
   if (status === "QUALIFIED") return <CheckIcon />;
   if (status === "FREEZE_USED") return <ShieldIcon />;
-  if (status === "NO_STUDY") return <span className="h-2 w-2 rounded-full bg-brand" />;
+  // `block` so the size applies — this one is a dot, not an svg.
+  if (status === "NO_STUDY") return <span className="block h-2 w-2 rounded-full bg-brand" />;
   if (status === "MISSED") return <XIcon />;
   return null;
 }
@@ -192,9 +188,9 @@ export default function StreakPage() {
       {/* Top bar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-          <Link href="/home" aria-label="Back to Home" className="shrink-0 text-ink">
+          {/* <Link href="/home" aria-label="Back to Home" className="shrink-0 text-ink">
             <ArrowLeftIcon />
-          </Link>
+          </Link> */}
           <h1 className="truncate text-[22px] font-extrabold leading-tight text-ink sm:text-h1 sm:leading-normal">
             Streak
           </h1>
@@ -231,7 +227,7 @@ export default function StreakPage() {
         {statCards.map((card) => (
           <div
             key={card.label}
-            className="flex w-full flex-col gap-3 rounded-2xl border border-brand/10 bg-surface p-5 shadow-[0px_1px_2px_0px_#0000000D] sm:gap-4 sm:p-6"
+            className="flex w-full flex-col gap-3 rounded-2xl border border-brand/10 bg-surface p-4 shadow-[0px_1px_2px_0px_#0000000D] sm:gap-4 sm:p-5 md:p-6"
           >
             <div className="flex items-center gap-3 sm:gap-4">
               <span
@@ -272,7 +268,7 @@ export default function StreakPage() {
       {/* Calendar + today's qualification */}
       <div className="grid w-full grid-cols-1 gap-5 sm:gap-8 lg:grid-cols-12">
         {/* Streak calendar */}
-        <div className="flex flex-col gap-5 rounded-[20px] border border-brand/10 bg-surface p-5 shadow-[0px_1px_2px_0px_#0000000D] sm:gap-8 sm:rounded-[24px] sm:p-8 lg:col-span-7">
+        <div className="flex flex-col gap-5 rounded-[20px] border border-brand/10 bg-surface p-4 shadow-[0px_1px_2px_0px_#0000000D] sm:gap-8 sm:rounded-[24px] sm:p-5 md:p-6 xl:p-8 lg:col-span-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-[16px] font-extrabold leading-[24px] text-ink sm:text-[18px] sm:leading-[28px]">
               Streak Calendar
@@ -282,45 +278,50 @@ export default function StreakPage() {
                 type="button"
                 aria-label="Previous month"
                 onClick={() => shiftMonth(-1)}
-                className="flex h-9 w-9 items-center justify-center rounded-lg p-2 text-muted hover:bg-tint-strong"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg p-1.5 text-muted hover:bg-tint-strong sm:h-9 sm:w-9 sm:p-2"
               >
                 <ChevronDownIcon className="h-4 w-4 rotate-90" />
               </button>
-              <span className="text-[14px] font-bold leading-[20px] text-ink">
+              <span className="whitespace-nowrap text-[12px] font-bold leading-[20px] text-ink sm:text-[13px] md:text-[14px]">
                 {monthLabel(view.year, view.month)}
               </span>
               <button
                 type="button"
                 aria-label="Next month"
                 onClick={() => shiftMonth(1)}
-                className="flex h-9 w-9 items-center justify-center rounded-lg p-2 text-muted hover:bg-tint-strong"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg p-1.5 text-muted hover:bg-tint-strong sm:h-9 sm:w-9 sm:p-2"
               >
                 <ChevronDownIcon className="h-4 w-4 -rotate-90" />
               </button>
             </div>
           </div>
 
-          <div className="flex flex-col gap-5 sm:flex-row sm:gap-8">
+          {/* The legend only moves beside the calendar at `xl`. At `lg` the card
+              is just 7/12 of the grid, so a 192px sidebar would leave the seven
+              day columns about 16px each and the numbers would collide. */}
+          <div className="flex flex-col gap-5 xl:flex-row xl:gap-8">
             <div className="min-w-0 flex-1">
-              <div className="overflow-x-auto pb-2 sm:overflow-visible sm:pb-0">
-                <div className="min-w-[320px] sm:min-w-0">
-                  <div className="grid grid-cols-7 gap-1 text-center sm:gap-2">
+              {/* No `min-w` and no `overflow-x-auto`: the month always fits the
+                  viewport, so a phone never gets a horizontal scrollbar. */}
+              <div className="w-full">
+                <div className="w-full">
+                  <div className="grid grid-cols-7 gap-0.5 text-center sm:gap-1 md:gap-2">
                     {WEEKDAYS.map((day) => (
                       <span
                         key={day}
-                        className="text-[11px] font-semibold leading-[16px] text-muted sm:text-[12px]"
+                        className="truncate text-[9px] font-semibold leading-[14px] text-muted sm:text-[11px] sm:leading-[16px] md:text-[12px]"
                       >
                         {day}
                       </span>
                     ))}
                   </div>
-                  <div className="mt-2 flex flex-col gap-1">
+                  <div className="mt-1.5 flex flex-col gap-0.5 sm:mt-2 sm:gap-1">
                     {weekRows.map((row, rowIndex) => (
-                      <div key={rowIndex} className="grid w-full grid-cols-7 gap-1 sm:gap-2">
+                      <div key={rowIndex} className="grid w-full grid-cols-7 gap-0.5 sm:gap-1 md:gap-2">
                         {row.map((cell, cellIndex) => (
                           <div
                             key={cellIndex}
-                            className="flex h-[42px] flex-col items-center justify-center gap-0.5 rounded-lg py-1 sm:h-[48px]"
+                            className="flex h-[40px] flex-col items-center justify-center gap-0.5 rounded-lg sm:h-[50px] md:h-[56px]"
                             title={
                               cell
                                 ? `${cell.date} — ${cell.status.toLowerCase().replace("_", " ")}`
@@ -330,7 +331,7 @@ export default function StreakPage() {
                             {cell && (
                               <>
                                 <span
-                                  className={`flex h-6 w-6 items-center justify-center rounded-full text-center text-[13px] font-bold leading-[20px] sm:text-[14px] ${
+                                  className={`flex h-5 w-5 items-center justify-center rounded-full text-center text-[10px] font-bold leading-none sm:h-6 sm:w-6 sm:text-[13px] md:text-[14px] ${
                                     cell.isToday
                                       ? "bg-brand text-white"
                                       : cell.status === "UPCOMING"
@@ -340,9 +341,16 @@ export default function StreakPage() {
                                 >
                                   {Number(cell.date.slice(-2))}
                                 </span>
-                                <span className="text-muted [&>svg]:h-3 [&>svg]:w-3">
-                                  {!cell.isToday && statusIcon(cell.status)}
-                                </span>
+                                {/* 24px circle, 14px inner box, glyph sized by
+                                    its own viewBox inset — the same treatment
+                                    the legend swatches use. */}
+                                {!cell.isToday && statusIcon(cell.status) && (
+                                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-[#EEF0F8] bg-[#EEF0F8] text-ink sm:h-5 sm:w-5 md:h-6 md:w-6 dark:border-[#FAF7F214] dark:bg-[#FAF7F214]">
+                                    <span className="flex h-2.5 w-2.5 items-center justify-center [&>svg]:h-full [&>svg]:w-full sm:h-3 sm:w-3 md:h-3.5 md:w-3.5">
+                                      {statusIcon(cell.status)}
+                                    </span>
+                                  </span>
+                                )}
                               </>
                             )}
                           </div>
@@ -355,7 +363,7 @@ export default function StreakPage() {
             </div>
 
             {/* Legend */}
-            <div className="grid w-full grid-cols-2 gap-4 rounded-[16px] border border-brand/10 bg-card-soft-bg p-4 sm:flex sm:w-[192px] sm:shrink-0 sm:flex-col sm:gap-5 sm:p-5">
+            <div className="grid w-full grid-cols-2 gap-4 rounded-[16px] border border-[#F1F5F9] bg-[#F8FAFC80] p-4 sm:grid-cols-4 xl:flex xl:w-[192px] xl:shrink-0 xl:grid-cols-1 xl:flex-col xl:gap-5 xl:p-5 dark:border-[#FAF7F214] dark:bg-[#FAF7F20F]">
               {CALENDAR_LEGEND.map((item) => (
                 <div key={item.label} className="flex items-center gap-2 sm:gap-3">
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-brand/10 bg-surface text-ink [&>svg]:h-3.5 [&>svg]:w-3.5">
@@ -368,7 +376,7 @@ export default function StreakPage() {
                 </div>
               ))}
               {calendar && (
-                <p className="col-span-2 text-[10px] leading-4 text-muted sm:col-span-1">
+                <p className="col-span-2 text-[10px] leading-4 text-muted sm:col-span-4 xl:col-span-1">
                   {calendar.summary.qualified} qualified · {calendar.summary.noStudy} rest ·{" "}
                   {calendar.summary.freezeUsed} frozen
                 </p>
@@ -378,7 +386,7 @@ export default function StreakPage() {
         </div>
 
         {/* Effort Score (Today) */}
-        <div className="flex flex-col gap-5 rounded-[20px] border border-brand/10 bg-surface p-5 shadow-[0px_1px_2px_0px_#0000000D] sm:gap-8 sm:rounded-[24px] sm:p-8 lg:col-span-5">
+        <div className="flex flex-col gap-5 rounded-[20px] border border-brand/10 bg-surface p-4 shadow-[0px_1px_2px_0px_#0000000D] sm:gap-8 sm:rounded-[24px] sm:p-5 md:p-6 xl:p-8 lg:col-span-5">
           <p className="text-[16px] font-extrabold leading-[24px] text-ink sm:text-[18px] sm:leading-[28px]">
             Effort Score{" "}
             <span className="text-[13px] font-semibold text-muted sm:text-[14px]">(Today)</span>
@@ -390,7 +398,7 @@ export default function StreakPage() {
               <span className="text-[30px] font-extrabold leading-[36px] text-ink sm:text-[36px] sm:leading-[40px]">
                 {effort.total}
               </span>
-              <span className="px-1 text-[11px] font-semibold text-muted sm:text-[10px]">
+              <span className="px-1 text-[11px] font-semibold text-ink sm:text-[10px]">
                 {effort.band}
               </span>
             </div>
