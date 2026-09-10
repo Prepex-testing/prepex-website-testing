@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { XIcon } from "@/components/ui/icons";
 import {
   getCoachState,
@@ -25,6 +26,10 @@ import {
  * theme's own surface/brand blues, and the badge is the cream chip (#FAF7F2 on
  * #FAF7F214) used across the profile/plan/onboarding screens.
  *
+ * A step only renders while its target is on screen, so a home-anchored step
+ * waits for Home rather than pointing at nothing; nav-anchored steps show
+ * anywhere, since the sidebar and bottom nav are on every screen.
+ *
  * Not a tutorial in the 16.7 sense: it never gates a feature, every step is
  * skippable, and dismissing the tour is one tap.
  */
@@ -45,15 +50,22 @@ function findAnchor(anchor: string): HTMLElement | null {
 }
 
 export function OnboardingCoach() {
+  const pathname = usePathname();
   const [state, setState] = useState<CoachState | null>(null);
   const [busy, setBusy] = useState(false);
   const [noticeHidden, setNoticeHidden] = useState(false);
-  // Null while the target is being located; a missing anchor renders the
-  // bubble centred rather than dropping the step.
-  const [rect, setRect] = useState<Rect | null>(null);
+  // Keyed by the anchor and route it was taken on, so a step change or a
+  // navigation invalidates it during render rather than via an effect.
+  // `rect: null` means "measured, and this page has no such element".
+  const [measured, setMeasured] = useState<{
+    key: string;
+    rect: Rect | null;
+  } | null>(null);
 
   const step: CoachStep | null = state?.active ? state.step : null;
   const anchor = step?.anchor ?? null;
+  const measureKey = `${anchor ?? ""}|${pathname}`;
+  const current = measured?.key === measureKey ? measured : null;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -69,18 +81,34 @@ export function OnboardingCoach() {
 
   // Track the target's position. Everything that writes state runs in a
   // callback (rAF, listener, observer) rather than the effect body.
+  //
+  // The mutation observer matters as much as the resize one: a home-page
+  // anchor often mounts after its data loads, and a client-side navigation
+  // swaps the whole subtree. Both surface here as a re-measure, which is what
+  // lets a step wait for its page instead of being dropped.
   useEffect(() => {
     if (!anchor) return;
 
     let frame = 0;
+    let pendingMeasure = 0;
+
     const measure = () => {
       const el = findAnchor(anchor);
       if (!el) {
-        setRect(null);
+        setMeasured({ key: measureKey, rect: null });
         return;
       }
       const r = el.getBoundingClientRect();
-      setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+      setMeasured({
+        key: measureKey,
+        rect: { top: r.top, left: r.left, width: r.width, height: r.height },
+      });
+    };
+
+    // Coalesce bursts of DOM churn into one measurement per frame.
+    const scheduleMeasure = () => {
+      cancelAnimationFrame(pendingMeasure);
+      pendingMeasure = requestAnimationFrame(measure);
     };
 
     // One frame's delay lets the step's own layout settle before measuring.
@@ -89,24 +117,27 @@ export function OnboardingCoach() {
       frame = requestAnimationFrame(measure);
     });
 
-    window.addEventListener("resize", measure);
-    window.addEventListener("scroll", measure, true);
-    const observer = new ResizeObserver(measure);
-    observer.observe(document.body);
+    window.addEventListener("resize", scheduleMeasure);
+    window.addEventListener("scroll", scheduleMeasure, true);
+    const resizeObserver = new ResizeObserver(scheduleMeasure);
+    resizeObserver.observe(document.body);
+    const mutationObserver = new MutationObserver(scheduleMeasure);
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
 
     return () => {
       cancelAnimationFrame(frame);
-      window.removeEventListener("resize", measure);
-      window.removeEventListener("scroll", measure, true);
-      observer.disconnect();
+      cancelAnimationFrame(pendingMeasure);
+      window.removeEventListener("resize", scheduleMeasure);
+      window.removeEventListener("scroll", scheduleMeasure, true);
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
     };
-  }, [anchor]);
+  }, [anchor, measureKey]);
 
   const advance = useCallback(async (stepId: string) => {
     setBusy(true);
     try {
       const { data } = await markCoachStepSeen(stepId);
-      setRect(null);
       setState(data);
     } catch {
       // Leave the coachmark up rather than pretending it was recorded.
@@ -150,48 +181,47 @@ export function OnboardingCoach() {
 
   if (!step) return null;
 
-  const viewportH = typeof window === "undefined" ? 0 : window.innerHeight;
-  const viewportW = typeof window === "undefined" ? 0 : window.innerWidth;
+  // A coachmark only ever appears attached to its target. Steps anchored to
+  // the home page therefore stay pending while the student is elsewhere —
+  // they're shown next time Home is open — while the nav-anchored steps, whose
+  // targets are in the sidebar/bottom nav, show on any screen. `current` being
+  // null means the anchor hasn't been measured on this route yet.
+  const rect = current?.rect ?? null;
+  if (!rect) return null;
+
+  const viewportH = window.innerHeight;
+  const viewportW = window.innerWidth;
 
   // Prefer sitting below the target; flip above when there isn't room.
-  const below = !rect || rect.top + rect.height + GAP + 200 < viewportH;
-  const bubbleTop = rect
-    ? below
-      ? rect.top + rect.height + GAP
-      : undefined
-    : Math.max(EDGE, viewportH / 2 - 120);
-  const bubbleBottom = rect && !below ? viewportH - rect.top + GAP : undefined;
-  const bubbleLeft = rect
-    ? Math.min(
-        Math.max(EDGE, rect.left + rect.width / 2 - BUBBLE_W / 2),
-        Math.max(EDGE, viewportW - BUBBLE_W - EDGE),
-      )
-    : Math.max(EDGE, viewportW / 2 - BUBBLE_W / 2);
+  const below = rect.top + rect.height + GAP + 200 < viewportH;
+  const bubbleTop = below ? rect.top + rect.height + GAP : undefined;
+  const bubbleBottom = below ? undefined : viewportH - rect.top + GAP;
+  const bubbleLeft = Math.min(
+    Math.max(EDGE, rect.left + rect.width / 2 - BUBBLE_W / 2),
+    Math.max(EDGE, viewportW - BUBBLE_W - EDGE),
+  );
 
   // Caret sits on the bubble's edge, horizontally over the target's centre.
-  const caretLeft = rect
-    ? Math.min(Math.max(16, rect.left + rect.width / 2 - bubbleLeft - 6), BUBBLE_W - 28)
-    : BUBBLE_W / 2 - 6;
+  const caretLeft = Math.min(
+    Math.max(16, rect.left + rect.width / 2 - bubbleLeft - 6),
+    BUBBLE_W - 28,
+  );
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[60]" role="dialog" aria-modal="false">
       {/* Backdrop + spotlight. The huge spread on a box-shadow paints
           everything except the target's own box, so the cut-out tracks the
           element without needing an SVG mask. */}
-      {rect ? (
-        <div
-          className="pointer-events-auto absolute rounded-xl ring-2 ring-warning/70 transition-all duration-200 dark:ring-[#FAF7F2]/70"
-          style={{
-            top: rect.top - 6,
-            left: rect.left - 6,
-            width: rect.width + 12,
-            height: rect.height + 12,
-            boxShadow: "0 0 0 9999px rgba(6, 6, 24, 0.6)",
-          }}
-        />
-      ) : (
-        <div className="pointer-events-auto absolute inset-0 bg-[#060618]/60" />
-      )}
+      <div
+        className="pointer-events-auto absolute rounded-xl ring-2 ring-warning/70 transition-all duration-200 dark:ring-[#FAF7F2]/70"
+        style={{
+          top: rect.top - 6,
+          left: rect.left - 6,
+          width: rect.width + 12,
+          height: rect.height + 12,
+          boxShadow: "0 0 0 9999px rgba(6, 6, 24, 0.6)",
+        }}
+      />
 
       <div
         className="pointer-events-auto absolute rounded-2xl bg-coach-surface shadow-modal"
@@ -202,13 +232,11 @@ export function OnboardingCoach() {
           width: BUBBLE_W,
         }}
       >
-        {rect && (
-          <span
-            aria-hidden="true"
-            className="absolute h-3 w-3 rotate-45 bg-coach-surface"
-            style={{ left: caretLeft, ...(below ? { top: -6 } : { bottom: -6 }) }}
-          />
-        )}
+        <span
+          aria-hidden="true"
+          className="absolute h-3 w-3 rotate-45 bg-coach-surface"
+          style={{ left: caretLeft, ...(below ? { top: -6 } : { bottom: -6 }) }}
+        />
 
         <div className="relative rounded-2xl border border-warning/25 p-4 dark:border-brand/10">
           <div className="flex items-start justify-between gap-3">
