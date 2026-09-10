@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { UserMenu } from "@/components/layout/UserMenu";
 import {
   BookIcon,
@@ -344,6 +345,11 @@ export default function ResourceLibraryPage() {
   const activeFilterLabel =
     CONTENT_FILTERS.find((option) => option.type === filter)?.label ?? "All resources";
 
+  // Subjects drive the tabs, the chapter list and the counts, so there's no
+  // page worth showing until they land — hold the whole thing behind the
+  // loader rather than flashing empty chrome.
+  if (loadingSubjects) return <PageLoader label="Loading your library…" />;
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -363,32 +369,25 @@ export default function ResourceLibraryPage() {
       {/* Subject tabs + content filter */}
       <div className="flex flex-col gap-4 rounded-2xl bg-surface px-4 py-4 shadow-[0px_4px_20px_0px_#00000008] sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <div className="flex flex-wrap gap-2" role="tablist" aria-label="Subjects">
-          {loadingSubjects
-            ? [0, 1, 2].map((key) => (
-                <span
-                  key={key}
-                  className="h-[38px] w-[104px] animate-pulse rounded-full bg-tint-strong"
-                />
-              ))
-            : subjects.map((subject) => {
-                const isActive = subject.id === activeSubjectId;
-                return (
-                  <button
-                    key={subject.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    onClick={() => selectSubject(subject.id)}
-                    className={`h-[38px] rounded-full px-5 text-[14px] font-semibold transition-colors ${
-                      isActive
-                        ? "bg-brand text-white"
-                        : "border border-tint-strong bg-tint-strong text-ink hover:border-brand/20"
-                    }`}
-                  >
-                    {subject.name}
-                  </button>
-                );
-              })}
+          {subjects.map((subject) => {
+            const isActive = subject.id === activeSubjectId;
+            return (
+              <button
+                key={subject.id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => selectSubject(subject.id)}
+                className={`h-[38px] rounded-full px-5 text-[14px] font-semibold transition-colors ${
+                  isActive
+                    ? "bg-brand text-white"
+                    : "border border-tint-strong bg-tint-strong text-ink hover:border-brand/20"
+                }`}
+              >
+                {subject.name}
+              </button>
+            );
+          })}
         </div>
 
         <div className="relative shrink-0">
@@ -488,7 +487,7 @@ export default function ResourceLibraryPage() {
           </div>
         )}
 
-        {!loadingSubjects && chapters.length === 0 && !error && (
+        {chapters.length === 0 && !error && (
           <p className="rounded-2xl border border-brand/10 bg-surface px-5 py-6 text-sm text-muted">
             No chapters yet for this subject.
           </p>

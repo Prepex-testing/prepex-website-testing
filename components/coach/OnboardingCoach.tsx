@@ -20,8 +20,8 @@ import {
  * step is due per schedule day, so there's a single action — "Got it" retires
  * it and the next arrives on its day. The × switches coaching off for good.
  *
- * Palette: light mode is the amber notice (#D68910 on #D689101A, pre-composited
- * as --coach-surface so the bubble stays opaque over the backdrop). Dark mode
+ * Palette: light mode is a white bubble (--coach-surface #FFFFFF, opaque so the
+ * dimmed page can't show through) inside a --coach-border hairline. Dark mode
  * drops the amber — it reads as a warning against the navy UI — for the dark
  * theme's own surface/brand blues, and the badge is the cream chip (#FAF7F2 on
  * #FAF7F214) used across the profile/plan/onboarding screens.
@@ -257,9 +257,9 @@ export function OnboardingCoach() {
           style={{ left: caretLeft, ...(below ? { top: -6 } : { bottom: -6 }) }}
         />
 
-        <div className="relative rounded-2xl border border-warning/25 p-4 dark:border-brand/10">
+        <div className="relative rounded-2xl border border-coach-border p-4 dark:border-brand/10">
           <div className="flex items-start justify-between gap-3">
-            <p className="inline-flex w-fit items-center rounded-full text-[12px] font-bold uppercase tracking-[0.6px] text-warning dark:bg-[#FAF7F2]/8 dark:px-2.5 dark:py-1 dark:text-[#FAF7F2]">
+            <p className="inline-flex w-fit items-center rounded-full bg-[#EEF0F8] px-2.5 py-1 text-[12px] font-bold uppercase tracking-[0.6px] text-ink dark:bg-[#FAF7F2]/8">
               {step.feature}
             </p>
             <button
@@ -267,25 +267,22 @@ export function OnboardingCoach() {
               disabled={busy}
               onClick={skipTour}
               aria-label="Dismiss walkthrough"
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-warning transition-colors hover:bg-warning/10 disabled:opacity-50 dark:text-muted dark:hover:bg-[#FAF7F2]/8 dark:hover:text-ink"
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-tint-strong"
             >
               <XIcon className="h-3 w-3" />
             </button>
           </div>
 
-          <p className="mt-2 text-[14px] font-medium leading-6 text-warning dark:text-ink">
+          <p className="mt-2 text-[14px] font-medium leading-6 text-muted">
             {step.message}
           </p>
 
-          {/* One coachmark a day, so a single action: "Got it" retires today's
-              step and the next one arrives on its own day. Turning the coach
-              off entirely is the × above. */}
-          <div className="mt-3 flex items-center justify-between gap-3">
+          <div className="mt-3 flex items-center justify-end gap-3">
             <button
               type="button"
               disabled={busy}
               onClick={() => advance(step.id)}
-              className="h-8 rounded-lg bg-warning px-4 text-[13px] font-bold text-warning-fg transition-opacity hover:opacity-90 disabled:opacity-50 dark:bg-[#FAF7F2] dark:text-[#0D0D2B]"
+              className="pr-1.5 text-[13px] font-bold text-[#FF7A54] transition-opacity hover:opacity-80 disabled:opacity-50"
             >
               Got it
             </button>
