@@ -3,6 +3,7 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { WhiteModal } from "@/components/ui/WhiteModal";
 import { ClockIcon, BookmarkIcon, DoubleArrowIcon } from "@/components/ui/icons";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -20,7 +21,6 @@ import {
   type PracticeSessionQuestion,
   type TaskQuestionsResponse,
 } from "@/lib/api/practice";
-import { BellIcon } from "@/assets/icons";
 
 /** How often the running timer is checkpointed to the server. */
 const PROGRESS_CHECKPOINT_MS = 15_000;
@@ -515,13 +515,7 @@ function PracticeModeContent() {
         <h1 className="text-h1 text-ink">Practice Mode</h1>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

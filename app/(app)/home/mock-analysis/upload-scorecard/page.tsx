@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
@@ -28,7 +29,7 @@ import {
   UploadIcon,
   InfoIcon,
 } from "@/components/ui/icons";
-import { ArrowLeftIcon, BellIcon } from "@/assets/icons";
+import { ArrowLeftIcon } from "@/assets/icons";
 import { DateField } from "@/components/ui/DateField";
 import { DurationInput } from "@/components/ui/DurationInput";
 
@@ -203,13 +204,7 @@ function UploadScorecardContent() {
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </motion.div>

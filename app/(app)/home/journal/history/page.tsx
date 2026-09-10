@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { CalendarIcon, ClockIcon, ArrowLeftIcon, BellIcon } from "@/assets/icons";
+import { CalendarIcon, ClockIcon, ArrowLeftIcon } from "@/assets/icons";
 import { getJournalHistory, type JournalCard } from "@/lib/api/journal";
 
 const MONTHS = [
@@ -193,13 +194,7 @@ export default function WinJournalHistoryPage() {
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

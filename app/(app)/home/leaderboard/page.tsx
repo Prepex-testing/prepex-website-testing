@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { PageLoader } from "@/components/ui/PageLoader";
 // import { FlameIcon } from "@/components/ui/icons";
-import { ClockIcon, TrophyIcons, UserIcon, BellIcon, ArrowLeftIcon, FlameIcon, TrendingUpIcon, TrendingDownIcon } from "@/assets/icons";
+import { ClockIcon, TrophyIcons, UserIcon, ArrowLeftIcon, FlameIcon, TrendingUpIcon, TrendingDownIcon } from "@/assets/icons";
 import { ChevronDownIcon } from "@/components/ui/icons";
 import {
   getLeaderboard,
@@ -112,13 +113,7 @@ export default function LeaderboardPage() {
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

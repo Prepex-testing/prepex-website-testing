@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
@@ -14,7 +15,6 @@ import {
   ArrowRightIcon,
   // AlertTriangleIcons,
   // AlertTriangleIcon,
-  // BellIcon,
   BoltIcon,
   BookOpenIcon,
   CalendarIcon,
@@ -34,7 +34,7 @@ import {
   type PracticeSessionDetail,
   type PracticeTopicAnalysis,
 } from "@/lib/api/practice";
-import { AlertTriangleIcon, BellIcon, ConceptualIcon, ConfirmIcon, DiceIcon, TimeIcon, VectorIcon } from "@/assets/icons";
+import { AlertTriangleIcon, ConceptualIcon, ConfirmIcon, DiceIcon, TimeIcon, VectorIcon } from "@/assets/icons";
 
 const TAG_ORDER: MistakeTag[] = [
   "CONCEPTUAL_GAP",
@@ -203,13 +203,7 @@ function MistakeAnalysisContent() {
         <h1 className="text-h1 text-ink">Practice Complete</h1>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>
