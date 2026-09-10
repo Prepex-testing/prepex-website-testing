@@ -350,9 +350,7 @@ export default function PlanPage() {
             </div>
 
             <div className="w-full rounded-2xl bg-surface p-4 shadow-sm sm:p-5 md:p-6">
-              {/* Month stats — a 2-column grid on phones so each stat keeps its
-                  own cell instead of wrapping mid-row and running together. */}
-              <div className="grid w-full grid-cols-2 gap-x-3 gap-y-2.5 sm:flex sm:flex-wrap sm:items-center sm:gap-x-4 md:gap-x-6">
+                    <div className="grid w-full grid-cols-2 gap-x-3 gap-y-2.5 sm:flex sm:flex-wrap sm:items-center sm:gap-x-4 md:gap-x-6">
                 <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
                   <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center text-cta [&>svg]:h-full [&>svg]:w-full sm:h-4 sm:w-4 md:h-[18px] md:w-[18px]">
                     <FlameIcon />
