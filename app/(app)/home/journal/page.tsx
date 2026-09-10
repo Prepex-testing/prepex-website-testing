@@ -88,7 +88,11 @@ function StatTile({
       </span>
       <div className="min-w-0">
         <p className="text-base font-bold text-[#FAF7F2]">{text}</p>
-        {caption && <p className="mt-1 text-sm text-[#8B8998]">{caption}</p>}
+        {caption && (
+          <p className="mt-1 text-[10px] font-medium leading-[12px] tracking-normal text-[#8B8998] sm:text-[11px] sm:leading-[13.2px]">
+            {caption}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -153,7 +157,7 @@ function WeeklyWinJournalContent() {
   // a failed mark must never block the card from rendering.
   useEffect(() => {
     if (!card || card.viewedAt) return;
-    markJournalViewed(card.id).catch(() => {});
+    markJournalViewed(card.id).catch(() => { });
   }, [card]);
 
   const handleGenerate = useCallback(async () => {
@@ -317,25 +321,24 @@ function WeeklyWinJournalContent() {
                 </div>
               )}
 
-              {/* Recovery / comeback framing */}
               {(card.stats.isRecoveryWeek ||
                 card.stats.badDayReturn ||
                 card.stats.lowEnergyDays > 0) && (
-                <div className="mt-4 rounded-2xl border border-[#FAF7F214] bg-[#FAF7F20F] p-5">
-                  <p className="text-sm text-[#8B8998]">
-                    {card.stats.isRecoveryWeek
-                      ? "You took a recovery week."
-                      : card.stats.lowEnergyDays > 0
-                        ? `You had ${card.stats.lowEnergyDays} low energy ${card.stats.lowEnergyDays === 1 ? "day" : "days"}.`
-                        : "You had a hard day this week."}
-                  </p>
-                  <p className="mt-1 text-base font-semibold text-[#FAF7F2]">
-                    {card.stats.isRecoveryWeek
-                      ? "You honored your recovery."
-                      : "You came back stronger."}
-                  </p>
-                </div>
-              )}
+                  <div className="mt-4 rounded-2xl border border-[#FAF7F214] bg-[#FAF7F20F] p-5">
+                    <p className="text-sm text-[#8B8998]">
+                      {card.stats.isRecoveryWeek
+                        ? "You took a recovery week."
+                        : card.stats.lowEnergyDays > 0
+                          ? `You had ${card.stats.lowEnergyDays} low energy ${card.stats.lowEnergyDays === 1 ? "day" : "days"}.`
+                          : "You had a hard day this week."}
+                    </p>
+                    <p className="mt-1 text-base font-semibold text-[#FAF7F2]">
+                      {card.stats.isRecoveryWeek
+                        ? "You honored your recovery."
+                        : "You came back stronger."}
+                    </p>
+                  </div>
+                )}
             </div>
           </div>
 
@@ -390,7 +393,7 @@ function WeeklyWinJournalContent() {
 
       <Link
         href="/home/journal/history"
-        className="text-center text-xl font-semibold text-ink"
+        className="text-center  text-[14px] font-semibold leading-[100%] tracking-[0%] text-ink sm:text-[15px] md:text-[16px]"
       >
         View History
       </Link>

@@ -227,14 +227,16 @@ export default function RevisionPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Link href="/home" aria-label="Back to Home" className="text-ink">
+      {/* Wraps only on mobile — from `sm` up the controls stay on the title's
+          row and the subtitle rewraps into the space that is left. */}
+      <div className="flex flex-wrap items-center justify-between gap-3 sm:flex-nowrap sm:gap-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <Link href="/home" aria-label="Back to Home" className="shrink-0 text-ink">
             <ArrowLeftIcon />
           </Link>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-h1 text-ink">Revision</h1>
-            <p className="max-w-xs text-sm leading-6 text-muted sm:max-w-none">
+            <p className="max-w-xs text-[13px] leading-5 text-muted sm:max-w-sm sm:text-sm sm:leading-6 md:max-w-md lg:max-w-xl">
               Review topics using spaced repetition. Consistent revision builds long-term
               mastery.
             </p>
