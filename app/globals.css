@@ -46,6 +46,10 @@
   --icon-chip-bg: #eef0f8;
   --plan-avatar-bg: #eef2ff;
 
+  /* Initial-letter avatar chip (leaderboard rows). */
+  --avatar-chip-bg: var(--tint);
+  --avatar-chip-text: var(--ink);
+
   --subject-physics: #2D2E6E;
   --subject-chemistry: #818CF8;
   --subject-maths: #C7D2FE;
@@ -195,6 +199,9 @@
   --icon-chip-bg: #ffffff;
   --plan-avatar-bg: #1a1a4e;
 
+  --avatar-chip-bg: #242453;
+  --avatar-chip-text: #ffffff;
+
   --subject-physics: #FAF7F2;
   --subject-chemistry: #4C1D95;
   --subject-maths: #8B8998;
@@ -342,6 +349,8 @@
   --color-subject-text: var(--subject-text);
   --color-icon-chip-bg: var(--icon-chip-bg);
   --color-plan-avatar-bg: var(--plan-avatar-bg);
+  --color-avatar-chip-bg: var(--avatar-chip-bg);
+  --color-avatar-chip-text: var(--avatar-chip-text);
   --color-toggle-on: var(--toggle-on);
   --color-icon-action-bg: var(--icon-action-bg);
   --color-icon-action-text: var(--icon-action-text);

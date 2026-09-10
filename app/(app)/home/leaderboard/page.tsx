@@ -6,8 +6,8 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { PageLoader } from "@/components/ui/PageLoader";
-import { FlameIcon } from "@/components/ui/icons";
-import { ClockIcon, TrophyIcons, UserIcon, BellIcon, ArrowLeftIcon } from "@/assets/icons";
+// import { FlameIcon } from "@/components/ui/icons";
+import { ClockIcon, TrophyIcons, UserIcon, BellIcon, ArrowLeftIcon, FlameIcon } from "@/assets/icons";
 import { ChevronDownIcon } from "@/components/ui/icons";
 import {
   getLeaderboard,
@@ -193,7 +193,7 @@ export default function LeaderboardPage() {
               <table className="w-full min-w-[620px] border-collapse text-left">
                 <thead>
                   <tr
-                    className={`text-[10px] font-medium uppercase tracking-[0.6px] ${
+                    className={`text-[10px] font-medium uppercase leading-4 tracking-[0.4px] sm:text-[11px] sm:tracking-[0.5px] md:text-[12px] md:leading-[18px] md:tracking-[0.6px] ${
                       isDark ? "bg-[#4B4B70] text-ink" : "bg-tint-strong text-muted"
                     }`}
                   >
@@ -213,11 +213,11 @@ export default function LeaderboardPage() {
                       }`}
                     >
                       <td className="py-4 pl-4 sm:pl-6">
-                        <div className="flex h-8 w-8 items-center justify-center">
+                        <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center">
                           {MEDALS[entry.rank] ? (
-                            <span className="text-3xl leading-none">{MEDALS[entry.rank]}</span>
+                            <span className="text-[34px] leading-none">{MEDALS[entry.rank]}</span>
                           ) : (
-                            <span className="text-sm font-semibold leading-none text-muted">
+                            <span className="text-[16px] font-bold leading-6 text-muted">
                               {entry.rank}
                             </span>
                           )}
@@ -225,11 +225,7 @@ export default function LeaderboardPage() {
                       </td>
                       <td className="py-4 pl-8">
                         <div className="flex items-center gap-3">
-                          <span
-                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[6.67px] text-sm font-bold ${
-                              isDark ? "bg-[#242453] text-white" : "bg-tint text-ink"
-                            }`}
-                          >
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6.67px] bg-avatar-chip-bg text-center font-[Plus_Jakarta_Sans] text-[18px] font-bold leading-none tracking-normal text-avatar-chip-text">
                             {entry.displayName.charAt(0).toUpperCase()}
                           </span>
                           <div className="min-w-0">
@@ -251,7 +247,9 @@ export default function LeaderboardPage() {
                       </td>
                       <td className="py-4 pl-8">
                         <span className="flex items-center gap-1 text-base font-semibold text-cta">
-                          <FlameIcon />
+                          {/* Flame marks the podium only — ranks 4 and below
+                              show the streak on its own. */}
+                          {entry.rank <= 3 && <FlameIcon className="h-3.5 w-3 shrink-0" />}
                           {entry.streak}d
                         </span>
                       </td>
