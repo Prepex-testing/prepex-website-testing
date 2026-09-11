@@ -1,13 +1,19 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { getStoredUser } from "@/lib/auth/session";
+import { getStoredUser, STORED_USER_CHANGE_EVENT } from "@/lib/auth/session";
 
-// The stored user is written once (login/verify/Google callback) and read on
-// a different page after a full navigation, so a no-op subscribe is enough —
-// there's no live update to react to within a single mounted page.
-function subscribe() {
-  return () => {};
+// The stored user is written at sign-in, and again when the student renames
+// themselves on the profile page — that second write happens while the header
+// and user menu are mounted, so they need to hear about it. `storage` covers
+// other tabs; the custom event covers this one.
+function subscribe(onChange: () => void) {
+  window.addEventListener("storage", onChange);
+  window.addEventListener(STORED_USER_CHANGE_EVENT, onChange);
+  return () => {
+    window.removeEventListener("storage", onChange);
+    window.removeEventListener(STORED_USER_CHANGE_EVENT, onChange);
+  };
 }
 
 function getSnapshot(): string {

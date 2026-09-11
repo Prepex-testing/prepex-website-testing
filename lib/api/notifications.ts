@@ -85,3 +85,83 @@ export function markAllNotificationsRead() {
     data: { markedRead: number; unreadCount: number; hasUnread: boolean };
   }>("/read-all", { method: "PATCH" });
 }
+
+// ---------------------------------------------------------------------------
+// PRD 19.9 — notification settings
+// ---------------------------------------------------------------------------
+
+/** PRD 19.2 — Functional (A), Engagement (B), Relational (C). */
+export type NotificationCategoryId = "FUNCTIONAL" | "ENGAGEMENT" | "RELATIONAL";
+
+/**
+ * One switch on the settings screen. Several notification types can sit under
+ * one group (all six mock reminders, say) — the server owns that mapping, so
+ * a new notification type appears here on its own without a client release.
+ */
+export type PreferenceGroup = {
+  id: string;
+  category: NotificationCategoryId;
+  label: string;
+  description: string;
+  types: NotificationType[];
+  enabled: boolean;
+  /** No opt-out — the tier-5 wellbeing message. Render it locked, not off. */
+  alwaysOn: boolean;
+};
+
+export type NotificationCategory = {
+  id: NotificationCategoryId;
+  label: string;
+  description: string;
+  /** PRD 19.6 ceiling for this category. Not yet enforced — see `enforced`. */
+  dailyCap: number;
+  enabled: boolean;
+  groups: PreferenceGroup[];
+};
+
+export type NotificationSettings = {
+  masterEnabled: boolean;
+  categories: NotificationCategory[];
+  quietHours: {
+    enabled: boolean;
+    /** "HH:MM", 24-hour. */
+    start: string;
+    end: string;
+    /** False until a push channel exists — the preference is stored only. */
+    enforced: boolean;
+  };
+  dailyCaps: {
+    total: number;
+    functional: number;
+    engagement: number;
+    relational: number;
+    enforced: boolean;
+  };
+};
+
+/** Every field optional — send only what changed. */
+export type NotificationSettingsPatch = {
+  masterEnabled?: boolean;
+  categories?: Partial<Record<NotificationCategoryId, boolean>>;
+  /** Keyed by preference-group id. */
+  groups?: Record<string, boolean>;
+  quietHours?: { enabled?: boolean; start?: string; end?: string };
+};
+
+export function getNotificationSettings() {
+  return authRequest<{ success: true; data: NotificationSettings }>("/settings");
+}
+
+export function updateNotificationSettings(patch: NotificationSettingsPatch) {
+  return authRequest<{ success: true; data: NotificationSettings }>("/settings", {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+}
+
+/** PRD 19.9 defaults: everything on, quiet hours 23:00–06:00. */
+export function resetNotificationSettings() {
+  return authRequest<{ success: true; data: NotificationSettings }>("/settings/reset", {
+    method: "POST",
+  });
+}

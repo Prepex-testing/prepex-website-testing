@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/components/layout/Sidebar";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
+import { useAvatarSrc } from "@/lib/profile/avatar";
+import { AvatarFace } from "@/components/ui/AvatarFace";
 import { ChevronRightIcon } from "@/components/ui/icons";
 
 type FocusSidebarProps = {
@@ -14,10 +16,13 @@ export function FocusSidebar({ onExpand }: FocusSidebarProps) {
   const pathname = usePathname();
   const storedFullName = useStoredFullName();
   const displayInitial = storedFullName.trim()[0]?.toUpperCase() ?? "S";
+  const avatarSrc = useAvatarSrc();
 
   return (
     <aside className="relative hidden w-24.25 flex-col items-center self-stretch border-r border-sidebar-border bg-surface px-6 py-8 lg:flex">
-      <span
+      <AvatarFace
+        src={avatarSrc}
+        fallback={displayInitial}
         className="
     flex
     h-8
@@ -34,9 +39,7 @@ export function FocusSidebar({ onExpand }: FocusSidebarProps) {
     dark:bg-[#FAF7F2]
     dark:text-[#171658]
   "
-      >
-        {displayInitial}
-      </span>
+      />
 
       {onExpand && (
         <button

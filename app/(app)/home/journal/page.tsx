@@ -200,14 +200,14 @@ function WeeklyWinJournalContent() {
             Win Journals are built every Friday evening from the week you just had. Study a
             couple of days this week and yours will be waiting.
           </p>
-          <button
+          {/* <button
             type="button"
             onClick={handleGenerate}
             disabled={generating}
             className="rounded-lg bg-[#FF7A59] px-8 py-2 text-base font-bold text-white transition hover:brightness-110 disabled:opacity-60"
           >
             {generating ? "Building…" : "Build it now"}
-          </button>
+          </button> */}
           {feedback?.message && (
             <p
               className={`text-sm ${feedback.ok ? "text-muted" : "text-danger"}`}

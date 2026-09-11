@@ -37,6 +37,21 @@ export function getStoredUser(): AuthUser | null {
   return raw ? (JSON.parse(raw) as AuthUser) : null;
 }
 
+/**
+ * Same-tab writes don't fire the native `storage` event, so a change to the
+ * stored user — a name edited on the profile page — also dispatches this, for
+ * useStoredFullName and anything else reading the stored user to pick up.
+ */
+export const STORED_USER_CHANGE_EVENT = "prepex-stored-user-change";
+
+export function updateStoredUser(patch: Partial<AuthUser>) {
+  if (!isBrowser()) return;
+  const current = getStoredUser();
+  if (!current) return;
+  localStorage.setItem(USER_KEY, JSON.stringify({ ...current, ...patch }));
+  window.dispatchEvent(new Event(STORED_USER_CHANGE_EVENT));
+}
+
 export function clearSession() {
   if (!isBrowser()) return;
   localStorage.removeItem(ACCESS_TOKEN_KEY);

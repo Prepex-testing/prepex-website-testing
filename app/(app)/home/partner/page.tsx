@@ -109,6 +109,9 @@ export default function PartnerPage() {
   const [isFinding, setFinding] = useState(false);
   const [isMatchOpen, setMatchOpen] = useState(false);
   const [isMatchSubmitting, setMatchSubmitting] = useState(false);
+  // The match card closes as soon as the student answers, so a failed
+  // accept/decline is reported on the page instead of inside it.
+  const [matchError, setMatchError] = useState<string | null>(null);
   const [waitingForPartner, setWaitingForPartner] = useState(false);
 
   // Sunday: prompt to set a goal if not already set — OK navigates to the
@@ -165,7 +168,9 @@ export default function PartnerPage() {
     setStatus(data);
 
     if (data.status === "PENDING") {
-      setMatchOpen(true);
+      // Only pop the card for a match they haven't answered yet — once
+      // they've accepted it stays closed while we wait for the partner.
+      setMatchOpen(!data.meAccepted);
       setWaitingForPartner(Boolean(data.meAccepted && !data.partnerAccepted));
     } else {
       setMatchOpen(false);
@@ -205,25 +210,28 @@ export default function PartnerPage() {
   };
 
   const handleAccept = async () => {
+    setMatchOpen(false);
     setMatchSubmitting(true);
+    setMatchError(null);
     try {
       await acceptMatch();
       await refetchStatus();
-    } catch {
-      // Best-effort — the modal stays open so the student can retry.
+    } catch (err) {
+      setMatchError(err instanceof Error ? err.message : "Couldn't accept the match. Please try again.");
     } finally {
       setMatchSubmitting(false);
     }
   };
 
   const handleDecline = async () => {
+    setMatchOpen(false);
     setMatchSubmitting(true);
+    setMatchError(null);
     try {
       await declineMatch();
-      setMatchOpen(false);
       await refetchStatus();
-    } catch {
-      // Best-effort — the modal stays open so the student can retry.
+    } catch (err) {
+      setMatchError(err instanceof Error ? err.message : "Couldn't decline the match. Please try again.");
     } finally {
       setMatchSubmitting(false);
     }
@@ -403,10 +411,20 @@ export default function PartnerPage() {
             <>
               <h2 className="text-h2 text-ink">Review your proposed partner</h2>
               <p className="max-w-md text-sm text-muted">Reopen the match card to accept or decline.</p>
-              <Button variant="primary" onClick={() => setMatchOpen(true)} className="mt-2 w-auto px-8">
-                View match
+              <Button
+                variant="primary"
+                onClick={() => setMatchOpen(true)}
+                disabled={isMatchSubmitting}
+                className="mt-2 w-auto px-8"
+              >
+                {isMatchSubmitting ? "Updating…" : "View match"}
               </Button>
             </>
+          )}
+          {matchError && (
+            <p role="alert" className="max-w-md text-sm font-medium text-danger">
+              {matchError}
+            </p>
           )}
         </div>
 

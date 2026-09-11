@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -19,32 +19,78 @@ import {
   LogoutIcon,
   PencilIcon,
   ChevronRightIcon,
-  SmileIcon,
-  RefreshIcon,
 } from "@/components/ui/icons";
 import { Button } from "@/components/ui/Button";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { Switch } from "@/components/ui/Switch";
+import { notificationGroupIcon } from "@/components/profile/notificationGroupIcons";
+import {
+  getNotificationSettings,
+  updateNotificationSettings,
+  type NotificationSettings,
+} from "@/lib/api/notifications";
 import { AvatarProgressRing } from "@/components/ui/AvatarProgressRing";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { SettingRow } from "@/components/profile/SettingRow";
 import { ToggleRow } from "@/components/profile/ToggleRow";
 import { EditProfileModal } from "@/components/profile/EditProfileModal";
+import { StudyPreferencesModal } from "@/components/profile/StudyPreferencesModal";
+import {
+  ACADEMIC_LEVEL_LABEL,
+  COACHING_TYPE_LABEL,
+  STUDY_WINDOW_LABEL,
+  getProfileOverview,
+  type ProfileOverview,
+} from "@/lib/api/profile";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
+import { useAvatarSrc } from "@/lib/profile/avatar";
 import { performLogout } from "@/lib/api/auth";
-import { QuickIcon, Coaching, GraduationCapIcon, UserIcons, CalendarIcons, ClockIcon, CalendarIcon, Patners, UserIcon, EditIcons } from "@/assets/icons";
-const PROFILE_COMPLETE = 72;
+import { QuickIcon, Coaching, GraduationCapIcon, UserIcons, CalendarIcons, ClockIcon, CalendarIcon, Patners, UserIcon } from "@/assets/icons";
+/** How many preference groups the profile page previews before "Manage All". */
+const PROFILE_NOTIFICATION_COUNT = 6;
 
-const DETAILS = [
-  { label: "Target Exam", value: "JEE Main + Advanced", icon: <QuickIcon /> },
-  { label: "Coaching", value: "Allen Kota", icon: <Coaching /> },
-  { label: "Class", value: "12th", icon: <GraduationCapIcon /> },
-  { label: "Batch", value: "Leader Batch", icon: <UserIcons /> },
-  { label: "Exam Date", value: "25 Jan 2027", icon: <CalendarIcons /> },
-  { label: "School", value: "Add School →", icon: <Coaching />, isLink: true },
-];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** "2027-01-25" -> "25 Jan 2027". Parsed by hand so no timezone shifts the day. */
+function formatDate(isoDate: string): string {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  return `${d} ${MONTHS[(m ?? 1) - 1]} ${y}`;
+}
+
+function formatTime(date: Date): string {
+  return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+/** "Today 9:24 AM" / "Yesterday 9:24 AM" / "3 Sep 2026". */
+function formatLastSeen(iso: string): string {
+  const seen = new Date(iso);
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const dayMs = 86_400_000;
+  if (seen.getTime() >= startOfToday.getTime()) return `Today ${formatTime(seen)}`;
+  if (seen.getTime() >= startOfToday.getTime() - dayMs) return `Yesterday ${formatTime(seen)}`;
+  return formatDate(seen.toISOString().slice(0, 10));
+}
+
+function countdownLabel(overview: ProfileOverview): string | null {
+  const days = overview.daysUntilExam;
+  if (days === null) return null;
+  const exam = overview.exam?.name ?? "your exam";
+  if (days < 0) return `${exam} date has passed`;
+  if (days === 0) return `${exam} is today`;
+  return `${days} ${days === 1 ? "Day" : "Days"} Until ${exam}`;
+}
+
+function initialsOf(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "S";
+  const first = parts[0]![0] ?? "";
+  const last = parts.length > 1 ? parts[parts.length - 1]![0] ?? "" : "";
+  return (first + last).toUpperCase();
+}
 
 const THEME_OPTIONS = [
   { id: "light", label: "Light Mode", icon: <SunIcon /> },
@@ -52,61 +98,125 @@ const THEME_OPTIONS = [
   { id: "system", label: "System Default", icon: <MonitorIcon /> },
 ] as const;
 
-const NOTIFICATION_ITEMS = [
-  {
-    id: "dailyPlan",
-    label: "Daily Plan Ready",
-    subtitle: "Get notified when your daily plan is ready",
-    icon: <CalendarIcon />,
-  },
-  {
-    id: "revision",
-    label: "Revision Reminders",
-    subtitle: "Reminders for revision tasks",
-    icon: <RefreshIcon />,
-  },
-  {
-    id: "journal",
-    label: "Weekly Win Journal",
-    subtitle: "Weekly summary and wins",
-    icon: <EditIcons />,
-  },
-  {
-    id: "emotional",
-    label: "Daily Emotional Check-In",
-    subtitle: "Reminder to check-in every morning",
-    icon: <SmileIcon />,
-  },
-  {
-    id: "practice",
-    label: "Practice Reminders",
-    subtitle: "Reminders for practice sessions",
-    icon: <PencilIcon />,
-  },
-  {
-    id: "parent",
-    label: "Parent Report Updates",
-    subtitle: "When weekly reports are sent",
-    icon: <UserIcon />,
-  },
-];
 
 export default function ProfilePage() {
   const router = useRouter();
   const storedFullName = useStoredFullName();
+  const avatarSrc = useAvatarSrc();
   const fullName = storedFullName || "Student";
-  const initial = fullName[0]?.toUpperCase() ?? "S";
   const [isEditOpen, setEditOpen] = useState(false);
+  const [isPrefsOpen, setPrefsOpen] = useState(false);
+  const [overview, setOverview] = useState<ProfileOverview | null>(null);
+  const [overviewError, setOverviewError] = useState(false);
   const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const { theme, setTheme } = useTheme();
-  const [notifications, setNotifications] = useState<Record<string, boolean>>({
-    "daily-plan": true,
-    "check-in": true,
-    revision: false,
-    practice: false,
-    "weekly-journal": true,
-    "parent-report": false,
-  });
+  // PRD 19.9 — the same server-owned preferences the full settings screen
+  // edits. This section shows the first few groups as a shortcut; "Manage All"
+  // goes to /profile/notifications for the rest.
+  //
+  // (This replaced a local useState whose keys — "daily-plan", "weekly-journal"
+  // — did not match the ids it was read by, so four of the six switches
+  // rendered permanently off no matter what the student had chosen.)
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getNotificationSettings()
+      .then(({ data }) => {
+        if (!controller.signal.aborted) setNotificationSettings(data);
+      })
+      .catch(() => {
+        // The section simply stays hidden — notification preferences failing
+        // to load must not take the rest of the profile with them.
+      });
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getProfileOverview()
+      .then(({ data }) => {
+        if (!controller.signal.aborted) setOverview(data);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setOverviewError(true);
+      });
+    return () => controller.abort();
+  }, []);
+
+  // The server's copy wins once it arrives; the stored name only bridges the
+  // first paint so the header isn't blank.
+  const displayName = overview?.fullName || fullName;
+  const completion = overview?.completion.percent ?? 0;
+  const examYear = overview?.examDate?.slice(0, 4);
+  const inCoaching = overview?.coachingType === "COACHING";
+  const prefs = overview?.studyPreferences ?? null;
+
+  // Batch only means something for a coaching student, so it's left out
+  // rather than shown as a blank for everyone else.
+  const details = overview
+    ? [
+        { label: "Target Exam", value: overview.exam?.name ?? "—", icon: <QuickIcon /> },
+        {
+          label: "Coaching",
+          value: inCoaching
+            ? overview.coachingName || "Coaching"
+            : overview.coachingType
+              ? COACHING_TYPE_LABEL[overview.coachingType]
+              : "—",
+          icon: <Coaching />,
+        },
+        {
+          label: "Class",
+          value: overview.currentLevel ? ACADEMIC_LEVEL_LABEL[overview.currentLevel] : "—",
+          icon: <GraduationCapIcon />,
+        },
+        ...(inCoaching
+          ? [{ label: "Batch", value: overview.batchName || "—", icon: <UserIcons /> }]
+          : []),
+        {
+          label: overview.examDateIsDefault ? "Exam Date (default)" : "Exam Date",
+          value: overview.examDate ? formatDate(overview.examDate) : "Not set",
+          icon: <CalendarIcons />,
+        },
+      ]
+    : [];
+
+  const partnerSummary = !overview?.partner
+    ? "Not connected"
+    : overview.partner.status === "PENDING"
+      ? "Match pending"
+      : overview.partner.name ?? "Connected";
+
+  const notificationGroups = (notificationSettings?.categories ?? [])
+    .flatMap((category) => category.groups)
+    .slice(0, PROFILE_NOTIFICATION_COUNT);
+
+  const setNotificationGroup = (groupId: string, enabled: boolean) => {
+    setNotificationSettings((current) =>
+      current
+        ? {
+            ...current,
+            categories: current.categories.map((category) => ({
+              ...category,
+              groups: category.groups.map((group) =>
+                group.id === groupId ? { ...group, enabled } : group,
+              ),
+            })),
+          }
+        : current,
+    );
+
+    void updateNotificationSettings({ groups: { [groupId]: enabled } })
+      .then(({ data }) => setNotificationSettings(data))
+      // Re-read rather than guess: a failed write leaves the switch showing
+      // whatever the server actually has.
+      .catch(() =>
+        getNotificationSettings()
+          .then(({ data }) => setNotificationSettings(data))
+          .catch(() => undefined),
+      );
+  };
 
   return (
     <div className="flex flex-col gap-5 p-4 sm:p-6 lg:p-8">
@@ -133,32 +243,54 @@ export default function ProfilePage() {
 
             {/* Progress */}
             <AvatarProgressRing
-              percent={PROFILE_COMPLETE}
-              initials="R"
+              percent={completion}
+              initials={initialsOf(displayName)}
+              imageUrl={avatarSrc}
               onCameraClick={() => setEditOpen(true)}
             />
 
-            <p className="mt-2 text-[10px] font-medium text-muted">
-              {PROFILE_COMPLETE}% Profile complete
+            {/* Hover lists what's still missing, so the number is actionable. */}
+            <p
+              className="mt-2 text-[10px] font-medium text-muted"
+              title={
+                overview && overview.completion.missing.length > 0
+                  ? `Still to add: ${overview.completion.missing.join(", ")}`
+                  : undefined
+              }
+            >
+              {overview ? `${completion}% Profile complete` : " "}
             </p>
 
             <h2 className="mt-4 text-center text-2xl font-bold text-ink">
-              {fullName}
+              {displayName}
             </h2>
 
             <div className="mt-3 flex flex-col items-center gap-2">
-              <p className="text-center text-[14px] font-semibold text-ink">
-                JEE Main + Advanced 2027
-              </p>
+              {overview?.exam && (
+                <p className="text-center text-[14px] font-semibold text-ink">
+                  {overview.exam.name}
+                  {examYear ? ` ${examYear}` : ""}
+                </p>
+              )}
 
-              <p className="flex items-center gap-2 text-[14px] font-semibold text-ink">
-                <CalendarIcon />
-                127 Days Until JEE Mains
-              </p>
+              {overview && countdownLabel(overview) && (
+                <p className="flex items-center gap-2 text-[14px] font-semibold text-ink">
+                  <CalendarIcon />
+                  {countdownLabel(overview)}
+                </p>
+              )}
 
-              <p className="text-[14px] text-muted">
-                Last seen · Today 9:24 AM
-              </p>
+              {overview?.lastSeenAt && (
+                <p className="text-[14px] text-muted">
+                  Last seen · {formatLastSeen(overview.lastSeenAt)}
+                </p>
+              )}
+
+              {overviewError && (
+                <p className="text-center text-[12px] text-muted">
+                  Couldn&apos;t load your profile details.
+                </p>
+              )}
             </div>
 
             <Button
@@ -175,7 +307,7 @@ export default function ProfilePage() {
           <div className="flex flex-1 justify-center lg:justify-start lg:pl-10">
             <div className="grid w-full max-w-160 grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-12">
 
-              {DETAILS.map((detail) => (
+              {details.map((detail) => (
                 <div
                   key={detail.label}
                   className="flex h-10 items-center gap-4"
@@ -191,10 +323,7 @@ export default function ProfilePage() {
                       {detail.label}
                     </p>
 
-                    <p
-                      className={`mt-1 truncate text-[14px] font-bold leading-5 ${detail.isLink ? "text-cta" : "text-ink"
-                        }`}
-                    >
+                    <p className="mt-1 truncate text-[14px] font-bold leading-5 text-ink">
                       {detail.value}
                     </p>
                   </div>
@@ -265,6 +394,7 @@ export default function ProfilePage() {
 
             <button
               type="button"
+              onClick={() => setPrefsOpen(true)}
               className="flex h-[66px] w-full items-center justify-between rounded-xl border border-brand/10 px-3 transition-colors hover:bg-tint/30"
             >
               <div className="flex items-center gap-4">
@@ -278,7 +408,11 @@ export default function ProfilePage() {
                   </p>
 
                   <p className="mt-0.5 text-xs leading-4 text-muted">
-                    6 hrs (Weekdays) • 8 hrs (Weekends)
+                    {!prefs
+                      ? "—"
+                      : prefs.sameDailyTarget
+                        ? `${prefs.weekdayHours} hrs every day`
+                        : `${prefs.weekdayHours} hrs (Weekdays) • ${prefs.weekendHours} hrs (Weekends)`}
                   </p>
                 </div>
               </div>
@@ -288,6 +422,7 @@ export default function ProfilePage() {
 
             <button
               type="button"
+              onClick={() => setPrefsOpen(true)}
               className="flex h-[66px] w-full items-center justify-between rounded-xl border border-brand/10 px-3 transition-colors hover:bg-tint/30"
             >
               <div className="flex items-center gap-4">
@@ -301,7 +436,9 @@ export default function ProfilePage() {
                   </p>
 
                   <p className="mt-0.5 text-xs leading-4 text-muted">
-                    Midday, Evening
+                    {prefs && prefs.studyWindows.length > 0
+                      ? prefs.studyWindows.map((w) => STUDY_WINDOW_LABEL[w]).join(", ")
+                      : "—"}
                   </p>
                 </div>
               </div>
@@ -334,7 +471,7 @@ export default function ProfilePage() {
                     </p>
 
                     <p className="mt-0.5 text-xs leading-4 text-muted">
-                      Amit Gupta
+                      {overview ? partnerSummary : " "}
                     </p>
                   </div>
                 </div>
@@ -357,18 +494,12 @@ export default function ProfilePage() {
                     </p>
 
                     <p className="mt-0.5 text-xs leading-4 text-muted">
-                      Connected
+                      Not connected
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <span className="rounded-full bg-tint px-3 py-1 text-[10px] font-bold text-ink">
-                    Active
-                  </span>
-
-                  <ChevronRightIcon />
-                </div>
+                <ChevronRightIcon className="h-5 w-5 text-muted" />
 
               </div>
             </Link>
@@ -395,126 +526,50 @@ export default function ProfilePage() {
           </Link>
         </div>
 
-        {/* Body */}
-        <div className="mt-8 grid grid-cols-1 gap-x-12 gap-y-6 lg:grid-cols-2">
+        {/* Body — the first few groups from the server catalog, split into
+            two columns. The full set lives behind "Manage All". */}
+        {notificationGroups.length === 0 ? (
+          <p className="mt-8 text-sm text-muted">Loading your preferences…</p>
+        ) : (
+          <div className="mt-8 grid grid-cols-1 gap-x-12 gap-y-6 lg:grid-cols-2">
+            {[
+              notificationGroups.slice(0, Math.ceil(notificationGroups.length / 2)),
+              notificationGroups.slice(Math.ceil(notificationGroups.length / 2)),
+            ].map((column, columnIndex) => (
+              <div key={columnIndex} className="space-y-6">
+                {column.map((group) => (
+                  <div key={group.id} className="flex items-center justify-between gap-4">
+                    <div className="flex min-w-0 items-center gap-4">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
+                        {notificationGroupIcon(group.id)}
+                      </div>
 
-          {/* LEFT COLUMN */}
-          <div className="space-y-6">
-            {NOTIFICATION_ITEMS.slice(0, 3).map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
-                    {item.icon}
+                      <div className="min-w-0">
+                        <p className="truncate text-[14px] font-semibold leading-5 text-ink">
+                          {group.label}
+                        </p>
+                        <p className="text-[12px] leading-4 text-muted">{group.description}</p>
+                      </div>
+                    </div>
+
+                    {group.alwaysOn ? (
+                      /* No opt-out by design — see the settings screen. */
+                      <span className="shrink-0 rounded-full bg-tint px-2.5 py-1 text-[10px] font-bold text-muted">
+                        Always on
+                      </span>
+                    ) : (
+                      <Switch
+                        checked={group.enabled}
+                        onChange={(checked) => setNotificationGroup(group.id, checked)}
+                        label={group.label}
+                      />
+                    )}
                   </div>
-
-                  <div>
-                    <p className="text-[14px] font-semibold leading-5 text-ink">
-                      {item.label}
-                    </p>
-
-                    <p className="text-[12px] leading-4 text-muted">
-                      {item.subtitle}
-                    </p>
-                  </div>
-                </div>
-
-                <label className="relative inline-flex cursor-pointer items-center">
-                  <input
-                    type="checkbox"
-                    className="peer sr-only"
-                    checked={notifications[item.id] ?? false}
-                    onChange={(e) =>
-                      setNotifications((current) => ({
-                        ...current,
-                        [item.id]: e.target.checked,
-                      }))
-                    }
-                  />
-
-                  <div
-                    className="
-                relative h-6 w-11 rounded-full
-                bg-tint
-                transition-colors
-                peer-checked:bg-brand
-                after:absolute
-                after:left-[2px]
-                after:top-[2px]
-                after:h-5
-                after:w-5
-                after:rounded-full
-                after:bg-white
-                after:transition-transform
-                peer-checked:after:translate-x-5
-              "
-                  />
-                </label>
+                ))}
               </div>
             ))}
           </div>
-
-          {/* RIGHT COLUMN */}
-          <div className="space-y-6">
-            {NOTIFICATION_ITEMS.slice(3).map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
-                    {item.icon}
-                  </div>
-
-                  <div>
-                    <p className="text-[14px] font-semibold leading-5 text-ink">
-                      {item.label}
-                    </p>
-
-                    <p className="text-[12px] leading-4 text-muted">
-                      {item.subtitle}
-                    </p>
-                  </div>
-                </div>
-
-                <label className="relative inline-flex cursor-pointer items-center">
-                  <input
-                    type="checkbox"
-                    className="peer sr-only"
-                    checked={notifications[item.id] ?? false}
-                    onChange={(e) =>
-                      setNotifications((current) => ({
-                        ...current,
-                        [item.id]: e.target.checked,
-                      }))
-                    }
-                  />
-
-                  <div
-                    className="
-                relative h-6 w-11 rounded-full
-                bg-tint
-                transition-colors
-                peer-checked:bg-brand
-                after:absolute
-                after:left-[2px]
-                after:top-[2px]
-                after:h-5
-                after:w-5
-                after:rounded-full
-                after:bg-white
-                after:transition-transform
-                peer-checked:after:translate-x-5
-              "
-                  />
-                </label>
-              </div>
-            ))}
-          </div>
-
-        </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-3 rounded-2xl border border-brand/10 bg-surface p-5">
@@ -563,7 +618,18 @@ export default function ProfilePage() {
         </div>
       </button>
 
-      <EditProfileModal open={isEditOpen} onClose={() => setEditOpen(false)} />
+      <EditProfileModal
+        open={isEditOpen}
+        onClose={() => setEditOpen(false)}
+        overview={overview}
+        onSaved={setOverview}
+      />
+      <StudyPreferencesModal
+        open={isPrefsOpen}
+        onClose={() => setPrefsOpen(false)}
+        preferences={prefs}
+        onSaved={setOverview}
+      />
       <ConfirmModal
         open={isLogoutConfirmOpen}
         onClose={() => setLogoutConfirmOpen(false)}

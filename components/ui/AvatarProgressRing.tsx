@@ -1,9 +1,12 @@
 import { useId } from "react";
 import { CameraIcon } from "@/components/ui/icons";
+import { AvatarFace } from "@/components/ui/AvatarFace";
 
 type AvatarProgressRingProps = {
   percent: number;
   initials: string;
+  /** Profile photo; the initials show when absent. */
+  imageUrl?: string | null;
   onCameraClick?: () => void;
   cameraLabel?: string;
 };
@@ -11,6 +14,7 @@ type AvatarProgressRingProps = {
 export function AvatarProgressRing({
   percent,
   initials,
+  imageUrl = null,
   onCameraClick,
   cameraLabel = "Change profile photo",
 }: AvatarProgressRingProps) {
@@ -54,9 +58,11 @@ export function AvatarProgressRing({
           </defs>
         </svg>
 
-        <span className="absolute inset-0 m-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand text-2xl font-bold text-white">
-          {initials}
-        </span>
+        <AvatarFace
+          src={imageUrl}
+          fallback={initials}
+          className="absolute inset-0 m-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand text-2xl font-bold text-white"
+        />
 
         {onCameraClick ? (
           <button
