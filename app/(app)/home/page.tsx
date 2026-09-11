@@ -31,6 +31,7 @@ import { PlannerCheckInModal } from "@/components/home/PlannerCheckInModal";
 import { WellnessResourceModal } from "@/components/home/WellnessResourceModal";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { formatFullDate } from "@/lib/utils/datetime";
+import { useGreeting } from "@/lib/utils/greeting";
 import {
   regeneratePlanForMood,
   generatePlan,
@@ -301,6 +302,7 @@ export default function HomePage() {
   const isDark = resolvedTheme === "dark";
   const storedFullName = useStoredFullName();
   const firstName = storedFullName.trim().split(/\s+/)[0] || "there";
+  const greeting = useGreeting();
   const [isQuickFocusOpen, setQuickFocusOpen] = useState(false);
   const [isPracticeModalOpen, setPracticeModalOpen] = useState(false);
   const [practiceTaskId, setPracticeTaskId] = useState<string | null>(null);
@@ -587,7 +589,9 @@ export default function HomePage() {
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-ink lg:text-h1">Good Morning, {firstName}</h1>
+          <h1 className="text-2xl font-bold text-ink lg:text-h1">
+            {greeting}, {firstName}
+          </h1>
           <p
             className={`text-sm text-muted transition-opacity duration-300 ${examCountdown ? "opacity-100" : "opacity-0"}`}
           >
