@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { StatCard } from "@/components/stats/StatCard";
+import { EmptyNote, StatCard } from "@/components/stats/StatCard";
 import { ChevronRightIcon } from "@/components/ui/icons";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { PrecisionRankedList } from "@/components/stats/PrecisionRankedList";
@@ -26,16 +26,13 @@ const MASTERY_COLORS = [
   { key: "mastered", label: "Mastered", bar: "bg-success", text: "#A5B4FC" },
 ] as const;
 
-function EmptyNote({ children }: { children: ReactNode }) {
-  return <p className="py-6 text-center text-xs font-medium leading-5 text-muted">{children}</p>;
-}
 
 /** "—" rather than a fabricated 0% when a topic has no measured accuracy. */
 function accuracyLabel(value: number | null): string {
   return value === null ? "—" : `${Math.round(value)}%`;
 }
 
-export default function ProgressStatsPage() {
+export function ProgressStats() {
   const [data, setData] = useState<ProgressTab | null>(null);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
@@ -29,6 +29,9 @@ const SCOPES: { key: LeaderboardScope; label: string }[] = [
 
 const DISPLAY_NAME_MAX = 50;
 
+/** Rows per page on first load — also the size the side card is capped at. */
+const DEFAULT_ROWS = 5;
+
 // Pagination arrows. BackIcon is an 8x12 chevron whose glyph fills 7.4 of that
 // width, so 7px tall renders the glyph at the spec's 4.32x7. The button's
 // 9/8/11/8 padding around it gives the 20x27 box from `sm` up; on phones it
@@ -44,13 +47,29 @@ export default function LeaderboardPage() {
   const [scope, setScope] = useState<LeaderboardScope>("global");
   const [page, setPage] = useState(1);
   // 5 rows by default — "Rows per page" can widen it from there.
-  const [limit, setLimit] = useState(5);
+  const [limit, setLimit] = useState(DEFAULT_ROWS);
   const [board, setBoard] = useState<Leaderboard | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Derived rather than a state flag flipped inside the effect: the board is
   // stale exactly while it is missing or still showing the previous scope.
   const isStale = board === null || board.scope !== scope;
+
+  // The side card matches the table at the default 5 rows, but must not grow
+  // past that when the table does (10 or 20 rows). The table is measured only
+  // while it shows the default size — including on resize, since its height
+  // changes with the screen — and that height becomes the side card's cap.
+  const tableCardRef = useRef<HTMLDivElement>(null);
+  const [sideCardCap, setSideCardCap] = useState<number | null>(null);
+  const boardLimit = board?.limit;
+
+  useEffect(() => {
+    const table = tableCardRef.current;
+    if (!table || boardLimit !== DEFAULT_ROWS) return;
+    const observer = new ResizeObserver(() => setSideCardCap(table.offsetHeight));
+    observer.observe(table);
+    return () => observer.disconnect();
+  }, [boardLimit]);
 
   const [isEditingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
@@ -168,7 +187,10 @@ export default function LeaderboardPage() {
 
       {/* Leaderboard + You panel */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px] lg:gap-8">
-        <div className="overflow-hidden rounded-2xl border border-brand/10 bg-surface shadow-[0px_1px_2px_0px_#0000000D]">
+        <div
+          ref={tableCardRef}
+          className="overflow-hidden rounded-2xl border border-brand/10 bg-surface shadow-[0px_1px_2px_0px_#0000000D]"
+        >
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-brand/10 px-4 py-4 text-xs text-muted sm:px-6">
             <span className="flex items-center gap-1">
               <ClockIcon />
@@ -270,9 +292,6 @@ export default function LeaderboardPage() {
           )}
 
           {board.entries.length > 0 && (
-            // Two rows below 2xl: the page strip alone on top, the controls
-            // beneath. From `lg` the card shares its row with the You panel and
-            // is only ~400px wide, so three groups side by side don't fit.
             <div className="grid grid-cols-2 items-center gap-x-3 gap-y-3 border-t border-brand/10 px-4 py-4 text-xs sm:px-6 2xl:grid-cols-[1fr_auto_1fr]">
               <div className="col-start-1 row-start-2 flex items-center gap-2 justify-self-start whitespace-nowrap text-muted 2xl:row-start-1">
                 <label htmlFor="rows-per-page">Rows per page:</label>
@@ -284,9 +303,6 @@ export default function LeaderboardPage() {
                       setLimit(Number(e.target.value));
                       setPage(1);
                     }}
-                    // 40x26 at 4/8px padding leaves ~24px inside, so the chevron is
-                    // shrunk and tucked into the right padding to clear the digits.
-                    // Same white/grey in both themes, per the spec.
                     className="h-[26px] w-10 appearance-none rounded-lg border border-[#E5E7EB] bg-white px-2 py-1 text-xs text-muted outline-none focus:border-brand"
                   >
                     {LEADERBOARD_PAGE_SIZES.map((size) => (
@@ -313,11 +329,6 @@ export default function LeaderboardPage() {
                   <BackIcon className={`${PAGE_ARROW_ICON} rotate-180`} />
                 </button>
 
-                {/* Fixed width, so the arrows never move. The range is 4-7
-                    entries depending on the current page (1 2 ... 9 vs.
-                    1 ... 4 5 6 ... 9), so a content-sized strip changed width
-                    on every click and slid both arrows sideways. It's sized for
-                    its longest form and centres whatever it holds. */}
                 <div
                   className="flex min-w-[calc(var(--slots)*1.75rem_+_(var(--slots)_-_1)*0.25rem)] items-center justify-center gap-1 sm:min-w-[calc(var(--slots)*2rem_+_(var(--slots)_-_1)*0.5rem)] sm:gap-2"
                   style={{ "--slots": Math.min(board.totalPages, 7) } as CSSProperties}
@@ -368,12 +379,12 @@ export default function LeaderboardPage() {
           )}
         </div>
 
-        {/* You panel */}
-        <div className="flex flex-col gap-6 rounded-[24px] border border-brand/10 bg-surface p-8 shadow-[0px_4px_20px_0px_#1A1F360D]">
+        <div
+          className="flex min-h-min flex-col gap-6 rounded-[24px] border border-brand/10 bg-surface p-8 shadow-[0px_4px_20px_0px_#1A1F360D]"
+          style={sideCardCap ? { maxHeight: sideCardCap } : undefined}
+        >
           <div className="flex items-center gap-4">
             <span
-              // Light text switches to navy with the fill: white on #EEF0F8 would
-              // all but disappear.
               className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-base font-bold ${
                 isDark ? "bg-white text-[#1A1A4E]" : "bg-[#EEF0F8] text-[#1A1A4E]"
               }`}
