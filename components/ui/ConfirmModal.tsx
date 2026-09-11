@@ -12,6 +12,10 @@ type ConfirmModalProps = {
   description: string;
   confirmLabel: string;
   cancelLabel?: string;
+  /** While true both buttons are disabled — guards a double submit. */
+  busy?: boolean;
+  /** Shown under the description, e.g. when the confirmed action failed. */
+  error?: string | null;
 };
 
 export function ConfirmModal({
@@ -22,6 +26,8 @@ export function ConfirmModal({
   description,
   confirmLabel,
   cancelLabel = "Cancel",
+  busy = false,
+  error = null,
 }: ConfirmModalProps) {
   return (
     <WhiteModal open={open} onClose={onClose} ariaLabel={title}>
@@ -47,10 +53,16 @@ export function ConfirmModal({
           </p>
         </div>
 
+        {error && (
+          <p role="alert" className="w-full max-w-[284px] pt-3 text-center text-[12px] font-semibold text-danger">
+            {error}
+          </p>
+        )}
+
         {/* Buttons — 340 × 90 */}
         <div className="flex h-[90px] w-full shrink-0 items-start gap-4 pt-8 max-[399px]:h-auto max-[399px]:flex-col">
           {/* Cancel */}
-          <Button variant="secondary" className="sm:flex-1" onClick={onClose}>
+          <Button variant="secondary" className="sm:flex-1" onClick={onClose} disabled={busy}>
 
             {cancelLabel}
 
@@ -64,6 +76,8 @@ export function ConfirmModal({
             className="border-danger sm:flex-1"
 
             onClick={onConfirm}
+
+            disabled={busy}
 
           >
 

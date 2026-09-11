@@ -23,6 +23,8 @@ export type AuthTokens = {
 export type AuthResult = {
   user: AuthUser;
   tokens: AuthTokens;
+  /** This sign-in cancelled a scheduled account deletion. */
+  restored: boolean;
 };
 
 function request<T>(path: string, options: RequestInit = {}): Promise<T> {

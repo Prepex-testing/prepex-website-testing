@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { UserIcon, LogoutIcon } from "@/components/ui/icons";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
+import { useAvatarSrc } from "@/lib/profile/avatar";
+import { AvatarFace } from "@/components/ui/AvatarFace";
 import { performLogout } from "@/lib/api/auth";
 
 type UserMenuProps = {
@@ -17,6 +19,7 @@ export function UserMenu({ name, initial }: UserMenuProps) {
   const storedFullName = useStoredFullName();
   const displayName = name ?? (storedFullName.trim().split(/\s+/)[0] || "Student");
   const displayInitial = initial ?? displayName[0]?.toUpperCase() ?? "S";
+  const avatarSrc = useAvatarSrc();
   const router = useRouter();
   const [isOpen, setOpen] = useState(false);
   const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
@@ -56,7 +59,9 @@ export function UserMenu({ name, initial }: UserMenuProps) {
     hover:bg-tint-strong
   "
       >
-        <span
+        <AvatarFace
+          src={avatarSrc}
+          fallback={displayInitial}
           className="
     flex
     h-8
@@ -73,9 +78,7 @@ export function UserMenu({ name, initial }: UserMenuProps) {
     dark:bg-[#FAF7F2]
     dark:text-[#171658]
   "
-        >
-          {displayInitial}
-        </span>
+        />
 
         <span
           className="

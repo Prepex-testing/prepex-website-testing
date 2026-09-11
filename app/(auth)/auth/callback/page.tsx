@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { getProfile, ApiError } from "@/lib/api/auth";
 import { saveSession } from "@/lib/auth/session";
+import { markAccountRestored } from "@/lib/auth/accountRestored";
 import { getOnboardingProgress, getOnboardingStepPath } from "@/lib/api/onboarding";
 import { getCheckInStatus } from "@/lib/api/checkin";
 
@@ -22,6 +23,8 @@ function GoogleCallbackHandler() {
   const searchParams = useSearchParams();
   const accessToken = searchParams.get("access_token");
   const refreshToken = searchParams.get("refresh_token");
+  // Set by auth-service when this Google sign-in cancelled a scheduled deletion.
+  const restored = searchParams.get("restored") === "1";
 
   const missingTokens = !accessToken || !refreshToken;
   const [asyncError, setAsyncError] = useState<string | null>(null);
@@ -33,6 +36,7 @@ function GoogleCallbackHandler() {
     getProfile(accessToken)
       .then(async ({ data: user }) => {
         saveSession({ accessToken, refreshToken }, user);
+        if (restored) markAccountRestored();
 
         try {
           const { data: onboarding } = await getOnboardingProgress();

@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import type { SubmitEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { MailIcon, LockIcon, GoogleIcon } from "@/components/ui/icons";
 import { login, getGoogleAuthUrl, ApiError } from "@/lib/api/auth";
 import { saveSession } from "@/lib/auth/session";
+import { markAccountRestored } from "@/lib/auth/accountRestored";
 import { getOnboardingProgress, getOnboardingStepPath } from "@/lib/api/onboarding";
 import { getCheckInStatus } from "@/lib/api/checkin";
 
@@ -36,6 +37,7 @@ export default function LoginPage() {
     try {
       const { data } = await login({ email, password });
       saveSession(data.tokens, data.user);
+      if (data.restored) markAccountRestored();
 
       try {
         const { data: onboarding } = await getOnboardingProgress();
@@ -75,6 +77,12 @@ export default function LoginPage() {
         <h1 className="text-h1 text-ink">Welcome back</h1>
         <p className="text-sm text-muted">Pick up where you left off</p>
       </div>
+
+      {/* useSearchParams needs a Suspense boundary; keeping it around just the
+          notice lets the rest of the page still prerender. */}
+      <Suspense fallback={null}>
+        <DeletionScheduledNotice />
+      </Suspense>
 
       <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
         {error && (
@@ -153,5 +161,33 @@ export default function LoginPage() {
         </Link>
       </p>
     </AuthCard>
+  );
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/**
+ * Shown after Account Settings schedules a deletion and signs the student out
+ * — `?deletionScheduled=<ISO>` carries the moment it becomes final. It tells
+ * them the one thing they can still do about it.
+ */
+function DeletionScheduledNotice() {
+  const searchParams = useSearchParams();
+  const finalAt = searchParams.get("deletionScheduled");
+  if (!finalAt) return null;
+
+  const date = new Date(finalAt);
+  const readable = Number.isNaN(date.getTime())
+    ? null
+    : `${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+
+  return (
+    <div role="status" className="mt-6 rounded-xl border border-warning/30 bg-warning-bg px-4 py-3 text-left">
+      <p className="text-[14px] font-bold text-warning">Your account is scheduled for deletion.</p>
+      <p className="mt-1 text-[13px] leading-5 text-body-text">
+        {readable ? `It will be deleted permanently on ${readable}. ` : ""}
+        Sign in before then to restore it.
+      </p>
+    </div>
   );
 }

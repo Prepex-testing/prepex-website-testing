@@ -7,6 +7,7 @@ import { FocusSidebar } from "@/components/layout/FocusSidebar";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { useCheckInGate } from "@/components/check-in/CheckInGate";
 import { OnboardingCoach } from "@/components/coach/OnboardingCoach";
+import { AccountRestoredNotice } from "@/components/auth/AccountRestoredNotice";
 
 // Immersive "focus" experiences: narrower sidebar, no check-in interruptions.
 // (The practice player also intercepts nav clicks to confirm leaving.)
@@ -91,6 +92,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 the student is on. Suppressed in the immersive focus paths,
                 where interrupting a running session would violate 16.7. */}
             {!isFocusMode && <OnboardingCoach />}
+            <AccountRestoredNotice />
             {children}
           </>
         ) : null}
