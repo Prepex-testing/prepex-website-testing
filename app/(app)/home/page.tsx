@@ -916,9 +916,18 @@ export default function HomePage() {
                 Study Consistency
               </h3>
 
-              <BackIcon
-                className="h-[10px] w-[6px] shrink-0 text-secondary sm:h-[12px] sm:w-[7.4px]"
-              />
+              {/* The chevron itself is ~6x10px — far too small to tap — so the
+                  link carries a 32px hit area. The negative margin keeps the
+                  glyph aligned to the card's right edge as before. */}
+              <Link
+                href="/home/streak"
+                aria-label="View streak details"
+                className="-mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-tint"
+              >
+                <BackIcon
+                  className="h-[10px] w-[6px] shrink-0 text-secondary sm:h-[12px] sm:w-[7.4px]"
+                />
+              </Link>
             </div>
 
             {consistency ? (

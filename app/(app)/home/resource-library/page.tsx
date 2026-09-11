@@ -7,7 +7,6 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { UserMenu } from "@/components/layout/UserMenu";
 import {
-  BookIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   SearchIcon,
@@ -23,8 +22,9 @@ import {
   type LibraryContentType,
   type LibraryCounts,
 } from "@/lib/api/library";
+import { BookIcon } from "@/assets/icons";
 
-const CHAPTERS_PER_PAGE = 8;
+const CHAPTERS_PER_PAGE = 5;
 
 /**
  * The "Show" dropdown. `type: null` is the default (every pill shown); picking
@@ -144,7 +144,7 @@ function ChapterSearch({
 
   return (
     <div ref={containerRef} className="relative w-full sm:w-[280px]">
-      <div className="flex h-[38px] items-center gap-2 rounded-lg border border-tint-strong bg-tint-strong px-3 transition-colors focus-within:border-brand/30">
+      <div className="flex h-9 items-center gap-2 rounded-lg border border-tint-strong bg-tint-strong px-3 transition-colors focus-within:border-brand/30 sm:h-[38px]">
         <span className="shrink-0 text-muted">
           <SearchIcon />
         </span>
@@ -215,6 +215,56 @@ function ChapterSearch({
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+/**
+ * The per-chapter resource tallies, shared by the table and the mobile cards.
+ * Every state — pills, the loading skeleton, the empty note — is one 30px row,
+ * so a chapter with nothing in it is exactly as tall as one with four pills and
+ * the rows below don't shift as the counts land.
+ */
+function ResourcePills({
+  ready,
+  pills,
+  counts,
+}: {
+  ready: boolean;
+  pills: typeof PILLS;
+  counts: LibraryCounts | undefined;
+}) {
+  if (!ready) {
+    return (
+      <div className="flex min-h-[26px] flex-wrap items-center gap-1.5 sm:min-h-[30px] sm:gap-2">
+        {[0, 1, 2].map((key) => (
+          <span
+            key={key}
+            className="h-[26px] w-[70px] animate-pulse rounded-full bg-tint-strong sm:h-[30px] sm:w-[82px]"
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (pills.length === 0) {
+    return (
+      <span className="flex h-[26px] items-center text-[11px] font-medium text-muted sm:h-[30px] sm:text-[12px]">
+        No resources found
+      </span>
+    );
+  }
+
+  return (
+    <div className="flex min-h-[26px] flex-wrap items-center gap-1.5 sm:min-h-[30px] sm:gap-2">
+      {pills.map((pill) => (
+        <span
+          key={pill.label}
+          className="flex h-[26px] items-center rounded-full bg-tint-strong px-2.5 text-[11px] font-semibold text-ink sm:h-[30px] sm:px-3 sm:text-[12px]"
+        >
+          {pill.label} · {counts?.[pill.key] ?? 0}
+        </span>
+      ))}
     </div>
   );
 }
@@ -353,9 +403,9 @@ export default function ResourceLibraryPage() {
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-h1 text-ink">Library</h1>
-          <p className="text-sm text-muted">
+        <div className="min-w-0">
+          <h1 className="text-[24px] font-bold leading-8 text-ink sm:text-[28px]">Library</h1>
+          <p className="text-[13px] leading-5 text-muted sm:text-sm">
             Notes, formula sheets, key points, and concept maps.
           </p>
         </div>
@@ -366,194 +416,176 @@ export default function ResourceLibraryPage() {
         </div>
       </div>
 
-      {/* Subject tabs + content filter */}
-      <div className="flex flex-col gap-4 rounded-2xl bg-surface px-4 py-4 shadow-[0px_4px_20px_0px_#00000008] sm:flex-row sm:items-center sm:justify-between sm:px-5">
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Subjects">
-          {subjects.map((subject) => {
-            const isActive = subject.id === activeSubjectId;
-            return (
-              <button
-                key={subject.id}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => selectSubject(subject.id)}
-                className={`h-[38px] rounded-full px-5 text-[14px] font-semibold transition-colors ${
-                  isActive
-                    ? "bg-brand text-white"
-                    : "border border-tint-strong bg-tint-strong text-ink hover:border-brand/20"
-                }`}
-              >
-                {subject.name}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="relative shrink-0">
-          <button
-            type="button"
-            onClick={() => setFilterOpen((open) => !open)}
-            aria-expanded={filterOpen}
-            aria-haspopup="listbox"
-            className="flex h-[38px] w-full items-center justify-between gap-2 rounded-lg border border-tint-strong bg-tint-strong px-4 text-[13px] font-medium text-ink transition-colors hover:border-brand/20 sm:w-[168px]"
-          >
-            <span className="truncate">{activeFilterLabel}</span>
-            <ChevronDownIcon className="h-4 w-4 shrink-0 text-muted" />
-          </button>
-
-          {filterOpen && (
-            <ul
-              role="listbox"
-              className="absolute right-0 z-20 mt-2 w-full min-w-[168px] overflow-hidden rounded-xl border border-brand/10 bg-surface py-1 shadow-lg"
-            >
-              {CONTENT_FILTERS.map((option) => (
-                <li key={option.label}>
-                  <button
-                    type="button"
-                    role="option"
-                    aria-selected={filter === option.type}
-                    onClick={() => {
-                      setFilter(option.type);
-                      setFilterOpen(false);
-                    }}
-                    className={`w-full px-4 py-2 text-left text-[13px] font-medium transition-colors hover:bg-tint ${
-                      filter === option.type ? "text-brand" : "text-ink"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
-
       {error && (
         <p className="rounded-xl border border-brand/10 bg-surface px-4 py-3 text-sm text-muted">
           {error}
         </p>
       )}
 
-      {/* Chapter rows */}
-      <div className="flex w-full flex-col gap-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tint text-ink">
+      {/* Chapters, as a table. The subject tabs, the chapter search and the
+          content filter all live in this card's own toolbar, so the controls
+          sit with the list they narrow rather than floating above it. */}
+      <section className="overflow-hidden rounded-[24px] border border-brand/10 bg-surface shadow-sm dark:shadow-[0_1px_4px_rgba(0,0,0,0.16)]">
+        <div className="flex flex-col gap-4 border-b border-brand/10 px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap gap-2" role="tablist" aria-label="Subjects">
+              {subjects.map((subject) => {
+                const isActive = subject.id === activeSubjectId;
+                return (
+                  <button
+                    key={subject.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => selectSubject(subject.id)}
+                    className={`h-9 rounded-full px-4 text-[13px] font-semibold transition-colors sm:h-[38px] sm:px-5 sm:text-[14px] ${
+                      isActive
+                        ? "bg-brand text-white"
+                        : "border border-tint-strong bg-tint-strong text-ink hover:border-brand/20"
+                    }`}
+                  >
+                    {subject.name}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center lg:shrink-0">
+              <ChapterSearch
+                chapters={chapters}
+                query={searchQuery}
+                onQueryChange={(value) => {
+                  setSearch({ subjectId: activeSubjectId, value });
+                  // Typing always means "browse again" — drop any picked chapter.
+                  setSelection(null);
+                  setPage(1);
+                }}
+                selectedChapter={selectedChapter}
+                onSelect={(chapter) => {
+                  setSearch({ subjectId: activeSubjectId, value: "" });
+                  setSelection({ subjectId: activeSubjectId, chapterId: chapter.id });
+                  setPage(1);
+                }}
+                onClear={clearSearch}
+              />
+
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setFilterOpen((open) => !open)}
+                  aria-expanded={filterOpen}
+                  aria-haspopup="listbox"
+                  className="flex h-9 w-full items-center justify-between gap-2 rounded-lg border border-tint-strong bg-tint-strong px-3 text-[13px] font-medium text-ink transition-colors hover:border-brand/20 sm:h-[38px] sm:w-[168px] sm:px-4"
+                >
+                  <span className="truncate">{activeFilterLabel}</span>
+                  <ChevronDownIcon className="h-4 w-4 shrink-0 text-muted" />
+                </button>
+
+                {filterOpen && (
+                  <ul
+                    role="listbox"
+                    className="absolute right-0 z-20 mt-2 w-full min-w-[168px] overflow-hidden rounded-xl border border-brand/10 bg-surface py-1 shadow-lg"
+                  >
+                    {CONTENT_FILTERS.map((option) => (
+                      <li key={option.label}>
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={filter === option.type}
+                          onClick={() => {
+                            setFilter(option.type);
+                            setFilterOpen(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-[13px] font-medium transition-colors hover:bg-tint ${
+                            filter === option.type ? "text-brand" : "text-ink"
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-tint text-ink sm:h-10 sm:w-10">
               <BookIcon />
             </span>
-            <span className="text-[20px] font-bold leading-7 text-ink">
+            <span className="text-[17px] font-bold leading-6 text-ink sm:text-[20px] sm:leading-7">
               {activeSubject?.name ?? "Chapters"}
             </span>
             {chapters.length > 0 && (
-              <span className="text-[14px] font-medium leading-5 text-muted">
+              <span className="text-[13px] font-medium leading-5 text-muted sm:text-[14px]">
                 {selectedChapter ? `1 of ${chapters.length} chapters` : `${chapters.length} chapters`}
               </span>
             )}
+            {selectedChapter && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="text-[12px] font-semibold text-brand transition-colors hover:opacity-80 sm:text-[13px]"
+              >
+                Show all chapters
+              </button>
+            )}
           </div>
-
-          <ChapterSearch
-            chapters={chapters}
-            query={searchQuery}
-            onQueryChange={(value) => {
-              setSearch({ subjectId: activeSubjectId, value });
-              // Typing always means "browse again" — drop any picked chapter.
-              setSelection(null);
-              setPage(1);
-            }}
-            selectedChapter={selectedChapter}
-            onSelect={(chapter) => {
-              setSearch({ subjectId: activeSubjectId, value: "" });
-              setSelection({ subjectId: activeSubjectId, chapterId: chapter.id });
-              setPage(1);
-            }}
-            onClear={clearSearch}
-          />
         </div>
 
-        {selectedChapter && (
-          <div className="flex flex-wrap items-center gap-2 text-[13px] text-muted">
-            <span>
-              Showing only <span className="font-semibold text-ink">{selectedChapter.name}</span>.
-            </span>
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="font-semibold text-brand transition-colors hover:opacity-80"
-            >
-              Show all chapters
-            </button>
-          </div>
-        )}
+        {/* Chapter rows. Kept as full-width cards rather than table columns:
+            the pills wrap freely and long chapter names get the whole row. */}
+        <div className="flex flex-col gap-3 p-4 sm:p-6 lg:px-8">
+          {visibleChapters.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted">
+              No chapters yet for this subject.
+            </p>
+          ) : (
+            visibleChapters.map((chapter) => {
+              // The counts endpoint omits chapters with nothing in them, so a
+              // missing entry means zero once the subject's counts have loaded.
+              const chapterCounts = counts[chapter.id];
+              const pills = PILLS.filter(
+                (pill) => (!filter || pill.type === filter) && (chapterCounts?.[pill.key] ?? 0) > 0,
+              );
 
-        {chapters.length === 0 && !error && (
-          <p className="rounded-2xl border border-brand/10 bg-surface px-5 py-6 text-sm text-muted">
-            No chapters yet for this subject.
-          </p>
-        )}
-
-        <div className="flex flex-col gap-3">
-          {visibleChapters.map((chapter) => {
-            // The counts endpoint omits chapters with nothing in them, so a
-            // missing entry means zero once the subject's counts have loaded.
-            const chapterCounts = counts[chapter.id];
-            const pills = PILLS.filter(
-              (pill) => (!filter || pill.type === filter) && (chapterCounts?.[pill.key] ?? 0) > 0,
-            );
-
-            return (
-              <Link
-                key={chapter.id}
-                href={chapterHref(activeSubject?.name ?? "", chapter.name, filter)}
-                className="flex items-center justify-between gap-4 rounded-2xl border border-brand/5 bg-surface px-5 py-4 shadow-sm transition-colors hover:border-brand/20 sm:px-6"
-              >
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-[17px] font-bold leading-7 text-ink sm:text-[18px]">
-                    {chapter.name}
-                  </h3>
-                  <p className="mt-0.5 text-[13px] font-medium leading-5 text-muted sm:text-[14px]">
-                    {chapterLabel(chapter.sequenceOrder, chapter.class)}
-                  </p>
-
-                  <div className="mt-2.5 flex flex-wrap gap-2">
-                    {countsReady
-                      ? pills.map((pill) => (
-                          <span
-                            key={pill.label}
-                            className="rounded-full bg-tint-strong px-3 py-1.5 text-[12px] font-semibold text-ink"
-                          >
-                            {pill.label} · {chapterCounts?.[pill.key] ?? 0}
-                          </span>
-                        ))
-                      : [0, 1, 2].map((key) => (
-                          <span
-                            key={key}
-                            className="h-[30px] w-[82px] animate-pulse rounded-full bg-tint-strong"
-                          />
-                        ))}
-
-                    {countsReady && pills.length === 0 && (
-                      <span className="text-[12px] font-medium text-muted">
-                        No resources found
-                      </span>
-                    )}
+              return (
+                <Link
+                  key={chapter.id}
+                  href={chapterHref(activeSubject?.name ?? "", chapter.name, filter)}
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-brand/5 bg-surface px-4 py-3.5 shadow-sm transition-colors hover:border-brand/20 sm:gap-4 sm:px-6 sm:py-4"
+                >
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-[15px] font-bold leading-6 text-ink sm:text-[18px] sm:leading-7">
+                      {chapter.name}
+                    </h3>
+                    <p className="mt-0.5 text-[12px] font-medium leading-5 text-muted sm:text-[14px]">
+                      {chapterLabel(chapter.sequenceOrder, chapter.class)}
+                    </p>
+                    <div className="mt-2 sm:mt-2.5">
+                      <ResourcePills
+                        ready={countsReady}
+                        pills={pills}
+                        counts={chapterCounts}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />
-              </Link>
-            );
-          })}
+                  <ChevronRightIcon className="h-4 w-4 shrink-0 text-muted sm:h-5 sm:w-5" />
+                </Link>
+              );
+            })
+          )}
         </div>
 
         {listedChapters.length > CHAPTERS_PER_PAGE && (
-          <div className="mt-2 flex flex-col items-center justify-center gap-3 border-t border-brand/10 pt-4 md:relative md:flex-row">
+          <div className="flex min-h-[68px] flex-col items-center justify-center gap-3 border-t border-brand/10 px-4 py-4 sm:px-6 lg:px-8 md:relative md:flex-row md:py-5">
             <p className="text-center text-caption leading-4 text-muted">
               Showing {visibleChapters.length} of {listedChapters.length} chapters
             </p>
 
-            <div className="flex items-center justify-center gap-3 md:absolute md:right-0">
+            <div className="flex items-center justify-center gap-3 md:absolute md:right-4 sm:md:right-6 lg:md:right-8">
               <button
                 type="button"
                 onClick={() => setPage(Math.max(1, safePage - 1))}
@@ -580,7 +612,7 @@ export default function ResourceLibraryPage() {
             </div>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

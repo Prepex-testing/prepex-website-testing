@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
@@ -8,7 +8,7 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { PageLoader } from "@/components/ui/PageLoader";
 // import { FlameIcon } from "@/components/ui/icons";
-import { ClockIcon, TrophyIcons, UserIcon, ArrowLeftIcon, FlameIcon, TrendingUpIcon, TrendingDownIcon } from "@/assets/icons";
+import { ClockIcon, TrophyIcons, UserIcon, ArrowLeftIcon, FlameIcon, TrendingUpIcon, TrendingDownIcon, BackIcon } from "@/assets/icons";
 import { ChevronDownIcon } from "@/components/ui/icons";
 import {
   getLeaderboard,
@@ -28,6 +28,14 @@ const SCOPES: { key: LeaderboardScope; label: string }[] = [
 ];
 
 const DISPLAY_NAME_MAX = 50;
+
+// Pagination arrows. BackIcon is an 8x12 chevron whose glyph fills 7.4 of that
+// width, so 7px tall renders the glyph at the spec's 4.32x7. The button's
+// 9/8/11/8 padding around it gives the 20x27 box from `sm` up; on phones it
+// stays a 32px square, since a 20px-wide target is hard to hit by thumb.
+const PAGE_ARROW_BUTTON =
+  "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent sm:h-auto sm:w-auto sm:px-2 sm:pb-[11px] sm:pt-[9px]";
+const PAGE_ARROW_ICON = "h-[7px] w-[4.67px] shrink-0";
 
 export default function LeaderboardPage() {
   const { resolvedTheme } = useTheme();
@@ -261,11 +269,12 @@ export default function LeaderboardPage() {
             </div>
           )}
 
-          {/* Pagination — walks the visible top-50 set (PRD 10.5.2). Rank stays
-              absolute across pages, so row 21 reads "21", not "1". */}
           {board.entries.length > 0 && (
-            <div className="flex flex-col items-center gap-3 border-t border-brand/10 px-4 py-4 text-xs sm:flex-row sm:justify-between sm:px-6">
-              <div className="flex items-center gap-2 text-muted">
+            // Two rows below 2xl: the page strip alone on top, the controls
+            // beneath. From `lg` the card shares its row with the You panel and
+            // is only ~400px wide, so three groups side by side don't fit.
+            <div className="grid grid-cols-2 items-center gap-x-3 gap-y-3 border-t border-brand/10 px-4 py-4 text-xs sm:px-6 2xl:grid-cols-[1fr_auto_1fr]">
+              <div className="col-start-1 row-start-2 flex items-center gap-2 justify-self-start whitespace-nowrap text-muted 2xl:row-start-1">
                 <label htmlFor="rows-per-page">Rows per page:</label>
                 <div className="relative">
                   <select
@@ -275,7 +284,10 @@ export default function LeaderboardPage() {
                       setLimit(Number(e.target.value));
                       setPage(1);
                     }}
-                    className="h-8 appearance-none rounded-md border border-brand/15 bg-surface pl-2 pr-7 text-xs text-muted outline-none focus:border-brand"
+                    // 40x26 at 4/8px padding leaves ~24px inside, so the chevron is
+                    // shrunk and tucked into the right padding to clear the digits.
+                    // Same white/grey in both themes, per the spec.
+                    className="h-[26px] w-10 appearance-none rounded-lg border border-[#E5E7EB] bg-white px-2 py-1 text-xs text-muted outline-none focus:border-brand"
                   >
                     {LEADERBOARD_PAGE_SIZES.map((size) => (
                       <option key={size} value={size}>
@@ -283,58 +295,73 @@ export default function LeaderboardPage() {
                       </option>
                     ))}
                   </select>
-                  <ChevronDownIcon className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted" />
+                  <ChevronDownIcon className="pointer-events-none absolute right-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 text-muted" />
                 </div>
               </div>
 
               <nav
                 aria-label="Leaderboard pages"
-                className="order-first flex flex-wrap items-center justify-center gap-1 sm:order-none"
+                className="col-span-2 row-start-1 flex items-center gap-1 justify-self-center sm:gap-2 2xl:col-span-1 2xl:col-start-2"
               >
                 <button
                   type="button"
                   onClick={() => setPage(Math.max(1, board.page - 1))}
                   disabled={board.page <= 1}
                   aria-label="Previous page"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                  className={PAGE_ARROW_BUTTON}
                 >
-                  ‹
+                  <BackIcon className={`${PAGE_ARROW_ICON} rotate-180`} />
                 </button>
 
-                {paginationRange(board.page, board.totalPages).map((item, index) =>
-                  item === "ellipsis" ? (
-                    <span key={`gap-${index}`} className="px-1 text-muted">
-                      …
-                    </span>
-                  ) : (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() => setPage(item)}
-                      aria-current={item === board.page ? "page" : undefined}
-                      className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
-                        item === board.page
-                          ? "bg-cta text-white"
-                          : "font-medium text-ink hover:bg-tint-strong"
-                      }`}
-                    >
-                      {item}
-                    </button>
-                  ),
-                )}
+                {/* Fixed width, so the arrows never move. The range is 4-7
+                    entries depending on the current page (1 2 ... 9 vs.
+                    1 ... 4 5 6 ... 9), so a content-sized strip changed width
+                    on every click and slid both arrows sideways. It's sized for
+                    its longest form and centres whatever it holds. */}
+                <div
+                  className="flex min-w-[calc(var(--slots)*1.75rem_+_(var(--slots)_-_1)*0.25rem)] items-center justify-center gap-1 sm:min-w-[calc(var(--slots)*2rem_+_(var(--slots)_-_1)*0.5rem)] sm:gap-2"
+                  style={{ "--slots": Math.min(board.totalPages, 7) } as CSSProperties}
+                >
+                  {paginationRange(board.page, board.totalPages).map((item, index) =>
+                    item === "ellipsis" ? (
+                      // Same box as a page button, so it can't change the width either.
+                      <span
+                        key={`gap-${index}`}
+                        className="flex h-7 w-7 items-center justify-center text-muted sm:h-8 sm:w-8"
+                      >
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => setPage(item)}
+                        aria-current={item === board.page ? "page" : undefined}
+                        className={`flex h-7 w-7 items-center justify-center rounded-lg text-[13px] font-semibold tabular-nums transition-colors sm:h-8 sm:w-8 sm:text-sm ${
+                          item === board.page
+                            ? "bg-cta text-white"
+                            : "font-medium text-ink hover:bg-tint-strong"
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    ),
+                  )}
+                </div>
 
                 <button
                   type="button"
                   onClick={() => setPage(Math.min(board.totalPages, board.page + 1))}
                   disabled={board.page >= board.totalPages}
                   aria-label="Next page"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                  className={PAGE_ARROW_BUTTON}
                 >
-                  ›
+                  <BackIcon className={PAGE_ARROW_ICON} />
                 </button>
               </nav>
 
-              <div className="text-muted">
+              {/* tabular-nums: "1-5" and "11-15" otherwise differ in width. */}
+              <div className="col-start-2 row-start-2 justify-self-end text-right tabular-nums text-muted 2xl:col-start-3 2xl:row-start-1">
                 Showing {board.rangeStart}-{board.rangeEnd} of {board.visibleCount} students
               </div>
             </div>
@@ -345,8 +372,10 @@ export default function LeaderboardPage() {
         <div className="flex flex-col gap-6 rounded-[24px] border border-brand/10 bg-surface p-8 shadow-[0px_4px_20px_0px_#1A1F360D]">
           <div className="flex items-center gap-4">
             <span
+              // Light text switches to navy with the fill: white on #EEF0F8 would
+              // all but disappear.
               className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-base font-bold ${
-                isDark ? "bg-white text-[#1A1A4E]" : "bg-brand text-white"
+                isDark ? "bg-white text-[#1A1A4E]" : "bg-[#EEF0F8] text-[#1A1A4E]"
               }`}
             >
               {(board.myDisplayName ?? "?").charAt(0).toUpperCase()}
@@ -425,8 +454,12 @@ export default function LeaderboardPage() {
               isDark ? "bg-[#4B4B70]" : "bg-tint-strong"
             }`}
           >
-            <p className="text-2xl font-extrabold text-ink">{board.myScore}</p>
-            <p className="text-[10px] uppercase tracking-wide text-muted">Effort Score</p>
+            <p className="font-[Plus_Jakarta_Sans] text-[24px] font-extrabold leading-none tracking-normal text-ink sm:text-[28px] md:text-[32px]">
+              {board.myScore}
+            </p>
+            <p className="mt-1 font-[Plus_Jakarta_Sans] text-[10px] font-extrabold uppercase leading-[15px] tracking-[2.5px] text-[#41455F] dark:text-primary">
+              Effort Score
+            </p>
           </div>
         </div>
       </div>
@@ -435,8 +468,9 @@ export default function LeaderboardPage() {
       <div className="grid w-full grid-cols-1 gap-4 pt-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
         <div className="flex min-h-[137px] flex-col justify-between gap-4 rounded-2xl border border-brand/10 bg-surface p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-bold leading-4 text-muted">Rank Velocity</p>
-            <span className="text-[10px] font-medium text-muted">
+            <p className="text-xs font-bold leading-4 text-modal-subtext">Rank Velocity</p>
+  
+            <span className="inline-flex items-center rounded bg-[#DCFCE7] px-2 py-1 text-[10px] font-medium leading-[15px] text-[#15803D]">
               {board.myPreviousRank !== null ? `Was #${board.myPreviousRank}` : "Since yesterday"}
             </span>
           </div>
@@ -463,7 +497,7 @@ export default function LeaderboardPage() {
                     ? `+${board.myRankVelocity}`
                     : board.myRankVelocity}
               </p>
-              <p className="text-xs font-medium text-muted">
+              <p className="text-xs font-medium text-modal-subtext">
                 {board.myRankVelocity === null
                   ? "Not ranked yesterday"
                   : board.myRankVelocity === 0
@@ -478,9 +512,9 @@ export default function LeaderboardPage() {
 
         <div className="flex min-h-[137px] flex-col justify-between gap-4 rounded-2xl border border-brand/10 bg-surface p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-bold leading-4 text-muted">Percentile</p>
+            <p className="text-xs font-bold leading-4 text-modal-subtext">Percentile</p>
             {board.myPercentile !== null && (
-              <span className="text-[10px] font-semibold uppercase text-muted">
+              <span className="text-[10px] font-semibold uppercase text-modal-subtext">
                 Top {Math.max(0, Math.round(100 - board.myPercentile))}%
               </span>
             )}
@@ -506,8 +540,8 @@ export default function LeaderboardPage() {
 
         <div className="flex min-h-[137px] flex-col justify-between gap-4 rounded-2xl border border-brand/10 bg-surface p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-bold leading-4 text-muted">Current Tier</p>
-            <span className="text-[10px] font-medium text-muted">From your percentile</span>
+            <p className="text-xs font-bold leading-4 text-modal-subtext">Current Tier</p>
+            <span className="text-[10px] font-medium text-modal-subtext">From your percentile</span>
           </div>
           <div className="flex items-center gap-4">
             <span
