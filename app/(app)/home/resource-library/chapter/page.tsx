@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { motion } from "motion/react";
 import { BookmarkIcon, ChevronDownIcon, ChevronRightIcon, PlayIcon } from "@/components/ui/icons";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { TargetIcon, ComputerIcon, ArrowLeftIcon } from "@/assets/icons";
@@ -48,6 +49,8 @@ function useLibrarySection(
   // in the effect body.
   const [result, setResult] = useState<{
     key: string;
+    filterKey: string;
+    page: number;
     data: ResourceLibraryResponse | null;
     failed: boolean;
   } | null>(null);
@@ -70,23 +73,38 @@ function useLibrarySection(
       { signal: controller.signal },
     )
       .then(({ data: payload }) => {
-        if (!controller.signal.aborted) setResult({ key: requestKey, data: payload, failed: false });
+        if (!controller.signal.aborted) {
+          setResult({ key: requestKey, filterKey, page, data: payload, failed: false });
+        }
       })
       .catch(() => {
-        if (!controller.signal.aborted) setResult({ key: requestKey, data: null, failed: true });
+        if (!controller.signal.aborted) {
+          setResult({ key: requestKey, filterKey, page, data: null, failed: true });
+        }
       });
 
     return () => controller.abort();
-  }, [contentType, subjectName, chapterName, page, isPYQ, requestKey]);
+  }, [contentType, subjectName, chapterName, page, isPYQ, requestKey, filterKey]);
 
   const settled = result?.key === requestKey;
   const hasTarget = Boolean(subjectName && chapterName);
 
+  // A page change keeps the page it's leaving on screen until the next one
+  // lands. Dropping to a skeleton instead collapsed the list mid-fetch and
+  // shoved everything below it up, then back down.
+  const stale = !settled && result?.filterKey === filterKey && !result.failed ? result : null;
+  const visible = settled ? result : stale;
+
   return {
-    data: settled ? result.data : null,
+    data: visible?.data ?? null,
+    /** Page the on-screen data belongs to — lags `page` while a fetch is in flight. */
+    dataPage: visible?.page ?? page,
     page,
     setPage,
-    loading: hasTarget && !settled,
+    /** No data to show at all: first load, or the filter changed. */
+    loading: hasTarget && !settled && !stale,
+    /** A page change is in flight while the previous page stays visible. */
+    fetching: hasTarget && !settled && Boolean(stale),
     failed: settled ? result.failed : false,
   };
 }
@@ -102,6 +120,9 @@ function SectionShell({
   onPage,
   shown,
   action,
+  collapsed = false,
+  fetching = false,
+  contentKey,
   children,
 }: {
   icon: React.ReactNode;
@@ -114,6 +135,12 @@ function SectionShell({
   onPage: (next: number) => void;
   shown: number;
   action?: React.ReactNode;
+  /** Header and count only — no list, empty state, or pagination. */
+  collapsed?: boolean;
+  /** A new page is loading behind the current one. */
+  fetching?: boolean;
+  /** Identifies the page actually on screen; a change cross-fades the list. */
+  contentKey?: string | number;
   children: React.ReactNode;
 }) {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -139,11 +166,11 @@ function SectionShell({
         {action}
       </div>
 
-      {failed && (
+      {!collapsed && failed && (
         <p className="mt-5 text-sm text-muted">Couldn&apos;t load this section. Please try again.</p>
       )}
 
-      {loading && !failed && (
+      {!collapsed && loading && !failed && (
         <div className="mt-5 grid grid-cols-1 gap-4 sm:mt-6 lg:grid-cols-2 lg:gap-6">
           {[0, 1].map((key) => (
             <span key={key} className="h-[96px] animate-pulse rounded-2xl bg-tint-strong" />
@@ -151,13 +178,32 @@ function SectionShell({
         </div>
       )}
 
-      {!loading && !failed && isEmpty && (
-        <p className="mt-5 text-sm text-muted">Resources for this chapter not found.</p>
+      {/* Same footprint as the loading skeleton, so the card doesn't jump in
+          height when a section settles empty. */}
+      {!collapsed && !loading && !failed && isEmpty && (
+        <div className="mt-5 flex min-h-[96px] items-center justify-center px-4 text-center sm:mt-6">
+          <p className="text-sm text-muted">Resources for this chapter not found.</p>
+        </div>
       )}
 
-      {!loading && !failed && !isEmpty && children}
+      {/* Opacity only, no movement. The current page stays in place, dimmed,
+          while the next loads; when it lands it swaps in at that same dim level
+          and fades up, so there's no blank frame and nothing shifts. Keyed on
+          the page *on screen*, so the fade runs when the data arrives rather
+          than when the button is clicked. */}
+      {!collapsed && !loading && !failed && !isEmpty && (
+        <motion.div
+          key={contentKey}
+          initial={{ opacity: 0.55 }}
+          animate={{ opacity: fetching ? 0.55 : 1 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          aria-busy={fetching}
+        >
+          {children}
+        </motion.div>
+      )}
 
-      {!loading && !failed && total > PAGE_SIZE && (
+      {!collapsed && !loading && !failed && total > PAGE_SIZE && (
         <div className="mt-5 flex flex-col items-center justify-center gap-3 border-t border-brand/10 pt-4 md:relative md:flex-row">
           <p className="text-center text-caption leading-4 text-muted">
             Showing {shown} of {total}
@@ -166,7 +212,7 @@ function SectionShell({
             <button
               type="button"
               onClick={() => onPage(Math.max(1, page - 1))}
-              disabled={page <= 1}
+              disabled={page <= 1 || fetching}
               aria-label={`Previous page of ${title}`}
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-brand/15 text-ink transition hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
             >
@@ -178,7 +224,7 @@ function SectionShell({
             <button
               type="button"
               onClick={() => onPage(Math.min(totalPages, page + 1))}
-              disabled={page >= totalPages}
+              disabled={page >= totalPages || fetching}
               aria-label={`Next page of ${title}`}
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-brand/15 text-ink transition hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
             >
@@ -212,7 +258,7 @@ function ResourceCard({
 
   return (
     <div
-      className={`flex flex-col gap-3 rounded-2xl border p-4 transition-all sm:p-5 ${
+      className={`flex min-h-[90px] flex-col justify-between gap-3 rounded-2xl border p-4 transition-all sm:p-5 ${
         bookmarked ? "border-brand shadow-sm" : "border-brand/10 hover:border-brand/20"
       }`}
     >
@@ -249,7 +295,7 @@ function ResourceCard({
             type="button"
             onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
-            className="flex w-fit items-center gap-1 text-[13px] font-semibold text-brand transition-colors hover:opacity-80"
+            className="flex w-fit items-center gap-1 text-[13px] font-semibold text-ink transition-colors hover:opacity-80"
           >
             {open ? "Hide details" : "Show details"}
             <ChevronDownIcon className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
@@ -270,7 +316,15 @@ function DetailBlock({ label, children }: { label: string; children: React.React
   );
 }
 
-const GRID = "mt-5 grid grid-cols-1 gap-4 sm:mt-6 lg:grid-cols-2 lg:gap-6";
+// PlayIcon takes no props and is hardcoded at 16x16, so it's sized on a
+// wrapper — matched to the Notes icons (20px, 24px from `sm`).
+const PLAY_ICON =
+  "flex h-5 w-5 shrink-0 items-center justify-center [&>svg]:h-full [&>svg]:w-full sm:h-6 sm:w-6";
+
+// `items-start` so each card keeps its own height. Grid's default stretch made
+// expanding one card's details stretch its row-mate to match, leaving that
+// card with a large empty area.
+const GRID = "mt-5 grid grid-cols-1 items-start gap-4 sm:mt-6 lg:grid-cols-2 lg:gap-6";
 
 function ChapterLibrary() {
   const searchParams = useSearchParams();
@@ -292,8 +346,12 @@ function ChapterLibrary() {
   const notes = useLibrarySection("NOTE", subjectName, chapterName);
   const formulas = useLibrarySection("FORMULA_SHEET", subjectName, chapterName);
   const lectures = useLibrarySection("YOUTUBE", subjectName, chapterName);
-  const questions = useLibrarySection("PRACTICE_QUESTION", subjectName, chapterName, {
-    isPYQ: pyqOnly ? true : undefined,
+  const questions = useLibrarySection("PRACTICE_QUESTION", subjectName, chapterName);
+  // Fetched up front rather than on toggle: most chapters have no PYQs at all,
+  // and "PYQs only" has to know that before it's pressed so it can disable
+  // itself instead of opening onto an empty list.
+  const pyqs = useLibrarySection("PRACTICE_QUESTION", subjectName, chapterName, {
+    isPYQ: true,
   });
 
   // Any of the four sections carries the chapter's own record, which is where
@@ -319,9 +377,9 @@ function ChapterLibrary() {
       <div className="flex flex-col gap-4 p-4 sm:p-6 lg:p-8">
         <Link
           href="/home/resource-library"
-          className="flex w-fit items-center gap-2 text-[13px] font-semibold text-ink sm:text-sm"
+          className="flex w-fit items-center gap-1.5 font-[Plus_Jakarta_Sans] text-[13px] font-medium leading-5 tracking-normal text-modal-subtext sm:gap-2 sm:text-[14px]"
         >
-          <ArrowLeftIcon />
+          <ArrowLeftIcon className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
           Back to Library
         </Link>
         <p className="text-sm text-muted">
@@ -345,7 +403,9 @@ function ChapterLibrary() {
       return (
         <SectionShell
           key={key}
-          icon={<TargetIcon />}
+          // The SVG is a 24x24 frame with the page glyph inset inside it, so
+          // rendering it at 24px gives the 14x18 glyph from the spec.
+          icon={<TargetIcon className="h-5 w-5 shrink-0 sm:h-6 sm:w-6" />}
           title="Notes"
           total={notes.data?.counts.notes ?? 0}
           loading={notes.loading}
@@ -353,6 +413,8 @@ function ChapterLibrary() {
           isEmpty={rows.length === 0}
           page={notes.page}
           onPage={notes.setPage}
+          fetching={notes.fetching}
+          contentKey={notes.dataPage}
           shown={rows.length}
         >
           <div className={GRID}>
@@ -360,7 +422,7 @@ function ChapterLibrary() {
               <ResourceCard
                 key={note.id}
                 id={note.id}
-                icon={<TargetIcon />}
+                icon={<TargetIcon className="h-5 w-5 shrink-0 sm:h-6 sm:w-6" />}
                 title={note.title}
                 meta={
                   <>
@@ -419,6 +481,8 @@ function ChapterLibrary() {
           isEmpty={rows.length === 0}
           page={formulas.page}
           onPage={formulas.setPage}
+          fetching={formulas.fetching}
+          contentKey={formulas.dataPage}
           shown={rows.length}
         >
           <div className={GRID}>
@@ -480,7 +544,7 @@ function ChapterLibrary() {
       return (
         <SectionShell
           key={key}
-          icon={<PlayIcon />}
+          icon={<span className={PLAY_ICON}><PlayIcon /></span>}
           title="Video Lectures"
           total={lectures.data?.counts.youtubeLectures ?? 0}
           loading={lectures.loading}
@@ -488,6 +552,8 @@ function ChapterLibrary() {
           isEmpty={rows.length === 0}
           page={lectures.page}
           onPage={lectures.setPage}
+          fetching={lectures.fetching}
+          contentKey={lectures.dataPage}
           shown={rows.length}
         >
           <div className={GRID}>
@@ -507,7 +573,9 @@ function ChapterLibrary() {
                   className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4"
                 >
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-tint text-ink sm:h-10 sm:w-10">
-                    <PlayIcon />
+                    <span className={PLAY_ICON}>
+                      <PlayIcon />
+                    </span>
                   </span>
 
                   <div className="min-w-0 flex-1">
@@ -535,7 +603,7 @@ function ChapterLibrary() {
                       )}
                     </div>
 
-                    <span className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-brand">
+                    <span className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-ink">
                       Watch on YouTube
                       <ChevronRightIcon className="h-4 w-4" />
                     </span>
@@ -559,27 +627,39 @@ function ChapterLibrary() {
     }
 
     const rows: LibraryQuestion[] = questions.data?.practiceQuestions ?? [];
+    const questionTotal = questions.data?.counts.practiceQuestions ?? 0;
+    // Nothing to filter when the chapter has no questions at all. Only judged
+    // with the filter off — once it's on, an empty result must still let the
+    // student switch back, or they'd be stuck on an empty PYQ view.
+    const pyqDisabled = !pyqOnly && !questions.loading && !questions.failed && questionTotal === 0;
     return (
       <SectionShell
         key={key}
         icon={<BookmarkIcon />}
         title={pyqOnly ? "Previous Year Questions" : "Practice Questions"}
-        total={questions.data?.counts.practiceQuestions ?? 0}
+        total={questionTotal}
         loading={questions.loading}
         failed={questions.failed}
         isEmpty={rows.length === 0}
         page={questions.page}
         onPage={questions.setPage}
+        fetching={questions.fetching}
+        contentKey={questions.dataPage}
         shown={rows.length}
+        // Header + count only until the student asks for PYQs; the list, its
+        // empty state and pagination all appear once the toggle is on.
+        collapsed={!pyqOnly}
         action={
           <button
             type="button"
             onClick={() => setPyqOnly((value) => !value)}
+            disabled={pyqDisabled}
             aria-pressed={pyqOnly}
-            className={`h-[34px] rounded-full px-4 text-[13px] font-semibold transition-colors ${
+            title={pyqDisabled ? "No questions in this chapter yet" : undefined}
+            className={`h-[34px] rounded-full px-4 text-[13px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
               pyqOnly
                 ? "bg-brand text-white"
-                : "border border-tint-strong bg-tint-strong text-ink hover:border-brand/20"
+                : "border border-tint-strong bg-tint-strong text-ink hover:border-brand/20 disabled:hover:border-tint-strong"
             }`}
           >
             PYQs only
@@ -605,23 +685,26 @@ function ChapterLibrary() {
       <div className="flex flex-col gap-4">
         <Link
           href="/home/resource-library"
-          className="flex w-fit items-center gap-2 text-[13px] font-semibold text-ink transition-colors sm:text-sm"
+          className="flex w-fit items-center gap-1.5 font-[Plus_Jakarta_Sans] text-[13px] font-medium leading-5 tracking-normal text-modal-subtext transition-colors sm:gap-2 sm:text-[14px]"
         >
-          <ArrowLeftIcon />
+          <ArrowLeftIcon className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
           Back to Library
         </Link>
 
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
           <div className="min-w-0 flex-1">
-            <p className="text-[13px] font-semibold leading-5 text-ink sm:text-[14px]">
+            {/* 8px top padding + 20px line = the 28px row from the spec. */}
+            <p className="pt-1.5  text-[13px] font-semibold leading-5 tracking-normal text-ink sm:pt-2 sm:text-[14px]">
               {subjectName}
             </p>
 
-            <h1 className="mt-1 break-words text-[28px] font-extrabold leading-tight tracking-[-0.5px] text-ink sm:text-[36px] sm:tracking-[-0.75px] lg:text-[48px] lg:leading-none lg:tracking-[-1px]">
+            {/* Negative tracking dropped: it was tuned for the old 48px display
+                size and reads cramped at 20px. */}
+            <h1 className="mt-1 break-words  text-[18px] font-extrabold leading-tight tracking-normal text-ink sm:text-[20px]">
               {chapterName}
             </h1>
 
-            <p className="mt-2 text-[14px] font-medium leading-6 text-muted sm:text-[16px]">
+            <p className="mt-1.5  text-[14px] font-medium leading-6 tracking-normal text-muted sm:mt-2 sm:text-[16px]">
               {[
                 chapterRef?.sequenceOrder ? `Chapter ${chapterRef.sequenceOrder}` : null,
                 chapterRef?.class ? `Class ${chapterRef.class}` : null,
@@ -629,7 +712,7 @@ function ChapterLibrary() {
                 .filter(Boolean)
                 .join(" · ") || "Chapter"}
             </p>
-          </div>
+          </div>        
         </div>
       </div>
 
@@ -708,7 +791,7 @@ function QuestionCard({
             type="button"
             onClick={() => setShowSolution((value) => !value)}
             aria-expanded={showSolution}
-            className="flex w-fit items-center gap-1 text-[13px] font-semibold text-brand transition-colors hover:opacity-80"
+            className="flex w-fit items-center gap-1 text-[13px] font-semibold text-ink transition-colors hover:opacity-80"
           >
             {showSolution ? "Hide solution" : "Show solution"}
             <ChevronDownIcon

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { BellIcon } from "@/components/ui/icons";
+
 import {
   getNotifications,
   markAllNotificationsRead,
@@ -10,6 +10,7 @@ import {
   type NotificationCard,
   type NotificationFeed,
 } from "@/lib/api/notifications";
+import { BellIcon } from "@/assets/icons";
 
 /**
  * The bell in every page header.
