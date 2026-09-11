@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   AlertCircleIcon,
   BoltIcons,
+  Clock,
   ClockIcon,
   ClockIconss,
   CloudMoonIcon,
@@ -14,7 +15,7 @@ import {
   MoonIcon,
   SunIcon,
 } from "@/components/ui/icons";
-import { StatCard } from "@/components/stats/StatCard";
+import { EmptyNote, StatCard } from "@/components/stats/StatCard";
 import { MeterRow } from "@/components/stats/MeterRow";
 import { RankedList } from "@/components/stats/RankedList";
 import { CircularProgress } from "@/components/ui/CircularProgress";
@@ -22,9 +23,9 @@ import { ChapterRankedList } from "@/components/stats/ChapterRankedList";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { LeftIconcon } from "@/assets/icons";
 import {
-  getAccuracyTab,
   formatShortDate,
   formatDelta,
+  getAccuracyTab,
   subjectInitial,
   type AccuracyTab,
   type ChapterAccuracyRow,
@@ -55,9 +56,6 @@ const DIFFICULTY_BARS = ["bg-brand dark:bg-ink", "bg-brand dark:bg-[#4C1D95]", "
 /** PRD 8.8 bans red for low metrics — trend arrows stay neutral in colour. */
 const TREND_GLYPH: Record<string, string> = { UP: "↗", DOWN: "↘", FLAT: "→" };
 
-function EmptyNote({ children }: { children: ReactNode }) {
-  return <p className="py-6 text-center text-xs font-medium leading-5 text-muted">{children}</p>;
-}
 
 function toChapterItems(rows: ChapterAccuracyRow[]) {
   return rows.map((row) => ({
@@ -69,7 +67,7 @@ function toChapterItems(rows: ChapterAccuracyRow[]) {
   }));
 }
 
-export default function AccuracyStatsPage() {
+export function AccuracyStats() {
   const [data, setData] = useState<AccuracyTab | null>(null);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -167,20 +165,20 @@ export default function AccuracyStatsPage() {
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {/* Overall accuracy */}
-        <StatCard title="Overall Accuracy" subtitle="Practice this week">
+        <StatCard title="Overall Accuracy" subtitle="Practice this week" titleClassName="text-[14px] leading-6 sm:text-[16px]">
           {data.practice.hasData ? (
             <div className="flex flex-col items-center gap-4">
               <CircularProgress
                 percent={data.practice.accuracy}
                 label="Accuracy"
-                size={120}
+                size={132}
                 progressGradient={{ from: "var(--score-ring-from)", to: "var(--score-ring-to)" }}
                 labelClassName="text-[#777681] dark:text-muted"
               />
               <div className="w-full border-t border-brand/10 pt-4">
                 <div className="flex items-center justify-around">
                   <div className="text-center">
-                    <p className="text-[10px] uppercase tracking-wide text-[#777681] dark:text-muted">
+                    <p className="font-sans text-[10px] font-medium uppercase leading-3 tracking-[0.5px] align-middle text-[#777681] dark:text-muted sm:text-[11px] sm:leading-[13.2px] sm:tracking-[0.55px]">
                       Attempted
                     </p>
                     <p className="text-sm font-bold text-ink">
@@ -188,7 +186,7 @@ export default function AccuracyStatsPage() {
                     </p>
                   </div>
                   <div className="text-center">
-                    <p className="text-[10px] uppercase tracking-wide text-[#777681] dark:text-muted">
+                    <p className="font-sans text-[10px] font-medium uppercase leading-3 tracking-[0.5px] align-middle text-[#777681] dark:text-muted sm:text-[11px] sm:leading-[13.2px] sm:tracking-[0.55px]">
                       Correct
                     </p>
                     <p className="text-sm font-bold text-ink">
@@ -197,8 +195,8 @@ export default function AccuracyStatsPage() {
                   </div>
                 </div>
               </div>
-              <p className="flex items-center gap-1 text-xs text-[#777681] dark:text-muted">
-                <ClockIcon />
+              <p className="flex items-center gap-1 font-sans text-xs font-medium leading-[18px] tracking-normal align-middle text-[#777681] dark:text-muted sm:text-sm sm:leading-[21px]">
+                <Clock className="h-4 w-4 shrink-0 text-[#1A1A4E] dark:text-(--text-primary,#FAF7F2) sm:h-5 sm:w-5" />
                 Average time: {data.practice.avgTimeMinutes} min/question
               </p>
             </div>
@@ -212,7 +210,7 @@ export default function AccuracyStatsPage() {
           title="Accuracy by Subject"
           right={
             <Link
-              href="/practice"
+              href="/home/mistake-notebook"
               className="flex shrink-0 items-center gap-1 text-xs font-semibold text-ink"
             >
               Detailed view
@@ -369,15 +367,6 @@ export default function AccuracyStatsPage() {
               : undefined
           }
           subtitleClassName="text-[#9CA3AF] dark:text-muted"
-          right={
-            <Link
-              href="/home/mistake-notebook"
-              className="flex shrink-0 items-center gap-1 text-xs font-semibold text-ink"
-            >
-              Detailed view
-              <LeftIconcon className="h-2.5 w-2.5" />
-            </Link>
-          }
         >
           {data.mistakePatterns.hasData ? (
             <>
@@ -409,7 +398,7 @@ export default function AccuracyStatsPage() {
           className="flex h-full w-full min-w-0 flex-col p-6"
           title="Accuracy by Chapter"
           right={
-            <Link href="/practice" className="flex items-center gap-1 text-xs font-semibold text-ink">
+            <Link href="/home/mistake-notebook" className="flex items-center gap-1 text-xs font-semibold text-ink">
               View all
               <LeftIconcon className="h-2.5 w-2.5" />
             </Link>

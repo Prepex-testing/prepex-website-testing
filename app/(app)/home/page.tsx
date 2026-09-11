@@ -819,17 +819,22 @@ export default function HomePage() {
                   </div>
                 </>
               ) : (
-                <p className="mt-4 text-sm text-muted">
+                <p className="mt-4 text-center text-sm text-muted">
                   Win Journals are built every Friday evening from the week you just had. Study a couple of days
                   this week and yours will be waiting.
                 </p>
               )}
 
-              <div className="mt-4 flex items-center justify-between border-t border-brand/10 pt-3">
-                <span className="text-sm font-bold text-ink">Explore Full Weekly Summary</span>
-                <span className="flex items-center gap-1 text-[10px] font-medium text-[#333333] dark:text-[#FAF7F2]!">
-                  Click to view details
-                  <ArrowRightIcon />
+              <div className="mt-3 flex items-center justify-between gap-2 border-t border-brand/10 pt-3 sm:mt-4">
+                <span className="min-w-0 truncate text-[13px] font-bold text-ink sm:text-sm">
+                  Explore Full Weekly Summary
+                </span>
+                <span className="flex shrink-0 items-center gap-1 text-[10px] font-medium text-[#333333] dark:text-[#FAF7F2]!">
+                  <span className="hidden sm:inline">Click to view details</span>
+                  {/* Wrapped: ArrowRightIcon doesn't forward className. */}
+                  <span className="flex shrink-0">
+                    <ArrowRightIcon />
+                  </span>
                 </span>
               </div>
             </Link>
