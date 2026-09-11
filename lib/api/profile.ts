@@ -37,8 +37,14 @@ export type SubjectsChaptersResponse = {
   subjects: SubjectWithChapters[];
 };
 
-export function getSubjectsChapters() {
-  return authRequest<{ success: true; data: SubjectsChaptersResponse }>("/subjects-chapters");
+/**
+ * The student's selected subjects with their chapters. Chapters are gated to
+ * the student's own class (Class 11 / Class 12) unless `allClasses` is set —
+ * the Resource Library passes it to list every class's chapters.
+ */
+export function getSubjectsChapters(options: { allClasses?: boolean } = {}) {
+  const query = options.allClasses ? "?allClasses=true" : "";
+  return authRequest<{ success: true; data: SubjectsChaptersResponse }>(`/subjects-chapters${query}`);
 }
 
 // ---------------------------------------------------------------------------

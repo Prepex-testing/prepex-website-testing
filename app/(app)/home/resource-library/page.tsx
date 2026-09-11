@@ -48,10 +48,12 @@ const PILLS: { label: string; key: keyof LibraryCounts; type: LibraryContentType
 ];
 
 /**
- * Most chapters come back with a null sequenceOrder, so fall back to the class
- * rather than rendering "Chapter" with nothing after it.
+ * The Library lists Class 11 and Class 12 together, so the class leads the
+ * label. Many chapters come back with a null sequenceOrder — those show the
+ * class alone rather than "Chapter" with nothing after it.
  */
 function chapterLabel(sequenceOrder: number | null, cls: number | null) {
+  if (cls && sequenceOrder) return `Class ${cls} · Chapter ${sequenceOrder}`;
   if (sequenceOrder) return `Chapter ${sequenceOrder}`;
   if (cls) return `Class ${cls}`;
   return "Chapter";
@@ -306,7 +308,9 @@ export default function ResourceLibraryPage() {
   useEffect(() => {
     let cancelled = false;
 
-    getSubjectsChapters()
+    // Reference material, not the student's plan — every class's chapters
+    // (11 and 12), not just their own.
+    getSubjectsChapters({ allClasses: true })
       .then(({ data }) => {
         if (cancelled) return;
         const list = data.subjects ?? [];
@@ -332,10 +336,14 @@ export default function ResourceLibraryPage() {
 
   const chapters = useMemo(() => {
     const list = activeSubject?.chapters ?? [];
-    // Many chapters carry no sequenceOrder — those keep the API's own order,
-    // after the numbered ones, rather than being pulled to the top by a 0.
+    // Class 11, then Class 12, then unclassed — each class's chapters kept
+    // together. Within a class, chapters without a sequenceOrder keep the
+    // API's own order after the numbered ones, rather than being pulled to
+    // the top by a 0.
     const rank = (value: number | null) => value ?? Number.MAX_SAFE_INTEGER;
-    return [...list].sort((a, b) => rank(a.sequenceOrder) - rank(b.sequenceOrder));
+    return [...list].sort(
+      (a, b) => rank(a.class) - rank(b.class) || rank(a.sequenceOrder) - rank(b.sequenceOrder),
+    );
   }, [activeSubject]);
 
   const selectedChapter = useMemo(() => {

@@ -99,12 +99,21 @@ export function getSessionQuestions(sessionId: string) {
 /** Plays one notebook group: a `tag` selects that pattern across the chapter,
  * and no tag selects the chapter's still-untagged mistakes — the two groupings
  * the notebook lists. */
-export function startMistakeSession(chapterId: string, tag?: MistakeTag | null) {
+/**
+ * `bucket` is the notebook list the row came from, so the session plays
+ * exactly the entries that row counted — a chapter can have mistakes due
+ * today *and* older overdue ones, which are separate rows.
+ */
+export function startMistakeSession(
+  chapterId: string,
+  tag?: MistakeTag | null,
+  bucket?: "today" | "overdue",
+) {
   return authRequest<{ success: true; data: TaskQuestionsResponse }>(
     `/mistakes/session`,
     {
       method: "POST",
-      body: JSON.stringify({ chapterId, ...(tag ? { tag } : { untagged: true }) }),
+      body: JSON.stringify({ chapterId, ...(tag ? { tag } : { untagged: true }), ...(bucket && { bucket }) }),
     },
   );
 }

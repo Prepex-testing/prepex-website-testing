@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ClockIcon, CheckIcon } from "@/components/ui/icons";
+import { ClockIcon, CheckIcon, BookmarkIcon, ChevronRightIcon } from "@/components/ui/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { FileIcon, PlayIcon, Open, ArrowLeftIcon, LightbulbIcon, TargetIcon } from "@/assets/icons";
 import { updateRevisionProgress, markRevisionDone } from "@/lib/api/revision";
@@ -11,11 +12,9 @@ import { useRevisionSession } from "@/components/session/RevisionSessionProvider
 import { RevisionSessionActionsModal } from "@/components/session/RevisionSessionActionsModal";
 import { formatClock } from "@/lib/utils/datetime";
 import { getChapterTitle } from "@/lib/utils/text";
-
-// The one destination a "leave this page" click is allowed to go to directly
-// — everything else is intercepted and routed through the session options
-// popup instead (see the click/popstate interception effects below).
-const RESOURCE_LIBRARY_PATH = "/home/resource-library";
+import { getResourceLibrary, type LibraryFormulaSheet } from "@/lib/api/library";
+import { MathText } from "@/components/ui/MathText";
+import { chapterResourcesHref, isSessionChapterHref, type ReferenceSection } from "@/lib/revision/resourceLinks";
 
 const QUESTIONS = [
   "What is Newton's First Law of Motion?",
@@ -25,11 +24,38 @@ const QUESTIONS = [
   "What is the difference between mass and weight?",
 ];
 
-const REFERENCES = [
-  { label: "NCERT Chapter", meta: "Chapter 5", icon: <TargetIcon className="h-6 w-6" /> },
-  { label: "Teacher Notes", meta: "Handwritten Notes", icon: <TargetIcon className="h-6 w-6" /> },
-  { label: "Lecture Slides", meta: "PDF • 24 Slides", icon: <PlayIcon className="h-6 w-6" /> },
+type ReferenceCounts = { notes: number; lectures: number; pyqs: number };
+
+// Each card opens the chapter's resource-library page on its own section —
+// the one place the session can step out to with the timer still running.
+const REFERENCES: {
+  section: ReferenceSection;
+  label: string;
+  icon: ReactNode;
+  countKey: keyof ReferenceCounts;
+  unit: [singular: string, plural: string];
+}[] = [
+  { section: "NOTE", label: "Notes", icon: <TargetIcon className="h-6 w-6" />, countKey: "notes", unit: ["note", "notes"] },
+  {
+    section: "YOUTUBE",
+    label: "Youtube Lecture",
+    icon: <PlayIcon className="h-6 w-6" />,
+    countKey: "lectures",
+    unit: ["lecture", "lectures"],
+  },
+  { section: "PYQ", label: "PYQs", icon: <BookmarkIcon />, countKey: "pyqs", unit: ["question", "questions"] },
 ];
+
+/** Dots stop being readable past this — the counter alone carries it. */
+const MAX_PROGRESS_DOTS = 20;
+
+type ChapterResources = {
+  /** subject|chapter the data belongs to. */
+  key: string;
+  formulas: LibraryFormulaSheet[];
+  /** Null when the counts request failed — the cards still open. */
+  counts: ReferenceCounts | null;
+};
 
 export default function RevisionSessionPage() {
   return (
@@ -86,6 +112,55 @@ function RevisionSessionContent() {
     };
   }, [revisionId]);
 
+  const subjectName = task?.subject?.name ?? task?.chapter?.subject?.name ?? "";
+  const chapterName = task?.chapter?.name ?? "";
+  const resourceKey = `${subjectName}|${chapterName}`;
+
+  // The chapter's formulas (shown one at a time below) and the counts for the
+  // Reference Review cards. Two requests: the formulas themselves, and one
+  // limit-1 call whose `counts` cover notes, lectures and — with isPYQ —
+  // PYQs. The library route is public and rate-limited, so no more than that.
+  const [resources, setResources] = useState<ChapterResources | null>(null);
+  useEffect(() => {
+    if (!subjectName || !chapterName) return;
+    const controller = new AbortController();
+    const base = { subjectName, chapterName, exact: true };
+    Promise.allSettled([
+      getResourceLibrary({ ...base, contentType: "FORMULA_SHEET", limit: 100 }, { signal: controller.signal }),
+      getResourceLibrary({ ...base, isPYQ: true, limit: 1 }, { signal: controller.signal }),
+    ]).then(([formulaRes, countRes]) => {
+      if (controller.signal.aborted) return;
+      const counts = countRes.status === "fulfilled" ? countRes.value.data.counts : null;
+      setResources({
+        key: resourceKey,
+        formulas: formulaRes.status === "fulfilled" ? formulaRes.value.data.formulaSheets : [],
+        counts: counts
+          ? { notes: counts.notes, lectures: counts.youtubeLectures, pyqs: counts.practiceQuestions }
+          : null,
+      });
+    });
+    return () => controller.abort();
+  }, [subjectName, chapterName, resourceKey]);
+
+  const chapterResources = resources?.key === resourceKey ? resources : null;
+  const hasChapter = Boolean(subjectName && chapterName);
+  const resourcesLoading = hasChapter && !chapterResources;
+  const formulas = chapterResources?.formulas ?? [];
+
+  // Keyed to the chapter, so a different task starts back at the first formula.
+  const [formulaPosition, setFormulaPosition] = useState({ key: resourceKey, index: 0 });
+  const formulaIndex =
+    formulaPosition.key === resourceKey ? Math.min(formulaPosition.index, Math.max(formulas.length - 1, 0)) : 0;
+  const currentFormula = formulas[formulaIndex] ?? null;
+  const showFormula = (index: number) =>
+    setFormulaPosition({ key: resourceKey, index: Math.min(Math.max(index, 0), formulas.length - 1) });
+
+  // Read by the click guard below, which is registered once per task.
+  const allowedChapterRef = useRef({ subjectName: "", chapterName: "" });
+  useEffect(() => {
+    allowedChapterRef.current = { subjectName, chapterName };
+  }, [subjectName, chapterName]);
+
   // Single canonical place that starts the tracked session (POST /session/start),
   // regardless of which page's Start/Resume Revision button routed here — /home,
   // /home/today-plan, /home/revision, or a direct/refreshed URL all land here first.
@@ -98,6 +173,7 @@ function RevisionSessionContent() {
       targetDuration: task?.estimatedMinutes ?? 0,
       taskTitle: task?.title ? getChapterTitle(task.title) : undefined,
       subjectName: task?.subject?.name,
+      chapterName: task?.chapter?.name,
       initialElapsedSeconds: task?.status === "IN_PROGRESS" ? (task?.secondsCompleted ?? 0) : 0,
     }).catch(() => {
       // Best-effort — the page still works without a tracked session.
@@ -140,9 +216,9 @@ function RevisionSessionContent() {
 
   // Intercepts in-app link clicks away from this page (sidebar/back arrow/
   // etc.) so leaving always goes through the Exit/Complete/Cancel popup —
-  // except Reference Review's "Open" buttons, which intentionally route to
-  // /home/resource-library directly, keeping the session's floating banner
-  // alive there instead of asking the student to decide anything.
+  // except Reference Review's "Open" links to this chapter's resource page,
+  // which go straight there with the session (and its floating timer) still
+  // running. Any other resource-library page asks, like everywhere else.
   useEffect(() => {
     if (!revisionId) return;
 
@@ -151,7 +227,8 @@ function RevisionSessionContent() {
       const anchor = (event.target as HTMLElement | null)?.closest("a");
       const href = anchor?.getAttribute("href");
       if (!href || !href.startsWith("/")) return;
-      if (href === RESOURCE_LIBRARY_PATH || href.startsWith(`${RESOURCE_LIBRARY_PATH}/`)) return;
+      const allowed = allowedChapterRef.current;
+      if (isSessionChapterHref(href, allowed.subjectName, allowed.chapterName)) return;
 
       event.preventDefault();
       event.stopPropagation();
@@ -240,6 +317,7 @@ function RevisionSessionContent() {
         targetDuration: data.estimatedMinutes,
         taskTitle: getChapterTitle(data.title),
         subjectName: data.subject?.name,
+        chapterName: data.chapter?.name,
         initialElapsedSeconds: data.secondsCompleted,
       });
       setPaused(false);
@@ -412,18 +490,23 @@ function RevisionSessionContent() {
         <p className="text-[12px] font-extrabold uppercase leading-[15px] tracking-[1px] text-[#333333] dark:text-[#8B8998]">
           Quick Recall
         </p>
-        <p className="text-[20px] font-extrabold leading-[28px] text-ink">
-          Question {questionIndex + 1} of {QUESTIONS.length}
-        </p>
-        <div className="flex gap-1.5">
-          {QUESTIONS.map((_, index) => (
-            <span
-              key={index}
-              className={`h-3 w-3 rounded-full transition-colors ${index <= questionIndex ? "bg-ink" : "bg-tint"
-                }`}
-            />
-          ))}
-        </div>
+        {formulas.length > 0 && (
+          <>
+            <p className="text-[20px] font-extrabold leading-[28px] text-ink">
+              Formula {formulaIndex + 1} of {formulas.length}
+            </p>
+            {formulas.length <= MAX_PROGRESS_DOTS && (
+              <div className="flex flex-wrap justify-center gap-1.5">
+                {formulas.map((formula, index) => (
+                  <span
+                    key={formula.id}
+                    className={`h-3 w-3 rounded-full transition-colors ${index <= formulaIndex ? "bg-ink" : "bg-tint"}`}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
         <div className="flex items-center gap-4 rounded-2xl border border-brand/10 bg-surface px-5 py-4 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] dark:bg-ink">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#EEF0F8] text-[#1A1A4E] dark:bg-transparent dark:text-[#111145]">
             <ClockIcon className="h-[28px] w-[28px] shrink-0 sm:h-[33.54px] sm:w-[33.54px]" />
@@ -442,10 +525,88 @@ function RevisionSessionContent() {
         </div>
       </div>
 
-      <div className="rounded-3xl border border-brand/10 bg-surface p-6 text-center shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] sm:p-8">
-        <p className="mt-2 flex items-center justify-center gap-2 text-sm font-semibold leading-5 text-body-text">
-          Revision Questions Not Available.
-        </p>
+      {/* Revision formulas — the chapter's formula sheet, one at a time. */}
+      <div className="rounded-3xl border border-brand/10 bg-surface p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] sm:p-8">
+        {resourcesLoading ? (
+          <p className="text-center text-sm font-semibold leading-5 text-muted">Loading formulas…</p>
+        ) : !currentFormula ? (
+          <p className="mt-2 flex items-center justify-center gap-2 text-sm font-semibold leading-5 text-body-text">
+            Revision Formulas Not Available.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-5">
+            <div className="text-center">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[11px] font-extrabold uppercase tracking-[1px] text-muted">Revision Formula</p>
+                {/* Compact pager — current / total for this chapter. */}
+                <div className="flex shrink-0 items-center gap-1" aria-label="Formula navigation">
+                  <button
+                    type="button"
+                    onClick={() => showFormula(formulaIndex - 1)}
+                    disabled={formulaIndex === 0}
+                    aria-label="Previous formula"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+                  >
+                    <ChevronRightIcon className="h-4 w-4 rotate-180" />
+                  </button>
+                  <span className="min-w-[2.75rem] text-center text-[13px] font-bold tabular-nums text-ink" aria-live="polite">
+                    {formulaIndex + 1}/{formulas.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => showFormula(formulaIndex + 1)}
+                    disabled={formulaIndex >= formulas.length - 1}
+                    aria-label="Next formula"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+                  >
+                    <ChevronRightIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              <h2 className="mx-auto mt-2 max-w-[640px] break-words text-[20px] font-extrabold leading-[28px] text-ink sm:text-[26px] sm:leading-[34px]">
+                {currentFormula.title}
+              </h2>
+            </div>
+
+            {currentFormula.formula && (
+              <MathText
+                source={currentFormula.formula}
+                className="mx-auto w-full max-w-[640px] rounded-xl bg-tint px-4 py-4 text-center text-[16px] leading-7 text-ink sm:text-[18px]"
+              />
+            )}
+
+            {(currentFormula.variables.length > 0 ||
+              currentFormula.conditions.length > 0 ||
+              currentFormula.jeeTrick) && (
+              <div className="mx-auto grid w-full max-w-[640px] grid-cols-1 gap-4 text-left sm:grid-cols-2">
+                {currentFormula.variables.length > 0 && (
+                  <FormulaDetail label="Variables">
+                    <ul className="list-disc space-y-1 pl-5">
+                      {currentFormula.variables.map((item, index) => (
+                        <li key={index}>{item}</li>
+                      ))}
+                    </ul>
+                  </FormulaDetail>
+                )}
+                {currentFormula.conditions.length > 0 && (
+                  <FormulaDetail label="Conditions">
+                    <ul className="list-disc space-y-1 pl-5">
+                      {currentFormula.conditions.map((item, index) => (
+                        <li key={index}>{item}</li>
+                      ))}
+                    </ul>
+                  </FormulaDetail>
+                )}
+                {currentFormula.jeeTrick && (
+                  <div className="sm:col-span-2">
+                    <FormulaDetail label="JEE Trick">{currentFormula.jeeTrick}</FormulaDetail>
+                  </div>
+                )}
+              </div>
+            )}
+
+          </div>
+        )}
       </div>
 
       {/* Question card */}
@@ -519,40 +680,56 @@ function RevisionSessionContent() {
           Reference Review
         </p>
         <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {REFERENCES.map((ref) => (
-            <div
-              key={ref.label}
-              className="flex flex-col rounded-2xl border border-brand/10 bg-surface p-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]"
-            >
-              {/* Top Row */}
-              <div className="flex items-center gap-4">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg  bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
-                  {ref.icon}
-                </span>
+          {REFERENCES.map((ref) => {
+            const count = chapterResources?.counts?.[ref.countKey];
+            const meta = !hasChapter
+              ? "No chapter linked to this task"
+              : resourcesLoading
+                ? "Loading…"
+                : count === undefined
+                  ? "Open to browse"
+                  : count === 0
+                    ? "None for this chapter yet"
+                    : `${count} ${count === 1 ? ref.unit[0] : ref.unit[1]}`;
+            const canOpen = hasChapter && count !== 0;
+            const buttonClass = `mt-4 flex h-[38px] w-full items-center justify-center gap-2 rounded-lg border text-xs font-bold text-ink transition-colors hover:bg-tint-strong ${isDark ? "border-white" : "border-brand/15"}`;
 
-                <div className="min-w-0">
-                  <p className="text-sm font-bold leading-5 text-ink">
-                    {ref.label}
-                  </p>
-                  <p className="text-[11px] leading-5 text-muted">
-                    {ref.meta}
-                  </p>
-                </div>
-              </div>
-
-              {/* Button */}
-
-              <button
-                type="button"
-                // onClick={() => router.push(RESOURCE_LIBRARY_PATH)}
-                className={`mt-4 flex h-[38px] w-full items-center justify-center gap-2 rounded-lg border text-xs font-bold text-ink transition-colors hover:bg-tint-strong ${isDark ? "border-white" : "border-brand/15"
-                  }`}
+            return (
+              <div
+                key={ref.label}
+                className="flex flex-col rounded-2xl border border-brand/10 bg-surface p-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]"
               >
-                <span>Open</span>
-                <Open className="h-3 w-3" />
-              </button>
-            </div>
-          ))}
+                {/* Top Row */}
+                <div className="flex items-center gap-4">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg  bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+                    {ref.icon}
+                  </span>
+
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold leading-5 text-ink">
+                      {ref.label}
+                    </p>
+                    <p className="text-[11px] leading-5 text-muted">
+                      {meta}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Button */}
+                {canOpen ? (
+                  <Link href={chapterResourcesHref(subjectName, chapterName, ref.section)} className={buttonClass}>
+                    <span>Open</span>
+                    <Open className="h-3 w-3" />
+                  </Link>
+                ) : (
+                  <button type="button" disabled className={`${buttonClass} cursor-not-allowed opacity-50 hover:bg-transparent`}>
+                    <span>Open</span>
+                    <Open className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
         <p className="mt-3 text-xs text-[#64748B] dark:text-[#FAF7F2]">
           Open any resource to review before continuing.
@@ -593,6 +770,14 @@ function RevisionSessionContent() {
         }}
         onExited={handleExitedViaActions}
       />
+    </div>
+  );
+}
+function FormulaDetail({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="rounded-xl border border-brand/10 p-4">
+      <p className="text-[11px] font-bold uppercase tracking-[0.5px] text-muted">{label}</p>
+      <div className="mt-1 text-[14px] leading-6 text-ink">{children}</div>
     </div>
   );
 }

@@ -32,7 +32,6 @@ import {
 } from "@/assets/icons";
 import {
   getPartnerStatus,
-  findMatch,
   acceptMatch,
   declineMatch,
   requestRematch,
@@ -105,8 +104,6 @@ export default function PartnerPage() {
   const [messages, setMessages] = useState<PartnerMessage[]>([]);
   const [goals, setGoals] = useState<WeeklyGoals | null>(null);
 
-  const [findError, setFindError] = useState<string | null>(null);
-  const [isFinding, setFinding] = useState(false);
   const [isMatchOpen, setMatchOpen] = useState(false);
   const [isMatchSubmitting, setMatchSubmitting] = useState(false);
   // The match card closes as soon as the student answers, so a failed
@@ -191,23 +188,6 @@ export default function PartnerPage() {
   useEffect(() => {
     refetchStatus().finally(() => setLoading(false));
   }, [refetchStatus]);
-
-  const handleFindMatch = async () => {
-    setFinding(true);
-    setFindError(null);
-    try {
-      const { data } = await findMatch();
-      if (data.matched) {
-        await refetchStatus();
-      } else {
-        setFindError(data.message);
-      }
-    } catch (err) {
-      setFindError(err instanceof Error ? err.message : "Couldn't find a match right now.");
-    } finally {
-      setFinding(false);
-    }
-  };
 
   const handleAccept = async () => {
     setMatchOpen(false);
@@ -347,10 +327,19 @@ export default function PartnerPage() {
   );
 
   // -------------------------------------------------------------------------
-  // No partner yet
+  // No partner yet. Matching is automatic — a daily job proposes a partner
+  // once the student passes the eligibility window, and the match card then
+  // appears on Home and here — so there's no "Find a Partner" button, only
+  // where they stand.
   // -------------------------------------------------------------------------
   if (!status || status.status === "NONE") {
     const { eligibility } = status ?? { eligibility: null };
+    const cooldownUntil = eligibility?.disconnectCooldown.availableFrom
+      ? new Date(eligibility.disconnectCooldown.availableFrom).toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short",
+        })
+      : null;
 
     return (
       <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -360,29 +349,23 @@ export default function PartnerPage() {
           <span className="flex h-16 w-16 items-center justify-center rounded-full bg-tint text-ink">
             <LayersIcon />
           </span>
-          <h2 className="text-h2 text-ink">Find an Accountability Partner</h2>
+          <h2 className="text-h2 text-ink">No partner yet</h2>
           <p className="max-w-md text-sm text-muted">
             One real partner, matched by exam target, prep stage, and daily hours. See each
             other&apos;s effort, exchange one purposeful message a day.
           </p>
 
-          {eligibility && !eligibility.eligibleForMatching ? (
-            <p className="rounded-xl bg-tint-strong px-4 py-3 text-sm font-semibold text-ink">
-              Partner matching activates {eligibility.daysUntilEligible} day
-              {eligibility.daysUntilEligible === 1 ? "" : "s"} from now — we&apos;re still
-              learning your study patterns.
-            </p>
-          ) : eligibility && !eligibility.declines.canDecline ? (
-            <p className="rounded-xl bg-tint-strong px-4 py-3 text-sm font-semibold text-ink">
-              You&apos;ve reached your decline limit. Contact support for a manual review.
-            </p>
-          ) : (
-            <Button variant="primary" onClick={handleFindMatch} disabled={isFinding} className="mt-2 w-auto px-8">
-              {isFinding ? "Searching…" : "Find a Partner"}
-            </Button>
-          )}
-
-          {findError && <p className="max-w-md text-sm text-warning">{findError}</p>}
+          <p className="max-w-md rounded-xl bg-tint-strong px-4 py-3 text-sm font-semibold text-ink">
+            {!eligibility
+              ? "We'll find you a partner automatically and let you know."
+              : !eligibility.eligibleForMatching
+                ? `Partner matching starts ${eligibility.daysUntilEligible} day${eligibility.daysUntilEligible === 1 ? "" : "s"} from now — we're still learning your study patterns. We'll find you a partner automatically and let you know.`
+                : !eligibility.declines.canDecline
+                  ? "You've reached your decline limit. Contact support for a manual review."
+                  : cooldownUntil
+                    ? `You disconnected recently — we'll start looking for a new partner from ${cooldownUntil}.`
+                    : "We're looking for the right partner for you — same exam, similar schedule. We'll notify you as soon as we find one."}
+          </p>
         </div>
       </div>
     );

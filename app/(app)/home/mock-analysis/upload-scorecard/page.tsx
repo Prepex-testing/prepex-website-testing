@@ -131,6 +131,17 @@ function toIsoDate(display: string): string {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
+/** A dd/mm/yyyy date later than today (local) — a mock can't be attempted in the future. */
+function isFutureDisplayDate(display: string): boolean {
+  const iso = toIsoDate(display);
+  if (!iso) return false;
+  const now = new Date();
+  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  return iso > todayIso;
+}
+
+const FUTURE_DATE_ERROR = "Date attempted can't be in the future.";
+
 function toDisplayDate(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
@@ -361,12 +372,14 @@ function MockDetailsFields({
   onChange,
   onScoreError,
   scoreError,
+  dateError,
   dateInputKey,
 }: {
   fields: ManualFields;
   onChange: <K extends keyof ManualFields>(key: K, value: ManualFields[K]) => void;
   onScoreError: (error: string | null) => void;
   scoreError?: string | null;
+  dateError?: string | null;
   dateInputKey?: string | number;
 }) {
   return (
@@ -386,6 +399,8 @@ function MockDetailsFields({
           label="Date Attempted"
           name="dateAttempted"
           required
+          disableFuture
+          error={dateError}
           defaultValue={fields.dateDisplay}
           onDateChange={(value) => onChange("dateDisplay", value)}
           labelClassName="text-[13px] font-medium leading-5 text-body-text dark:text-ink sm:text-[14px] sm:leading-5"
@@ -486,6 +501,16 @@ function ManualForm({
   const [isPrefilling, setPrefilling] = useState(!!mockId);
   const [prefillTick, setPrefillTick] = useState(0);
   const [showSubjectScores, setShowSubjectScores] = useState(!mockId);
+  // The stored date of a mock being edited. A scheduled mock can carry a
+  // future date; keeping it as-is is allowed, changing to another future
+  // date isn't.
+  const [originalDateDisplay, setOriginalDateDisplay] = useState("");
+
+  const activeDateDisplay = level === "basic" ? basicFields.dateDisplay : mediumFields.dateDisplay;
+  const dateError =
+    isFutureDisplayDate(activeDateDisplay) && activeDateDisplay !== originalDateDisplay
+      ? FUTURE_DATE_ERROR
+      : null;
 
   const isManualRequiredReady =
     !!(level === "basic" ? basicFields.mockName.trim() : mediumFields.mockName.trim()) &&
@@ -514,6 +539,7 @@ function ManualForm({
 
         setLevel("medium");
 
+        setOriginalDateDisplay(toDisplayDate(data.attemptedDate));
         setMediumFields({
           mockName: data.mockName ?? "",
           dateDisplay: toDisplayDate(data.attemptedDate),
@@ -607,7 +633,7 @@ function ManualForm({
     const entryTier: MockEntryTier = level === "basic" ? "BASIC" : "MEDIUM";
     const attemptedDate = toIsoDate(fields.dateDisplay);
 
-    if (!fields.mockName.trim() || !attemptedDate) {
+    if (!fields.mockName.trim() || !attemptedDate || dateError) {
       return;
     }
 
@@ -657,6 +683,7 @@ function ManualForm({
               onChange={updateBasicField}
               onScoreError={setScoreError}
               scoreError={scoreError}
+              dateError={dateError}
             />
           )}
 
@@ -667,6 +694,7 @@ function ManualForm({
                 onChange={updateMediumField}
                 onScoreError={setScoreError}
                 scoreError={scoreError}
+                dateError={dateError}
                 dateInputKey={mockId ? `prefill-${prefillTick}` : "medium"}
               />
 
@@ -771,7 +799,14 @@ function ManualForm({
         <Button
           variant="primary"
           onClick={handleSave}
-          disabled={isSubmitting || isPrefilling || !isManualRequiredReady || !!scoreError || hasInvalidSubjectScore}
+          disabled={
+            isSubmitting ||
+            isPrefilling ||
+            !isManualRequiredReady ||
+            !!scoreError ||
+            !!dateError ||
+            hasInvalidSubjectScore
+          }
         >
           {isSubmitting ? "Saving..." : isPrefilling ? "Loading..." : "Save & Analyze"}
         </Button>
@@ -923,12 +958,14 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
   };
 
   const hasInvalidSubjectScore = Object.values(subjectScoreErrors).some((message) => !!message);
+  // The extracted date is prefilled as read — a misread can land in the future.
+  const dateError = fields && isFutureDisplayDate(fields.dateDisplay) ? FUTURE_DATE_ERROR : null;
 
   const handleSave = async () => {
     if (!fields) return;
     const attemptedDate = toIsoDate(fields.dateDisplay);
 
-    if (!fields.mockName.trim() || !attemptedDate) {
+    if (!fields.mockName.trim() || !attemptedDate || dateError) {
       return;
     }
 
@@ -1081,6 +1118,7 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
               onChange={updateField}
               onScoreError={setScoreError}
               scoreError={scoreError}
+              dateError={dateError}
               dateInputKey={`extracted-${prefillTick}`}
             />
 
@@ -1192,6 +1230,7 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
                 disabled ||
                 !fields?.mockName.trim() ||
                 !toIsoDate(fields.dateDisplay) ||
+                !!dateError ||
                 !!scoreError ||
                 hasInvalidSubjectScore
               }
@@ -1312,6 +1351,7 @@ function QuickLogForm({ disabled = false }: { disabled?: boolean }) {
             label="Date"
             name="quickDate"
             required
+            disableFuture
             defaultValue={fields.dateDisplay}
             onDateChange={(value) => updateField("dateDisplay", value)}
           />
