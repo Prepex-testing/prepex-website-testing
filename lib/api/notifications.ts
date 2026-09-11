@@ -15,6 +15,8 @@ function authRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
 export type NotificationType =
   | "PLAN_READY"
   | "PARTNER_MATCH_AVAILABLE"
+  | "PARTNER_MATCH_FOUND"
+  | "PARENT_CONNECTION_UPDATE"
   | "PARTNER_INACTIVE_2D"
   | "PARTNER_INACTIVE_7D"
   | "PARTNER_INACTIVE_14D"

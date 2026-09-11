@@ -118,7 +118,7 @@ export function SessionCompleteModal({
           href="/home/today-plan"
           className="flex h-14 w-full items-center justify-center rounded-lg border-[1.5px] border-[#1A1A4E] bg-surface text-base font-semibold text-body-text hover:bg-tint-strong dark:border-[#FAF7F2]"
         >
-          Back To Planner
+          Complete Session
         </Link>
       </div>
     </WhiteModal>

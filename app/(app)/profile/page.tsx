@@ -48,6 +48,7 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { useAvatarSrc } from "@/lib/profile/avatar";
 import { performLogout } from "@/lib/api/auth";
+import { getParentConnection, parentConnectionSummary, type ParentConnectionState } from "@/lib/api/parent";
 import { QuickIcon, Coaching, GraduationCapIcon, UserIcons, CalendarIcons, ClockIcon, CalendarIcon, Patners, UserIcon } from "@/assets/icons";
 /** How many preference groups the profile page previews before "Manage All". */
 const PROFILE_NOTIFICATION_COUNT = 6;
@@ -118,6 +119,16 @@ export default function ProfilePage() {
   // — did not match the ids it was read by, so four of the six switches
   // rendered permanently off no matter what the student had chosen.)
   const [notificationSettings, setNotificationSettings] = useState<NotificationSettings | null>(null);
+  // Section 13 — the Connections row shows the parent connection's real state.
+  const [parentState, setParentState] = useState<ParentConnectionState | null>(null);
+  const [parentLoaded, setParentLoaded] = useState(false);
+
+  useEffect(() => {
+    getParentConnection()
+      .then(({ data }) => setParentState(data))
+      .catch(() => undefined)
+      .finally(() => setParentLoaded(true));
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -494,7 +505,7 @@ export default function ProfilePage() {
                     </p>
 
                     <p className="mt-0.5 text-xs leading-4 text-muted">
-                      Not connected
+                      {parentLoaded ? parentConnectionSummary(parentState) : " "}
                     </p>
                   </div>
                 </div>

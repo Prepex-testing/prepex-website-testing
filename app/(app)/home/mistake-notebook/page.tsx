@@ -47,7 +47,15 @@ const TYPE_FILTERS: ("All" | MistakeTagFilter)[] = [
   "UNTAGGED",
 ];
 
-function DueTagRow({ group, showDate }: { group: DueMistakeGroup; showDate?: boolean }) {
+function DueTagRow({
+  group,
+  bucket,
+  showDate,
+}: {
+  group: DueMistakeGroup;
+  bucket: "today" | "overdue";
+  showDate?: boolean;
+}) {
   const router = useRouter();
   const [starting, setStarting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -65,7 +73,7 @@ function DueTagRow({ group, showDate }: { group: DueMistakeGroup; showDate?: boo
     setStarting(true);
     setErr(null);
     try {
-      const { data } = await startMistakeSession(group.chapterId, group.tag);
+      const { data } = await startMistakeSession(group.chapterId, group.tag, bucket);
       router.push(`/practice?sessionId=${data.sessionId}`);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Couldn't start practice.");
@@ -448,7 +456,7 @@ export default function MistakeNotebookPage() {
             </div>
           ) : (
             today.groups.map((group) => (
-              <DueTagRow key={group.key} group={group} />
+              <DueTagRow key={group.key} group={group} bucket="today" />
             ))
           )}
         </div>
@@ -480,7 +488,7 @@ export default function MistakeNotebookPage() {
             </div>
           ) : (
             overdue.groups.map((group) => (
-              <DueTagRow key={group.key} group={group} showDate />
+              <DueTagRow key={group.key} group={group} bucket="overdue" showDate />
             ))
           )}
         </div>

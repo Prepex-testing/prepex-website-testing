@@ -29,6 +29,7 @@ import { activateBacklogRecovery, type BacklogRecoveryStatus } from "@/lib/api/b
 import { BurnoutSignalModal } from "@/components/home/BurnoutSignalModal";
 import { PlannerCheckInModal } from "@/components/home/PlannerCheckInModal";
 import { WellnessResourceModal } from "@/components/home/WellnessResourceModal";
+import { HomePartnerMatchPrompt } from "@/components/home/HomePartnerMatchPrompt";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { formatFullDate } from "@/lib/utils/datetime";
 import { useGreeting } from "@/lib/utils/greeting";
@@ -1260,6 +1261,24 @@ export default function HomePage() {
         onClose={() => setRecoveryModeModalOpen(false)}
         onConfirm={handleActivateBacklogRecovery}
         isSubmitting={isActivatingBacklogRecovery}
+      />
+
+      {/* PRD 6.2 — a proposed partner, once per sign-in. Held back while any
+          other Home pop-up is up, so the two never stack. */}
+      <HomePartnerMatchPrompt
+        suppressed={
+          burnoutModal !== null ||
+          isLateSignupPromptOpen ||
+          isQuickSessionTaskOpen ||
+          isCheckInOpen ||
+          isRegenerateOpen ||
+          isAddTaskOpen ||
+          isQuickFocusOpen ||
+          isPracticeModalOpen ||
+          isRecoveryModeModalOpen ||
+          isEndRecoveryOpen ||
+          isGeneratingPlan
+        }
       />
 
       {isGeneratingPlan && (

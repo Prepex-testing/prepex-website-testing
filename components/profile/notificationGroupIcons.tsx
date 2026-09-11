@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { RefreshIcon, SmileIcon } from "@/components/ui/icons";
+import { RefreshIcon, SmileIcon, UsersIcon } from "@/components/ui/icons";
 import {
   ClockIcon,
   CalendarIcon,
@@ -31,6 +31,7 @@ export const NOTIFICATION_GROUP_ICONS: Record<string, ReactNode> = {
   "partner-activity": <Patners />,
   "partner-goals": <TargetIcon />,
   "partner-matching": <Patners />,
+  "parent-connection": <UsersIcon />,
 };
 
 export function notificationGroupIcon(groupId: string): ReactNode {

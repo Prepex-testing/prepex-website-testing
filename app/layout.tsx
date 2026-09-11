@@ -6,6 +6,7 @@ import { InlineThemeScript } from "@/components/theme/InlineThemeScript";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { RevisionSessionProvider } from "@/components/session/RevisionSessionProvider";
 import { RevisionSessionBanner } from "@/components/session/RevisionSessionBanner";
+import { FocusSessionBanner } from "@/components/session/FocusSessionBanner";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -56,6 +57,7 @@ export default function RootLayout({
           <RevisionSessionProvider>
             <AuthGate>
               <RevisionSessionBanner />
+              <FocusSessionBanner />
               {children}
             </AuthGate>
             <RegisterServiceWorker />
