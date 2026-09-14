@@ -63,10 +63,13 @@ export default function StatsPage() {
       </div>
 
       {/* Tabs */}
+      {/* Equal-width tabs on a grid. Phones: full width, tabs share it. sm+:
+          sized to the widest label (auto-cols-fr in an auto-width grid), so
+          bold "Accuracy" never overflows the old fixed 299px bar. */}
       <div
         role="tablist"
         aria-label="Stats"
-        className="inline-flex h-[41px] w-full max-w-[299px] items-center gap-1 rounded-[8px] bg-[#1A1A4E] p-1"
+        className="grid h-[41px] w-full auto-cols-fr grid-flow-col items-center gap-1 rounded-[8px] bg-[#1A1A4E] p-1 sm:inline-grid sm:w-auto sm:self-start"
       >
         {TABS.map((tab) => {
           const active = tab.id === activeId;
@@ -81,14 +84,18 @@ export default function StatsPage() {
               aria-controls={`stats-panel-${tab.id}`}
               onClick={() => setActiveId(tab.id)}
               className={`
-                flex h-[33px] flex-1 items-center justify-center
+                flex h-[33px] min-w-0 items-center justify-center
+                whitespace-nowrap
                 rounded-[6px]
-                px-5
-                text-[14px]
-                leading-[21px]
+                px-2
+                text-[13px]
+                leading-5
                 transition-all
                 duration-300
                 ease-out
+                sm:px-5
+                sm:text-[14px]
+                sm:leading-[21px]
                 ${active
                   ? "bg-[#FAF7F2] font-bold text-[#1A1A4E]"
                   : "font-medium text-[#FAF7F2] hover:bg-white/10"
@@ -101,17 +108,9 @@ export default function StatsPage() {
         })}
       </div>
 
-      {/* A cross-fade, opacity only: the current panel fades out, then the
-          picked one fades in, so nothing slides and nothing cuts. All three
-          stay mounted (inactive ones hidden), so each keeps its data and
-          scroll position. `min-h-screen` keeps the page taller than the
-          viewport, so a long-to-short switch never drops the scrollbar and
-          shifts the page sideways. */}
       <div className="min-h-screen">
         {TABS.map(({ id, Panel }) => {
           const shown = id === shownId;
-          // Visible only once it's both picked and handed over; a panel that's
-          // shown but no longer picked is the one fading out.
           const visible = shown && id === activeId;
 
           return (

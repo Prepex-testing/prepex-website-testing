@@ -175,30 +175,30 @@ export default function ProfilePage() {
   // rather than shown as a blank for everyone else.
   const details = overview
     ? [
-        { label: "Target Exam", value: overview.exam?.name ?? "—", icon: <QuickIcon /> },
-        {
-          label: "Coaching",
-          value: inCoaching
-            ? overview.coachingName || "Coaching"
-            : overview.coachingType
-              ? COACHING_TYPE_LABEL[overview.coachingType]
-              : "—",
-          icon: <Coaching />,
-        },
-        {
-          label: "Class",
-          value: overview.currentLevel ? ACADEMIC_LEVEL_LABEL[overview.currentLevel] : "—",
-          icon: <GraduationCapIcon />,
-        },
-        ...(inCoaching
-          ? [{ label: "Batch", value: overview.batchName || "—", icon: <UserIcons /> }]
-          : []),
-        {
-          label: overview.examDateIsDefault ? "Exam Date (default)" : "Exam Date",
-          value: overview.examDate ? formatDate(overview.examDate) : "Not set",
-          icon: <CalendarIcons />,
-        },
-      ]
+      { label: "Target Exam", value: overview.exam?.name ?? "—", icon: <QuickIcon /> },
+      {
+        label: "Coaching",
+        value: inCoaching
+          ? overview.coachingName || "Coaching"
+          : overview.coachingType
+            ? COACHING_TYPE_LABEL[overview.coachingType]
+            : "—",
+        icon: <Coaching />,
+      },
+      {
+        label: "Class",
+        value: overview.currentLevel ? ACADEMIC_LEVEL_LABEL[overview.currentLevel] : "—",
+        icon: <GraduationCapIcon />,
+      },
+      ...(inCoaching
+        ? [{ label: "Batch", value: overview.batchName || "—", icon: <UserIcons /> }]
+        : []),
+      {
+        label: overview.examDateIsDefault ? "Exam Date (default)" : "Exam Date",
+        value: overview.examDate ? formatDate(overview.examDate) : "Not set",
+        icon: <CalendarIcons />,
+      },
+    ]
     : [];
 
   const partnerSummary = !overview?.partner
@@ -215,14 +215,14 @@ export default function ProfilePage() {
     setNotificationSettings((current) =>
       current
         ? {
-            ...current,
-            categories: current.categories.map((category) => ({
-              ...category,
-              groups: category.groups.map((group) =>
-                group.id === groupId ? { ...group, enabled } : group,
-              ),
-            })),
-          }
+          ...current,
+          categories: current.categories.map((category) => ({
+            ...category,
+            groups: category.groups.map((group) =>
+              group.id === groupId ? { ...group, enabled } : group,
+            ),
+          })),
+        }
         : current,
     );
 
@@ -549,7 +549,7 @@ export default function ProfilePage() {
           <Link href="/profile/notifications">
             <Button
               variant="secondary"
-              className="h-[30px] rounded-lg border border-brand/20 px-4 text-[12px] font-semibold"
+              className="h-[30px] shrink-0 whitespace-nowrap rounded-lg border border-brand/20 px-3 text-[11px] font-semibold sm:px-4 sm:text-[12px]"
             >
               Manage All
             </Button>
@@ -605,7 +605,7 @@ export default function ProfilePage() {
         )}
       </div>
 
-    
+
       <div className="grid grid-cols-1 gap-4 rounded-2xl border border-brand/10 bg-surface p-6 sm:grid-cols-2">
         {[
           { href: "/profile/settings", icon: <UserIcon className={ROW_ICON} />, title: "Account Settings", subtitle: "Email, password and data" },

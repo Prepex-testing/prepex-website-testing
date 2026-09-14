@@ -193,11 +193,10 @@ function LanguageChips({ value, onChange }: { value: ParentReportLanguage; onCha
           type="button"
           onClick={() => onChange(option.value)}
           aria-pressed={value === option.value}
-          className={`rounded-lg border px-4 py-2 text-sm font-semibold transition-colors ${
-            value === option.value
+          className={`rounded-lg border px-4 py-2 text-sm font-semibold transition-colors ${value === option.value
               ? "border-transparent bg-toggle-on text-surface"
               : "border-brand/15 text-body-text hover:bg-tint/40"
-          }`}
+            }`}
         >
           {option.label}
         </button>
@@ -294,7 +293,6 @@ function ConnectForm({
               onChange={setParentName}
               placeholder="Mom / Dad / Mummy / Papa / Guardian"
               options={PARENT_NAME_OPTIONS.map((name) => ({ value: name, label: name }))}
-              // Same 58px (48px on phones) as the phone field above.
               triggerClassName="h-12 gap-2 rounded-xl px-4 py-3 sm:h-14.5 sm:px-5"
               className="gap-2! sm:gap-3!"
             />
@@ -325,7 +323,7 @@ function ConnectForm({
             ))}
           </div>
 
-              <label className="flex w-full cursor-pointer flex-row items-start gap-2.5 sm:gap-3">
+          <label className="flex w-full cursor-pointer flex-row items-start gap-2.5 sm:gap-3">
             <input
               type="checkbox"
               checked={consent}
