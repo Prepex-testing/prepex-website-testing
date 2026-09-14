@@ -203,6 +203,9 @@ export default function NotificationSettingsPage() {
           />
 
           <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end lg:shrink-0">
+            {/* The window only matters while quiet hours are on — hidden until
+                "Enable Quiet Hours" is pressed, and again after "No Quiet Hours". */}
+            {settings.quietHours.enabled && (
             <div className="flex items-end gap-4">
               <div className="flex flex-1 flex-col sm:flex-none">
                 <label
@@ -217,9 +220,8 @@ export default function NotificationSettingsPage() {
                     id="quiet-from"
                     type="time"
                     value={settings.quietHours.start}
-                    disabled={!settings.quietHours.enabled}
                     onChange={(event) => setQuietHours({ start: event.target.value })}
-                    className="w-full bg-transparent text-xs font-semibold leading-5 text-ink outline-none disabled:opacity-40 sm:text-sm"
+                    className="w-full bg-transparent text-xs font-semibold leading-5 text-ink outline-none sm:text-sm"
                   />
                 </div>
               </div>
@@ -239,13 +241,13 @@ export default function NotificationSettingsPage() {
                     id="quiet-to"
                     type="time"
                     value={settings.quietHours.end}
-                    disabled={!settings.quietHours.enabled}
                     onChange={(event) => setQuietHours({ end: event.target.value })}
-                    className="w-full bg-transparent text-xs font-semibold leading-5 text-ink outline-none disabled:opacity-40 sm:text-sm"
+                    className="w-full bg-transparent text-xs font-semibold leading-5 text-ink outline-none sm:text-sm"
                   />
                 </div>
               </div>
             </div>
+            )}
 
             <Button
               variant="secondary"
