@@ -30,8 +30,10 @@ import {
   BoltIcon,
   Patners,
 } from "@/assets/icons";
+import { RecentSignals, SIGNALS_PAGE_SIZE } from "@/components/partner/RecentSignals";
 import {
   getPartnerStatus,
+  findMatch,
   acceptMatch,
   declineMatch,
   requestRematch,
@@ -75,18 +77,6 @@ const CATEGORY_ORDER: MessageCategory[] = [
   "CELEBRATE",
 ];
 
-function timeAgo(iso: string): string {
-  const ms = Date.now() - new Date(iso).getTime();
-  const minutes = Math.floor(ms / 60_000);
-  if (minutes < 1) return "Just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days === 1) return "Yesterday";
-  return `${days}d ago`;
-}
-
 function formatHours(seconds: number): string {
   return `${(seconds / 3600).toFixed(1)} hrs`;
 }
@@ -127,16 +117,19 @@ export default function PartnerPage() {
   const [isDisconnectOpen, setDisconnectOpen] = useState(false);
   const [isDisconnecting, setDisconnecting] = useState(false);
   const [isRematching, setRematching] = useState(false);
+  // The Send Signal card — the inactivity banner's "Send check-in" scrolls here.
+  const sendSignalRef = useRef<HTMLDivElement>(null);
 
-  const isSunday = new Date().getDay() === 3; //0
-  const isFriday = new Date().getDay() === 3;  //5
+  // Local day of week: 0 = Sunday, 5 = Friday.
+  const isSunday = new Date().getDay() === 0;
+  const isFriday = new Date().getDay() === 5;
 
   const loadActivePartnerData = useCallback(async () => {
     const [profileRes, inactivityRes, templatesRes, messagesRes, goalsRes] = await Promise.allSettled([
       getPartnerProfile(),
       getPartnerInactivity(),
       getMessageTemplates(),
-      getMessages(20),
+      getMessages(SIGNALS_PAGE_SIZE),
       getWeeklyGoals(),
     ]);
     if (profileRes.status === "fulfilled") setProfile(profileRes.value.data);
@@ -238,7 +231,7 @@ export default function PartnerPage() {
     try {
       await sendMessage({ category, templateId });
       setTemplateId(null);
-      const { data } = await getMessages(20);
+      const { data } = await getMessages(SIGNALS_PAGE_SIZE);
       setMessages(data);
     } catch (err) {
       setSendError(err instanceof Error ? err.message : "Couldn't send that. Try again.");
@@ -247,24 +240,24 @@ export default function PartnerPage() {
     }
   };
 
-  const handleQuickCheckIn = async () => {
-    const checkInTemplate = templates?.templates.CHECK_IN[0];
-    if (!checkInTemplate) return;
-    try {
-      await sendMessage({ category: "CHECK_IN", templateId: checkInTemplate.id });
-      const { data } = await getMessages(20);
-      setMessages(data);
-      const { data: inactivityData } = await getPartnerInactivity();
-      setInactivity(inactivityData);
-    } catch {
-      // Best-effort.
-    }
+  // Inactivity banner, suggestedAction "check_in": take the student to Send
+  // Signal with Check-In already picked — they choose the message and send it.
+  const goToCheckIn = () => {
+    setCategory("CHECK_IN");
+    setTemplateId(null);
+    setSendError(null);
+    sendSignalRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  // suggestedAction "rematch": unmatch from the inactive partner, then look
+  // for a new one straight away. A found match comes back PENDING and its card
+  // opens; if nobody fits yet, the page shows the "No partner yet" state and
+  // the daily matching job keeps looking.
   const handleRematch = async () => {
     setRematching(true);
     try {
       await requestRematch();
+      await findMatch().catch(() => undefined);
       await refetchStatus();
     } catch {
       // Best-effort — inactivity banner stays up so the student can retry.
@@ -470,7 +463,7 @@ export default function PartnerPage() {
             <p className="min-w-0 break-words text-sm font-semibold text-ink">{inactivity.suggestion}</p>
           </div>
           {inactivity.suggestedAction === "check_in" && (
-            <Button variant="secondary" size="sm" onClick={handleQuickCheckIn} className="w-auto shrink-0">
+            <Button variant="secondary" size="sm" onClick={goToCheckIn} className="w-auto shrink-0">
               Send check-in
             </Button>
           )}
@@ -548,6 +541,8 @@ export default function PartnerPage() {
         </div>
       </div>
 
+      {/* PRD 6.6.1 — Goal Setting Sunday is a Sunday-only card. */}
+      {isSunday && (
       <div className="rounded-3xl border border-brand/10 bg-surface p-5 shadow-sm sm:p-6 lg:p-8">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
           <div className="flex min-w-0 items-center gap-4 sm:gap-6">
@@ -583,12 +578,10 @@ export default function PartnerPage() {
             >
               {goals?.myGoal ? "View Weekly Goal" : "Set Weekly Goal"}
             </Button>
-            <p className="text-center text-[11px] italic text-muted lg:text-right">
-              Setting a goal is only available on Sundays
-            </p>
           </div>
         </div>
       </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div className="min-w-0 rounded-2xl border border-brand/10 bg-surface p-4 sm:p-5">
@@ -662,43 +655,22 @@ export default function PartnerPage() {
             <h2 className="text-base font-bold text-ink sm:text-lg">Recent Signals</h2>
           </div>
 
-          <div className="mt-5 flex flex-col gap-4 sm:mt-6 sm:gap-5">
-            {messages.length === 0 ? (
-              <p className="text-sm text-muted">No signals yet — send the first one.</p>
-            ) : (
-              messages.map((signal) => (
-                <div
-                  key={signal.id}
-                  className="flex items-start gap-2.5 border-b border-brand/10 pb-4 last:border-0 last:pb-0 sm:gap-3 sm:pb-5 md:gap-4"
-                >
-                  <div
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg sm:h-10 sm:w-10 md:h-12 md:w-12 ${isDark ? "bg-[#FAF7F2]/8 text-[#FAF7F2]" : "bg-[#EEF0F8] text-[#1A1A4E]"}`}
-                  >
-                    {CATEGORY_META[signal.category].icon}
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
-                      <p className="min-w-0 truncate text-[9px] font-bold uppercase tracking-wider text-muted sm:text-[10px]">
-                        {signal.isMine ? "You" : partner?.fullName ?? "Partner"} · {CATEGORY_META[signal.category].label}
-                      </p>
-
-                      <span className="shrink-0 text-[10px] text-muted sm:text-xs">
-                        {timeAgo(signal.createdAt)}
-                      </span>
-                    </div>
-
-                    <p className="mt-1 break-words text-[13px] font-bold leading-5 text-ink sm:text-sm sm:leading-6 md:text-base">
-                      {signal.text}
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+          {/* Latest six; scroll up for older, grouped by day. Keyed on the
+              latest page so a newly sent signal starts the list over. */}
+          <RecentSignals
+            key={messages[0]?.id ?? "empty"}
+            messages={messages}
+            partnerName={partner?.fullName ?? "Partner"}
+            isDark={isDark}
+            categoryMeta={CATEGORY_META}
+          />
         </div>
 
-        <div className="flex w-full min-w-0 flex-col rounded-2xl border border-brand/10 bg-surface p-4 shadow-sm sm:p-5 md:p-6 lg:p-6 xl:p-8">
+        <div
+          ref={sendSignalRef}
+          id="send-signal"
+          className="flex w-full min-w-0 scroll-mt-6 flex-col rounded-2xl border border-brand/10 bg-surface p-4 shadow-sm sm:p-5 md:p-6 lg:p-6 xl:p-8"
+        >
           <h2 className="text-base font-bold text-ink sm:text-lg">Send Signal</h2>
 
           <p className="mt-1 text-xs text-muted sm:text-sm">
