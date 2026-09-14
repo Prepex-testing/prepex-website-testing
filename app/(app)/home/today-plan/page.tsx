@@ -1,5 +1,6 @@
 "use client";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
 
 import { Suspense, useEffect, useState, type DragEvent } from "react";
@@ -19,11 +20,10 @@ import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { getTodayPlan, reorderPlannerTask, type PlannerTask, type TodayPlanResponse } from "@/lib/api/planner";
 import { prettyDifficulty } from "@/lib/api/practice";
 import { formatFullDate } from "@/lib/utils/datetime";
-import { CheckIcon, ClockIcon, ListIcon, CalendarIcon, BellIcon, ArrowLeftIcon } from "@/assets/icons";
+import { CheckIcon, ClockIcon, ListIcon, CalendarIcon, ArrowLeftIcon } from "@/assets/icons";
 import {
   // ArrowLeftIcon,
-  // BellIcon,
-  // CheckIcon,
+  // // CheckIcon,
   // ClockIcon,
   // ListIcon,
   // CalendarIcon,
@@ -40,6 +40,7 @@ const TASK_TYPE_STYLE: Record<string, TaskType> = {
   REVISION: "revision",
   LEARNING: "new-learning",
   WELLNESS: "wellness",
+  MOCK: "mock",
 };
 
 const TASK_ACTION_LABEL: Record<string, string> = {
@@ -47,6 +48,7 @@ const TASK_ACTION_LABEL: Record<string, string> = {
   REVISION: "Start Revision",
   LEARNING: "Start Session",
   WELLNESS: "Start Session",
+  MOCK: "Upload Score",
 };
 
 function formatWindow(window: string | null | undefined) {
@@ -68,8 +70,9 @@ function toPlanTask(task: PlannerTask): PlanTask {
   const isSundayDpp = task.taskType === "PRACTICE" && task.title === "DPP Sunday" && !task.chapter;
   return {
     id: task.id,
-    subjectLabel: isSundayDpp ? "DPP" : task.subject?.code?.[0] ?? "W",
-    subjectName: isSundayDpp ? "DPP" : task.subject?.name ?? "Wellness",
+    // Subject-less rows fall back to Wellness — a MOCK task names itself instead.
+    subjectLabel: isSundayDpp ? "DPP" : task.taskType === "MOCK" ? "M" : task.subject?.code?.[0] ?? "W",
+    subjectName: isSundayDpp ? "DPP" : task.taskType === "MOCK" ? "Mock" : task.subject?.name ?? "Wellness",
     type: TASK_TYPE_STYLE[task.taskType] ?? "new-learning",
     title: task.title,
     meta: task.description ?? task.chapter?.name ?? "",
@@ -92,6 +95,9 @@ function toPlanTask(task: PlannerTask): PlanTask {
     isCompleted: task.status === "COMPLETED",
     isCustom: Boolean(task.isAnchor),
     isWellness: task.taskType === "WELLNESS",
+    mockAnalysisId: task.mockAnalysisId ?? null,
+    mockName: task.mockName ?? undefined,
+    mockDate: task.mockDate ?? undefined,
   };
 }
 
@@ -322,13 +328,7 @@ function TodayPlanContent() {
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

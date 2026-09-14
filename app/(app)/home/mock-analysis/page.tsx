@@ -5,11 +5,12 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { CalendarIcon, ClockIcon, TargetIcon, ChartBarIcons, TrophyIcons, TrendingUpIcon, UploadIcon, LeftIconcon, BellIcon, TrendingDownIcon } from "@/assets/icons";
+import { CalendarIcon, ClockIcon, TargetIcon, ChartBarIcons, TrophyIcons, TrendingUpIcon, UploadIcon, LeftIconcon, TrendingDownIcon } from "@/assets/icons";
 import {
   RefreshIcon,
   MoreIcon,
@@ -334,13 +335,7 @@ export default function MockAnalysisPage() {
         </h1>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </header>
@@ -393,7 +388,7 @@ export default function MockAnalysisPage() {
 
             <button
               type="button"
-              onClick={() => router.push("/development-in-progress")}
+              onClick={() => router.push("/plan")}
               className="flex shrink-0 items-center gap-2 text-body-lg font-semibold leading-6 text-ink"
             >
               View Calendar

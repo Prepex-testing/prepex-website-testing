@@ -15,6 +15,8 @@ type RadioOptionProps = {
   selectedBoxClassName?: string;
   /** Matches the Figma "Regenerate plan" spec: 8px radius, 1px border, 20x20 indicator, 14/500 label. Defaults to the original larger sizing used everywhere else. */
   compact?: boolean;
+  /** Replaces the label's default typography classes entirely, for callers whose Figma spec pins a different size. Ignored in `compact` mode. */
+  labelClassName?: string;
 };
 
 export function RadioOption({
@@ -28,7 +30,12 @@ export function RadioOption({
   unselectedBoxClassName = "",
   selectedBoxClassName = "",
   compact = false,
+  labelClassName,
 }: RadioOptionProps) {
+  const labelTypography = compact
+    ? "text-[14px] font-medium leading-5.25"
+    : labelClassName ?? "text-[14px] font-semibold leading-[100%] sm:text-[16px]";
+
   return (
     // Box — 681x56 min (424x55 in compact mode), radius Medium, border 1.5px, shadow when selected
     <div
@@ -56,7 +63,7 @@ export function RadioOption({
           {selected && <span className={compact ? "h-2.5 w-2.5 rounded-full bg-ink" : "h-3 w-3 rounded-full bg-ink"} />}
         </span>
         <span
-          className={`${compact ? "text-[14px] font-medium leading-5.25" : "text-[14px] font-semibold leading-[100%] sm:text-[16px]"} ${
+          className={`${labelTypography} ${
             selected ? "text-ink" : unselectedLabelClassName
           }`}
         >

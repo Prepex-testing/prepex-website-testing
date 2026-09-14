@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { ClockIcon, TargetIcon } from "@/components/ui/icons";
-import { BellIcon } from "@/assets/icons";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { getTop5WeakTopics, type WeakTopicSummary } from "@/lib/api/weakness";
 
@@ -14,6 +14,8 @@ type FocusItem = {
   subjectLabel: string;
   title: string;
   accuracy: number | null;
+  /** Percentage points vs the previous week; null when there's nothing to compare. */
+  accuracyChange: number | null;
   score: number;
   tierLabel: string;
   highlight: boolean;
@@ -28,6 +30,7 @@ function toFocusItem(topic: WeakTopicSummary, index: number): FocusItem {
     subjectLabel: (subject?.code?.[0] ?? subject?.name?.[0] ?? "?").toUpperCase(),
     title: topic.chapter?.name ?? "Unknown topic",
     accuracy: rawAccuracy == null ? null : Math.round(Number(rawAccuracy)),
+    accuracyChange: topic.accuracyChangeThisWeek ?? null,
     score: Math.round(Number(topic.weaknessScore)),
     tierLabel: topic.tierLabel,
     highlight: index === 0,
@@ -74,13 +77,7 @@ export default function FocusNextPage() {
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>
@@ -127,6 +124,20 @@ export default function FocusNextPage() {
                     <span className="mt-1 text-[10px] font-bold uppercase tracking-wide text-muted">
                       Accuracy
                     </span>
+                    {item.accuracyChange != null && (
+                      <span
+                        className={`mt-1 text-[11px] font-semibold ${
+                          item.accuracyChange > 0
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : item.accuracyChange < 0
+                              ? "text-amber-600 dark:text-amber-400"
+                              : "text-muted"
+                        }`}
+                      >
+                        {item.accuracyChange > 0 ? "↑ +" : item.accuracyChange < 0 ? "↓ " : ""}
+                        {item.accuracyChange}% this week
+                      </span>
+                    )}
                   </div>
                 </div>
               </button>

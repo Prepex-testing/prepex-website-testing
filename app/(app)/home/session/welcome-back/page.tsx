@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { RadioOption } from "@/components/ui/RadioOption";
 import { ArrowLeftIcon, ClockIcon } from "@/components/ui/icons";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -12,7 +13,6 @@ import { getCheckInStatus } from "@/lib/api/checkin";
 import { updatePlannerTask, type TaskStatus } from "@/lib/api/planner";
 import { getActiveSessionTaskId, clearActiveSessionTaskId } from "@/lib/session/activeTask";
 import { minutesSince } from "@/lib/utils/datetime";
-import { BellIcon } from "@/assets/icons";
 
 const OUTCOMES = [
   { id: "completed", label: "Completed as planned" },
@@ -79,13 +79,7 @@ export default function WelcomeBackPage() {
         </div>
        <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

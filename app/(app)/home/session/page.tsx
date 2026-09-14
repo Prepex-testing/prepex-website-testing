@@ -1,5 +1,6 @@
 "use client";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
 
 import { Suspense, useEffect, useRef, useState } from "react";
@@ -17,7 +18,7 @@ import {
   PlayIcon,
   ClockIconss,
 } from "@/components/ui/icons";
-import { LeftIconcon, TargetIcon, ArrowLeftIcon, BellIcon } from "@/assets/icons";
+import { LeftIconcon, TargetIcon, ArrowLeftIcon } from "@/assets/icons";
 import { getTodayPlan, updatePlannerTask, type PlannerTask, type TaskChecklist } from "@/lib/api/planner";
 import { getChapterTitle } from "@/lib/utils/text";
 import {
@@ -26,6 +27,12 @@ import {
   setStoredElapsedSeconds,
   clearStoredElapsedSeconds,
 } from "@/lib/session/activeTask";
+import {
+  clearFocusResourceVisit,
+  getFocusResourceVisit,
+  startFocusResourceVisit,
+} from "@/lib/session/focusResourceVisit";
+import { chapterResourcesHref } from "@/lib/revision/resourceLinks";
 
 const CHECKLIST_ITEMS: { field: keyof TaskChecklist; label: string }[] = [
   { field: "readNCRT", label: "Read NCERT" },
@@ -66,7 +73,11 @@ function FocusSessionContent() {
   const [task, setTask] = useState<PlannerTask | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [targetSeconds, setTargetSeconds] = useState(60 * 60);
-  const [isPaused, setPaused] = useState(false);
+  // Back from reviewing resources: keep the pause state the trip started with.
+  const [isPaused, setPaused] = useState(() => {
+    const visit = getFocusResourceVisit();
+    return visit !== null && visit.taskId === taskId ? visit.paused : false;
+  });
   const [checklist, setChecklist] = useState<Required<TaskChecklist>>(EMPTY_CHECKLIST);
   const [isCrossAppOpen, setCrossAppOpen] = useState(false);
   const [isCrossAppActive, setCrossAppActive] = useState(false);
@@ -77,6 +88,12 @@ function FocusSessionContent() {
   const resolvedRef = useRef(false);
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+
+  // Returning here ends any resource trip — the timer is this page's again
+  // (seeded from the seconds the banner kept counting, below).
+  useEffect(() => {
+    clearFocusResourceVisit();
+  }, []);
 
   useEffect(() => {
     if (!taskId) return;
@@ -229,6 +246,28 @@ function FocusSessionContent() {
     router.push(pendingHref ?? "/home");
   };
 
+  // Resources — the task's chapter page, with this session's timer carried
+  // over by FocusSessionBanner. That page is the only destination that
+  // doesn't need a leave/back decision.
+  const resourcesSubject = task?.subject?.name ?? task?.chapter?.subject?.name ?? "";
+  const resourcesChapter = task?.chapter?.name ?? "";
+  const canOpenResources = Boolean(taskId && resourcesSubject && resourcesChapter);
+
+  const handleOpenResources = () => {
+    if (!taskId || !canOpenResources) return;
+    setStoredElapsedSeconds(taskId, elapsed);
+    startFocusResourceVisit({
+      taskId,
+      title: task?.title ? getChapterTitle(task.title) : "Focus session",
+      subjectName: resourcesSubject,
+      chapterName: resourcesChapter,
+      targetSeconds,
+      paused: isPaused,
+      checklist,
+    });
+    router.push(chapterResourcesHref(resourcesSubject, resourcesChapter));
+  };
+
   const handleLeaveCancel = () => {
     setPendingHref(null);
     setLeaveConfirmOpen(false);
@@ -262,13 +301,7 @@ function FocusSessionContent() {
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>
@@ -394,6 +427,9 @@ function FocusSessionContent() {
             <Button
               variant="secondary"
               className={`h-14 w-full gap-2 rounded-xl border-2 text-base font-bold sm:w-[261px] sm:text-lg ${isDark ? "border-white/30!" : ""}`}
+              onClick={handleOpenResources}
+              disabled={!canOpenResources}
+              title={canOpenResources ? undefined : "This task isn't linked to a chapter"}
             >
               <TargetIcon />
               Resources

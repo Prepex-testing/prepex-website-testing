@@ -104,6 +104,21 @@ export function DurationInput({
     );
   };
 
+  // Filling one field syncs the other to 0 (e.g. 2 hours → "0" min). That 0 is
+  // only a display: clear it on focus so typing "15" doesn't read "015", and
+  // show it again on blur if the field is left empty. The total is unchanged
+  // either way ("" and 0 both count as zero), so no onChange is needed.
+  const clearZeroOnFocus = (current: number | "", set: (next: number | "") => void) => {
+    if (current === 0) set("");
+  };
+  const restoreZeroOnBlur = (
+    current: number | "",
+    other: number | "",
+    set: (next: number | "") => void,
+  ) => {
+    if (current === "" && other !== "" && other > 0) set(0);
+  };
+
   return (
     <div className="flex flex-col gap-2">
       <label className="text-[13px] font-medium leading-none text-body-text dark:text-ink sm:text-[14px]">
@@ -125,6 +140,8 @@ export function DurationInput({
             onChange={(event) =>
               handleHoursChange(event.target.value)
             }
+            onFocus={() => clearZeroOnFocus(hours, setHours)}
+            onBlur={() => restoreZeroOnBlur(hours, minutes, setHours)}
             className={`${INPUT_CLASS} disabled:cursor-not-allowed disabled:opacity-60`}
           />
 
@@ -147,6 +164,8 @@ export function DurationInput({
             onChange={(event) =>
               handleMinutesChange(event.target.value)
             }
+            onFocus={() => clearZeroOnFocus(minutes, setMinutes)}
+            onBlur={() => restoreZeroOnBlur(minutes, hours, setMinutes)}
             className={`${INPUT_CLASS} disabled:cursor-not-allowed disabled:opacity-60`}
           />
 

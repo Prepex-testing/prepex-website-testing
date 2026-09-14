@@ -1,5 +1,6 @@
 "use client";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -26,7 +27,7 @@ import {
   ChevronDownIcon,
 } from "@/components/ui/icons";
 
-import { LineIcon, BoltIcon, CrossIcon, BoxIcon, MenuIcon, ChemistryIcon, MathIcon, PhysicsIcon, Clock, BellIcon, ArrowLeftIcon } from "@/assets/icons";
+import { LineIcon, BoltIcon, CrossIcon, BoxIcon, MenuIcon, ChemistryIcon, MathIcon, PhysicsIcon, Clock, ArrowLeftIcon } from "@/assets/icons";
 
 const SUBJECT_ICON_BY_CODE: Record<string, React.ReactNode> = {
   PHY: <PhysicsIcon />,
@@ -187,13 +188,7 @@ export default function BacklogPage() {
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

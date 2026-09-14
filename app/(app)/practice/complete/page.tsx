@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
@@ -12,7 +13,7 @@ import {
   AlertTriangleIcon,
   CheckCircleIcon,
 } from "@/components/ui/icons";
-import { LayersIcon, ClockIcon, VectorIcon, BellIcon, VectorIcons } from "@/assets/icons";
+import { LayersIcon, ClockIcon, VectorIcon, VectorIcons } from "@/assets/icons";
 import {
   getPracticeSession,
   type PracticeSessionDetail,
@@ -141,13 +142,7 @@ function PracticeCompleteContent() {
         <h1 className="text-h1 text-ink">Practice Complete</h1>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

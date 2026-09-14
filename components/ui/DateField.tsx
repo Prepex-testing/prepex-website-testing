@@ -32,6 +32,10 @@ type DateFieldProps = {
   defaultValue?: string;
   onDateChange?: (value: string) => void;
   disablePast?: boolean;
+  /** Days after today can't be picked — for dates that have already happened. */
+  disableFuture?: boolean;
+  /** Shown under the field, e.g. for a pre-filled date the rules don't allow. */
+  error?: string | null;
   labelClassName?: string;
 };
 
@@ -109,6 +113,8 @@ export function DateField({
   defaultValue = "",
   onDateChange,
   disablePast = false,
+  disableFuture = false,
+  error,
   labelClassName = "text-body-lg font-medium leading-none text-body-text dark:text-ink",
 }: DateFieldProps) {
   const generatedId = useId();
@@ -179,6 +185,9 @@ export function DateField({
     if (disablePast && date < startOfDay(new Date())) {
       return;
     }
+    if (disableFuture && date > startOfDay(new Date())) {
+      return;
+    }
 
     const display = toDisplay(date);
 
@@ -206,9 +215,13 @@ export function DateField({
   };
 
   const selectYear = (year: number) => {
-    setViewDate(
-      (current) => new Date(year, current.getMonth(), 1),
-    );
+    setViewDate((current) => {
+      const next = new Date(year, current.getMonth(), 1);
+      // Picking this year from a later month would land on a page of
+      // entirely disabled days — show the current month instead.
+      const now = new Date();
+      return disableFuture && next > now ? new Date(now.getFullYear(), now.getMonth(), 1) : next;
+    });
     setMode("days");
   };
 
@@ -224,6 +237,15 @@ export function DateField({
 
   const isPrevYearRangeAllPast =
     disablePast && yearRangeStart <= today.getFullYear();
+
+  // Month-granular, so a view opened on a (pre-filled) later month still
+  // can't page further forward.
+  const isAtOrAfterCurrentMonth =
+    viewDate.getFullYear() * 12 + viewDate.getMonth() >=
+    today.getFullYear() * 12 + today.getMonth();
+
+  const isNextYearRangeAllFuture =
+    disableFuture && yearRangeStart + YEARS_PER_PAGE - 1 >= today.getFullYear();
 
   return (
     <div
@@ -249,6 +271,7 @@ export function DateField({
           aria-haspopup="dialog"
           aria-expanded={isOpen}
           aria-label={label}
+          aria-invalid={error ? true : undefined}
           onClick={() => (isOpen ? setIsOpen(false) : openPicker())}
           onKeyDown={handleKeyDown}
           className="flex h-12.25 w-full min-w-0 cursor-pointer items-center justify-between gap-3 rounded-xl border border-input-border bg-surface px-4 shadow-input transition-colors focus:outline-none focus-visible:border-input-border"
@@ -322,7 +345,13 @@ export function DateField({
                     ? changeMonth(1)
                     : changeYearRange(1)
                 }
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink transition-colors hover:bg-brand/10"
+                disabled={
+                  disableFuture &&
+                  (mode === "days"
+                    ? isAtOrAfterCurrentMonth
+                    : isNextYearRangeAllFuture)
+                }
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink transition-colors hover:bg-brand/10 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
               >
                 <ChevronRightIcon className="h-4 w-4" />
               </button>
@@ -345,12 +374,16 @@ export function DateField({
                     disablePast &&
                     year < today.getFullYear();
 
+                  const isFutureYear =
+                    disableFuture &&
+                    year > today.getFullYear();
+
                   return (
                     <button
                       key={year}
                       type="button"
                       onClick={() => selectYear(year)}
-                      disabled={isPastYear}
+                      disabled={isPastYear || isFutureYear}
                       aria-pressed={selected}
                       className={`flex h-10 items-center justify-center rounded-lg text-[13px] font-medium transition-colors disabled:cursor-not-allowed disabled:text-muted/40 disabled:hover:bg-transparent ${selected
                         ? "bg-cta text-white"
@@ -389,12 +422,16 @@ export function DateField({
                       disablePast &&
                       date < todayStart;
 
+                    const isFuture =
+                      disableFuture &&
+                      date > todayStart;
+
                     return (
                       <button
                         key={toIso(date)}
                         type="button"
                         onClick={() => selectDate(date)}
-                        disabled={isPast}
+                        disabled={isPast || isFuture}
                         aria-current={
                           isToday ? "date" : undefined
                         }
@@ -419,6 +456,12 @@ export function DateField({
           </div>
         )}
       </div>
+
+      {error && (
+        <p role="alert" className="text-xs text-danger">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

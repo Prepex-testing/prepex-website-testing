@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { Button } from "@/components/ui/Button";
@@ -28,7 +29,7 @@ import {
   UploadIcon,
   InfoIcon,
 } from "@/components/ui/icons";
-import { ArrowLeftIcon, BellIcon } from "@/assets/icons";
+import { ArrowLeftIcon } from "@/assets/icons";
 import { DateField } from "@/components/ui/DateField";
 import { DurationInput } from "@/components/ui/DurationInput";
 
@@ -130,6 +131,17 @@ function toIsoDate(display: string): string {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
+/** A dd/mm/yyyy date later than today (local) — a mock can't be attempted in the future. */
+function isFutureDisplayDate(display: string): boolean {
+  const iso = toIsoDate(display);
+  if (!iso) return false;
+  const now = new Date();
+  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  return iso > todayIso;
+}
+
+const FUTURE_DATE_ERROR = "Date attempted can't be in the future.";
+
 function toDisplayDate(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
@@ -203,13 +215,7 @@ function UploadScorecardContent() {
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </motion.div>
@@ -285,7 +291,15 @@ function UploadScorecardContent() {
             {...fadeIn}
             transition={fadeTransition}
           >
-            {tab === "manual" && <ManualForm mockId={editMockId} level={level} setLevel={setLevel} />}
+            {tab === "manual" && (
+              <ManualForm
+                mockId={editMockId}
+                level={level}
+                setLevel={setLevel}
+                prefillName={searchParams.get("mockName")}
+                prefillDate={searchParams.get("date")}
+              />
+            )}
             {tab === "upload-image" && <UploadImageForm disabled={!!editMockId} />}
             {tab === "quick-log" && <QuickLogForm disabled={!!editMockId} />}
           </motion.div>
@@ -366,12 +380,14 @@ function MockDetailsFields({
   onChange,
   onScoreError,
   scoreError,
+  dateError,
   dateInputKey,
 }: {
   fields: ManualFields;
   onChange: <K extends keyof ManualFields>(key: K, value: ManualFields[K]) => void;
   onScoreError: (error: string | null) => void;
   scoreError?: string | null;
+  dateError?: string | null;
   dateInputKey?: string | number;
 }) {
   return (
@@ -391,6 +407,8 @@ function MockDetailsFields({
           label="Date Attempted"
           name="dateAttempted"
           required
+          disableFuture
+          error={dateError}
           defaultValue={fields.dateDisplay}
           onDateChange={(value) => onChange("dateDisplay", value)}
           labelClassName="text-[13px] font-medium leading-5 text-body-text dark:text-ink sm:text-[14px] sm:leading-5"
@@ -474,13 +492,22 @@ function ManualForm({
   mockId,
   level,
   setLevel,
+  prefillName,
+  prefillDate,
 }: {
   mockId?: string | null;
   level: ManualLevel;
   setLevel: (level: ManualLevel) => void;
+  /** Prefill for a new entry — e.g. a calendar mock day's "Upload Score" task. */
+  prefillName?: string | null;
+  prefillDate?: string | null;
 }) {
   const router = useRouter();
-  const [basicFields, setBasicFields] = useState<ManualFields>(EMPTY_MANUAL_FIELDS);
+  const [basicFields, setBasicFields] = useState<ManualFields>(() => ({
+    ...EMPTY_MANUAL_FIELDS,
+    mockName: prefillName ?? "",
+    dateDisplay: prefillDate ? toDisplayDate(prefillDate) : "",
+  }));
   const [mediumFields, setMediumFields] = useState<ManualFields>(EMPTY_MANUAL_FIELDS);
   const [subjects, setSubjects] = useState<SubjectWithChapters[]>([]);
   const [subjectScores, setSubjectScores] = useState<SubjectScoresState>({});
@@ -491,6 +518,16 @@ function ManualForm({
   const [isPrefilling, setPrefilling] = useState(!!mockId);
   const [prefillTick, setPrefillTick] = useState(0);
   const [showSubjectScores, setShowSubjectScores] = useState(!mockId);
+  // The stored date of a mock being edited. A scheduled mock can carry a
+  // future date; keeping it as-is is allowed, changing to another future
+  // date isn't.
+  const [originalDateDisplay, setOriginalDateDisplay] = useState("");
+
+  const activeDateDisplay = level === "basic" ? basicFields.dateDisplay : mediumFields.dateDisplay;
+  const dateError =
+    isFutureDisplayDate(activeDateDisplay) && activeDateDisplay !== originalDateDisplay
+      ? FUTURE_DATE_ERROR
+      : null;
 
   const isManualRequiredReady =
     !!(level === "basic" ? basicFields.mockName.trim() : mediumFields.mockName.trim()) &&
@@ -519,12 +556,15 @@ function ManualForm({
 
         setLevel("medium");
 
+        setOriginalDateDisplay(toDisplayDate(data.attemptedDate));
         setMediumFields({
           mockName: data.mockName ?? "",
           dateDisplay: toDisplayDate(data.attemptedDate),
           source: sourceValue(data.sourceInstitute),
-          score: data.totalScore != null ? String(data.totalScore) : "",
-          totalMarks: data.maxScore != null ? String(data.maxScore) : "",
+          // A scheduled mock is stored with 0/0 until its score is entered —
+          // show those as empty fields to fill, not as a real zero.
+          score: data.totalScore != null && data.maxScore ? String(data.totalScore) : "",
+          totalMarks: data.maxScore ? String(data.maxScore) : "",
           timeTaken: data.timeTakenMinutes ?? undefined,
           testDuration: data.testDurationMinutes ?? undefined,
         });
@@ -612,7 +652,7 @@ function ManualForm({
     const entryTier: MockEntryTier = level === "basic" ? "BASIC" : "MEDIUM";
     const attemptedDate = toIsoDate(fields.dateDisplay);
 
-    if (!fields.mockName.trim() || !attemptedDate) {
+    if (!fields.mockName.trim() || !attemptedDate || dateError) {
       return;
     }
 
@@ -662,6 +702,7 @@ function ManualForm({
               onChange={updateBasicField}
               onScoreError={setScoreError}
               scoreError={scoreError}
+              dateError={dateError}
             />
           )}
 
@@ -672,6 +713,7 @@ function ManualForm({
                 onChange={updateMediumField}
                 onScoreError={setScoreError}
                 scoreError={scoreError}
+                dateError={dateError}
                 dateInputKey={mockId ? `prefill-${prefillTick}` : "medium"}
               />
 
@@ -776,7 +818,14 @@ function ManualForm({
         <Button
           variant="primary"
           onClick={handleSave}
-          disabled={isSubmitting || isPrefilling || !isManualRequiredReady || !!scoreError || hasInvalidSubjectScore}
+          disabled={
+            isSubmitting ||
+            isPrefilling ||
+            !isManualRequiredReady ||
+            !!scoreError ||
+            !!dateError ||
+            hasInvalidSubjectScore
+          }
         >
           {isSubmitting ? "Saving..." : isPrefilling ? "Loading..." : "Save & Analyze"}
         </Button>
@@ -928,12 +977,14 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
   };
 
   const hasInvalidSubjectScore = Object.values(subjectScoreErrors).some((message) => !!message);
+  // The extracted date is prefilled as read — a misread can land in the future.
+  const dateError = fields && isFutureDisplayDate(fields.dateDisplay) ? FUTURE_DATE_ERROR : null;
 
   const handleSave = async () => {
     if (!fields) return;
     const attemptedDate = toIsoDate(fields.dateDisplay);
 
-    if (!fields.mockName.trim() || !attemptedDate) {
+    if (!fields.mockName.trim() || !attemptedDate || dateError) {
       return;
     }
 
@@ -1086,6 +1137,7 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
               onChange={updateField}
               onScoreError={setScoreError}
               scoreError={scoreError}
+              dateError={dateError}
               dateInputKey={`extracted-${prefillTick}`}
             />
 
@@ -1197,6 +1249,7 @@ function UploadImageForm({ disabled = false }: { disabled?: boolean }) {
                 disabled ||
                 !fields?.mockName.trim() ||
                 !toIsoDate(fields.dateDisplay) ||
+                !!dateError ||
                 !!scoreError ||
                 hasInvalidSubjectScore
               }
@@ -1317,6 +1370,7 @@ function QuickLogForm({ disabled = false }: { disabled?: boolean }) {
             label="Date"
             name="quickDate"
             required
+            disableFuture
             defaultValue={fields.dateDisplay}
             onDateChange={(value) => updateField("dateDisplay", value)}
           />

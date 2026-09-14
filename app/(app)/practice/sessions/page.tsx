@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PlanTaskRow, toRowDifficulty } from "@/components/home/PlanTaskRow";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { withPracticeProgressLabel } from "@/components/home/taskTypes";
 import type { PlanTask } from "@/components/home/PlanTaskRow";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
@@ -14,7 +15,6 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { getTodayPlan, type PlannerTask } from "@/lib/api/planner";
 import { prettyDifficulty } from "@/lib/api/practice";
-import { BellIcon } from "@/assets/icons";
 
 function toPracticeRow(task: PlannerTask): PlanTask {
   return {
@@ -74,13 +74,7 @@ export default function PracticeSessionsPage() {
         <h1 className="text-h1 text-ink">Practice Sessions</h1>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

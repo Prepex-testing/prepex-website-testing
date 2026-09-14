@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { MOODS, type Mood } from "@/components/check-in/moods";
+import { useGreeting } from "@/lib/utils/greeting";
 
 type CheckInBodyProps = {
   name: string;
@@ -22,6 +23,7 @@ export function CheckInBody({
   onSkip,
 }: CheckInBodyProps) {
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const greeting = useGreeting();
   const isUpdateMode = mode === "update";
   const selected = MOODS.find((item) => item.id === selectedMood) ?? null;
 
@@ -32,7 +34,7 @@ export function CheckInBody({
           {isUpdateMode ? (
             <>Update Today&apos;s Mood</>
           ) : (
-            `Good Morning, ${name} 👋`
+            `${greeting}, ${name} 👋`
           )}
         </h2>
 

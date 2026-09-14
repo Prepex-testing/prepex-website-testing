@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
 import {
@@ -12,7 +13,7 @@ import {
   CircleXIcon,
   RefreshIcon,
 } from "@/components/ui/icons";
-import { CalendarIcon, BellIcon, ArrowLeftIcon } from "@/assets/icons";
+import { CalendarIcon, ArrowLeftIcon } from "@/assets/icons";
 import {
   answerToText,
   getMistake,
@@ -113,13 +114,7 @@ function MistakeNotebookEntryContent() {
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

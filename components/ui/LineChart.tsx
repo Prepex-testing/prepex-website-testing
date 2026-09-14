@@ -7,6 +7,10 @@ export type LineChartSeries = {
   label: string;
   /** null = no value for that x position; the line breaks rather than dipping to 0. */
   points: (number | null)[];
+  /** Readout for this series' point — overrides the chart's formatValue, for a
+   *  series plotted on a different footing than it reads (e.g. time as % of
+   *  the test, read back in minutes). */
+  formatPoint?: (value: number, index: number) => string;
 };
 
 type LineChartProps = {
@@ -226,7 +230,11 @@ export function LineChart({
               <span key={s.id} className="text-[12px] text-muted">
                 {s.label}:{" "}
                 <span className="font-semibold text-ink">
-                  {value == null ? "—" : formatValue(value)}
+                  {value == null
+                    ? "—"
+                    : s.formatPoint
+                      ? s.formatPoint(value, activeIndex)
+                      : formatValue(value)}
                 </span>
               </span>
             );

@@ -37,7 +37,7 @@ export function ChapterRankedList({
         >
             {/* Heading */}
             <h3
-                className="mb-4 text-sm font-bold uppercase tracking-[0.5px]"
+                className="mb-3 text-xs font-bold uppercase tracking-[0.5px] sm:mb-4 sm:text-sm"
                 style={{ color: titleColor }}
             >
                 {title}
@@ -48,12 +48,12 @@ export function ChapterRankedList({
                 {items.map((item) => (
                     <div
                         key={item.id}
-                        className="rounded-xl p-2"
+                        className="rounded-xl p-1.5 sm:p-2"
                     >
-                        <div className="flex items-start gap-3">
+                        <div className="flex items-start gap-2.5 sm:gap-3">
                             {/* Rank */}
                             <div
-                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold dark:border dark:border-[#FAF7F2]/8 ${rankBg}`}
+                                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold dark:border dark:border-[#FAF7F2]/8 sm:h-8 sm:w-8 ${rankBg}`}
                             >
                                 {item.rank}
                             </div>
@@ -66,7 +66,7 @@ export function ChapterRankedList({
                                     </p>
 
                                     <span
-                                        className="text-sm font-bold"
+                                        className="shrink-0 text-sm font-bold"
                                         style={{ color: valueColor }}
                                     >
                                         {item.value}

@@ -16,6 +16,8 @@ type StoredSession = {
   taskTitle: string;
   subjectName: string;
   subjectLabel: string;
+  /** The chapter under revision — its resource-library page is the one place the session may step out to. */
+  chapterName?: string;
   baseElapsedSeconds: number;
 };
 
@@ -30,6 +32,7 @@ type RevisionSessionState = {
   taskTitle: string;
   subjectName: string;
   subjectLabel: string;
+  chapterName: string;
 };
 
 const INITIAL_STATE: RevisionSessionState = {
@@ -43,6 +46,7 @@ const INITIAL_STATE: RevisionSessionState = {
   taskTitle: "",
   subjectName: "",
   subjectLabel: "",
+  chapterName: "",
 };
 
 type StartSessionInput = {
@@ -51,6 +55,7 @@ type StartSessionInput = {
   taskTitle?: string;
   subjectName?: string;
   subjectLabel?: string;
+  chapterName?: string;
   /** Seconds to seed the timer with — e.g. a task's already-banked secondsCompleted. */
   initialElapsedSeconds?: number;
 };
@@ -130,6 +135,7 @@ export function RevisionSessionProvider({ children }: { children: ReactNode }) {
           taskTitle: cached.taskTitle,
           subjectName: cached.subjectName,
           subjectLabel: cached.subjectLabel,
+          chapterName: cached.chapterName ?? "",
         });
       })
       .catch(() => {
@@ -184,6 +190,7 @@ export function RevisionSessionProvider({ children }: { children: ReactNode }) {
       taskTitle: input.taskTitle ?? "",
       subjectName: input.subjectName ?? "",
       subjectLabel: input.subjectLabel ?? "",
+      chapterName: input.chapterName ?? "",
       baseElapsedSeconds,
     };
     writeStoredSession(session);
@@ -198,6 +205,7 @@ export function RevisionSessionProvider({ children }: { children: ReactNode }) {
       taskTitle: session.taskTitle,
       subjectName: session.subjectName,
       subjectLabel: session.subjectLabel,
+      chapterName: session.chapterName ?? "",
     });
   }, []);
 

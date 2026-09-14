@@ -54,6 +54,12 @@ export type PlannerTask = {
   chapter: PlannerChapter;
   isAnchor?: boolean;
   taskOrder?: number;
+  /** MOCK tasks only — the mock whose score the task asks for. Null for a
+   *  calendar mock day that has no mock entry yet. */
+  mockAnalysisId?: string | null;
+  /** MOCK tasks only — the scheduled mock's name and date (YYYY-MM-DD). */
+  mockName?: string | null;
+  mockDate?: string | null;
 } & TaskChecklist;
 
 export type PlannerTaskDetail = {

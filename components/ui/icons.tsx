@@ -312,6 +312,14 @@ export function GraduationCapIcon() {
 export function RefreshIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
+      // An intrinsic size so the icon is still visible when rendered bare, the
+      // way JournalIcon and NoStudyIcon already are. Without it the SVG has no
+      // width of its own and collapses inside an auto-width flex parent — which
+      // is why it showed in the calendar grid (a fixed-size wrapper) but not on
+      // the Recovery filter chip. Any className sizing still wins, since CSS
+      // beats presentation attributes, and {...props} can override outright.
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -804,6 +812,19 @@ export function TrophyIcons({ size = 16 }: IconProps) {
   );
 }
 
+export function PhoneIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M5 4h3.5l1.8 4.4-2.3 1.4a11 11 0 0 0 6.2 6.2l1.4-2.3L20 15.5V19a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function InfoIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -1056,21 +1077,6 @@ export function ShieldIcon() {
   );
 }
 
-export function PinIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path
-        d="M8 1.5a3.5 3.5 0 0 1 3.5 3.5c0 2.5-3.5 6.5-3.5 6.5S4.5 7.5 4.5 5A3.5 3.5 0 0 1 8 1.5Z"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinejoin="round"
-      />
-      <circle cx="8" cy="5" r="1.3" fill="currentColor" />
-      <path d="M6 14.5h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 export function AtomIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -1256,15 +1262,26 @@ export function MockIcon() {
   );
 }
 
-export function RecoveryIcon() {
+
+
+interface RecoveryIconProps extends SVGProps<SVGSVGElement> {
+  size?: number;
+}
+
+export function RecoveryIcon({
+  size = 18,
+  className,
+  ...props
+}: RecoveryIconProps) {
   return (
     <svg
-      width="18"
-      height="18"
+      width={size}
+      height={size}
       viewBox="0 0 18 18"
       fill="none"
       aria-hidden="true"
-      className="text-[#1A1A4E] dark:text-white"
+      className={`text-[#1A1A4E] dark:text-white ${className ?? ""}`}
+      {...props}
     >
       <path
         d="M9 14.5c-2.8-1.8-5.5-4.2-5.5-7.2A3 3 0 0 1 9 5a3 3 0 0 1 5.5 2.3c0 3-2.7 5.4-5.5 7.2Z"
@@ -1665,10 +1682,10 @@ export function CameraIcon() {
       <path
         d="M2 5.5A1.5 1.5 0 0 1 3.5 4h1.17a1.5 1.5 0 0 0 1.23-.64l.4-.57A1.5 1.5 0 0 1 7.53 2.2h.94a1.5 1.5 0 0 1 1.23.64l.4.57a1.5 1.5 0 0 0 1.23.64h1.17A1.5 1.5 0 0 1 14 5.5v6A1.5 1.5 0 0 1 12.5 13h-9A1.5 1.5 0 0 1 2 11.5v-6Z"
         stroke="currentColor"
-        strokeWidth="1.4"
+        strokeWidth="1.33"
         strokeLinejoin="round"
       />
-      <circle cx="8" cy="8.2" r="2.3" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="8" cy="8.2" r="2.3" stroke="currentColor" strokeWidth="1.33" />
     </svg>
   );
 }
@@ -1851,9 +1868,25 @@ export function DoubleArrowIcon({
   );
 }
 
-export function PracticeBenefitCheck() {
+interface PracticeBenefitCheckProps extends SVGProps<SVGSVGElement> {
+  size?: number;
+}
+
+export function PracticeBenefitCheck({
+  size = 24,
+  className,
+  ...props
+}: PracticeBenefitCheckProps) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      className={className}
+      {...props}
+    >
       <circle
         cx="12"
         cy="12"
@@ -1867,6 +1900,43 @@ export function PracticeBenefitCheck() {
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+export function ShareIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="12" cy="3.5" r="1.8" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="4" cy="8" r="1.8" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="12" cy="12.5" r="1.8" stroke="currentColor" strokeWidth="1.3" />
+      <path d="m5.6 7.1 4.8-2.6M5.6 8.9l4.8 2.6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function InstagramIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="2.4" y="2.4" width="11.2" height="11.2" rx="3.4" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="8" cy="8" r="2.8" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="11.5" cy="4.6" r="0.85" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function WhatsAppIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M2.6 13.4l.8-2.8a5.4 5.4 0 1 1 2.1 2l-2.9.8Z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M6.1 5.6c.2-.1.4 0 .5.2l.5 1c.1.2 0 .4-.1.5l-.3.3c-.1.1-.1.2 0 .4.3.5.7.9 1.2 1.2.2.1.3.1.4 0l.3-.3c.1-.1.3-.2.5-.1l1 .5c.2.1.3.3.2.5-.2.6-.8 1-1.4.9C7.4 10.4 5.6 8.6 5.2 7c-.1-.6.3-1.2.9-1.4Z"
+        fill="currentColor"
       />
     </svg>
   );

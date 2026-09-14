@@ -14,9 +14,11 @@ const svgrOptions = {
 const nextConfig: NextConfig = {
   async redirects() {
     return [
+      // The Stats tabs used to be separate routes. They're now one page at
+      // /stats that switches tabs in place, so old links land there.
       {
-        source: "/stats",
-        destination: "/stats/effort",
+        source: "/stats/:tab(effort|accuracy|progress)",
+        destination: "/stats",
         permanent: false,
       },
     ];

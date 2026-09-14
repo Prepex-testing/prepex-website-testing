@@ -3,10 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { AlertTriangleIcon, ChevronRightIcon } from "@/components/ui/icons";
-import { ClockIcon, CalendarIcon, FileIcon, BellIcon } from "@/assets/icons";
+import { ClockIcon, CalendarIcon, FileIcon } from "@/assets/icons";
 import { PageLoader } from "@/components/ui/PageLoader";
 import {
   getMistakePatterns,
@@ -46,7 +47,15 @@ const TYPE_FILTERS: ("All" | MistakeTagFilter)[] = [
   "UNTAGGED",
 ];
 
-function DueTagRow({ group, showDate }: { group: DueMistakeGroup; showDate?: boolean }) {
+function DueTagRow({
+  group,
+  bucket,
+  showDate,
+}: {
+  group: DueMistakeGroup;
+  bucket: "today" | "overdue";
+  showDate?: boolean;
+}) {
   const router = useRouter();
   const [starting, setStarting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -64,7 +73,7 @@ function DueTagRow({ group, showDate }: { group: DueMistakeGroup; showDate?: boo
     setStarting(true);
     setErr(null);
     try {
-      const { data } = await startMistakeSession(group.chapterId, group.tag);
+      const { data } = await startMistakeSession(group.chapterId, group.tag, bucket);
       router.push(`/practice?sessionId=${data.sessionId}`);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Couldn't start practice.");
@@ -303,13 +312,7 @@ export default function MistakeNotebookPage() {
         <h1 className="text-h1 text-ink">Mistake Notebook</h1>
         <div className="flex shrink-0 items-center gap-4">
           <ThemeToggle />
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-          >
-            <BellIcon />
-          </button>
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>
@@ -368,7 +371,7 @@ export default function MistakeNotebookPage() {
                 </div>
                 {p.suggestedAction && (
                   <p className="mt-1 text-[13px] text-body-text">
-                    <span className="font-semibold">Action:</span> {p.suggestedAction}
+                    <span className="font-semibold">Suggestion:</span> {p.suggestedAction}
                   </p>
                 )}
               </div>
@@ -453,7 +456,7 @@ export default function MistakeNotebookPage() {
             </div>
           ) : (
             today.groups.map((group) => (
-              <DueTagRow key={group.key} group={group} />
+              <DueTagRow key={group.key} group={group} bucket="today" />
             ))
           )}
         </div>
@@ -485,7 +488,7 @@ export default function MistakeNotebookPage() {
             </div>
           ) : (
             overdue.groups.map((group) => (
-              <DueTagRow key={group.key} group={group} showDate />
+              <DueTagRow key={group.key} group={group} bucket="overdue" showDate />
             ))
           )}
         </div>

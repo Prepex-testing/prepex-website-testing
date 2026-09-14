@@ -1,77 +1,76 @@
 import { useId } from "react";
 import { CameraIcon } from "@/components/ui/icons";
+import { AvatarFace } from "@/components/ui/AvatarFace";
 
 type AvatarProgressRingProps = {
   percent: number;
   initials: string;
+  /** Profile photo; the initials show when absent. */
+  imageUrl?: string | null;
   onCameraClick?: () => void;
   cameraLabel?: string;
 };
 
+const CAMERA_BADGE =
+  "absolute bottom-0 right-0 flex h-7.5 w-7.5 items-center justify-center rounded-full border border-[#F3F4F6] bg-white p-1.5 text-[#1A1A4E] dark:border-(--text-primary,#FAF7F2) dark:bg-(--bg-card,#111145) dark:text-(--text-primary,#FAF7F2)";
+
 export function AvatarProgressRing({
   percent,
   initials,
+  imageUrl = null,
   onCameraClick,
   cameraLabel = "Change profile photo",
 }: AvatarProgressRingProps) {
-  const radius = 40;
+  const size = 93;
+  const strokeWidth = 5;
+  const center = size / 2;
+  const radius = center - strokeWidth / 2;
   const circumference = 2 * Math.PI * radius;
   const gradientId = useId();
 
   return (
-    <div className="relative flex h-[109px] w-[93px] items-center justify-center">
-      {/* Tight box matching the ring's true 88x88 bounds, so the badge
-          below anchors to the circle itself instead of the wrapper
-          (which is intentionally larger, for layout spacing). */}
-      <div className="relative h-22 w-22">
-        <svg viewBox="0 0 88 88" className="absolute inset-0 h-full w-full -rotate-90">
+    <div className="relative flex h-27.25 w-23.25 items-center justify-center">
+      <div className="relative h-23.25 w-23.25">
+        <svg viewBox={`0 0 ${size} ${size}`} className="absolute inset-0 h-full w-full -rotate-90">
           <circle
-            cx="44"
-            cy="44"
-            r={radius}
-            fill="none"
-            stroke="var(--color-tint)"
-            strokeWidth="5"
-          />
-
-          <circle
-            cx="44"
-            cy="44"
+            cx={center}
+            cy={center}
             r={radius}
             fill="none"
             stroke={`url(#${gradientId})`}
-            strokeWidth="5"
+            strokeWidth={strokeWidth}
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={circumference * (1 - percent / 100)}
           />
 
+          {/* Light mode: navy → violet gradient. Dark mode: both stops turn
+              cream, so the ring reads as a solid --text-primary stroke. */}
           <defs>
             <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#1A1A4E" />
-              <stop offset="100%" stopColor="#4C1D95" />
+              <stop offset="0%" className="[stop-color:#1A1A4E] dark:[stop-color:var(--text-primary,#FAF7F2)]" />
+              <stop offset="100%" className="[stop-color:#4C1D95] dark:[stop-color:var(--text-primary,#FAF7F2)]" />
             </linearGradient>
           </defs>
         </svg>
 
-        <span className="absolute inset-0 m-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand text-2xl font-bold text-white">
-          {initials}
-        </span>
+        <AvatarFace
+          src={imageUrl}
+          fallback={initials}
+          className="absolute inset-0 m-auto flex h-18 w-18 items-center justify-center rounded-full text-center align-middle font-(family-name:--font-inter) text-[36px] font-bold leading-10 tracking-normal text-ink"
+        />
 
         {onCameraClick ? (
           <button
             type="button"
             onClick={onCameraClick}
             aria-label={cameraLabel}
-            className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-ink text-surface transition-opacity hover:opacity-90"
+            className={`${CAMERA_BADGE} transition-opacity hover:opacity-90`}
           >
             <CameraIcon />
           </button>
         ) : (
-          <span
-            aria-hidden="true"
-            className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-ink text-surface"
-          >
+          <span aria-hidden="true" className={CAMERA_BADGE}>
             <CameraIcon />
           </span>
         )}

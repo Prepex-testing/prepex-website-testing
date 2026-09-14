@@ -28,8 +28,7 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    // href: "/plan",
-    href: "/development-in-progress",
+    href: "/plan",
     activeMatch: "/plan",
     label: "Plan",
     icon: (
@@ -49,10 +48,7 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    // TEMPORARY (current sprint): original destination, restore by
-    // uncommenting the line below and removing the override under it.
-    // href: "/stats",
-    href: "/development-in-progress",
+    href: "/stats",
     activeMatch: "/stats",
     label: "Stats",
     icon: (
@@ -62,10 +58,7 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    // TEMPORARY (current sprint): original destination, restore by
-    // uncommenting the line below and removing the override under it.
-    // href: "/profile",
-    href: "/development-in-progress",
+    href: "/profile",
     activeMatch: "/profile",
     label: "Profile",
     icon: (
@@ -78,6 +71,14 @@ export const NAV_ITEMS = [
 
 type SidebarProps = {
   onCollapse?: () => void;
+};
+
+// data-coach anchors for the Onboarding Coach (Section 16). The sidebar and
+// the mobile bottom nav both carry these, and the coach uses whichever is
+// actually laid out at the time.
+export const NAV_COACH_ANCHOR: Record<string, string> = {
+  Practice: "nav-practice",
+  Stats: "nav-stats",
 };
 
 export function Sidebar({ onCollapse }: SidebarProps) {
@@ -112,6 +113,7 @@ export function Sidebar({ onCollapse }: SidebarProps) {
             <Link
               key={item.label}
               href={item.href}
+              data-coach={NAV_COACH_ANCHOR[item.label]}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                 active
                   ? "bg-sidebar-active-bg text-sidebar-active-fg"

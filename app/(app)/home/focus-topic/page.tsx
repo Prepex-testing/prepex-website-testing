@@ -2,8 +2,9 @@
 
 import { Suspense, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -17,11 +18,15 @@ import {
   NoteIcon,
   LoderIcon,
   ArrowLeftIcon,
-  BellIcon,
-} from "@/assets/icons";
+  } from "@/assets/icons";
+import { ApiError } from "@/lib/api/http";
+import { chapterResourcesHref } from "@/lib/revision/resourceLinks";
 import {
+  addToRevisionRotation,
   getFocusTopic,
   getWeaknessTopicDetail,
+  startTargetedPractice,
+  type WeaknessRecommendedAction,
   type WeaknessSignal,
   type WeaknessSignalKey,
   type WeaknessSignalLevel,
@@ -42,7 +47,19 @@ const SIGNAL_ICONS: Record<WeaknessSignalKey, ReactNode> = {
   time: <ClockIcon />,
 };
 
-const ACTION_ICONS: ReactNode[] = [<PlayIcon key="0" />, <NoteIcon key="1" />, <LoderIcon key="2" />];
+const ACTION_ICONS: Record<string, ReactNode> = {
+  watch_lecture: <PlayIcon />,
+  targeted_practice: <NoteIcon />,
+  revision_rotation: <LoderIcon />,
+};
+
+const ACTION_ROW =
+  "flex w-full items-center gap-3 rounded-xl p-2 -mx-2 text-left transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent";
+
+function formatDay(iso: string | null): string {
+  if (!iso) return "soon";
+  return new Date(iso).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+}
 
 function priorityLabel(tier: WeaknessTier): string {
   if (tier === "CRITICAL" || tier === "STRONG") return "High Priority";
@@ -65,9 +82,16 @@ function FocusTopicContent() {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
+  const router = useRouter();
   const [detail, setDetail] = useState<WeaknessTopicDetail | null>(null);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // "Focus This Week" actions — which one is running, and what each reported.
+  const [busyAction, setBusyAction] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<{ key: string; ok: boolean; text: string } | null>(null);
+  // "Apply targeted week" is a one-shot — it reads "Applied" once it has run.
+  const [targetedWeekApplied, setTargetedWeekApplied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -105,13 +129,7 @@ function FocusTopicContent() {
       </div>
       <div className="flex shrink-0 items-center gap-4">
         <ThemeToggle />
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-icon-action-bg text-icon-action-text transition-colors hover:bg-tint-strong"
-        >
-          <BellIcon />
-        </button>
+        <NotificationBell />
         <UserMenu />
       </div>
     </div>
@@ -134,6 +152,91 @@ function FocusTopicContent() {
 
   const score = Math.round(Number(detail.weaknessScore));
   const subjectName = detail.chapter?.subject?.name ?? null;
+  const chapterName = detail.chapter?.name ?? null;
+  const lectureHref = subjectName && chapterName ? chapterResourcesHref(subjectName, chapterName, "YOUTUBE") : null;
+
+  const runPractice = async () => {
+    setBusyAction("targeted_practice");
+    setActionMessage(null);
+    try {
+      const { data } = await startTargetedPractice(detail.chapterId);
+      router.push(`/practice?taskId=${data.taskId}`);
+    } catch (err) {
+      setActionMessage({
+        key: "targeted_practice",
+        ok: false,
+        text: err instanceof ApiError ? err.message : "Couldn't start the practice set. Please try again.",
+      });
+      setBusyAction(null);
+    }
+  };
+
+  // Shared by "Add to revision rotation" and the footer's "Apply targeted
+  // week" — both pull the chapter back into revision (stage − 1, next
+  // revision brought forward). `source` decides whose button shows the result.
+  const runRotation = async (source: "revision_rotation" | "targeted_week" = "revision_rotation") => {
+    setBusyAction(source);
+    setActionMessage(null);
+    try {
+      const { data } = await addToRevisionRotation(detail.chapterId);
+      if (source === "targeted_week") setTargetedWeekApplied(true);
+      setActionMessage({
+        key: source,
+        ok: true,
+        text: `${source === "targeted_week" ? "Applied" : "Added"} — next revision ${formatDay(data.nextRevisionAt)}, every ${data.currentIntervalDays ?? 1} day${data.currentIntervalDays === 1 ? "" : "s"} for now.`,
+      });
+    } catch (err) {
+      setActionMessage({
+        key: source,
+        ok: false,
+        text: err instanceof ApiError ? err.message : "Couldn't update your revision schedule. Please try again.",
+      });
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
+  const renderAction = (action: WeaknessRecommendedAction) => {
+    const icon = (
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+        {ACTION_ICONS[action.key] ?? <NoteIcon />}
+      </span>
+    );
+    const label = <span className="text-[14px] font-semibold leading-5 text-ink">{action.label}</span>;
+
+    if (action.key === "watch_lecture") {
+      return lectureHref ? (
+        <Link href={lectureHref} className={ACTION_ROW}>
+          {icon}
+          {label}
+        </Link>
+      ) : (
+        <button type="button" disabled className={ACTION_ROW}>
+          {icon}
+          {label}
+        </button>
+      );
+    }
+
+    const isPractice = action.key === "targeted_practice";
+    const isBusy = busyAction === action.key;
+    return (
+      <button
+        type="button"
+        onClick={isPractice ? runPractice : () => runRotation()}
+        disabled={busyAction !== null}
+        className={ACTION_ROW}
+      >
+        {icon}
+        <span className="flex min-w-0 flex-col">
+          {label}
+          {isBusy && (
+            <span className="text-[12px] text-muted">{isPractice ? "Preparing your questions…" : "Updating your schedule…"}</span>
+          )}
+        </span>
+      </button>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -222,13 +325,18 @@ function FocusTopicContent() {
             <p className="text-[14px] font-normal uppercase leading-[15px] tracking-[1px]">
               Focus This Week
             </p>
-            <div className="flex flex-col gap-4">
-              {detail.recommendedActions.map((action, index) => (
-                <div key={action.key} className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
-                    {ACTION_ICONS[index % ACTION_ICONS.length]}
-                  </span>
-                  <p className="text-[14px] font-semibold leading-5 text-ink">{action.label}</p>
+            <div className="flex flex-col gap-2">
+              {detail.recommendedActions.map((action) => (
+                <div key={action.key}>
+                  {renderAction(action)}
+                  {actionMessage?.key === action.key && (
+                    <p
+                      role={actionMessage.ok ? "status" : "alert"}
+                      className={`ml-11 text-[12px] font-medium ${actionMessage.ok ? "text-success" : "text-danger"}`}
+                    >
+                      {actionMessage.text}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
@@ -239,15 +347,28 @@ function FocusTopicContent() {
         {detail.planAdjustmentAvailable && (
           <div className="bg-[#1A1A4E] p-8">
             <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl p-4">
-              <p className="text-[16px] font-bold leading-5 text-[#FAF7F2]">
-                Plan adjustment available
-              </p>
-              <Link
-                href="#"
-                className="flex h-[54px] w-[224px] items-center justify-center gap-2 rounded-lg bg-[#FF7A59] px-3 text-[16px] font-bold leading-5 text-[#FAF7F2] transition-opacity hover:opacity-90"
+              <div className="min-w-0">
+                <p className="text-[16px] font-bold leading-5 text-[#FAF7F2]">
+                  Plan adjustment available
+                </p>
+                {actionMessage?.key === "targeted_week" && (
+                  <p
+                    role={actionMessage.ok ? "status" : "alert"}
+                    className={`mt-1 text-[12px] font-medium ${actionMessage.ok ? "text-[#FAF7F2]/80" : "text-[#FF7A59]"}`}
+                  >
+                    {actionMessage.text}
+                  </p>
+                )}
+              </div>
+              {/* Same action as "Add to revision rotation". */}
+              <button
+                type="button"
+                onClick={() => runRotation("targeted_week")}
+                disabled={busyAction !== null || targetedWeekApplied}
+                className="flex h-[54px] w-[224px] items-center justify-center gap-2 rounded-lg bg-[#FF7A59] px-3 text-[16px] font-bold leading-5 text-[#FAF7F2] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                Apply targeted week
-              </Link>
+                {busyAction === "targeted_week" ? "Applying…" : targetedWeekApplied ? "Applied" : "Apply targeted week"}
+              </button>
             </div>
           </div>
         )}
