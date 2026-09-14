@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Select } from "@/components/ui/Select";
+import { CustomSelect } from "@/components/ui/CustomSelect";
 import { Switch } from "@/components/ui/Switch";
 import { WhiteModal } from "@/components/ui/WhiteModal";
 import { PageLoader } from "@/components/ui/PageLoader";
@@ -47,6 +48,9 @@ import {
 // ---------------------------------------------------------------------------
 
 const CARD = "rounded-2xl border border-brand/10 bg-surface shadow-[0px_1px_2px_0px_#00000008,0px_1px_3px_0px_#0000000D]";
+
+/** Phone number / Relationship labels — semibold, 16px from sm up, 14px on phones. */
+const FIELD_LABEL = "font-sans text-[14px] font-semibold leading-none tracking-normal align-middle text-ink sm:text-[16px]";
 
 const PAUSE_OPTIONS = Array.from({ length: 12 }, (_, i) => ({
   value: String(i + 1),
@@ -92,7 +96,7 @@ export default function ParentConnectionPage() {
       {loadError && <p className="text-sm font-medium text-danger">{loadError}</p>}
 
       {state && !state.whatsapp.live && (
-        <p className="rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-xs font-medium text-ink">
+        <p className="rounded-xl border border-[#F59E0B] bg-[#FFFBEB] px-4 py-3 text-xs font-medium text-ink dark:border-transparent dark:bg-(--bg-card,#111145)">
           WhatsApp delivery isn&apos;t switched on yet — invites and reports are prepared and logged, but not
           actually sent.
         </p>
@@ -153,22 +157,28 @@ function PhoneField({
   label?: string;
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-sm font-semibold text-ink">
+    <div className="flex flex-col gap-2 sm:gap-3">
+      <label htmlFor={id} className={FIELD_LABEL}>
         {label}
       </label>
-      <div className="flex items-center gap-2 rounded-xl border border-brand/15 px-4 py-3.5 focus-within:border-focus-ring">
-        <span className="text-sm font-semibold text-muted">+91</span>
-        <input
-          id={id}
-          type="tel"
-          inputMode="numeric"
-          autoComplete="off"
-          value={value}
-          onChange={(event) => onChange(cleanPhone(event.target.value))}
-          placeholder="10-digit WhatsApp number"
-          className="flex-1 bg-transparent text-sm text-body-text outline-none placeholder:text-muted/70"
-        />
+      {/* Two joined boxes: +91 prefix (no right border) and the input. 58px
+          tall from sm up, 48px on phones. */}
+      <div className="flex h-12 w-full min-w-0 sm:h-14.5">
+        <span className="flex shrink-0 items-center justify-center rounded-l-xl border border-r-0 border-[#E5E7EB] bg-[#F9FAFB] px-3 font-(family-name:--font-inter) text-[14px] font-medium leading-6 tracking-normal text-[#6B7280] dark:border-(--text-secondary,#8B8998) dark:bg-transparent dark:text-(--text-primary,#FAF7F2) sm:px-4 sm:text-[16px]">
+          +91
+        </span>
+        <div className="flex min-w-0 flex-1 items-center rounded-r-xl border border-[#E5E7EB] bg-white px-4 transition-colors focus-within:border-focus-ring dark:border-(--text-secondary,#8B8998) dark:bg-(--bg-card,#111145) sm:px-5">
+          <input
+            id={id}
+            type="tel"
+            inputMode="numeric"
+            autoComplete="off"
+            value={value}
+            onChange={(event) => onChange(cleanPhone(event.target.value))}
+            placeholder="10-digit WhatsApp number"
+            className="w-full min-w-0 bg-transparent font-(family-name:--font-inter) text-[14px] font-normal leading-none tracking-normal text-ink outline-none placeholder:text-[#9CA3AF] dark:placeholder:text-(--text-secondary,#8B8998) sm:text-[16px]"
+          />
+        </div>
       </div>
     </div>
   );
@@ -260,8 +270,10 @@ function ConnectForm({
       <div className={`${CARD} p-6`}>
         <div className="flex flex-col gap-6">
           <div>
-            <p className="text-body-lg font-bold text-ink">Connect a parent (optional)</p>
-            <p className="mt-1 text-sm text-muted">
+            <p className="text-[16px] font-bold leading-6 text-ink sm:text-[18px] sm:leading-7">
+              Connect a parent (optional)
+            </p>
+            <p className="mt-1 text-[13px] leading-5 text-muted sm:text-[14px] sm:leading-5.5">
               Want your parent to get a weekly update on your prep? They&apos;ll receive a short summary on
               WhatsApp every Sunday — academic + emotional progress.
             </p>
@@ -275,14 +287,16 @@ function ConnectForm({
           </div>
 
           <div className="flex flex-col gap-1">
-            <Select
-              id="parent-name"
-              label="Parent's name (optional)"
-              labelClassName="text-sm font-semibold text-ink"
+            <CustomSelect
+              label="Relationship (optional)"
+              labelClassName={FIELD_LABEL}
               value={parentName}
-              onChange={(event) => setParentName(event.target.value)}
+              onChange={setParentName}
               placeholder="Mom / Dad / Mummy / Papa / Guardian"
               options={PARENT_NAME_OPTIONS.map((name) => ({ value: name, label: name }))}
+              // Same 58px (48px on phones) as the phone field above.
+              triggerClassName="h-12 gap-2 rounded-xl px-4 py-3 sm:h-14.5 sm:px-5"
+              className="gap-2! sm:gap-3!"
             />
           </div>
 
@@ -301,22 +315,24 @@ function ConnectForm({
               },
             ].map((row) => (
               <div key={row.text} className="flex items-start gap-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-tint-strong text-ink">
+                {/* Icon frame 24×24 (20×20 on phones), 2px line. Sized from the
+                    tile because these icons don't all accept a className. */}
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-tint-strong text-ink sm:h-10 sm:w-10 [&_svg]:h-5 [&_svg]:w-5 [&_svg]:shrink-0 sm:[&_svg]:h-6 sm:[&_svg]:w-6 **:stroke-2 **:[vector-effect:non-scaling-stroke]">
                   {row.icon}
                 </span>
-                <p className="pt-1.5 text-xs text-muted">{row.text}</p>
+                <p className="pt-2.5 text-xs text-muted sm:pt-3">{row.text}</p>
               </div>
             ))}
           </div>
 
-          <label className="flex cursor-pointer items-start gap-3">
+              <label className="flex w-full cursor-pointer flex-row items-start gap-2.5 sm:gap-3">
             <input
               type="checkbox"
               checked={consent}
               onChange={(event) => setConsent(event.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
+              className="m-0 h-4 w-4 shrink-0 cursor-pointer accent-brand sm:mt-px sm:h-4.5 sm:w-4.5"
             />
-            <span className="text-xs text-body-text">
+            <span className="min-w-0 flex-1 text-xs leading-4 text-body-text sm:text-sm sm:leading-5">
               This is my parent&apos;s or guardian&apos;s number, and I&apos;m okay with them getting a weekly
               update about my prep.
             </span>

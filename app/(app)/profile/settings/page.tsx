@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { ChangePasswordModal } from "@/components/profile/ChangePasswordModal";
 import { ApiError } from "@/lib/api/http";
 import { deleteAccount, getAccountDetails, type AccountDetails } from "@/lib/api/account";
@@ -64,6 +65,8 @@ export default function AccountSettingsPage() {
     }
   };
 
+  if (!account && !loadError) return <PageLoader label="Loading your account settings…" />;
+
   return (
     <div className="flex flex-col gap-5 p-4 sm:p-6 lg:p-8">
       <ProfileSubpageHeader title="Account Settings" />
@@ -109,7 +112,7 @@ export default function AccountSettingsPage() {
               </p>
 
               <p className="mt-1 truncate text-[14px] font-bold leading-5 text-muted">
-                {account?.email ?? (loadError ? "Couldn't load your email" : "Loading…")}
+                {account?.email ?? "Couldn't load your email"}
               </p>
             </div>
 
