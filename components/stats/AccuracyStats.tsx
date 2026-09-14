@@ -13,6 +13,7 @@ import {
   DiceIcon,
   LightbulbIcon,
   MoonIcon,
+  // StarIcon,
   SunIcon,
 } from "@/components/ui/icons";
 import { EmptyNote, StatCard } from "@/components/stats/StatCard";
@@ -21,7 +22,7 @@ import { RankedList } from "@/components/stats/RankedList";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { ChapterRankedList } from "@/components/stats/ChapterRankedList";
 import { PageLoader } from "@/components/ui/PageLoader";
-import { LeftIconcon } from "@/assets/icons";
+import { BoltIcon, LeftIconcon, StarIcon } from "@/assets/icons";
 import {
   formatShortDate,
   formatDelta,
@@ -55,6 +56,9 @@ const DIFFICULTY_BARS = ["bg-brand dark:bg-ink", "bg-brand dark:bg-[#4C1D95]", "
 
 /** PRD 8.8 bans red for low metrics — trend arrows stay neutral in colour. */
 const TREND_GLYPH: Record<string, string> = { UP: "↗", DOWN: "↘", FLAT: "→" };
+
+/** Bottom-row card titles — Plus Jakarta Sans 12/16 bold (StatCard adds font-bold). */
+const SMALL_CARD_TITLE = "font-sans text-[12px] leading-4 tracking-normal align-middle";
 
 
 function toChapterItems(rows: ChapterAccuracyRow[]) {
@@ -214,6 +218,7 @@ export function AccuracyStats() {
         <StatCard
           padding="p-4 sm:p-6"
           title="Accuracy by Subject"
+          titleClassName="text-[14px] leading-6 sm:text-[16px]"
           right={
             <Link
               href="/home/mistake-notebook"
@@ -234,12 +239,12 @@ export function AccuracyStats() {
 
                   <div className="min-w-0 flex-1">
                     <div className="mb-1 flex items-center justify-between gap-2">
-                      <span className="truncate text-sm font-semibold text-[#374151] dark:text-ink">
+                      <span className="truncate font-sans text-[12px] font-bold leading-4 tracking-normal align-middle text-[#374151] dark:text-ink">
                         {subject.subjectName}
                       </span>
 
                       <div className="flex shrink-0 items-center gap-2">
-                        <span className="text-sm font-bold text-[#111827] dark:text-ink">
+                        <span className="font-sans text-[12px] font-bold leading-4 tracking-normal align-middle text-[#111827] dark:text-ink">
                           {subject.accuracy}%
                         </span>
                         <span className="text-xs text-[#9CA3AF] dark:text-muted">
@@ -269,8 +274,7 @@ export function AccuracyStats() {
           )}
         </StatCard>
 
-        {/* Mock trend */}
-        {/* Spans both columns at sm–lg so it isn't left alone at half width. */}
+       
         <StatCard
           className="sm:col-span-2 xl:col-span-1"
           padding="p-4 sm:p-6"
@@ -280,7 +284,7 @@ export function AccuracyStats() {
               ? `Average gain: ${data.mockTrend.avgGainPerMock > 0 ? "+" : ""}${data.mockTrend.avgGainPerMock} marks/mock`
               : "Last 5 mocks"
           }
-          subtitleClassName="text-[#9CA3AF] dark:text-muted"
+          subtitleClassName="font-sans text-[11px]! font-normal! leading-4 tracking-normal! align-middle text-[#9CA3AF] dark:text-muted sm:text-[10px]! sm:leading-[15px]"
           right={
             <Link
               href="/home/mock-analysis"
@@ -369,7 +373,7 @@ export function AccuracyStats() {
           were ~338 / 374px, too narrow for the mistake rows and the two
           chapter lists. */}
       <div className="mx-auto grid w-full grid-cols-1 items-stretch gap-4 sm:gap-6 xl:grid-cols-[506fr_560fr]">
-        {/* Mistake patterns */}
+        
         <StatCard
           className="flex h-full w-full min-w-0 flex-col"
           padding="p-4 sm:p-6"
@@ -379,13 +383,17 @@ export function AccuracyStats() {
               ? `${data.mistakePatterns.totalMistakes} logged · tap to review`
               : undefined
           }
-          subtitleClassName="text-[#9CA3AF] dark:text-muted"
+          titleClassName="text-[14px] leading-6 sm:text-[16px]"
+           subtitleClassName="font-sans text-[11px]! font-normal! leading-4 tracking-normal! align-middle text-[#9CA3AF] dark:text-muted sm:text-[10px]! sm:leading-[15px]"
         >
           {data.mistakePatterns.hasData ? (
             <>
               <RankedList
                 items={data.mistakePatterns.byTag.map((pattern) => ({
                   id: pattern.tag,
+                  // Every mistake row opens the notebook, where the logged
+                  // mistakes behind these counts live.
+                  href: "/home/mistake-notebook",
                   title: pattern.label,
                   subtitle: pattern.subtitle,
                   value: String(pattern.count),
@@ -411,12 +419,7 @@ export function AccuracyStats() {
           className="flex h-full w-full min-w-0 flex-col"
           padding="p-4 sm:p-6"
           title="Accuracy by Chapter"
-          right={
-            <Link href="/home/mistake-notebook" className="flex items-center gap-1 text-xs font-semibold text-ink">
-              View all
-              <LeftIconcon className="h-2.5 w-2.5" />
-            </Link>
-          }
+          titleClassName="text-[14px] leading-6 sm:text-[16px]"
         >
           {data.byChapter.hasData ? (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -444,7 +447,7 @@ export function AccuracyStats() {
       {/* 2 columns from sm, 4 equal from xl (~230px each), Figma's 176:111
           ratio only from 2xl. Four columns at lg were ~166px — too narrow. */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4 2xl:grid-cols-[176fr_111fr_111fr_111fr]">
-        <StatCard title="Difficulty Accuracy" padding="p-4 sm:p-5">
+        <StatCard title="Difficulty Accuracy" titleClassName={SMALL_CARD_TITLE} padding="p-4 sm:p-5">
           {data.byDifficulty.hasData ? (
             <div className="flex flex-col gap-5">
               {data.byDifficulty.levels.map((row, index) => (
@@ -465,7 +468,7 @@ export function AccuracyStats() {
           )}
         </StatCard>
 
-        <StatCard title="Time Per Question" padding="p-4 sm:p-5">
+        <StatCard title="Time Per Question" titleClassName={SMALL_CARD_TITLE} padding="p-4 sm:p-5">
           {data.byDifficulty.hasData ? (
             <div className="flex flex-col gap-4">
               {data.byDifficulty.levels.map((row) => (
@@ -485,7 +488,7 @@ export function AccuracyStats() {
           )}
         </StatCard>
 
-        <StatCard title="Accuracy by Time of Day" padding="p-4 sm:p-5">
+        <StatCard title="Accuracy by Time of Day" titleClassName={SMALL_CARD_TITLE} padding="p-4 sm:p-5">
           <div className="flex items-start justify-between gap-2">
             {data.byTimeOfDay.buckets.map((row) => (
               <div key={row.key} className="flex flex-col items-center gap-0.75">
@@ -502,7 +505,7 @@ export function AccuracyStats() {
           </div>
           {data.byTimeOfDay.insight && (
             <div className="mt-3 flex items-start gap-2 rounded-lg bg-tint px-2 py-2">
-              <LightbulbIcon className="mt-0.5 h-3 w-3 shrink-0 text-cta" />
+              <BoltIcon className="mt-0.5 h-3 w-3 shrink-0 text-ink" />
               <p className="text-[11px] font-medium leading-4 text-body-text sm:text-[9px] sm:leading-[13.5px]">
                 Insight: {data.byTimeOfDay.insight}
               </p>
@@ -510,7 +513,7 @@ export function AccuracyStats() {
           )}
         </StatCard>
 
-        <StatCard title="Projected Next Mock" padding="p-4 sm:p-6">
+        <StatCard title="Projected Next Mock" titleClassName={SMALL_CARD_TITLE} padding="p-4 sm:p-6">
           {data.mockTrend.projection ? (
             <>
               <div className="flex flex-col items-center">
@@ -524,7 +527,7 @@ export function AccuracyStats() {
                 </div>
               </div>
               <div className="mt-4 flex items-start gap-2 rounded-xl border border-brand/10 bg-tint px-3 py-3">
-                <BoltIcons className="mt-0.5 h-4.5 w-4 shrink-0 text-cta" />
+                <StarIcon className="mt-0.5 h-4.5 w-4 shrink-0 text-ink" />
                 <p className="text-[11px] leading-4 text-body-text sm:text-[9px] sm:leading-[11.25px]">
                   Your recent scores carried forward — a range, not a promise.
                 </p>
