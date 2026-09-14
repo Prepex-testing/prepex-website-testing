@@ -40,9 +40,9 @@ export function PrecisionRankedList({ items }: Props) {
                                 {item.subject}
                             </span>
 
-                            <span className="text-[10px] text-[#9CA3AF] dark:text-[#A0A0B0]">
+                            {/* <span className="text-[10px] text-[#9CA3AF] dark:text-[#A0A0B0]">
                                 • Weightage: {item.weightage}
-                            </span>
+                            </span> */}
                         </div>
                     </div>
 
@@ -58,7 +58,7 @@ export function PrecisionRankedList({ items }: Props) {
                             </p>
                         </div>
 
-                        <ChevronRightIcon className="h-4 w-4 text-ink" />
+                        {/* <ChevronRightIcon className="h-4 w-4 text-ink" /> */}
                     </div>
                 </div>
             ))}

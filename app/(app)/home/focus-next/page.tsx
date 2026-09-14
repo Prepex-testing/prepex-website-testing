@@ -86,12 +86,12 @@ export default function FocusNextPage() {
         <p className="py-8 text-center text-sm text-warning">{error}</p>
       ) : items.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-2xl border border-brand/10 bg-surface p-10 text-center">
-                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-tint text-ink">
-                  <ClockIcon className="h-6 w-6" />
-                </span>
-                <p className="text-lg font-bold text-ink">No weak topics detected.</p>
-                <p className="text-sm text-muted">Keep practising and check back after a few sessions.</p>
-              </div>
+          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-tint text-ink">
+            <ClockIcon className="h-6 w-6" />
+          </span>
+          <p className="text-lg font-bold text-ink">No weak topics detected.</p>
+          <p className="text-sm text-muted">Keep practising and check back after a few sessions.</p>
+        </div>
       ) : (
         <>
           <div className="flex flex-col gap-4">
@@ -100,16 +100,17 @@ export default function FocusNextPage() {
                 key={item.chapterId}
                 type="button"
                 onClick={() => openTopic(item.chapterId)}
-                className={`flex flex-wrap items-center justify-between gap-4 rounded-2xl border bg-surface p-5 text-left transition-colors hover:border-brand/30 ${
-                  item.highlight ? "border-cta/40" : "border-brand/10"
-                }`}
+                className={`flex w-full items-center justify-between gap-4 rounded-2xl border border-brand/10 bg-white p-4 text-left shadow-[0px_1px_2px_0px_#1A1A4E0F] dark:bg-(--bg-card,#111145) sm:min-h-[122.5px] sm:gap-6 sm:p-6`}
               >
-                <div className="flex min-w-0 items-center gap-4">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-brand/15 bg-tint text-sm font-bold text-ink">
+                <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+                  {/* Figma 48×48, radius Small, bold 22.5/30 centred; 40×40 with 18/24 on phones. */}
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-brand/15 bg-tint text-center font-sans text-[18px] font-bold leading-6 tracking-normal text-ink sm:h-12 sm:w-12 sm:text-[22.5px] sm:leading-7.5">
                     {item.subjectLabel}
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-base font-semibold text-ink">{item.title}</p>
+                    <p className="truncate font-sans text-[16px] font-semibold leading-6 tracking-normal align-middle text-ink sm:text-[20px] sm:leading-7">
+                      {item.title}
+                    </p>
                     <p className="text-[11px] font-bold uppercase tracking-wide text-muted">
                       {item.tierLabel} · score {item.score}
                     </p>
@@ -118,7 +119,7 @@ export default function FocusNextPage() {
 
                 <div className="flex shrink-0 items-center gap-6">
                   <div className="flex flex-col items-end">
-                    <span className="text-2xl font-extrabold leading-none text-ink">
+                    <span className="text-[22px] font-extrabold leading-none text-ink sm:text-[28px]">
                       {item.accuracy == null ? "—" : `${item.accuracy}%`}
                     </span>
                     <span className="mt-1 text-[10px] font-bold uppercase tracking-wide text-muted">
@@ -126,13 +127,12 @@ export default function FocusNextPage() {
                     </span>
                     {item.accuracyChange != null && (
                       <span
-                        className={`mt-1 text-[11px] font-semibold ${
-                          item.accuracyChange > 0
+                        className={`mt-1 text-[11px] font-semibold ${item.accuracyChange > 0
                             ? "text-emerald-600 dark:text-emerald-400"
                             : item.accuracyChange < 0
                               ? "text-amber-600 dark:text-amber-400"
                               : "text-muted"
-                        }`}
+                          }`}
                       >
                         {item.accuracyChange > 0 ? "↑ +" : item.accuracyChange < 0 ? "↓ " : ""}
                         {item.accuracyChange}% this week
