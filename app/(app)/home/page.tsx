@@ -234,6 +234,7 @@ const TASK_TYPE_STYLE: Record<string, TaskType> = {
   REVISION: "revision",
   LEARNING: "new-learning",
   WELLNESS: "wellness",
+  MOCK: "mock",
 };
 
 const TASK_ACTION_LABEL: Record<string, string> = {
@@ -241,6 +242,7 @@ const TASK_ACTION_LABEL: Record<string, string> = {
   REVISION: "Start Revision",
   LEARNING: "Start Session",
   WELLNESS: "Start Session",
+  MOCK: "Upload Score",
 };
 
 
@@ -254,8 +256,9 @@ function toHomeTask(task: PlannerTask): Task {
   const isSundayDpp = task.taskType === "PRACTICE" && task.title === "DPP Sunday" && !task.chapter;
   return {
     id: task.id,
-    subjectLabel: isSundayDpp ? "DPP" : task.subject?.code?.[0] ?? "W",
-    subjectName: isSundayDpp ? "DPP" : task.subject?.name ?? "Wellness",
+    // Subject-less rows fall back to Wellness — a MOCK task names itself instead.
+    subjectLabel: isSundayDpp ? "DPP" : task.taskType === "MOCK" ? "M" : task.subject?.code?.[0] ?? "W",
+    subjectName: isSundayDpp ? "DPP" : task.taskType === "MOCK" ? "Mock" : task.subject?.name ?? "Wellness",
     type: TASK_TYPE_STYLE[task.taskType] ?? "new-learning",
     title: task.title,
     meta: task.description ?? task.chapter?.name ?? "",
@@ -280,6 +283,9 @@ function toHomeTask(task: PlannerTask): Task {
     isCompleted: task.status === "COMPLETED",
     isCustom: Boolean(task.isAnchor),
     isWellness: task.taskType === "WELLNESS",
+    mockAnalysisId: task.mockAnalysisId ?? null,
+    mockName: task.mockName ?? undefined,
+    mockDate: task.mockDate ?? undefined,
   };
 }
 

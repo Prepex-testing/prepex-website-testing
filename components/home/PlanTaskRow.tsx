@@ -8,6 +8,7 @@ import { TaskEditMenu } from "@/components/home/TaskEditMenu";
 import { CompleteTaskCheckbox } from "@/components/home/CompleteTaskCheckbox";
 import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE } from "@/components/home/TaskRow";
 import type { TaskType } from "@/components/home/TaskRow";
+import { mockTaskHref } from "@/components/home/taskTypes";
 import { Book, Time } from "@/assets/icons";
 import { getChapterTitle } from "@/lib/utils/text";
 import { getTaskQuestions } from "@/lib/api/practice";
@@ -57,6 +58,10 @@ export type PlanTask = {
   isCompleted?: boolean;
   isCustom?: boolean;
   isWellness?: boolean;
+  /** MOCK tasks only — see mockTaskHref. */
+  mockAnalysisId?: string | null;
+  mockName?: string;
+  mockDate?: string;
 };
 
 type PlanTaskRowProps = {
@@ -92,12 +97,20 @@ export function PlanTaskRow({
   // A finished practice task swaps its (disabled) "Practice Completed" chip for
   // an active "View Analysis" button that opens the session breakdown.
   const isPracticeDone = task.type === "practice" && Boolean(task.isCompleted) && !isSkipped;
+  // A MOCK task stays actionable in both states: "Upload Score" until the score
+  // is in (which completes the task server-side), then "View Analysis".
+  const isMockTask = task.type === "mock";
+  const isMockDone = isMockTask && Boolean(task.isCompleted);
   const isActionDisabled = task.isCompleted || isSkipped;
-  const isPrimaryActionDisabled = isPracticeDone ? false : isActionDisabled || isWellnessTask;
+  const isPrimaryActionDisabled = isPracticeDone || isMockTask ? false : isActionDisabled || isWellnessTask;
   const displayLabel = isPracticeDone
     ? loadingAnalysis
       ? "Loading…"
       : "View Analysis"
+    : isMockTask
+      ? isMockDone
+        ? "View Analysis"
+        : "Upload Score"
     : task.isCompleted
       ? COMPLETED_ACTION_LABELS[task.type]
       : isSkipped
@@ -203,7 +216,9 @@ export function PlanTaskRow({
               : "h-[38px]! w-auto! min-w-[138px]! justify-center gap-2.5! px-5! text-[14px]! leading-none! font-semibold! whitespace-nowrap!"
           }
           href={
-            isPrimaryActionDisabled
+            isMockTask
+              ? mockTaskHref(task)
+              : isPrimaryActionDisabled
               ? undefined
               : isStartRevision
                 ? `/revision-session?taskId=${task.id}`
@@ -230,7 +245,8 @@ export function PlanTaskRow({
             title={getChapterTitle(task.title)}
             secondsCompleted={task.secondsCompleted ?? 0}
             isCompleted={task.isCompleted}
-            disabled={isSkipped}
+            // A MOCK task only completes by uploading the score.
+            disabled={isSkipped || (isMockTask && !isMockDone)}
             onCompleted={onTaskChanged}
           />
 

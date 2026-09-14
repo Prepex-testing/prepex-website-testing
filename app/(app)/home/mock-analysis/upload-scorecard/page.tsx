@@ -291,7 +291,15 @@ function UploadScorecardContent() {
             {...fadeIn}
             transition={fadeTransition}
           >
-            {tab === "manual" && <ManualForm mockId={editMockId} level={level} setLevel={setLevel} />}
+            {tab === "manual" && (
+              <ManualForm
+                mockId={editMockId}
+                level={level}
+                setLevel={setLevel}
+                prefillName={searchParams.get("mockName")}
+                prefillDate={searchParams.get("date")}
+              />
+            )}
             {tab === "upload-image" && <UploadImageForm disabled={!!editMockId} />}
             {tab === "quick-log" && <QuickLogForm disabled={!!editMockId} />}
           </motion.div>
@@ -484,13 +492,22 @@ function ManualForm({
   mockId,
   level,
   setLevel,
+  prefillName,
+  prefillDate,
 }: {
   mockId?: string | null;
   level: ManualLevel;
   setLevel: (level: ManualLevel) => void;
+  /** Prefill for a new entry — e.g. a calendar mock day's "Upload Score" task. */
+  prefillName?: string | null;
+  prefillDate?: string | null;
 }) {
   const router = useRouter();
-  const [basicFields, setBasicFields] = useState<ManualFields>(EMPTY_MANUAL_FIELDS);
+  const [basicFields, setBasicFields] = useState<ManualFields>(() => ({
+    ...EMPTY_MANUAL_FIELDS,
+    mockName: prefillName ?? "",
+    dateDisplay: prefillDate ? toDisplayDate(prefillDate) : "",
+  }));
   const [mediumFields, setMediumFields] = useState<ManualFields>(EMPTY_MANUAL_FIELDS);
   const [subjects, setSubjects] = useState<SubjectWithChapters[]>([]);
   const [subjectScores, setSubjectScores] = useState<SubjectScoresState>({});
@@ -544,8 +561,10 @@ function ManualForm({
           mockName: data.mockName ?? "",
           dateDisplay: toDisplayDate(data.attemptedDate),
           source: sourceValue(data.sourceInstitute),
-          score: data.totalScore != null ? String(data.totalScore) : "",
-          totalMarks: data.maxScore != null ? String(data.maxScore) : "",
+          // A scheduled mock is stored with 0/0 until its score is entered —
+          // show those as empty fields to fill, not as a real zero.
+          score: data.totalScore != null && data.maxScore ? String(data.totalScore) : "",
+          totalMarks: data.maxScore ? String(data.maxScore) : "",
           timeTaken: data.timeTakenMinutes ?? undefined,
           testDuration: data.testDurationMinutes ?? undefined,
         });

@@ -221,12 +221,15 @@ export type MockProgressionPoint = {
   maxScore: number;
   percentage: number | null;
   isCurrent: boolean;
+  timeTakenMinutes: number | null;
+  testDurationMinutes: number | null;
   subjects: {
     subjectId: number;
     name: string;
     score: number;
     maxScore: number;
     accuracy: number | null;
+    timeTakenMinutes: number | null;
   }[];
 };
 
