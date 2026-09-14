@@ -4,9 +4,11 @@ import { useRef, useState, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import { WhiteModal } from "@/components/ui/WhiteModal";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
+import { DateField } from "@/components/ui/DateField";
+import { CustomSelect } from "@/components/ui/CustomSelect";
 import { XIcon, PencilIcon } from "@/components/ui/icons";
 import { AvatarFace } from "@/components/ui/AvatarFace";
+import { FIELD_LABEL, FOOTER_BUTTON, MODAL_CLOSE_ICON, MODAL_TITLE } from "@/components/profile/modalStyles";
 import { ApiError } from "@/lib/api/http";
 import { updateIdentity } from "@/lib/api/account";
 import {
@@ -32,9 +34,7 @@ type EditProfileModalProps = {
 export function EditProfileModal({ open, onClose, overview, onSaved }: EditProfileModalProps) {
   return (
     <WhiteModal open={open} onClose={onClose} ariaLabel="Edit Profile">
-      {/* WhiteModal unmounts its children when closed, so the form below is
-          seeded afresh from `overview` every time it opens — no stale edits
-          from a cancelled session carry over. */}
+   
       {overview ? (
         <EditProfileForm overview={overview} onClose={onClose} onSaved={onSaved} />
       ) : (
@@ -49,8 +49,25 @@ const LEVEL_OPTIONS = (Object.keys(ACADEMIC_LEVEL_LABEL) as AcademicLevel[]).map
   label: ACADEMIC_LEVEL_LABEL[value],
 }));
 
+/** Change Photo / Remove — the "active" variant already carries the navy /
+ *  cream border and text; these override its sm size. `!` because Button
+ *  concatenates classes, so a plain h-/px-/rounded- wouldn't reliably win. */
+const PHOTO_BUTTON =
+  "h-10! rounded-xl! px-5! text-sm! leading-5 sm:h-11.5! sm:min-w-44 sm:px-8! sm:text-base! sm:leading-6";
+
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+/** DateField speaks "DD/MM/YYYY"; the form and API use "YYYY-MM-DD". */
+function isoToDisplay(iso: string): string {
+  const [y, m, d] = iso.split("-");
+  return y && m && d ? `${d}/${m}/${y}` : "";
+}
+
+function displayToIso(display: string): string {
+  const [d, m, y] = display.split("/");
+  return y && m && d ? `${y}-${m}-${d}` : "";
 }
 
 function EditProfileForm({
@@ -188,14 +205,14 @@ function EditProfileForm({
   return (
     <>
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-bold text-ink">Edit Profile</h2>
+        <h2 className={MODAL_TITLE}>Edit Profile</h2>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
           className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
         >
-          <XIcon />
+          <XIcon className={MODAL_CLOSE_ICON} />
         </button>
       </div>
 
@@ -205,7 +222,7 @@ function EditProfileForm({
             src={avatarSrc}
             alt="Your profile photo"
             fallback={initial}
-            className="flex h-20 w-20 items-center justify-center rounded-full bg-brand text-2xl font-bold text-white"
+            className="flex h-24 w-24 items-center justify-center rounded-full bg-brand text-3xl font-bold text-white sm:h-28 sm:w-28 sm:text-4xl"
           />
           {photoBusy && (
             <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45">
@@ -233,15 +250,22 @@ function EditProfileForm({
 
         <div className="flex items-center gap-2">
           <Button
-            variant="secondary"
+            variant="active"
             size="sm"
+            className={PHOTO_BUTTON}
             onClick={() => photoInputRef.current?.click()}
             disabled={photoBusy !== null}
           >
             {photoBusy === "uploading" ? "Uploading…" : "Change Photo"}
           </Button>
           {avatarSrc && (
-            <Button variant="secondary" size="sm" onClick={handleRemovePhoto} disabled={photoBusy !== null}>
+            <Button
+              variant="active"
+              size="sm"
+              className={PHOTO_BUTTON}
+              onClick={handleRemovePhoto}
+              disabled={photoBusy !== null}
+            >
               {photoBusy === "removing" ? "Removing…" : "Remove"}
             </Button>
           )}
@@ -255,31 +279,41 @@ function EditProfileForm({
       </div>
 
       <div className="mt-6 border-t border-brand/10 pt-4">
-        <p className="text-sm font-bold text-ink">Personal Information</p>
+        <p className="font-sans text-base font-bold leading-6 tracking-normal align-middle text-ink sm:text-lg sm:leading-7">
+          Personal Information
+        </p>
 
         <div className="mt-4 flex flex-col gap-4">
-          <Input label="Full Name" value={fullName} maxLength={200} onChange={(e) => setFullName(e.target.value)} />
+          <Input
+            label="Full Name"
+            labelClassName={FIELD_LABEL}
+            value={fullName}
+            maxLength={200}
+            onChange={(e) => setFullName(e.target.value)}
+          />
           <Input
             label="Phone Number"
+            labelClassName={FIELD_LABEL}
             type="tel"
             inputMode="tel"
             value={phoneNumber}
             maxLength={20}
             onChange={(e) => setPhoneNumber(e.target.value)}
           />
-          <Input label="City" value={city} maxLength={100} onChange={(e) => setCity(e.target.value)} />
-          <Select
+          <Input label="City" labelClassName={FIELD_LABEL} value={city} maxLength={100} onChange={(e) => setCity(e.target.value)} />
+          <CustomSelect
             label="Class"
+            labelClassName={FIELD_LABEL}
             options={LEVEL_OPTIONS}
             placeholder="Select your class"
             value={currentLevel}
-            onChange={(e) => setCurrentLevel(e.target.value as AcademicLevel)}
+            onChange={(value) => setCurrentLevel(value as AcademicLevel)}
           />
 
           {/* Read-only on purpose: changing exam resets the student's subject
               selection, which a profile edit shouldn't do as a side effect. */}
           <div className="flex flex-col gap-2">
-            <span className="text-body-lg font-medium leading-none text-body-text dark:text-ink">
+            <span className={FIELD_LABEL}>
               Target Exam
             </span>
             <p className="flex h-12.25 items-center rounded-xl border border-input-border bg-tint-strong px-4 text-[16px] text-muted">
@@ -287,12 +321,12 @@ function EditProfileForm({
             </p>
           </div>
 
-          <Input
+          <DateField
             label="Exam Date"
-            type="date"
-            min={todayIso()}
-            value={examDate}
-            onChange={(e) => setExamDate(e.target.value)}
+            labelClassName={FIELD_LABEL}
+            disablePast
+            defaultValue={isoToDisplay(examDate)}
+            onDateChange={(display) => setExamDate(displayToIso(display))}
           />
 
           {inCoaching && (
@@ -312,10 +346,10 @@ function EditProfileForm({
       {error && <p className="mt-4 text-sm font-medium text-danger">{error}</p>}
 
       <div className="mt-6 flex items-center gap-3">
-        <Button variant="secondary" size="sm" className="flex-1" onClick={onClose} disabled={saving}>
+        <Button variant="secondary" size="sm" className={FOOTER_BUTTON} onClick={onClose} disabled={saving}>
           Cancel
         </Button>
-        <Button variant="primary" size="sm" className="flex-1" onClick={handleSave} disabled={saving}>
+        <Button variant="primary" size="sm" className={FOOTER_BUTTON} onClick={handleSave} disabled={saving}>
           {saving ? "Saving…" : "Save Changes"}
         </Button>
       </div>

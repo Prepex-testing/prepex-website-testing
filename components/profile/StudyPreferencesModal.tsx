@@ -4,7 +4,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { WhiteModal } from "@/components/ui/WhiteModal";
 import { Switch } from "@/components/ui/Switch";
+import { CustomSelect } from "@/components/ui/CustomSelect";
 import { XIcon } from "@/components/ui/icons";
+import { FIELD_LABEL, FOOTER_BUTTON, MODAL_CLOSE_ICON, MODAL_TITLE } from "@/components/profile/modalStyles";
 import { ApiError } from "@/lib/api/http";
 import {
   STUDY_WINDOW_LABEL,
@@ -15,7 +17,10 @@ import {
 
 const WINDOWS = Object.keys(STUDY_WINDOW_LABEL) as StudyWindow[];
 // Matches the 1–18 range core-service validates.
-const HOUR_OPTIONS = Array.from({ length: 18 }, (_, i) => i + 1);
+const HOUR_OPTIONS = Array.from({ length: 18 }, (_, i) => {
+  const h = i + 1;
+  return { value: String(h), label: `${h} ${h === 1 ? "hr" : "hrs"}` };
+});
 
 type StudyPreferencesModalProps = {
   open: boolean;
@@ -88,41 +93,38 @@ function PreferencesForm({
   };
 
   const hourSelect = (value: number, onChange: (next: number) => void, label: string) => (
-    <label className="flex flex-1 flex-col gap-2">
-      <span className="text-[13px] font-semibold text-ink">{label}</span>
-      <select
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="h-11 rounded-xl border border-input-border bg-surface px-3 text-[15px] text-ink outline-none focus:border-brand"
-      >
-        {HOUR_OPTIONS.map((h) => (
-          <option key={h} value={h}>
-            {h} {h === 1 ? "hr" : "hrs"}
-          </option>
-        ))}
-      </select>
-    </label>
+    <CustomSelect
+      label={label}
+      labelClassName={FIELD_LABEL}
+      options={HOUR_OPTIONS}
+      value={String(value)}
+      onChange={(next) => onChange(Number(next))}
+      placeholder="Select hours"
+      // Two selects share the row, so step the text down on phones.
+      valueTextClassName="text-[14px] sm:text-[16px]"
+      className="flex-1"
+    />
   );
 
   return (
     <>
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-bold text-ink">Study Preferences</h2>
+        <h2 className={MODAL_TITLE}>Study Preferences</h2>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
           className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
         >
-          <XIcon />
+          <XIcon className={MODAL_CLOSE_ICON} />
         </button>
       </div>
 
       <div className="mt-5 flex flex-col gap-5">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-[14px] font-semibold text-ink">Same target every day</p>
-            <p className="text-xs text-muted">Use one number for weekdays and weekends.</p>
+            <p className={FIELD_LABEL}>Same target every day</p>
+            <p className="mt-0.5 text-xs text-muted">Use one number for weekdays and weekends.</p>
           </div>
           <Switch checked={sameDailyTarget} onChange={setSameDailyTarget} label="Same target every day" />
         </div>
@@ -133,8 +135,8 @@ function PreferencesForm({
         </div>
 
         <div>
-          <p className="text-[13px] font-semibold text-ink">Study windows</p>
-          <div className="mt-2 grid grid-cols-2 gap-2">
+          <p className={FIELD_LABEL}>Study windows</p>
+          <div className="mt-2 grid grid-cols-2 gap-2 sm:gap-3">
             {WINDOWS.map((window) => {
               const active = windows.includes(window);
               return (
@@ -143,7 +145,8 @@ function PreferencesForm({
                   type="button"
                   onClick={() => toggleWindow(window)}
                   aria-pressed={active}
-                  className={`h-11 rounded-xl border text-[14px] font-semibold transition-colors ${
+                  // Same height, radius and text size as the input fields.
+                  className={`h-12.25 rounded-xl border px-2 text-[14px] font-semibold transition-colors sm:text-[16px] ${
                     active
                       ? "border-brand bg-tint text-ink"
                       : "border-input-border bg-surface text-muted hover:bg-tint/40"
@@ -160,10 +163,10 @@ function PreferencesForm({
       {error && <p className="mt-4 text-sm font-medium text-danger">{error}</p>}
 
       <div className="mt-6 flex items-center gap-3">
-        <Button variant="secondary" size="sm" className="flex-1" onClick={onClose} disabled={saving}>
+        <Button variant="secondary" size="sm" className={FOOTER_BUTTON} onClick={onClose} disabled={saving}>
           Cancel
         </Button>
-        <Button variant="primary" size="sm" className="flex-1" onClick={handleSave} disabled={saving}>
+        <Button variant="primary" size="sm" className={FOOTER_BUTTON} onClick={handleSave} disabled={saving}>
           {saving ? "Saving…" : "Save"}
         </Button>
       </div>

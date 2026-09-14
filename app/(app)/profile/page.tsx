@@ -31,7 +31,7 @@ import {
 } from "@/lib/api/notifications";
 import { AvatarProgressRing } from "@/components/ui/AvatarProgressRing";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { SettingRow } from "@/components/profile/SettingRow";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { ToggleRow } from "@/components/profile/ToggleRow";
 import { EditProfileModal } from "@/components/profile/EditProfileModal";
 import { StudyPreferencesModal } from "@/components/profile/StudyPreferencesModal";
@@ -52,6 +52,10 @@ import { getParentConnection, parentConnectionSummary, type ParentConnectionStat
 import { QuickIcon, Coaching, GraduationCapIcon, UserIcons, CalendarIcons, ClockIcon, CalendarIcon, Patners, UserIcon } from "@/assets/icons";
 /** How many preference groups the profile page previews before "Manage All". */
 const PROFILE_NOTIFICATION_COUNT = 6;
+
+/** Study Preferences / Connections row icons: a 20×20 frame drawn with a
+ *  1.67px line, whatever viewBox the source SVG was exported at. */
+const ROW_ICON = "h-5 w-5 shrink-0 **:stroke-[1.67px] **:[vector-effect:non-scaling-stroke]";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -85,12 +89,9 @@ function countdownLabel(overview: ProfileOverview): string | null {
   return `${days} ${days === 1 ? "Day" : "Days"} Until ${exam}`;
 }
 
+/** "rahul sharma" -> "R": the first letter of the name, capitalised. */
 function initialsOf(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "S";
-  const first = parts[0]![0] ?? "";
-  const last = parts.length > 1 ? parts[parts.length - 1]![0] ?? "" : "";
-  return (first + last).toUpperCase();
+  return (name.trim()[0] ?? "S").toUpperCase();
 }
 
 const THEME_OPTIONS = [
@@ -119,6 +120,7 @@ export default function ProfilePage() {
   // — did not match the ids it was read by, so four of the six switches
   // rendered permanently off no matter what the student had chosen.)
   const [notificationSettings, setNotificationSettings] = useState<NotificationSettings | null>(null);
+  const [notificationsLoaded, setNotificationsLoaded] = useState(false);
   // Section 13 — the Connections row shows the parent connection's real state.
   const [parentState, setParentState] = useState<ParentConnectionState | null>(null);
   const [parentLoaded, setParentLoaded] = useState(false);
@@ -139,6 +141,9 @@ export default function ProfilePage() {
       .catch(() => {
         // The section simply stays hidden — notification preferences failing
         // to load must not take the rest of the profile with them.
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setNotificationsLoaded(true);
       });
     return () => controller.abort();
   }, []);
@@ -229,6 +234,11 @@ export default function ProfilePage() {
       );
   };
 
+  // Hold the whole page until every section's data has settled (loaded or
+  // failed), so cards don't paint in empty and fill in one by one.
+  const isPageLoading = !(overview || overviewError) || !notificationsLoaded || !parentLoaded;
+  if (isPageLoading) return <PageLoader label="Loading your profile…" />;
+
   return (
     <div className="flex flex-col gap-5 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -247,7 +257,9 @@ export default function ProfilePage() {
 
 
       <div className="w-full rounded-3xl border border-brand/10 bg-surface p-6">
-        <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-40">
+        {/* lg (1024–1279px) uses smaller gaps so the details grid isn't squeezed
+            beside the sidebar; xl and up keep the original spacing. */}
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-8 xl:gap-40">
 
           {/* LEFT SECTION */}
           <div className="flex w-full shrink-0 flex-col items-center border-b border-brand/10 pb-8 lg:w-[277px] lg:border-b-0 lg:border-r lg:pb-0 lg:pl-10 lg:pr-10">
@@ -262,7 +274,7 @@ export default function ProfilePage() {
 
             {/* Hover lists what's still missing, so the number is actionable. */}
             <p
-              className="mt-2 text-[10px] font-medium text-muted"
+              className="mt-2 text-center font-sans text-[10px] font-medium leading-none tracking-normal align-middle text-ink"
               title={
                 overview && overview.completion.missing.length > 0
                   ? `Still to add: ${overview.completion.missing.join(", ")}`
@@ -272,7 +284,7 @@ export default function ProfilePage() {
               {overview ? `${completion}% Profile complete` : " "}
             </p>
 
-            <h2 className="mt-4 text-center text-2xl font-bold text-ink">
+            <h2 className="mt-3 text-center text-2xl font-bold text-ink">
               {displayName}
             </h2>
 
@@ -315,8 +327,8 @@ export default function ProfilePage() {
           </div>
 
           {/* RIGHT SECTION */}
-          <div className="flex flex-1 justify-center lg:justify-start lg:pl-10">
-            <div className="grid w-full max-w-160 grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-12">
+          <div className="flex flex-1 justify-center lg:justify-start xl:pl-10">
+            <div className="grid w-full max-w-160 grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-12 lg:gap-x-6 xl:gap-x-12">
 
               {details.map((detail) => (
                 <div
@@ -410,7 +422,7 @@ export default function ProfilePage() {
             >
               <div className="flex items-center gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint text-ink">
-                  <ClockIcon />
+                  <ClockIcon className={ROW_ICON} />
                 </div>
 
                 <div className="text-left">
@@ -438,7 +450,7 @@ export default function ProfilePage() {
             >
               <div className="flex items-center gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint text-ink">
-                  <CalendarIcon />
+                  <CalendarIcon className={ROW_ICON} />
                 </div>
 
                 <div className="text-left">
@@ -468,12 +480,12 @@ export default function ProfilePage() {
 
           <div className="mt-6 space-y-4">
 
-            <Link href="/home/partner">
+            <Link href="/home/partner" className="block">
               <div className="flex h-[66px] items-center justify-between rounded-xl border border-brand/10 px-3 transition-colors hover:bg-tint/30">
 
                 <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg  bg-[#EEF0F8] text-[#1A1A4E]  dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]">
-                    <Patners />
+                    <Patners className={ROW_ICON} />
                   </div>
 
                   <div>
@@ -491,12 +503,12 @@ export default function ProfilePage() {
               </div>
             </Link>
 
-            <Link href="/profile/parent">
+            <Link href="/profile/parent" className="block">
               <div className="flex h-[66px] items-center justify-between rounded-xl border border-brand/10 px-3 transition-colors hover:bg-tint/30">
 
                 <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint text-ink">
-                    <UserIcon />
+                    <UserIcon className={ROW_ICON} />
                   </div>
 
                   <div>
@@ -540,7 +552,7 @@ export default function ProfilePage() {
         {/* Body — the first few groups from the server catalog, split into
             two columns. The full set lives behind "Manage All". */}
         {notificationGroups.length === 0 ? (
-          <p className="mt-8 text-sm text-muted">Loading your preferences…</p>
+          <p className="mt-8 text-sm text-muted">Couldn&apos;t load your preferences.</p>
         ) : (
           <div className="mt-8 grid grid-cols-1 gap-x-12 gap-y-6 lg:grid-cols-2">
             {[
@@ -551,7 +563,10 @@ export default function ProfilePage() {
                 {column.map((group) => (
                   <div key={group.id} className="flex items-center justify-between gap-4">
                     <div className="flex min-w-0 items-center gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint text-ink">
+                      {/* The shared icon map hands back ready-made elements, so size
+                          them from the tile — same 20×20 / 1.67px as ROW_ICON —
+                          without changing the full notifications screen. */}
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint text-ink [&_svg]:h-5 [&_svg]:w-5 [&_svg]:shrink-0 **:stroke-[1.67px] **:[vector-effect:non-scaling-stroke]">
                         {notificationGroupIcon(group.id)}
                       </div>
 
@@ -583,13 +598,29 @@ export default function ProfilePage() {
         )}
       </div>
 
-      <div className="flex flex-col gap-3 rounded-2xl border border-brand/10 bg-surface p-5">
-        <Link href="/profile/settings" className="block">
-          <SettingRow icon={<UserIcon />} title="Account Settings" subtitle="Email, password and data" />
-        </Link>
-        <Link href="/profile/help" className="block">
-          <SettingRow icon={<QuickIcon />} title="Help and Support" subtitle="FAQs, contact and feedback" />
-        </Link>
+    
+      <div className="grid grid-cols-1 gap-4 rounded-2xl border border-brand/10 bg-surface p-6 sm:grid-cols-2">
+        {[
+          { href: "/profile/settings", icon: <UserIcon className={ROW_ICON} />, title: "Account Settings", subtitle: "Email, password and data" },
+          { href: "/profile/help", icon: <QuickIcon className={ROW_ICON} />, title: "Help and Support", subtitle: "FAQs, contact and feedback" },
+        ].map((row) => (
+          <Link key={row.href} href={row.href} className="block">
+            <div className="flex h-[66px] items-center justify-between rounded-xl border border-brand/10 px-3 transition-colors hover:bg-tint/30">
+              <div className="flex items-center gap-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint text-ink">
+                  {row.icon}
+                </div>
+
+                <div>
+                  <p className="text-[14px] font-semibold leading-5 text-ink">{row.title}</p>
+                  <p className="mt-0.5 text-xs leading-4 text-muted">{row.subtitle}</p>
+                </div>
+              </div>
+
+              <ChevronRightIcon className="h-5 w-5 text-muted" />
+            </div>
+          </Link>
+        ))}
       </div>
 
       <button
@@ -611,7 +642,7 @@ export default function ProfilePage() {
       items-center justify-center
       rounded-lg
       bg-tint
-      text-danger
+      text-ink
     "
         >
           <LogoutIcon />

@@ -1682,10 +1682,10 @@ export function CameraIcon() {
       <path
         d="M2 5.5A1.5 1.5 0 0 1 3.5 4h1.17a1.5 1.5 0 0 0 1.23-.64l.4-.57A1.5 1.5 0 0 1 7.53 2.2h.94a1.5 1.5 0 0 1 1.23.64l.4.57a1.5 1.5 0 0 0 1.23.64h1.17A1.5 1.5 0 0 1 14 5.5v6A1.5 1.5 0 0 1 12.5 13h-9A1.5 1.5 0 0 1 2 11.5v-6Z"
         stroke="currentColor"
-        strokeWidth="1.4"
+        strokeWidth="1.33"
         strokeLinejoin="round"
       />
-      <circle cx="8" cy="8.2" r="2.3" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="8" cy="8.2" r="2.3" stroke="currentColor" strokeWidth="1.33" />
     </svg>
   );
 }
