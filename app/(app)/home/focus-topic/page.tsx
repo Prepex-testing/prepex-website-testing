@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
@@ -19,9 +19,14 @@ import {
   LoderIcon,
   ArrowLeftIcon,
   } from "@/assets/icons";
+import { ApiError } from "@/lib/api/http";
+import { chapterResourcesHref } from "@/lib/revision/resourceLinks";
 import {
+  addToRevisionRotation,
   getFocusTopic,
   getWeaknessTopicDetail,
+  startTargetedPractice,
+  type WeaknessRecommendedAction,
   type WeaknessSignal,
   type WeaknessSignalKey,
   type WeaknessSignalLevel,
@@ -42,7 +47,19 @@ const SIGNAL_ICONS: Record<WeaknessSignalKey, ReactNode> = {
   time: <ClockIcon />,
 };
 
-const ACTION_ICONS: ReactNode[] = [<PlayIcon key="0" />, <NoteIcon key="1" />, <LoderIcon key="2" />];
+const ACTION_ICONS: Record<string, ReactNode> = {
+  watch_lecture: <PlayIcon />,
+  targeted_practice: <NoteIcon />,
+  revision_rotation: <LoderIcon />,
+};
+
+const ACTION_ROW =
+  "flex w-full items-center gap-3 rounded-xl p-2 -mx-2 text-left transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent";
+
+function formatDay(iso: string | null): string {
+  if (!iso) return "soon";
+  return new Date(iso).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+}
 
 function priorityLabel(tier: WeaknessTier): string {
   if (tier === "CRITICAL" || tier === "STRONG") return "High Priority";
@@ -65,9 +82,14 @@ function FocusTopicContent() {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
+  const router = useRouter();
   const [detail, setDetail] = useState<WeaknessTopicDetail | null>(null);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // "Focus This Week" actions — which one is running, and what each reported.
+  const [busyAction, setBusyAction] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<{ key: string; ok: boolean; text: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -128,6 +150,87 @@ function FocusTopicContent() {
 
   const score = Math.round(Number(detail.weaknessScore));
   const subjectName = detail.chapter?.subject?.name ?? null;
+  const chapterName = detail.chapter?.name ?? null;
+  const lectureHref = subjectName && chapterName ? chapterResourcesHref(subjectName, chapterName, "YOUTUBE") : null;
+
+  const runPractice = async () => {
+    setBusyAction("targeted_practice");
+    setActionMessage(null);
+    try {
+      const { data } = await startTargetedPractice(detail.chapterId);
+      router.push(`/practice?taskId=${data.taskId}`);
+    } catch (err) {
+      setActionMessage({
+        key: "targeted_practice",
+        ok: false,
+        text: err instanceof ApiError ? err.message : "Couldn't start the practice set. Please try again.",
+      });
+      setBusyAction(null);
+    }
+  };
+
+  const runRotation = async () => {
+    setBusyAction("revision_rotation");
+    setActionMessage(null);
+    try {
+      const { data } = await addToRevisionRotation(detail.chapterId);
+      setActionMessage({
+        key: "revision_rotation",
+        ok: true,
+        text: `Added — next revision ${formatDay(data.nextRevisionAt)}, every ${data.currentIntervalDays ?? 1} day${data.currentIntervalDays === 1 ? "" : "s"} for now.`,
+      });
+    } catch (err) {
+      setActionMessage({
+        key: "revision_rotation",
+        ok: false,
+        text: err instanceof ApiError ? err.message : "Couldn't update your revision schedule. Please try again.",
+      });
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
+  const renderAction = (action: WeaknessRecommendedAction) => {
+    const icon = (
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+        {ACTION_ICONS[action.key] ?? <NoteIcon />}
+      </span>
+    );
+    const label = <span className="text-[14px] font-semibold leading-5 text-ink">{action.label}</span>;
+
+    if (action.key === "watch_lecture") {
+      return lectureHref ? (
+        <Link href={lectureHref} className={ACTION_ROW}>
+          {icon}
+          {label}
+        </Link>
+      ) : (
+        <button type="button" disabled className={ACTION_ROW}>
+          {icon}
+          {label}
+        </button>
+      );
+    }
+
+    const isPractice = action.key === "targeted_practice";
+    const isBusy = busyAction === action.key;
+    return (
+      <button
+        type="button"
+        onClick={isPractice ? runPractice : runRotation}
+        disabled={busyAction !== null}
+        className={ACTION_ROW}
+      >
+        {icon}
+        <span className="flex min-w-0 flex-col">
+          {label}
+          {isBusy && (
+            <span className="text-[12px] text-muted">{isPractice ? "Preparing your questions…" : "Updating your schedule…"}</span>
+          )}
+        </span>
+      </button>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -216,13 +319,18 @@ function FocusTopicContent() {
             <p className="text-[14px] font-normal uppercase leading-[15px] tracking-[1px]">
               Focus This Week
             </p>
-            <div className="flex flex-col gap-4">
-              {detail.recommendedActions.map((action, index) => (
-                <div key={action.key} className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
-                    {ACTION_ICONS[index % ACTION_ICONS.length]}
-                  </span>
-                  <p className="text-[14px] font-semibold leading-5 text-ink">{action.label}</p>
+            <div className="flex flex-col gap-2">
+              {detail.recommendedActions.map((action) => (
+                <div key={action.key}>
+                  {renderAction(action)}
+                  {actionMessage?.key === action.key && (
+                    <p
+                      role={actionMessage.ok ? "status" : "alert"}
+                      className={`ml-11 text-[12px] font-medium ${actionMessage.ok ? "text-success" : "text-danger"}`}
+                    >
+                      {actionMessage.text}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

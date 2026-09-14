@@ -45,7 +45,12 @@ export type WeaknessSignal = {
   note?: string;
 };
 
-export type WeaknessRecommendedAction = { key: string; label: string };
+export type WeaknessRecommendedAction = {
+  key: "watch_lecture" | "targeted_practice" | "revision_rotation" | (string & {});
+  label: string;
+  /** targeted_practice only — how many questions the set has (5 / 10 / 15 by tier). */
+  questionCount?: number;
+};
 
 export type WeaknessTopicDetail = {
   chapterId: string;
@@ -72,4 +77,33 @@ export function getFocusTopic() {
 /** PRD 14.6 — Weakness Detail Screen for one topic. */
 export function getWeaknessTopicDetail(chapterId: string) {
   return authRequest<WeaknessTopicDetail>(`/topic/${chapterId}`);
+}
+
+/**
+ * "Practice N questions targeted" — creates today's practice task for the
+ * chapter (or returns the unfinished one) with its questions drawn, ready
+ * for /practice?taskId=.
+ */
+export function startTargetedPractice(chapterId: string) {
+  return authRequest<{ success: true; data: { taskId: string; questionCount: number; reused: boolean } }>(
+    `/topic/${chapterId}/targeted-practice`,
+    { method: "POST" },
+  );
+}
+
+export type RevisionRotationResult = {
+  chapterId: string;
+  previousStatus: string;
+  status: string;
+  previousRevisionCount: number;
+  revisionCount: number;
+  currentIntervalDays: number | null;
+  nextRevisionAt: string | null;
+};
+
+/** "Add to revision rotation" — one revision stage back, so the next revision comes sooner. */
+export function addToRevisionRotation(chapterId: string) {
+  return authRequest<{ success: true; data: RevisionRotationResult }>(`/topic/${chapterId}/revision-rotation`, {
+    method: "POST",
+  });
 }

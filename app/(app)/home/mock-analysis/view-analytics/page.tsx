@@ -159,6 +159,9 @@ function ViewAnalyticsContent() {
   const [insights, setInsights] = useState<MockInsights | null>(null);
   const [isLoading, setLoading] = useState(!!mockId);
   const [error, setError] = useState<string | null>(null);
+  // Subject split plots either accuracy or time spent per subject — both on one
+  // chart would need more stroke patterns than a readable legend has.
+  const [subjectMetric, setSubjectMetric] = useState<"accuracy" | "time">("accuracy");
 
   useEffect(() => {
     if (!mockId) return;
@@ -284,25 +287,66 @@ function ViewAnalyticsContent() {
   const chartLabels = progression.map((p) => formatShortDate(p.attemptedDate));
   const currentIndex = progression.findIndex((p) => p.isCurrent);
 
+  // Time is drawn on the same 0–100 axis as the score — minutes used as a share
+  // of the test's duration — so this mock's pacing reads directly against the
+  // earlier ones. The readout still gives the minutes.
+  const timeUsedPercent = progression.map((p) =>
+    p.timeTakenMinutes != null && p.testDurationMinutes
+      ? Math.min(100, (p.timeTakenMinutes / p.testDurationMinutes) * 100)
+      : null,
+  );
+  const hasTimeTrend = timeUsedPercent.some((value) => value !== null);
+
   const totalSeries: LineChartSeries[] = [
     {
       id: "total",
       label: "Total score",
       points: progression.map((p) => p.percentage),
     },
+    ...(hasTimeTrend
+      ? [
+          {
+            id: "time",
+            label: "Time used",
+            points: timeUsedPercent,
+            formatPoint: (value: number, index: number) =>
+              `${progression[index]?.timeTakenMinutes ?? 0} of ${progression[index]?.testDurationMinutes ?? 0} min (${Math.round(value)}%)`,
+          },
+        ]
+      : []),
   ];
+
+  const subjectName = (subjectId: number) =>
+    progression.flatMap((p) => p.subjects).find((s) => s.subjectId === subjectId)?.name ??
+    `Subject ${subjectId}`;
 
   // One line per subject across every mock that recorded it; a mock entered
   // without a subject split leaves a gap rather than a false zero.
-  const subjectSeries: LineChartSeries[] = subjectOrder.map((subjectId) => ({
+  const subjectAccuracySeries: LineChartSeries[] = subjectOrder.map((subjectId) => ({
     id: String(subjectId),
-    label:
-      progression.flatMap((p) => p.subjects).find((s) => s.subjectId === subjectId)?.name ??
-      `Subject ${subjectId}`,
+    label: subjectName(subjectId),
     points: progression.map(
       (p) => p.subjects.find((s) => s.subjectId === subjectId)?.accuracy ?? null,
     ),
   }));
+  const subjectTimeSeries: LineChartSeries[] = subjectOrder.map((subjectId) => ({
+    id: `${subjectId}-time`,
+    label: subjectName(subjectId),
+    points: progression.map(
+      (p) => p.subjects.find((s) => s.subjectId === subjectId)?.timeTakenMinutes ?? null,
+    ),
+  }));
+  const hasSubjectTimeTrend = subjectTimeSeries.some((s) => s.points.some((value) => value !== null));
+  const showSubjectTime = subjectMetric === "time" && hasSubjectTimeTrend;
+  const subjectSeries = showSubjectTime ? subjectTimeSeries : subjectAccuracySeries;
+  // Round the minutes axis up to a tidy step so grid labels stay whole numbers.
+  const subjectTimeMax =
+    Math.ceil(
+      Math.max(
+        20,
+        ...subjectTimeSeries.flatMap((s) => s.points.filter((value): value is number => value !== null)),
+      ) / 20,
+    ) * 20;
   const mocksWithSubjectSplit = progression.filter((p) => p.subjects.length > 0).length;
 
   const subjectTestStrategy = mock.subjectAnalysis
@@ -556,6 +600,8 @@ function ViewAnalyticsContent() {
                 <p className="mt-1 text-[12px] text-muted">
                   Total score as a percentage, across all {progression.length} mocks
                   you&apos;ve entered — oldest first.
+                  {hasTimeTrend &&
+                    " Time used is the share of the test's duration you took, set against the same mocks."}
                 </p>
               </div>
               <LineChart
@@ -569,18 +615,46 @@ function ViewAnalyticsContent() {
           {/* Subject split across mocks */}
           {subjectSeries.length > 0 && mocksWithSubjectSplit > 1 && (
             <div className="flex flex-col gap-4 rounded-2xl border border-brand/10 bg-surface p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
-              <div>
-                <p className="text-sm font-bold uppercase tracking-[0.4px] text-ink">
-                  Subject Split Across Mocks
-                </p>
-                <p className="mt-1 text-[12px] text-muted">
-                  Accuracy per subject. A gap means that mock was entered without a
-                  subject breakdown.
-                </p>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold uppercase tracking-[0.4px] text-ink">
+                    Subject Split Across Mocks
+                  </p>
+                  <p className="mt-1 text-[12px] text-muted">
+                    {showSubjectTime
+                      ? "Minutes spent per subject. A gap means that mock has no time logged for the subject."
+                      : "Accuracy per subject. A gap means that mock was entered without a subject breakdown."}
+                  </p>
+                </div>
+                {hasSubjectTimeTrend && (
+                  <div
+                    role="tablist"
+                    aria-label="Subject split metric"
+                    className="flex shrink-0 rounded-full bg-tint-strong p-0.5"
+                  >
+                    {(["accuracy", "time"] as const).map((metric) => (
+                      <button
+                        key={metric}
+                        type="button"
+                        role="tab"
+                        aria-selected={subjectMetric === metric}
+                        onClick={() => setSubjectMetric(metric)}
+                        className={`rounded-full px-3 py-1 text-[12px] font-semibold transition-colors ${
+                          subjectMetric === metric ? "bg-surface text-ink shadow-sm" : "text-muted"
+                        }`}
+                      >
+                        {metric === "accuracy" ? "Accuracy" : "Time"}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <LineChart
+                key={showSubjectTime ? "time" : "accuracy"}
                 labels={chartLabels}
                 series={subjectSeries}
+                max={showSubjectTime ? subjectTimeMax : 100}
+                formatValue={showSubjectTime ? (v) => `${Math.round(v)} min` : undefined}
                 highlightIndex={currentIndex >= 0 ? currentIndex : undefined}
               />
             </div>

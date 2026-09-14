@@ -23,6 +23,7 @@ import {
   type LibraryCounts,
 } from "@/lib/api/library";
 import { BookIcon } from "@/assets/icons";
+import { WeeklyTopChapters } from "@/components/library/WeeklyTopChapters";
 
 const CHAPTERS_PER_PAGE = 5;
 
@@ -429,6 +430,8 @@ export default function ResourceLibraryPage() {
           {error}
         </p>
       )}
+
+      <WeeklyTopChapters />
 
       {/* Chapters, as a table. The subject tabs, the chapter search and the
           content filter all live in this card's own toolbar, so the controls
