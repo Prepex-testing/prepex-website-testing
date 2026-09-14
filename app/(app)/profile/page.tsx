@@ -609,7 +609,7 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 gap-4 rounded-2xl border border-brand/10 bg-surface p-6 sm:grid-cols-2">
         {[
           { href: "/profile/settings", icon: <UserIcon className={ROW_ICON} />, title: "Account Settings", subtitle: "Email, password and data" },
-          { href: "/profile/help", icon: <QuickIcon className={ROW_ICON} />, title: "Help and Support", subtitle: "FAQs, contact and feedback" },
+          { href: "/profile/help", icon: <QuickIcon className={ROW_ICON} />, title: "Help and Support", subtitle: "Contacts and Helpline" },
         ].map((row) => (
           <Link key={row.href} href={row.href} className="block">
             <div className="flex h-[66px] items-center justify-between rounded-xl border border-brand/10 px-3 transition-colors hover:bg-tint/30">

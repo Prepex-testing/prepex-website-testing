@@ -140,6 +140,19 @@ function EditProfileForm({
     }
   };
 
+  // Same comparisons handleSave uses to decide what to send — Save Changes
+  // stays disabled until at least one of them differs from what was loaded.
+  // (The photo saves on its own the moment it's picked, so it isn't counted.)
+  const hasChanges =
+    fullName.trim() !== overview.fullName ||
+    city.trim() !== (overview.city ?? "") ||
+    phoneNumber.trim() !== (overview.phoneNumber ?? "") ||
+    (currentLevel !== "" && currentLevel !== overview.currentLevel) ||
+    examDate !== initialExamDate ||
+    (inCoaching &&
+      (coachingName.trim() !== (overview.coachingName ?? "") ||
+        batchName.trim() !== (overview.batchName ?? "")));
+
   const handleSave = async () => {
     const name = fullName.trim();
     if (!name) {
@@ -349,7 +362,13 @@ function EditProfileForm({
         <Button variant="secondary" size="sm" className={FOOTER_BUTTON} onClick={onClose} disabled={saving}>
           Cancel
         </Button>
-        <Button variant="primary" size="sm" className={FOOTER_BUTTON} onClick={handleSave} disabled={saving}>
+        <Button
+          variant="primary"
+          size="sm"
+          className={FOOTER_BUTTON}
+          onClick={handleSave}
+          disabled={saving || !hasChanges}
+        >
           {saving ? "Saving…" : "Save Changes"}
         </Button>
       </div>
