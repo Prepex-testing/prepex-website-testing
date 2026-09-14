@@ -90,6 +90,8 @@ function FocusTopicContent() {
   // "Focus This Week" actions — which one is running, and what each reported.
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<{ key: string; ok: boolean; text: string } | null>(null);
+  // "Apply targeted week" is a one-shot — it reads "Applied" once it has run.
+  const [targetedWeekApplied, setTargetedWeekApplied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -169,19 +171,23 @@ function FocusTopicContent() {
     }
   };
 
-  const runRotation = async () => {
-    setBusyAction("revision_rotation");
+  // Shared by "Add to revision rotation" and the footer's "Apply targeted
+  // week" — both pull the chapter back into revision (stage − 1, next
+  // revision brought forward). `source` decides whose button shows the result.
+  const runRotation = async (source: "revision_rotation" | "targeted_week" = "revision_rotation") => {
+    setBusyAction(source);
     setActionMessage(null);
     try {
       const { data } = await addToRevisionRotation(detail.chapterId);
+      if (source === "targeted_week") setTargetedWeekApplied(true);
       setActionMessage({
-        key: "revision_rotation",
+        key: source,
         ok: true,
-        text: `Added — next revision ${formatDay(data.nextRevisionAt)}, every ${data.currentIntervalDays ?? 1} day${data.currentIntervalDays === 1 ? "" : "s"} for now.`,
+        text: `${source === "targeted_week" ? "Applied" : "Added"} — next revision ${formatDay(data.nextRevisionAt)}, every ${data.currentIntervalDays ?? 1} day${data.currentIntervalDays === 1 ? "" : "s"} for now.`,
       });
     } catch (err) {
       setActionMessage({
-        key: "revision_rotation",
+        key: source,
         ok: false,
         text: err instanceof ApiError ? err.message : "Couldn't update your revision schedule. Please try again.",
       });
@@ -217,7 +223,7 @@ function FocusTopicContent() {
     return (
       <button
         type="button"
-        onClick={isPractice ? runPractice : runRotation}
+        onClick={isPractice ? runPractice : () => runRotation()}
         disabled={busyAction !== null}
         className={ACTION_ROW}
       >
@@ -341,15 +347,28 @@ function FocusTopicContent() {
         {detail.planAdjustmentAvailable && (
           <div className="bg-[#1A1A4E] p-8">
             <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl p-4">
-              <p className="text-[16px] font-bold leading-5 text-[#FAF7F2]">
-                Plan adjustment available
-              </p>
-              <Link
-                href="#"
-                className="flex h-[54px] w-[224px] items-center justify-center gap-2 rounded-lg bg-[#FF7A59] px-3 text-[16px] font-bold leading-5 text-[#FAF7F2] transition-opacity hover:opacity-90"
+              <div className="min-w-0">
+                <p className="text-[16px] font-bold leading-5 text-[#FAF7F2]">
+                  Plan adjustment available
+                </p>
+                {actionMessage?.key === "targeted_week" && (
+                  <p
+                    role={actionMessage.ok ? "status" : "alert"}
+                    className={`mt-1 text-[12px] font-medium ${actionMessage.ok ? "text-[#FAF7F2]/80" : "text-[#FF7A59]"}`}
+                  >
+                    {actionMessage.text}
+                  </p>
+                )}
+              </div>
+              {/* Same action as "Add to revision rotation". */}
+              <button
+                type="button"
+                onClick={() => runRotation("targeted_week")}
+                disabled={busyAction !== null || targetedWeekApplied}
+                className="flex h-[54px] w-[224px] items-center justify-center gap-2 rounded-lg bg-[#FF7A59] px-3 text-[16px] font-bold leading-5 text-[#FAF7F2] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                Apply targeted week
-              </Link>
+                {busyAction === "targeted_week" ? "Applying…" : targetedWeekApplied ? "Applied" : "Apply targeted week"}
+              </button>
             </div>
           </div>
         )}

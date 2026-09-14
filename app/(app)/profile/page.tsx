@@ -35,6 +35,8 @@ import { PageLoader } from "@/components/ui/PageLoader";
 import { ToggleRow } from "@/components/profile/ToggleRow";
 import { EditProfileModal } from "@/components/profile/EditProfileModal";
 import { StudyPreferencesModal } from "@/components/profile/StudyPreferencesModal";
+import { WinJournalSettingsModal } from "@/components/profile/WinJournalSettingsModal";
+import { TrophyIcons } from "@/components/ui/icons";
 import {
   ACADEMIC_LEVEL_LABEL,
   COACHING_TYPE_LABEL,
@@ -108,6 +110,7 @@ export default function ProfilePage() {
   const fullName = storedFullName || "Student";
   const [isEditOpen, setEditOpen] = useState(false);
   const [isPrefsOpen, setPrefsOpen] = useState(false);
+  const [isJournalSettingsOpen, setJournalSettingsOpen] = useState(false);
   const [overview, setOverview] = useState<ProfileOverview | null>(null);
   const [overviewError, setOverviewError] = useState(false);
   const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
@@ -425,48 +428,52 @@ export default function ProfilePage() {
                   <ClockIcon className={ROW_ICON} />
                 </div>
 
-                <div className="text-left">
+                {/* Hours and windows are edited in the same modal, so they
+                    share one row. */}
+                <div className="min-w-0 text-left">
                   <p className="text-[14px] font-semibold leading-5 text-ink">
-                    Daily Study Hours
+                    Daily Study Hours & Time Windows
                   </p>
 
-                  <p className="mt-0.5 text-xs leading-4 text-muted">
+                  <p className="mt-0.5 truncate text-xs leading-4 text-muted">
                     {!prefs
                       ? "—"
-                      : prefs.sameDailyTarget
-                        ? `${prefs.weekdayHours} hrs every day`
-                        : `${prefs.weekdayHours} hrs (Weekdays) • ${prefs.weekendHours} hrs (Weekends)`}
+                      : [
+                          prefs.sameDailyTarget
+                            ? `${prefs.weekdayHours} hrs every day`
+                            : `${prefs.weekdayHours} hrs (Weekdays) • ${prefs.weekendHours} hrs (Weekends)`,
+                        ]
+                          .filter(Boolean)
+                          .join(" • ")}
                   </p>
                 </div>
               </div>
 
-              <ChevronRightIcon className="h-5 w-5 text-muted" />
+              <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />
             </button>
 
             <button
               type="button"
-              onClick={() => setPrefsOpen(true)}
+              onClick={() => setJournalSettingsOpen(true)}
               className="flex h-[66px] w-full items-center justify-between rounded-xl border border-brand/10 px-3 transition-colors hover:bg-tint/30"
             >
               <div className="flex items-center gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint text-ink">
-                  <CalendarIcon className={ROW_ICON} />
+                  <TrophyIcons size={20} />
                 </div>
 
                 <div className="text-left">
                   <p className="text-[14px] font-semibold leading-5 text-ink">
-                    Study Time Windows
+                    Win Journal Settings
                   </p>
 
                   <p className="mt-0.5 text-xs leading-4 text-muted">
-                    {prefs && prefs.studyWindows.length > 0
-                      ? prefs.studyWindows.map((w) => STUDY_WINDOW_LABEL[w]).join(", ")
-                      : "—"}
+                    Friday card, notification & parent reports
                   </p>
                 </div>
               </div>
 
-              <ChevronRightIcon className="h-5 w-5 text-muted" />
+              <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />
             </button>
 
           </div>
@@ -672,6 +679,7 @@ export default function ProfilePage() {
         preferences={prefs}
         onSaved={setOverview}
       />
+      <WinJournalSettingsModal open={isJournalSettingsOpen} onClose={() => setJournalSettingsOpen(false)} />
       <ConfirmModal
         open={isLogoutConfirmOpen}
         onClose={() => setLogoutConfirmOpen(false)}

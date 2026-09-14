@@ -176,10 +176,14 @@ export type PartnerMessage = {
   isMine: boolean;
 };
 
-export function getMessages(limit?: number) {
-  return authRequest<{ success: true; data: PartnerMessage[] }>(
-    `/messages${limit ? `?limit=${limit}` : ""}`,
-  );
+/** Oldest first. `before` (an ISO timestamp) fetches the page of signals sent
+ *  before it — the oldest one already on screen — for "scroll up for older". */
+export function getMessages(limit?: number, before?: string) {
+  const params = new URLSearchParams();
+  if (limit) params.set("limit", String(limit));
+  if (before) params.set("before", before);
+  const query = params.toString();
+  return authRequest<{ success: true; data: PartnerMessage[] }>(`/messages${query ? `?${query}` : ""}`);
 }
 
 export function sendMessage(input: { category: MessageCategory; templateId: string }) {

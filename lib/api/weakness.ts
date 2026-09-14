@@ -35,6 +35,9 @@ export type WeakTopicSummary = {
   avgTimeDeviation: number | string | null;
   isTopFocus: boolean;
   chapter: WeaknessChapter | null;
+  /** Top 5 only — last 7 days' practice accuracy minus the 7 days before, in
+   *  percentage points. Null when either week has no answered questions. */
+  accuracyChangeThisWeek?: number | null;
 };
 
 export type WeaknessSignal = {

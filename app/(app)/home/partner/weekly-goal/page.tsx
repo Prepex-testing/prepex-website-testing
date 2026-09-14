@@ -101,9 +101,9 @@ export default function WeeklyGoalPage() {
   const [isGoalSubmitting, setGoalSubmitting] = useState(false);
   const [isReflecting, setReflecting] = useState<GoalCompletionStatus | null>(null);
 
-  const isSunday = new Date().getDay() === 3; //0
+  const isSunday = new Date().getDay() === 0; //0
   // Friday through Saturday — reflection window for the week just ending.
-  const isReflectionWindow = new Date().getDay() >= 3; //5
+  const isReflectionWindow = new Date().getDay() >= 5; //5
 
   const load = useCallback(async () => {
     const [statusRes, goalsRes] = await Promise.allSettled([getPartnerStatus(), getWeeklyGoals()]);
