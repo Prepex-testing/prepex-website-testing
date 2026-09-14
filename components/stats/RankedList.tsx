@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { ChevronRightIcon } from "@/components/ui/icons";
 
 export type RankedItem = {
@@ -10,93 +11,77 @@ export type RankedItem = {
   titleClassName?: string;
   subtitleClassName?: string;
   icon: ReactNode;
+  /** When set, the whole row is a link to this page. */
+  href?: string;
 };
 
 type RankedListProps = {
   items: RankedItem[];
 };
 
+// A minimum rather than a fixed 76px, so a subtitle that wraps on a narrow
+// card grows the row instead of spilling out of it.
+const ROW_CLASS =
+  "flex min-h-[68px] items-center justify-between gap-2 rounded-xl border border-brand/10 bg-transparent px-3 py-3 sm:min-h-[76px] sm:gap-3";
+
 export function RankedList({ items }: RankedListProps) {
   return (
     <div className="flex flex-col gap-3 sm:gap-4">
-      {items.map((item) => (
-        <div
-          key={item.id}
-          // A minimum rather than a fixed 76px, so a subtitle that wraps on a
-          // narrow card grows the row instead of spilling out of it.
-          className="
-            flex
-            min-h-[68px]
-            items-center
-            justify-between
-            gap-2
-            rounded-xl
-            border
-            border-brand/10
-            bg-transparent
-            px-3
-            py-3
-            sm:min-h-[76px]
-            sm:gap-3
-          "
-        >
-          {/* Left */}
-          <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
-            <div
-              className="
-                flex
-                h-10
-                w-10
-                shrink-0
-                items-center
-                justify-center
-                rounded-[10px]
-                bg-tint
-                text-ink
-                sm:h-12
-                sm:w-12
-              "
-            >
-              {item.icon}
+      {items.map((item) => {
+        const content = (
+          <>
+            {/* Left */}
+            <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-tint text-ink sm:h-12 sm:w-12">
+                {item.icon}
+              </div>
+
+              <div className="min-w-0">
+                <h4 className={`text-sm font-bold ${item.titleClassName ?? "text-ink"}`}>
+                  {item.title}
+                </h4>
+
+                {item.subtitle && (
+                  <p
+                    className={`mt-0.5 text-[10px] leading-[15px] ${
+                      item.subtitleClassName ?? "text-muted"
+                    }`}
+                  >
+                    {item.subtitle}
+                  </p>
+                )}
+              </div>
             </div>
 
-            <div className="min-w-0">
-              <h4 className={`text-sm font-bold ${item.titleClassName ?? "text-ink"}`}>
-                {item.title}
-              </h4>
-
-              {item.subtitle && (
-                <p
-                  className={`mt-0.5 text-[10px] leading-[15px] ${
-                    item.subtitleClassName ?? "text-muted"
-                  }`}
-                >
-                  {item.subtitle}
+            {/* Right */}
+            <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+              <div className="text-right">
+                <p className={`text-base font-bold ${item.valueClassName ?? "text-warning"}`}>
+                  {item.value}
                 </p>
-              )}
+
+                <p className="whitespace-nowrap text-[10px] text-muted">Marks recoverable</p>
+              </div>
+
+              <ChevronRightIcon className="h-4 w-4 text-muted" />
             </div>
+          </>
+        );
+
+        return item.href ? (
+          <Link
+            key={item.id}
+            href={item.href}
+            className={`${ROW_CLASS} transition-colors hover:border-brand/25 hover:bg-tint/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring`}
+          >
+            {content}
+          </Link>
+        ) : (
+          <div key={item.id} className={ROW_CLASS}>
+            {content}
           </div>
-
-          {/* Right */}
-          <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-            <div className="text-right">
-              <p
-                className={`text-base font-bold ${
-                  item.valueClassName ?? "text-warning"
-                }`}
-              >
-                {item.value}
-              </p>
-
-              <p className="whitespace-nowrap text-[10px] text-muted">
-                Marks recoverable
-              </p>
-            </div>
-
-            <ChevronRightIcon className="h-4 w-4 text-muted" />
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
