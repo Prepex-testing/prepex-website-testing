@@ -403,31 +403,33 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
         {/* STUDY PREFERENCES */}
-        <div className="rounded-2xl border border-brand/10 bg-surface p-6">
-          <h2 className="text-[16px] font-bold leading-6 text-ink">
+        <div className="rounded-2xl border border-brand/10 bg-surface p-4 sm:p-6">
+          <h2 className="text-[15px] font-bold leading-6 text-ink sm:text-[16px]">
             Study Preferences
           </h2>
 
-          <div className="mt-6 space-y-4">
+          <div className="mt-4 space-y-3 sm:mt-6 sm:space-y-4">
 
             <button
               type="button"
               onClick={() => setPrefsOpen(true)}
-              className="flex h-[66px] w-full items-center justify-between rounded-xl border border-brand/10 px-3 transition-colors hover:bg-tint/30"
+              // A minimum rather than a fixed 66px, so a title or hours line that
+              // wraps on a phone grows the row instead of spilling out of it.
+              className="flex min-h-15 w-full items-center justify-between gap-2 rounded-xl border border-brand/10 px-3 py-3 transition-colors hover:bg-tint/30 sm:min-h-16.5"
             >
-              <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint text-ink">
+              <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-tint text-ink sm:h-10 sm:w-10">
                   <ClockIcon className={ROW_ICON} />
                 </div>
 
                 {/* Hours and windows are edited in the same modal, so they
                     share one row. */}
                 <div className="min-w-0 text-left">
-                  <p className="text-[14px] font-semibold leading-5 text-ink">
+                  <p className="text-[13px] font-semibold leading-5 text-ink sm:text-[14px]">
                     Daily Study Hours & Time Windows
                   </p>
 
-                  <p className="mt-0.5 truncate text-xs leading-4 text-muted">
+                  <p className="mt-0.5 line-clamp-2 text-[11px] leading-4 text-muted sm:text-xs">
                     {!prefs
                       ? "—"
                       : [
@@ -447,19 +449,19 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => setJournalSettingsOpen(true)}
-              className="flex h-[66px] w-full items-center justify-between rounded-xl border border-brand/10 px-3 transition-colors hover:bg-tint/30"
+              className="flex min-h-15 w-full items-center justify-between gap-2 rounded-xl border border-brand/10 px-3 py-3 transition-colors hover:bg-tint/30 sm:min-h-16.5"
             >
-              <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint text-ink">
+              <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-tint text-ink sm:h-10 sm:w-10">
                   <TrophyIcons size={20} />
                 </div>
 
-                <div className="text-left">
-                  <p className="text-[14px] font-semibold leading-5 text-ink">
+                <div className="min-w-0 text-left">
+                  <p className="text-[13px] font-semibold leading-5 text-ink sm:text-[14px]">
                     Win Journal Settings
                   </p>
 
-                  <p className="mt-0.5 text-xs leading-4 text-muted">
+                  <p className="mt-0.5 line-clamp-2 text-[11px] leading-4 text-muted sm:text-xs">
                     Friday card, notification & parent reports
                   </p>
                 </div>
@@ -472,56 +474,58 @@ export default function ProfilePage() {
         </div>
 
         {/* CONNECTIONS */}
-        <div className="rounded-2xl border border-brand/10 bg-surface p-6">
-          <h2 className="text-[16px] font-bold leading-6 text-ink">
+        <div className="rounded-2xl border border-brand/10 bg-surface p-4 sm:p-6">
+          <h2 className="text-[15px] font-bold leading-6 text-ink sm:text-[16px]">
             Connections
           </h2>
 
-          <div className="mt-6 space-y-4">
+          <div className="mt-4 space-y-3 sm:mt-6 sm:space-y-4">
 
             <Link href="/home/partner" className="block">
-              <div className="flex h-[66px] items-center justify-between rounded-xl border border-brand/10 px-3 transition-colors hover:bg-tint/30">
+              {/* Same as the Study Preferences rows: a minimum height so wrapped
+                  text grows the row on a phone, and the text group can shrink. */}
+              <div className="flex min-h-15 items-center justify-between gap-2 rounded-xl border border-brand/10 px-3 py-3 transition-colors hover:bg-tint/30 sm:min-h-16.5">
 
-                <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg  bg-[#EEF0F8] text-[#1A1A4E]  dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2]">
+                <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EEF0F8] text-[#1A1A4E] dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2] sm:h-10 sm:w-10">
                     <Patners className={ROW_ICON} />
                   </div>
 
-                  <div>
-                    <p className="text-[14px] font-semibold leading-5 text-ink">
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold leading-5 text-ink sm:text-[14px]">
                       Accountability Partner
                     </p>
 
-                    <p className="mt-0.5 text-xs leading-4 text-muted">
+                    <p className="mt-0.5 line-clamp-2 text-[11px] leading-4 text-muted sm:text-xs">
                       {overview ? partnerSummary : " "}
                     </p>
                   </div>
                 </div>
 
-                <ChevronRightIcon className="h-5 w-5 text-muted" />
+                <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />
               </div>
             </Link>
 
             <Link href="/profile/parent" className="block">
-              <div className="flex h-[66px] items-center justify-between rounded-xl border border-brand/10 px-3 transition-colors hover:bg-tint/30">
+              <div className="flex min-h-15 items-center justify-between gap-2 rounded-xl border border-brand/10 px-3 py-3 transition-colors hover:bg-tint/30 sm:min-h-16.5">
 
-                <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-tint text-ink">
+                <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-tint text-ink sm:h-10 sm:w-10">
                     <UserIcon className={ROW_ICON} />
                   </div>
 
-                  <div>
-                    <p className="text-[14px] font-semibold leading-5 text-ink">
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold leading-5 text-ink sm:text-[14px]">
                       Parent Connection
                     </p>
 
-                    <p className="mt-0.5 text-xs leading-4 text-muted">
+                    <p className="mt-0.5 line-clamp-2 text-[11px] leading-4 text-muted sm:text-xs">
                       {parentLoaded ? parentConnectionSummary(parentState) : " "}
                     </p>
                   </div>
                 </div>
 
-                <ChevronRightIcon className="h-5 w-5 text-muted" />
+                <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />
 
               </div>
             </Link>
@@ -547,9 +551,6 @@ export default function ProfilePage() {
             </Button>
           </Link>
         </div>
-
-        {/* Body — the first few groups from the server catalog, split into
-            two columns. The full set lives behind "Manage All". */}
         {notificationGroups.length === 0 ? (
           <p className="mt-8 text-sm text-muted">Couldn&apos;t load your preferences.</p>
         ) : (
@@ -562,9 +563,7 @@ export default function ProfilePage() {
                 {column.map((group) => (
                   <div key={group.id} className="flex items-center justify-between gap-4">
                     <div className="flex min-w-0 items-center gap-4">
-                      {/* The shared icon map hands back ready-made elements, so size
-                          them from the tile — same 20×20 / 1.67px as ROW_ICON —
-                          without changing the full notifications screen. */}
+    
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint text-ink [&_svg]:h-5 [&_svg]:w-5 [&_svg]:shrink-0 **:stroke-[1.67px] **:[vector-effect:non-scaling-stroke]">
                         {notificationGroupIcon(group.id)}
                       </div>
