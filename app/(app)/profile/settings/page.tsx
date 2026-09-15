@@ -17,12 +17,19 @@ import {
   // DownloadIcon,
   // TrashIcon,
   GoogleIcon,
-  AppleIcon,
-  InfoIcon,
 } from "@/components/ui/icons";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
-import {UserIcons,EmailIcon,LockIcon,LinkIcon,TrashIcon} from "@/assets/icons";
+import {UserIcons,EmailIcon,LockIcon,LinkIcon,TrashIcon, ConfirmIcon} from "@/assets/icons";
 
+
+/**
+ * Card icon tile — 40×40, 8px radius, holding a 24×24 icon frame drawn with a
+ * 2px line (Figma) from sm; a 36px tile with a 20px icon on phones. The line is
+ * forced because the source SVGs were drawn on 16–24px grids at 1.33–2.23px.
+ */
+const ICON_FRAME =
+  "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg sm:h-10 sm:w-10 [&_svg]:h-5 [&_svg]:w-5 [&_svg]:shrink-0 sm:[&_svg]:h-6 sm:[&_svg]:w-6 **:stroke-2 **:[vector-effect:non-scaling-stroke]";
+const ICON_TILE = `${ICON_FRAME} bg-tint-strong text-ink dark:bg-ink/8`;
 
 export default function AccountSettingsPage() {
   const router = useRouter();
@@ -68,22 +75,22 @@ export default function AccountSettingsPage() {
   if (!account && !loadError) return <PageLoader label="Loading your account settings…" />;
 
   return (
-    <div className="flex flex-col gap-5 p-4 sm:p-6 lg:p-8">
+    <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-6 lg:p-8">
       <ProfileSubpageHeader title="Account Settings" />
 
       <div className="overflow-hidden rounded-2xl border border-brand/10 bg-surface shadow-sm">
 
         {/* Header */}
-        <div className="flex min-h-22.25 items-center justify-between border-b border-brand/10 px-6 py-5">
+        <div className="flex items-center justify-between border-b border-brand/10 px-4 py-4 sm:min-h-22.25 sm:px-6 sm:py-5">
 
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
 
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint-strong text-ink dark:bg-ink/8">
+            <div className={ICON_TILE}>
               <UserIcons />
             </div>
 
             <div>
-              <h2 className="text-[16px] font-bold leading-6 text-ink">
+              <h2 className="text-[15px] font-bold leading-6 text-ink sm:text-[16px]">
                 Account Information
               </h2>
 
@@ -97,21 +104,21 @@ export default function AccountSettingsPage() {
         </div>
 
         {/* Email Row */}
-        <div className="flex flex-col gap-4 border-b border-brand/10 px-6 py-5 sm:min-h-22.25 sm:flex-row sm:items-center sm:justify-between sm:py-0">
+        <div className="flex flex-col gap-3 border-b border-brand/10 px-4 py-4 sm:min-h-22.25 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-0">
 
           {/* Left */}
-          <div className="flex flex-1 items-center gap-4">
+          <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
 
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint-strong text-ink dark:bg-ink/8">
+            <div className={ICON_TILE}>
               <EmailIcon />
             </div>
 
             <div className="min-w-0">
-              <p className="text-[12px] font-bold leading-6 text-ink">
+              <p className="text-[13px] font-bold leading-6 text-ink sm:text-[14px]">
                 Email Address
               </p>
 
-              <p className="mt-1 truncate text-[14px] font-bold leading-5 text-muted">
+              <p className="mt-0.5 truncate text-[13px] font-bold leading-5 text-muted sm:mt-1 sm:text-[14px]">
                 {account?.email ?? "Couldn't load your email"}
               </p>
             </div>
@@ -121,21 +128,21 @@ export default function AccountSettingsPage() {
         </div>
 
         {/* Password Row */}
-        <div className="flex flex-col gap-4 px-6 py-5 sm:min-h-22.25 sm:flex-row sm:items-center sm:justify-between sm:py-0">
+        <div className="flex flex-col gap-3 px-4 py-4 sm:min-h-22.25 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-0">
 
           {/* Left */}
-          <div className="flex flex-1 items-center gap-4">
+          <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
 
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint-strong text-ink dark:bg-ink/8">
+            <div className={ICON_TILE}>
               <LockIcon />
             </div>
 
             <div className="min-w-0">
-              <p className="text-[12px] font-bold leading-6 text-ink">
+              <p className="text-[13px] font-bold leading-6 text-ink sm:text-[14px]">
                 Password
               </p>
 
-              <p className="mt-1 text-[14px] font-bold leading-5 text-muted">
+              <p className="mt-0.5 break-words text-[13px] font-bold leading-5 text-muted sm:mt-1 sm:text-[14px]">
                 {!account
                   ? "••••••••••"
                   : hasPassword
@@ -152,7 +159,9 @@ export default function AccountSettingsPage() {
               <Button
                 variant="secondary"
                 onClick={() => setPasswordOpen(true)}
-                className="!h-[38px] w-full shrink-0 whitespace-nowrap rounded-lg border border-brand/20 px-4 text-[14px] font-semibold sm:w-39"
+                // `!` on size/text: Button concatenates classes, so its md
+                // h-14 / text-base wouldn't reliably give way otherwise.
+                className="h-9.5! w-full shrink-0 whitespace-nowrap rounded-lg border border-brand/20 px-4 text-[13px]! font-semibold sm:w-39 sm:text-[14px]!"
               >
                 Change Password
               </Button>
@@ -166,14 +175,14 @@ export default function AccountSettingsPage() {
       <div className="overflow-hidden rounded-2xl border border-brand/10 bg-surface shadow-sm">
 
         {/* Header */}
-        <div className="flex min-h-22.25 items-center border-b border-brand/10 px-6 py-5">
-          <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-tint-strong text-ink dark:bg-ink/8">
+        <div className="flex items-center border-b border-brand/10 px-4 py-4 sm:min-h-22.25 sm:px-6 sm:py-5">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+            <div className={ICON_TILE}>
               <LinkIcon />
             </div>
 
             <div>
-              <h2 className="text-[16px] font-bold leading-6 text-ink">
+              <h2 className="text-[15px] font-bold leading-6 text-ink sm:text-[16px]">
                 Connected Accounts
               </h2>
 
@@ -185,19 +194,20 @@ export default function AccountSettingsPage() {
         </div>
 
         {/* Google Row */}
-        <div className="flex flex-col gap-4 border-b border-brand/10 px-6 py-5 sm:min-h-22.25 sm:flex-row sm:items-center sm:justify-between sm:py-0">
+        <div className="flex flex-col gap-3 border-b border-brand/10 px-4 py-4 sm:min-h-22.25 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-0">
 
-          <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-brand/10">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-brand/10 sm:h-10 sm:w-10">
               <GoogleIcon />
             </div>
 
             <div>
-              <p className="text-[14px] font-bold leading-5 text-ink">
+              <p className="text-[13px] font-bold leading-5 text-ink sm:text-[14px]">
                 Google
               </p>
 
-              <p className="text-[12px] leading-4 text-muted">
+              {/* break-all: a long Google address can't push past the card on a phone. */}
+              <p className="break-all text-[12px] leading-4 text-muted">
                 {isGoogle ? account?.email : "Not connected"}
               </p>
             </div>
@@ -217,15 +227,15 @@ export default function AccountSettingsPage() {
         </div>
 
         {/* Apple Row */}
-        {/* <div className="flex flex-col gap-4 px-6 py-5 sm:min-h-22.25 sm:flex-row sm:items-center sm:justify-between sm:py-0">
+        {/* <div className="flex flex-col gap-3 px-4 py-4 sm:min-h-22.25 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-0">
 
-          <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-brand/10">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-brand/10 sm:h-10 sm:w-10">
               <AppleIcon className="h-5 w-5" />
             </div>
 
             <div>
-              <p className="text-[14px] font-bold leading-5 text-ink">
+              <p className="text-[13px] font-bold leading-5 text-ink sm:text-[14px]">
                 Apple
               </p>
 
@@ -249,16 +259,16 @@ export default function AccountSettingsPage() {
       <div className="overflow-hidden rounded-2xl border border-brand/10 bg-surface shadow-sm">
 
         {/* Header */}
-        <div className="flex min-h-22.25 items-center border-b border-brand/10 px-6 py-5">
+        <div className="flex items-center border-b border-brand/10 px-4 py-4 sm:min-h-22.25 sm:px-6 sm:py-5">
 
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
 
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#FFFBEB] text-[#F59E0B]">
+            <div className={`${ICON_FRAME} bg-[#FFFBEB] text-[#F59E0B]`}>
               <TrashIcon />
             </div>
 
             <div>
-              <h2 className="text-[16px] font-bold leading-6 text-ink">
+              <h2 className="text-[15px] font-bold leading-6 text-ink sm:text-[16px]">
                 Delete Account
               </h2>
 
@@ -271,21 +281,21 @@ export default function AccountSettingsPage() {
 
         </div>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
 
           {/* Warning Box */}
-          <div className="flex min-h-18 items-start gap-4 rounded-xl border border-[#F59E0B]/20 p-4">
+          <div className="flex items-start gap-3 rounded-xl border border-[#F59E0B]/20 p-3 sm:min-h-18 sm:gap-4 sm:p-4">
 
             <div className="flex h-6 w-6 shrink-0 items-center justify-center text-[#F59E0B]">
-              <InfoIcon />
+              <ConfirmIcon />
             </div>
 
             <div>
-              <p className="text-[14px] font-bold leading-5 text-[#F59E0B]">
+              <p className="text-[13px] font-bold leading-5 text-[#F59E0B] sm:text-[14px]">
                 Your account will be scheduled for deletion.
               </p>
 
-              <p className="mt-1 text-[14px] leading-5 text-[#F59E0B]">
+              <p className="mt-1 text-[13px] leading-5 text-[#F59E0B] sm:text-[14px]">
                 You can restore your account within{" "}
                 <span className="font-bold">30 days</span> from the deletion date.
               </p>
@@ -294,16 +304,16 @@ export default function AccountSettingsPage() {
           </div>
 
           {/* Bottom Row */}
-          <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mt-4 flex flex-col gap-4 sm:mt-6 sm:flex-row sm:items-end sm:justify-between">
 
             {/* Left Content */}
             <div className="space-y-2">
 
-              <p className="text-[14px] leading-5 text-muted">
+              <p className="text-[13px] leading-5 text-muted sm:text-[14px]">
                 • All your data will be removed
               </p>
 
-              <p className="text-[14px] leading-5 text-muted">
+              <p className="text-[13px] leading-5 text-muted sm:text-[14px]">
                 • This action cannot be undone
               </p>
 
@@ -317,7 +327,8 @@ export default function AccountSettingsPage() {
                   setDeleteError(null);
                   setDeleteOpen(true);
                 }}
-                className="h-full w-full rounded-lg border border-[#F59E0B]! px-8 text-[14px] font-bold text-[#F59E0B]!"
+                // h-full! so it fills the 46px wrapper instead of Button's md h-14.
+                className="h-full! w-full rounded-lg border border-[#F59E0B]! px-8 text-[13px]! font-bold text-[#F59E0B]! sm:text-[14px]!"
               >
                 Delete Account
               </Button>
