@@ -78,7 +78,7 @@ const NATIONAL_LINES: (Helpline & { description: string })[] = [
   },
 ];
 
-const SUPPORT_EMAIL = "support@prepex.in";
+const SUPPORT_EMAIL = "hello@prepex.io";
 // No support WhatsApp number exists yet; set this (digits with country code,
 // e.g. 919876543210) and the WhatsApp row turns on.
 const SUPPORT_WHATSAPP = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP?.replace(/\D/g, "") ?? "";

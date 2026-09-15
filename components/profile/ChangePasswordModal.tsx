@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { WhiteModal } from "@/components/ui/WhiteModal";
 import { Input } from "@/components/ui/Input";
-import { XIcon } from "@/components/ui/icons";
+import { CheckCircleIcon, XIcon } from "@/components/ui/icons";
 import { ApiError } from "@/lib/api/http";
 import { changePassword, passwordProblem } from "@/lib/api/account";
-import { clearSession } from "@/lib/auth/session";
+import { saveTokens } from "@/lib/auth/session";
 
 type ChangePasswordModalProps = {
   open: boolean;
@@ -25,11 +24,11 @@ export function ChangePasswordModal({ open, onClose }: ChangePasswordModalProps)
 }
 
 function ChangePasswordForm({ onClose }: { onClose: () => void }) {
-  const router = useRouter();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
+  const [changed, setChanged] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
@@ -42,17 +41,35 @@ function ChangePasswordForm({ onClose }: { onClose: () => void }) {
     setSaving(true);
     setError(null);
     try {
-      await changePassword({ currentPassword, newPassword });
-      // auth-service revokes every refresh token on a password change, so
-      // this session would die at its next refresh anyway — end it now and
-      // send them to sign in with the new password.
-      clearSession();
-      router.replace("/login?passwordChanged=1");
+      const { data } = await changePassword({ currentPassword, newPassword });
+      // auth-service revokes every refresh token on a password change and
+      // issues this session a replacement pair — store it and the student
+      // stays signed in here, with no trip back through login.
+      saveTokens(data.tokens);
+      setChanged(true);
+      setSaving(false);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't change your password. Please try again.");
       setSaving(false);
     }
   };
+
+  if (changed) {
+    return (
+      <div className="flex flex-col items-center py-2 text-center">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-success-bg text-success">
+          <CheckCircleIcon className="h-7 w-7" />
+        </span>
+        <h2 className="mt-4 text-base font-bold text-ink">Password changed successfully</h2>
+        <p className="mt-2 text-xs text-muted">
+          You&apos;re still signed in here. Use your new password next time you sign in.
+        </p>
+        <Button variant="primary" size="sm" className="mt-6 w-full" onClick={onClose}>
+          Done
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -69,7 +86,7 @@ function ChangePasswordForm({ onClose }: { onClose: () => void }) {
       </div>
 
       <p className="mt-2 text-xs text-muted">
-        You&apos;ll be signed out everywhere and asked to sign in again with the new password.
+        You&apos;ll stay signed in on this device. Any other device will be signed out.
       </p>
 
       <div className="mt-5 flex flex-col gap-4">

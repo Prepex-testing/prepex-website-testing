@@ -42,12 +42,48 @@ const EDGE = 12;
 type Rect = { top: number; left: number; width: number; height: number };
 
 /**
- * Anchors can appear more than once — the sidebar and the mobile bottom nav
- * both carry `nav-practice` — so take the first one actually laid out.
+ * How visible an element actually is, 0 (not at all) to 1 — its own opacity
+ * multiplied through its ancestors'.
+ *
+ * A zero-size box is the easy case, but AppShell keeps both the expanded
+ * sidebar and the collapsed rail mounted and cross-fades between them, so the
+ * one that's "off" is full-size and merely transparent. Measuring by size
+ * alone spotlit that invisible row.
+ */
+function anchorVisibility(el: HTMLElement): number {
+  const rect = el.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) return 0;
+
+  let opacity = 1;
+  for (let node: HTMLElement | null = el; node; node = node.parentElement) {
+    const style = getComputedStyle(node);
+    if (style.visibility === "hidden" || style.display === "none") return 0;
+    opacity *= Number(style.opacity) || 0;
+    if (opacity === 0) return 0;
+  }
+  return opacity;
+}
+
+/**
+ * Anchors can appear more than once — the expanded sidebar, the collapsed
+ * rail and the mobile bottom nav all carry `nav-practice` — so take the one
+ * the student can actually see. Mid cross-fade two of them are partly
+ * visible; the more opaque is the one being faded in, which is where the
+ * coachmark should end up anyway.
  */
 function findAnchor(anchor: string): HTMLElement | null {
   const nodes = Array.from(document.querySelectorAll<HTMLElement>(`[data-coach="${anchor}"]`));
-  return nodes.find((node) => node.getBoundingClientRect().width > 0) ?? null;
+
+  let best: HTMLElement | null = null;
+  let bestVisibility = 0;
+  for (const node of nodes) {
+    const visibility = anchorVisibility(node);
+    if (visibility > bestVisibility) {
+      best = node;
+      bestVisibility = visibility;
+    }
+  }
+  return best;
 }
 
 /**
@@ -132,6 +168,10 @@ export function OnboardingCoach() {
 
     window.addEventListener("resize", scheduleMeasure);
     window.addEventListener("scroll", scheduleMeasure, true);
+    // Collapsing the sidebar swaps which anchor is visible via a class change
+    // on nodes that already exist — nothing the observers below would catch —
+    // so follow the cross-fade to its end and re-measure there.
+    window.addEventListener("transitionend", scheduleMeasure, true);
     const resizeObserver = new ResizeObserver(scheduleMeasure);
     resizeObserver.observe(document.body);
     const mutationObserver = new MutationObserver(scheduleMeasure);
@@ -142,6 +182,7 @@ export function OnboardingCoach() {
       cancelAnimationFrame(pendingMeasure);
       window.removeEventListener("resize", scheduleMeasure);
       window.removeEventListener("scroll", scheduleMeasure, true);
+      window.removeEventListener("transitionend", scheduleMeasure, true);
       resizeObserver.disconnect();
       mutationObserver.disconnect();
     };

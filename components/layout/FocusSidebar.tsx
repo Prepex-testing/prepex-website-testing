@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_ITEMS } from "@/components/layout/Sidebar";
+import { NAV_ITEMS, NAV_COACH_ANCHOR } from "@/components/layout/Sidebar";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { useAvatarSrc } from "@/lib/profile/avatar";
 import { AvatarFace } from "@/components/ui/AvatarFace";
@@ -66,6 +66,9 @@ export function FocusSidebar({ onExpand }: FocusSidebarProps) {
               key={item.label}
               href={item.href}
               aria-label={item.label}
+              // Same coach anchors as the expanded sidebar; with the rail up
+              // it's this icon tile that gets spotlit, not the hidden row.
+              data-coach={NAV_COACH_ANCHOR[item.label]}
               className={`flex w-12 items-center justify-center transition-colors duration-200 ${active
                   ? "h-12 rounded-xl bg-sidebar-active-bg text-sidebar-active-fg"
                   : "h-10 rounded-2xl px-4 py-3 text-sidebar-inactive-fg hover:bg-sidebar-active-bg hover:text-sidebar-active-fg"
