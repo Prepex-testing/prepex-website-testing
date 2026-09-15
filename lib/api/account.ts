@@ -1,5 +1,6 @@
 import { AUTH_API_BASE_URL } from "@/lib/api/config";
 import { authenticatedRequest } from "@/lib/api/authRequest";
+import type { AuthTokens } from "@/lib/api/auth";
 
 /**
  * Account-level calls to auth-service — identity, credentials, deletion.
@@ -43,15 +44,18 @@ export function updateIdentity(input: { fullName?: string; city?: string; phoneN
 }
 
 /**
- * Also revokes every refresh token for the account, so the caller should end
- * the local session afterwards — the current one won't survive its next
- * refresh anyway.
+ * Revokes every other session, then hands this one a replacement token pair —
+ * so the caller stays signed in and only has to store the new tokens. Nothing
+ * else survives the change: any other device is signed out.
  */
 export function changePassword(input: { currentPassword: string; newPassword: string }) {
-  return authRequest<{ success: true; message: string }>("/update-password", {
-    method: "PATCH",
-    body: JSON.stringify(input),
-  });
+  return authRequest<{ success: true; message: string; data: { tokens: AuthTokens } }>(
+    "/update-password",
+    {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    },
+  );
 }
 
 export type DeletionSchedule = {
