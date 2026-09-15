@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { MoonIcon, RefreshIcon, LockIcon } from "@/components/ui/icons";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
 import { SettingRow } from "@/components/profile/SettingRow";
 import { Switch } from "@/components/ui/Switch";
 import { PageLoader } from "@/components/ui/PageLoader";
+import { TimeField } from "@/components/ui/TimeField";
 import { ClockIcon, BellIcon } from "@/assets/icons";
 import { notificationGroupIcon } from "@/components/profile/notificationGroupIcons";
 import {
@@ -19,21 +20,10 @@ import {
 } from "@/lib/api/notifications";
 
 
-
-/**
- * Opens the native time picker from anywhere in a Quiet Hours field. The
- * browser's own picker icon is hidden (it overflowed the narrow box, leaving a
- * second clock outside the border), so our clock icon is the only one shown.
- */
-function openTimePicker(event: MouseEvent<HTMLElement>) {
-  const input = event.currentTarget.querySelector("input");
-  try {
-    input?.showPicker();
-  } catch {
-    // showPicker isn't available everywhere — fall back to focusing the field.
-    input?.focus();
-  }
-}
+/** Quiet Hours From / To box: 40px tall and full width on phones, 36×136px from
+ *  sm. Light #F8FAFC / #F1F5F9, dark --bg-card / --border-card. */
+const QUIET_TIME_TRIGGER =
+  "flex h-10 w-full cursor-pointer items-center gap-1.5 rounded-lg border border-[#F1F5F9] bg-[#F8FAFC] px-2.5 dark:border-(--border-card,#FAF7F214) dark:bg-(--bg-card,#111145) sm:h-9 sm:w-34 sm:gap-2 sm:px-3";
 
 function allGroups(settings: NotificationSettings): PreferenceGroup[] {
   return settings.categories.flatMap((category) => category.groups);
@@ -184,10 +174,7 @@ export default function NotificationSettingsPage() {
 
  
       <div className="rounded-xl border border-brand/10 bg-surface p-2 shadow-sm">
-        {/* Stacked until xl — side by side at lg, the time fields and button
-            (~500px) left the description only ~200px. The header is inline
-            rather than SettingRow, whose fixed 24px padding, 48px tile and
-            16/14px text can't step down on phones. */}
+    
         <div className="flex flex-col gap-4 p-3 sm:gap-5 sm:p-6 xl:flex-row xl:items-center xl:justify-between xl:gap-6">
           <div className="flex min-w-0 items-center gap-3 sm:gap-4 xl:flex-1">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tint text-ink sm:h-12 sm:w-12">
@@ -205,55 +192,38 @@ export default function NotificationSettingsPage() {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:gap-4 xl:shrink-0">
-            {/* The window only matters while quiet hours are on — hidden until
-                "Enable Quiet Hours" is pressed, and again after "No Quiet Hours". */}
+   
             {settings.quietHours.enabled && (
-            <div className="flex items-end gap-4">
-              <div className="flex flex-1 flex-col sm:flex-none">
-                <label
-                  htmlFor="quiet-from"
-                  className="mb-1 text-[10px] font-medium uppercase tracking-wide text-muted sm:text-[11px]"
-                >
-                  From
-                </label>
-                <div
-                  onClick={openTimePicker}
-                  className="flex h-10 w-full cursor-pointer items-center gap-2 rounded-lg border border-[#F1F5F9] bg-[#F8FAFC] px-3 dark:border-(--border-card,#FAF7F214) dark:bg-(--bg-card,#111145) sm:h-9 sm:w-34"
-                >
-                  <ClockIcon className="size-4 shrink-0" />
-                  <input
-                    id="quiet-from"
-                    type="time"
-                    value={settings.quietHours.start}
-                    onChange={(event) => setQuietHours({ start: event.target.value })}
-                    className="w-full min-w-0 cursor-pointer bg-transparent text-[13px] font-semibold leading-5 text-ink outline-none sm:text-sm [&::-webkit-calendar-picker-indicator]:hidden"
-                  />
-                </div>
-              </div>
+            <div className="flex w-full min-w-0 items-end gap-2 sm:w-auto sm:gap-4">
+        
+              <TimeField
+                id="quiet-from"
+                label="From"
+                value={settings.quietHours.start}
+                onChange={(start) => setQuietHours({ start })}
+                icon={<ClockIcon className="size-4 shrink-0 max-[359px]:hidden" />}
+                className="flex min-w-0 flex-1 flex-col sm:flex-none"
+                labelClassName="mb-1 text-[10px] font-medium uppercase tracking-wide text-muted sm:text-[11px]"
+                triggerClassName={QUIET_TIME_TRIGGER}
+                textClassName="min-w-0 truncate text-left text-[13px] font-semibold leading-5 text-ink sm:text-sm"
+              />
 
-              <span className="pb-2.5 text-muted sm:pb-2">—</span>
+              <span className="shrink-0 pb-2.5 text-muted sm:pb-2">—</span>
 
-              <div className="flex flex-1 flex-col sm:flex-none">
-                <label
-                  htmlFor="quiet-to"
-                  className="mb-1 text-[10px] font-medium uppercase tracking-wide text-muted sm:text-[11px]"
-                >
-                  To
-                </label>
-                <div
-                  onClick={openTimePicker}
-                  className="flex h-10 w-full cursor-pointer items-center gap-2 rounded-lg border border-[#F1F5F9] bg-[#F8FAFC] px-3 dark:border-(--border-card,#FAF7F214) dark:bg-(--bg-card,#111145) sm:h-9 sm:w-34"
-                >
-                  <ClockIcon className="size-4 shrink-0" />
-                  <input
-                    id="quiet-to"
-                    type="time"
-                    value={settings.quietHours.end}
-                    onChange={(event) => setQuietHours({ end: event.target.value })}
-                    className="w-full min-w-0 cursor-pointer bg-transparent text-[13px] font-semibold leading-5 text-ink outline-none sm:text-sm [&::-webkit-calendar-picker-indicator]:hidden"
-                  />
-                </div>
-              </div>
+              {/* Right-aligned popover: this field sits near the card's right
+                  edge, so a left-aligned popover would run off a 320px screen. */}
+              <TimeField
+                id="quiet-to"
+                label="To"
+                align="right"
+                value={settings.quietHours.end}
+                onChange={(end) => setQuietHours({ end })}
+                icon={<ClockIcon className="size-4 shrink-0 max-[359px]:hidden" />}
+                className="flex min-w-0 flex-1 flex-col sm:flex-none"
+                labelClassName="mb-1 text-[10px] font-medium uppercase tracking-wide text-muted sm:text-[11px]"
+                triggerClassName={QUIET_TIME_TRIGGER}
+                textClassName="min-w-0 truncate text-left text-[13px] font-semibold leading-5 text-ink sm:text-sm"
+              />
             </div>
             )}
 
@@ -295,19 +265,21 @@ export default function NotificationSettingsPage() {
           {groups.map((group) => (
             <div
               key={group.id}
-              className="flex h-[74px] items-center justify-between rounded-xl border border-brand/10 bg-surface px-4 shadow-sm"
+              // A minimum height rather than a fixed 74px, so a description that
+              // wraps on a narrow phone grows the row instead of spilling out.
+              className="flex min-h-16 items-center justify-between gap-3 rounded-xl border border-brand/10 bg-surface px-3 py-3 shadow-sm sm:min-h-18.5 sm:px-4"
             >
-              <div className="flex min-w-0 items-center gap-4">
+              <div className="flex min-w-0 items-center gap-3 sm:gap-4">
                 {/* Every group icon in a 20×20 frame with a 1.67px line (Figma), set
                     from the tile since the shared icon map hands back ready-made
-                    elements drawn at 14–24px. */}
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#EEF0F8] text-[#1A1A4E] dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2] [&_svg]:h-5 [&_svg]:w-5 [&_svg]:shrink-0 **:stroke-[1.67px] **:[vector-effect:non-scaling-stroke]">
+                    elements drawn at 14–24px. 18px in a 36px tile on phones. */}
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EEF0F8] text-[#1A1A4E] dark:bg-[#FAF7F2]/8 dark:text-[#FAF7F2] sm:h-10 sm:w-10 [&_svg]:h-4.5 [&_svg]:w-4.5 [&_svg]:shrink-0 sm:[&_svg]:h-5 sm:[&_svg]:w-5 **:stroke-[1.67px] **:[vector-effect:non-scaling-stroke]">
                   {notificationGroupIcon(group.id)}
                 </div>
 
                 <div className="min-w-0">
-                  <h3 className="truncate text-[14px] font-bold leading-5 text-ink">{group.label}</h3>
-                  <p className="mt-0.5 text-[11px] leading-4 text-muted">{group.description}</p>
+                  <h3 className="truncate text-[13px] font-bold leading-5 text-ink sm:text-[14px]">{group.label}</h3>
+                  <p className="mt-0.5 line-clamp-2 text-[11px] leading-4 text-muted">{group.description}</p>
                 </div>
               </div>
 
@@ -316,7 +288,7 @@ export default function NotificationSettingsPage() {
                    have silenced the one message pointing them at support. */
                 <span
                   title="Always on"
-                  className="flex shrink-0 items-center gap-1.5 rounded-full bg-tint px-2.5 py-1 text-[10px] font-bold text-muted"
+                  className="flex shrink-0 items-center gap-1 rounded-full bg-tint px-2 py-1 text-[9px] font-bold text-muted sm:gap-1.5 sm:px-2.5 sm:text-[10px]"
                 >
                   <LockIcon />
                   Always on

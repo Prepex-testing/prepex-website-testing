@@ -115,16 +115,8 @@ export default function ProfilePage() {
   const [overviewError, setOverviewError] = useState(false);
   const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const { theme, setTheme } = useTheme();
-  // PRD 19.9 — the same server-owned preferences the full settings screen
-  // edits. This section shows the first few groups as a shortcut; "Manage All"
-  // goes to /profile/notifications for the rest.
-  //
-  // (This replaced a local useState whose keys — "daily-plan", "weekly-journal"
-  // — did not match the ids it was read by, so four of the six switches
-  // rendered permanently off no matter what the student had chosen.)
   const [notificationSettings, setNotificationSettings] = useState<NotificationSettings | null>(null);
   const [notificationsLoaded, setNotificationsLoaded] = useState(false);
-  // Section 13 — the Connections row shows the parent connection's real state.
   const [parentState, setParentState] = useState<ParentConnectionState | null>(null);
   const [parentLoaded, setParentLoaded] = useState(false);
 
@@ -652,7 +644,7 @@ export default function ProfilePage() {
       text-ink
     "
         >
-          <LogoutIcon />
+          <LogoutIcon />    
         </span>
 
         {/* Text */}

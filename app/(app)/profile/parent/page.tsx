@@ -22,6 +22,7 @@ import {
   XIcon,
 } from "@/components/ui/icons";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
+import { VerificationSteps } from "@/components/profile/VerificationSteps";
 import { ApiError } from "@/lib/api/http";
 import {
   PARENT_LANGUAGE_OPTIONS,
@@ -366,36 +367,6 @@ function ConnectForm({
 // PENDING — waiting for the parent's tap (13.2.2 / 13.2.3)
 // ---------------------------------------------------------------------------
 
-function VerificationSteps({ verified }: { verified: boolean }) {
-  return (
-    <div className="flex flex-col items-stretch gap-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-      <div className={`flex min-w-0 items-center gap-3 rounded-xl border p-4 ${verified ? "border-brand/10" : "border-muted bg-ink/8"}`}>
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-tint-strong text-ink">
-          <ClockIcon />
-        </span>
-        <div className="min-w-0">
-          <p className="text-[14px] font-medium leading-none text-ink">Pending</p>
-          <p className="mt-1 text-[11px] text-muted">Invitation sent to parent</p>
-        </div>
-      </div>
-      <span className="hidden shrink-0 px-6 text-muted sm:inline" aria-hidden="true">
-        ┄┄┄┄┄
-      </span>
-      <div
-        className={`flex min-w-0 items-center gap-3 rounded-xl border p-4 ${verified ? "border-success/30 bg-success-bg" : "border-brand/10 opacity-60"}`}
-      >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-success">
-          <CheckCircleIcon />
-        </span>
-        <div className="min-w-0">
-          <p className="text-[14px] font-medium leading-none text-success">Verified</p>
-          <p className="mt-1 text-[11px] text-success/80">Updates start automatically</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function ChangeNumberForm({
   current,
   onSaved,
@@ -463,7 +434,7 @@ function PendingView({ connection, onChange }: { connection: ParentConnection; o
   return (
     <>
       <SectionCard
-        icon={<ClockIcon />}
+        icon={<ClockIcon className="h-6 w-6" />}
         title={`Waiting for ${who} to confirm`}
         subtitle={`We sent a WhatsApp message to ${connection.phoneMasked} with "Yes, send updates" and "No thanks" buttons.`}
       >
@@ -728,7 +699,7 @@ function ConnectedView({
       />
 
       <SectionCard
-        icon={<ClockIcon />}
+        icon={<ClockIcon className="h-6 w-6" />}
         title="Pause reports"
         subtitle={
           connection.pausedUntil
