@@ -5,9 +5,13 @@ import { Button } from "@/components/ui/Button";
 import { WhiteModal } from "@/components/ui/WhiteModal";
 import { Input } from "@/components/ui/Input";
 import { CheckCircleIcon, XIcon } from "@/components/ui/icons";
+import { FIELD_LABEL, FOOTER_BUTTON, MODAL_CLOSE_ICON, MODAL_TITLE } from "@/components/profile/modalStyles";
 import { ApiError } from "@/lib/api/http";
 import { changePassword, passwordProblem } from "@/lib/api/account";
 import { saveTokens } from "@/lib/auth/session";
+
+/** Muted description under the title — 12/18 on phones, 13/20 from sm. */
+const MODAL_DESCRIPTION = "text-[12px] leading-4.5 text-muted sm:text-[13px] sm:leading-5";
 
 type ChangePasswordModalProps = {
   open: boolean;
@@ -60,13 +64,16 @@ function ChangePasswordForm({ onClose }: { onClose: () => void }) {
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-success-bg text-success">
           <CheckCircleIcon className="h-7 w-7" />
         </span>
-        <h2 className="mt-4 text-base font-bold text-ink">Password changed successfully</h2>
-        <p className="mt-2 text-xs text-muted">
+        <h2 className={`mt-4 ${MODAL_TITLE}`}>Password changed successfully</h2>
+        <p className={`mt-2 ${MODAL_DESCRIPTION}`}>
           You&apos;re still signed in here. Use your new password next time you sign in.
         </p>
-        <Button variant="primary" size="sm" className="mt-6 w-full" onClick={onClose}>
-          Done
-        </Button>
+        {/* A row, so FOOTER_BUTTON's flex-1 fills the width rather than the height. */}
+        <div className="mt-6 flex w-full">
+          <Button variant="primary" size="sm" className={FOOTER_BUTTON} onClick={onClose}>
+            Done
+          </Button>
+        </div>
       </div>
     );
   }
@@ -74,24 +81,25 @@ function ChangePasswordForm({ onClose }: { onClose: () => void }) {
   return (
     <>
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-bold text-ink">Change Password</h2>
+        <h2 className={MODAL_TITLE}>Change Password</h2>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
           className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-tint-strong"
         >
-          <XIcon />
+          <XIcon className={MODAL_CLOSE_ICON} />
         </button>
       </div>
 
-      <p className="mt-2 text-xs text-muted">
+      <p className={`mt-2 ${MODAL_DESCRIPTION}`}>
         You&apos;ll stay signed in on this device. Any other device will be signed out.
       </p>
 
       <div className="mt-5 flex flex-col gap-4">
         <Input
           label="Current Password"
+          labelClassName={FIELD_LABEL}
           type="password"
           autoComplete="current-password"
           value={currentPassword}
@@ -99,6 +107,7 @@ function ChangePasswordForm({ onClose }: { onClose: () => void }) {
         />
         <Input
           label="New Password"
+          labelClassName={FIELD_LABEL}
           type="password"
           autoComplete="new-password"
           helperText="At least 8 characters, with an uppercase letter and a number."
@@ -107,6 +116,7 @@ function ChangePasswordForm({ onClose }: { onClose: () => void }) {
         />
         <Input
           label="Confirm New Password"
+          labelClassName={FIELD_LABEL}
           type="password"
           autoComplete="new-password"
           value={confirmPassword}
@@ -115,16 +125,16 @@ function ChangePasswordForm({ onClose }: { onClose: () => void }) {
       </div>
 
       {error && (
-        <p role="alert" className="mt-4 text-sm font-medium text-danger">
+        <p role="alert" className="mt-4 text-[13px] font-medium text-danger sm:text-sm">
           {error}
         </p>
       )}
 
       <div className="mt-6 flex items-center gap-3">
-        <Button variant="secondary" size="sm" className="flex-1" onClick={onClose} disabled={saving}>
+        <Button variant="secondary" size="sm" className={FOOTER_BUTTON} onClick={onClose} disabled={saving}>
           Cancel
         </Button>
-        <Button variant="primary" size="sm" className="flex-1" onClick={handleSubmit} disabled={saving}>
+        <Button variant="primary" size="sm" className={FOOTER_BUTTON} onClick={handleSubmit} disabled={saving}>
           {saving ? "Updating…" : "Update Password"}
         </Button>
       </div>
