@@ -413,8 +413,6 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => setPrefsOpen(true)}
-              // A minimum rather than a fixed 66px, so a title or hours line that
-              // wraps on a phone grows the row instead of spilling out of it.
               className="flex min-h-15 w-full items-center justify-between gap-2 rounded-xl border border-brand/10 px-3 py-3 transition-colors hover:bg-tint/30 sm:min-h-16.5"
             >
               <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
@@ -422,8 +420,6 @@ export default function ProfilePage() {
                   <ClockIcon className={ROW_ICON} />
                 </div>
 
-                {/* Hours and windows are edited in the same modal, so they
-                    share one row. */}
                 <div className="min-w-0 text-left">
                   <p className="text-[13px] font-semibold leading-5 text-ink sm:text-[14px]">
                     Daily Study Hours & Time Windows
@@ -482,8 +478,6 @@ export default function ProfilePage() {
           <div className="mt-4 space-y-3 sm:mt-6 sm:space-y-4">
 
             <Link href="/home/partner" className="block">
-              {/* Same as the Study Preferences rows: a minimum height so wrapped
-                  text grows the row on a phone, and the text group can shrink. */}
               <div className="flex min-h-15 items-center justify-between gap-2 rounded-xl border border-brand/10 px-3 py-3 transition-colors hover:bg-tint/30 sm:min-h-16.5">
 
                 <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
@@ -624,24 +618,11 @@ export default function ProfilePage() {
       <button
         type="button"
         onClick={() => setLogoutConfirmOpen(true)}
-        className="
-    flex w-full items-center gap-4
-    rounded-2xl border border-brand/10
-    bg-surface p-3
-    shadow-sm
-    transition-colors
-    hover:border-brand/20
-  "
+        className="flex w-full items-center gap-4 rounded-2xl border border-brand/10 bg-surface p-3 shadow-sm transition-colors hover:border-brand/20"
       >
         {/* Icon */}
         <span
-          className="
-      flex h-12 w-12 shrink-0
-      items-center justify-center
-      rounded-lg
-      bg-tint
-      text-ink
-    "
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-tint text-ink"
         >
           <LogoutIcon />    
         </span>

@@ -329,7 +329,7 @@ function FocusTopicContent() {
               </div>
             )}
           </div>
-
+  
           {/* Right: Focus This Week */}
           <div className="flex flex-col gap-4 border-t border-brand/10 p-4 sm:gap-6 sm:p-6 lg:p-8">
             <p className="text-[12px] font-normal uppercase leading-[15px] tracking-[1px] sm:text-[14px]">
