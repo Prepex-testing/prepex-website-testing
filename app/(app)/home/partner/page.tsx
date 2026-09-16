@@ -33,7 +33,6 @@ import {
 import { RecentSignals, SIGNALS_PAGE_SIZE } from "@/components/partner/RecentSignals";
 import {
   getPartnerStatus,
-  findMatch,
   acceptMatch,
   declineMatch,
   requestRematch,
@@ -249,15 +248,15 @@ export default function PartnerPage() {
     sendSignalRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  // suggestedAction "rematch": unmatch from the inactive partner, then look
-  // for a new one straight away. A found match comes back PENDING and its card
-  // opens; if nobody fits yet, the page shows the "No partner yet" state and
-  // the daily matching job keeps looking.
+  // suggestedAction "rematch": unmatch from the inactive partner. The server
+  // looks for a replacement as part of that, so the refetch below already has
+  // it — a found match comes back PENDING and its card opens; if nobody fits
+  // yet, the page shows the "No partner yet" state and the daily matching job
+  // keeps looking.
   const handleRematch = async () => {
     setRematching(true);
     try {
       await requestRematch();
-      await findMatch().catch(() => undefined);
       await refetchStatus();
     } catch {
       // Best-effort — inactivity banner stays up so the student can retry.

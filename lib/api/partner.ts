@@ -82,7 +82,12 @@ export function acceptMatch() {
   }>("/accept", { method: "POST" });
 }
 
-/** PRD 6.2.4 — capped at 2 lifetime attempts (see eligibility.declines). */
+/**
+ * PRD 6.2.4 — capped at 2 lifetime attempts (see eligibility.declines).
+ *
+ * Both students go back into matching as part of this, so the status refetch
+ * that follows may already carry a new PENDING match for either of them.
+ */
 export function declineMatch() {
   return authRequest<{
     success: true;
@@ -93,6 +98,9 @@ export function declineMatch() {
 /**
  * PRD 6.5.3 — unmatches immediately (no partner confirmation needed, since
  * this is how you escape an inactive/unresponsive partner). Unlimited uses.
+ *
+ * The server looks for a replacement for both sides straight away, so there's
+ * no need to call findMatch after this — just refetch the status.
  */
 export function requestRematch() {
   return authRequest<{
