@@ -108,6 +108,16 @@ function EditProfileForm({
   const photoProblem = (err: unknown, fallback: string) =>
     err instanceof ApiError || err instanceof AvatarImageError ? err.message : fallback;
 
+  // The completion ring counts the photo, and the photo saves on its own
+  // rather than through Save Changes — so the page behind this dialog has to
+  // be told, or the percentage sits stale until the next reload. Best-effort:
+  // the upload itself already succeeded, so a failed re-read isn't the
+  // student's problem.
+  const refreshOverview = () =>
+    getProfileOverview()
+      .then(({ data }) => onSaved(data))
+      .catch(() => undefined);
+
   const handlePhotoChosen = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     // Cleared so choosing the same file again still fires a change.
@@ -120,6 +130,7 @@ function EditProfileForm({
       const image = await prepareAvatarImage(file);
       const { data } = await uploadAvatar(image);
       setAvatarUrl(data.avatarUrl);
+      await refreshOverview();
     } catch (err) {
       setPhotoError(photoProblem(err, "Couldn't upload your photo. Please try again."));
     } finally {
@@ -133,6 +144,7 @@ function EditProfileForm({
     try {
       await removeAvatar();
       setAvatarUrl(null);
+      await refreshOverview();
     } catch (err) {
       setPhotoError(photoProblem(err, "Couldn't remove your photo. Please try again."));
     } finally {

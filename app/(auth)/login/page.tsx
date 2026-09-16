@@ -11,8 +11,7 @@ import { MailIcon, LockIcon, GoogleIcon } from "@/components/ui/icons";
 import { login, getGoogleAuthUrl, ApiError } from "@/lib/api/auth";
 import { saveSession } from "@/lib/auth/session";
 import { markAccountRestored } from "@/lib/auth/accountRestored";
-import { getOnboardingProgress, getOnboardingStepPath } from "@/lib/api/onboarding";
-import { getCheckInStatus } from "@/lib/api/checkin";
+import { resolveAuthedLanding } from "@/lib/auth/onboardingGate";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -39,25 +38,7 @@ export default function LoginPage() {
       saveSession(data.tokens, data.user);
       if (data.restored) markAccountRestored();
 
-      try {
-        const { data: onboarding } = await getOnboardingProgress();
-        if (!onboarding.progress.isCompleted) {
-          router.push(getOnboardingStepPath(onboarding.progress.currentStep));
-          return;
-        }
-      } catch {
-        // Couldn't confirm onboarding status — fall through to the normal
-        // logged-in flow rather than blocking login on it.
-      }
-
-      try {
-        const { data: checkIn } = await getCheckInStatus();
-        router.push(checkIn.exists ? "/home" : "/check-in");
-      } catch {
-        // Couldn't confirm check-in status — fall through to home rather
-        // than blocking login on it.
-        router.push("/home");
-      }
+      router.push(await resolveAuthedLanding());
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) {
         router.push(`/email-verification?email=${encodeURIComponent(email)}`);

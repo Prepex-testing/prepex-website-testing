@@ -70,7 +70,7 @@ export function WeeklyTopChapters() {
               <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
                 {/* 48×48 tile with a 24px icon from sm; 40px / 20px on phones. */}
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#EEF0F8] text-ink dark:bg-(--border-card,#FAF7F214) sm:h-12 sm:w-12 [&_svg]:h-5 [&_svg]:w-5 sm:[&_svg]:h-6 sm:[&_svg]:w-6">
-                  <TargetIcon />
+                  <TargetIcon                                                                        />
                 </span>
 
                 <div className="min-w-0">

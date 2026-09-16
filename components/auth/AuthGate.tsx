@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { getAccessToken } from "@/lib/auth/session";
+import {
+  isOnboardingKnownComplete,
+  pendingOnboardingPath,
+  resolveAuthedLanding,
+} from "@/lib/auth/onboardingGate";
 
 // Access tokens live in localStorage only (no auth cookies), so this check
 // has to run client-side — there's no session state a server-side proxy
@@ -29,12 +34,20 @@ function isPublicPath(pathname: string) {
 }
 
 // A still-logged-in user landing on one of these (e.g. a bookmark, or typing
-// the URL by hand) should bounce straight to /home instead of seeing the
-// splash/login flow again.
+// the URL by hand) shouldn't see the splash/login flow again — they're sent
+// on to wherever they actually belong, which is their unfinished onboarding
+// step if they have one and only otherwise /home or /check-in.
 const AUTHED_REDIRECT_PATHS = ["/", "/splash", "/login"];
 
 function isAuthedRedirectPath(pathname: string) {
   return AUTHED_REDIRECT_PATHS.includes(pathname);
+}
+
+// The onboarding screens are exactly where an unfinished student belongs, so
+// they're never bounced off them — including backwards, to an earlier step
+// than the one the server has recorded.
+function isOnboardingPath(pathname: string) {
+  return pathname === "/onboarding" || pathname.startsWith("/onboarding/");
 }
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
@@ -53,23 +66,64 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState(() => ({ pathname, authorized: isPublic }));
 
   useEffect(() => {
+    // The onboarding lookup below is a round trip, and the student can
+    // navigate away while it's in flight — its answer is for the path that
+    // asked for it, not whichever one is on screen when it lands.
+    let cancelled = false;
+    const settle = (authorized: boolean) => {
+      if (!cancelled) setState({ pathname, authorized });
+    };
+    // Render nothing while an answer is still in flight.
+    const hold = () => settle(false);
+    const sendTo = (target: string) => {
+      if (cancelled) return;
+      settle(false);
+      router.replace(target);
+    };
+
     const hasToken = !!getAccessToken();
 
+    if (!hasToken) {
+      if (isPublic) settle(true);
+      else sendTo("/login");
+      return () => {
+        cancelled = true;
+      };
+    }
+
     if (isPublic) {
-      if (hasToken && isAuthedRedirectPath(pathname)) {
-        setState({ pathname, authorized: false });
-        router.replace("/home");
-        return;
+      // Signed in and back at the front door: resolve the real landing page
+      // rather than assuming /home — half-onboarded students belong in the
+      // flow they abandoned.
+      if (isAuthedRedirectPath(pathname)) {
+        hold();
+        void resolveAuthedLanding().then(sendTo);
+      } else {
+        settle(true);
       }
-      setState({ pathname, authorized: true });
-      return;
+      return () => {
+        cancelled = true;
+      };
     }
-    if (hasToken) {
-      setState({ pathname, authorized: true });
+
+    // Protected route. Onboarding's own screens pass straight through, and so
+    // does everything else once the server has confirmed onboarding is done —
+    // only the first protected view of a session pays for the check.
+    if (isOnboardingPath(pathname) || isOnboardingKnownComplete()) {
+      settle(true);
     } else {
-      setState({ pathname, authorized: false });
-      router.replace("/login");
+      // Held blank meanwhile: showing /home for a frame before bouncing the
+      // student back into onboarding is the bug this closes.
+      hold();
+      void pendingOnboardingPath().then((step) => {
+        if (step) sendTo(step);
+        else settle(true);
+      });
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [pathname, isPublic, router]);
 
   const authorized = state.pathname === pathname && state.authorized;

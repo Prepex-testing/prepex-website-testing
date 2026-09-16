@@ -7,8 +7,7 @@ import { AuthCard } from "@/components/layout/AuthCard";
 import { getProfile, ApiError } from "@/lib/api/auth";
 import { saveSession } from "@/lib/auth/session";
 import { markAccountRestored } from "@/lib/auth/accountRestored";
-import { getOnboardingProgress, getOnboardingStepPath } from "@/lib/api/onboarding";
-import { getCheckInStatus } from "@/lib/api/checkin";
+import { resolveAuthedLanding } from "@/lib/auth/onboardingGate";
 
 export default function GoogleCallbackPage() {
   return (
@@ -38,24 +37,7 @@ function GoogleCallbackHandler() {
         saveSession({ accessToken, refreshToken }, user);
         if (restored) markAccountRestored();
 
-        try {
-          const { data: onboarding } = await getOnboardingProgress();
-          if (!onboarding.progress.isCompleted) {
-            router.push(getOnboardingStepPath(onboarding.progress.currentStep));
-            return;
-          }
-        } catch {
-          // Couldn't confirm onboarding status — fall through to check-in.
-        }
-
-        try {
-          const { data: checkIn } = await getCheckInStatus();
-          router.push(checkIn.exists ? "/home" : "/check-in");
-        } catch {
-          // Couldn't confirm check-in status — fall through to home rather
-          // than blocking login on it.
-          router.push("/home");
-        }
+        router.push(await resolveAuthedLanding());
       })
       .catch((err) => {
         setAsyncError(
