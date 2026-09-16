@@ -288,7 +288,7 @@ function ResourceCard({
           aria-pressed={bookmarked}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-tint hover:text-ink sm:h-10 sm:w-10"
         >
-          <BookmarkIcon filled={bookmarked} />
+          {/* <BookmarkIcon filled={bookmarked} /> */}
         </button>
       </div>
 
@@ -623,7 +623,7 @@ function ChapterLibrary() {
                   aria-pressed={bookmarked.has(lecture.id)}
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-tint hover:text-ink sm:h-10 sm:w-10"
                 >
-                  <BookmarkIcon filled={bookmarked.has(lecture.id)} />
+                  {/* <BookmarkIcon filled={bookmarked.has(lecture.id)} /> */}
                 </button>
               </div>
             ))}
@@ -773,7 +773,7 @@ function QuestionCard({
           aria-pressed={bookmarked}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-tint hover:text-ink"
         >
-          <BookmarkIcon filled={bookmarked} />
+          {/* <BookmarkIcon filled={bookmarked} /> */}
         </button>
       </div>
 
