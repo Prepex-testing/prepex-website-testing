@@ -1,6 +1,7 @@
 import { AUTH_API_BASE_URL } from "@/lib/api/config";
 import { apiRequest, ApiError } from "@/lib/api/http";
 import { getAccessToken, getRefreshToken, clearSession } from "@/lib/auth/session";
+import { forgetOnboardingStatus } from "@/lib/auth/onboardingGate";
 
 export { ApiError };
 
@@ -119,4 +120,6 @@ export async function performLogout() {
   }
 
   clearSession();
+  // The next student to sign in on this tab may not be through onboarding.
+  forgetOnboardingStatus();
 }

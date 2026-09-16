@@ -6,6 +6,7 @@ import { AuthCard } from "@/components/layout/AuthCard";
 import { AnimatedCircularProgress } from "@/components/ui/AnimatedCircularProgress";
 // import { CalendarIcon, ClockIcon} from "@/components/ui/icons";
 import { confirmOnboarding } from "@/lib/api/onboarding";
+import { markOnboardingComplete } from "@/lib/auth/onboardingGate";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { GraduationCapIcon, BookIcon, ClockIcon, CalendarIcon } from "@/assets/icons";
 const REDIRECT_DELAY_MS = 2000;
@@ -22,9 +23,14 @@ export default function AnalyzingPage() {
   const name = useStoredFullName();
 
   useEffect(() => {
-    confirmOnboarding().catch(() => {
-      // Best-effort — the welcome screen doesn't block on this succeeding.
-    });
+    confirmOnboarding()
+      // The gate in front of every protected route asks whether onboarding is
+      // done; tell it now rather than letting it race this request and bounce
+      // the student back into the flow they've just finished.
+      .then(markOnboardingComplete)
+      .catch(() => {
+        // Best-effort — the welcome screen doesn't block on this succeeding.
+      });
 
     const timer = setTimeout(() => {
       router.push("/onboarding/welcome-to-prepex");
