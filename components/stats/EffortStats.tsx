@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   HomeIcon,
@@ -63,6 +63,137 @@ function bucketKey(day: ConsistencyDay): string {
   return day.isToday ? "today" : String(day.bucket);
 }
 
+type ConsistencyView = "12-week" | "30-day" | "7-day";
+
+/** `windowDays: null` = the API's calendar weeks as-is; a number = rolling days ending today. */
+const CONSISTENCY_VIEWS: { value: ConsistencyView; label: string; windowDays: number | null }[] = [
+  { value: "12-week", label: "12 Weeks", windowDays: null },
+  { value: "30-day", label: "30 Days", windowDays: 30 },
+  { value: "7-day", label: "7 Days", windowDays: 7 },
+];
+
+type ConsistencyRow = {
+  key: string;
+  rangeLabel: string;
+  /** Always 7 wide; null is a pad cell keeping the weekday columns aligned. */
+  cells: (ConsistencyDay | null)[];
+};
+
+const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** "2026-09-15" → "Sep 15", matching the range labels the API sends for weeks. */
+function shortDate(isoDate: string): string {
+  const [, month, day] = isoDate.split("-");
+  return `${MONTH_LABELS[Number(month) - 1]} ${day}`;
+}
+
+/**
+ * The API ships 12 calendar weeks of daily buckets, so the rolling 7- and
+ * 30-day views are cut from that same payload — no second request.
+ *
+ * A rolling window is chunked into rows of 7 counting back from today, which
+ * keeps every row on the same weekday sequence (any two days 7 apart share a
+ * weekday), so one set of column headers still lines up. The oldest row is
+ * left-padded when the window isn't a multiple of 7 — 30 days is 4 rows of 7
+ * plus 2.
+ */
+function buildConsistencyRows(
+  weeks: EffortTab["consistency"]["weeks"],
+  windowDays: number | null,
+): { rows: ConsistencyRow[]; dayLabels: string[] } {
+  if (windowDays === null) {
+    return {
+      rows: weeks.map((week) => ({ key: week.weekStart, rangeLabel: week.rangeLabel, cells: week.days })),
+      dayLabels: (weeks[0]?.days ?? []).map((day) => day.dayLabel),
+    };
+  }
+
+  // Newest week first from the API — flatten back into calendar order, then
+  // drop the rest of the current week so the window really ends on today.
+  const days = [...weeks].reverse().flatMap((week) => week.days).filter((day) => !day.isFuture);
+  const windowed = days.slice(-windowDays);
+
+  const rows: ConsistencyRow[] = [];
+  for (let end = windowed.length; end > 0; end -= 7) {
+    const chunk = windowed.slice(Math.max(end - 7, 0), end);
+    const first = chunk[0];
+    const last = chunk[chunk.length - 1];
+    if (!first || !last) continue;
+    rows.push({
+      key: first.date,
+      rangeLabel: `${shortDate(first.date)} – ${shortDate(last.date)}`,
+      cells: [...Array.from({ length: 7 - chunk.length }, () => null), ...chunk],
+    });
+  }
+
+  // Row 0 is the newest and therefore always full, so its weekdays head the grid.
+  return { rows, dayLabels: (rows[0]?.cells ?? []).map((cell) => cell?.dayLabel ?? "") };
+}
+
+/** Compact in-card dropdown — the shared Select/CustomSelect are form fields with a label above. */
+function ConsistencyViewSelect({
+  value,
+  onChange,
+}: {
+  value: ConsistencyView;
+  onChange: (value: ConsistencyView) => void;
+}) {
+  const [isOpen, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [isOpen]);
+
+  const selected = CONSISTENCY_VIEWS.find((option) => option.value === value);
+
+  return (
+    <div ref={containerRef} className="relative shrink-0">
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        onClick={() => setOpen((open) => !open)}
+        className="flex h-8 items-center gap-2 rounded-lg border border-brand/15 px-3 text-[11px] font-bold text-ink transition-colors hover:bg-tint-strong sm:text-xs"
+      >
+        <span>{selected?.label}</span>
+        <ChevronDownIcon className={`h-3 w-3 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      {isOpen && (
+        <ul
+          role="listbox"
+          className="absolute right-0 z-20 mt-1 w-[124px] overflow-hidden rounded-lg border border-brand/15 bg-surface py-1 shadow-[0px_4px_12px_0px_#0000001A]"
+        >
+          {CONSISTENCY_VIEWS.map((option) => (
+            <li key={option.value}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={option.value === value}
+                onClick={() => {
+                  onChange(option.value);
+                  setOpen(false);
+                }}
+                className={`w-full px-3 py-2 text-left text-[11px] font-semibold transition-colors hover:bg-tint-strong sm:text-xs ${
+                  option.value === value ? "text-ink" : "text-muted"
+                }`}
+              >
+                {option.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 const DISTRIBUTION_BARS = [
   "bg-[#1A1A4E] dark:bg-ink/40",
   "bg-[#1A1A4E] dark:bg-[#6D28D9]",
@@ -102,6 +233,7 @@ export function EffortStats() {
   const [data, setData] = useState<EffortTab | null>(null);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [consistencyView, setConsistencyView] = useState<ConsistencyView>("12-week");
 
   useEffect(() => {
     let cancelled = false;
@@ -126,6 +258,13 @@ export function EffortStats() {
   // doesn't render as a wall of full-height bars.
   const chartMax = useMemo(() => Math.max(data?.maxHours ?? 0, 1), [data]);
   const ticks = useMemo(() => axisTicks(chartMax), [chartMax]);
+
+  const consistencyWindowDays =
+    CONSISTENCY_VIEWS.find((option) => option.value === consistencyView)?.windowDays ?? null;
+  const consistency = useMemo(
+    () => buildConsistencyRows(data?.consistency.weeks ?? [], consistencyWindowDays),
+    [data, consistencyWindowDays],
+  );
 
   if (isLoading) return <PageLoader label="Loading your effort stats…" />;
 
@@ -400,13 +539,18 @@ export function EffortStats() {
 
       {/* Study consistency */}
       <StatCard className="w-full rounded-2xl p-4 sm:p-6">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-bold leading-[24px] text-ink sm:text-[16px]">
-            {data.consistency.weeksTracked} Week Study Consistency
-          </p>
-          <span className="text-muted">
-            <InfoIcon />
-          </span>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-bold leading-[24px] text-ink sm:text-[16px]">
+              {consistencyWindowDays === null
+                ? `${data.consistency.weeksTracked} Week Study Consistency`
+                : `${consistencyWindowDays} Day Study Consistency`}
+            </p>
+            <span className="text-muted">
+              <InfoIcon />
+            </span>
+          </div>
+          <ConsistencyViewSelect value={consistencyView} onChange={setConsistencyView} />
         </div>
 
         <div className="mt-5 flex flex-col gap-6 sm:mt-6 sm:gap-8 lg:flex-row lg:items-start lg:gap-[79px]">
@@ -418,46 +562,50 @@ export function EffortStats() {
           <div className="@container min-w-0 flex-1 overflow-x-auto">
             <div className="grid grid-cols-[minmax(44px,64px)_repeat(7,minmax(0,1fr))] items-center gap-x-1 gap-y-2 sm:grid-cols-[minmax(80px,120px)_repeat(7,minmax(0,1fr))] sm:gap-y-4 @[380px]:gap-x-2">
               <span />
-              {(data.consistency.weeks[0]?.days ?? []).map((day) => (
+              {consistency.dayLabels.map((dayLabel, index) => (
                 <span
-                  key={day.dayLabel}
+                  key={index}
                   className="truncate text-center text-[9px] font-bold leading-[18.57px] text-[#9CA3AF] dark:text-muted sm:text-[12.38px]"
                 >
-                  {day.dayLabel}
+                  {dayLabel}
                 </span>
               ))}
 
-              {data.consistency.weeks.map((week) => (
-                <Fragment key={week.weekStart}>
+              {consistency.rows.map((row) => (
+                <Fragment key={row.key}>
                   <span className="truncate text-[9px] font-semibold leading-[18.57px] text-[#9CA3AF] dark:text-muted sm:text-[12.38px]">
-                    {week.rangeLabel}
+                    {row.rangeLabel}
                   </span>
-                  {week.days.map((day) => (
-                    <div key={day.date} className="mx-auto flex items-center justify-center">
-                      {/* Mobile: one solid cell per day — the 5-segment strip is
-                          always a single colour, so nothing is lost. */}
-                      <div
-                        className={`h-4 w-4 rounded-[3px] @[380px]:hidden ${day.isFuture ? "bg-transparent" : BUCKET_COLORS[bucketKey(day)]
-                          }`}
-                        title={`${day.date} — ${day.hours}h`}
-                      />
-                      <div className="hidden items-center justify-center gap-[7.43px] @[380px]:flex">
-                        {Array.from({ length: 5 }).map((_, boxIndex) => (
-                          <div
-                            key={boxIndex}
-                            className={`h-[14.86px] w-[12.38px] rounded-[2.48px] ${boxIndex === 2
-                                ? "hidden @[560px]:block"
-                                : boxIndex > 2
-                                  ? "hidden @[840px]:block"
-                                  : ""
-                              } ${day.isFuture ? "bg-transparent" : BUCKET_COLORS[bucketKey(day)]
-                              }`}
-                            title={`${day.date} — ${day.hours}h`}
-                          />
-                        ))}
+                  {row.cells.map((day, index) =>
+                    !day ? (
+                      <span key={`pad-${index}`} />
+                    ) : (
+                      <div key={day.date} className="mx-auto flex items-center justify-center">
+                        {/* Mobile: one solid cell per day — the 5-segment strip is
+                            always a single colour, so nothing is lost. */}
+                        <div
+                          className={`h-4 w-4 rounded-[3px] @[380px]:hidden ${day.isFuture ? "bg-transparent" : BUCKET_COLORS[bucketKey(day)]
+                            }`}
+                          title={`${day.date} — ${day.hours}h`}
+                        />
+                        <div className="hidden items-center justify-center gap-[7.43px] @[380px]:flex">
+                          {Array.from({ length: 5 }).map((_, boxIndex) => (
+                            <div
+                              key={boxIndex}
+                              className={`h-[14.86px] w-[12.38px] rounded-[2.48px] ${boxIndex === 2
+                                  ? "hidden @[560px]:block"
+                                  : boxIndex > 2
+                                    ? "hidden @[840px]:block"
+                                    : ""
+                                } ${day.isFuture ? "bg-transparent" : BUCKET_COLORS[bucketKey(day)]
+                                }`}
+                              title={`${day.date} — ${day.hours}h`}
+                            />
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ),
+                  )}
                 </Fragment>
               ))}
             </div>
