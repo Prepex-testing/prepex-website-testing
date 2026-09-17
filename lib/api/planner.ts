@@ -224,6 +224,10 @@ export type EditPlannerTaskInput = {
   estimatedMinutes: number;
   description?: string;
   suggestedWindow?: SuggestedWindow;
+  /** Moves the task to another chapter. Sent together — the API rejects a
+   *  subject without a chapter, and re-derives the subject from the chapter. */
+  chapterId?: string;
+  subjectId?: number;
 };
 
 export function editPlannerTask(taskId: string, input: EditPlannerTaskInput) {

@@ -131,8 +131,8 @@ type AddCustomTaskModalProps = {
   onAnchorAdded?: (warning: string | null) => void;
 };
 
-/** Read-only stand-in for a Select, styled to match — used in edit mode where
- * Subject/Topic reflect the task's existing values instead of being pickable. */
+/** Read-only stand-in for a Select, styled to match — used when scheduling a
+ * backlog item, where Subject/Topic are fixed by the backlog entry itself. */
 function StaticField({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex w-full min-w-0 flex-col gap-1">
@@ -231,10 +231,16 @@ export function AddCustomTaskModal({
   const [dailyTargetMinutes, setDailyTargetMinutes] = useState<number | null>(null);
   const [isDurationConfirmOpen, setDurationConfirmOpen] = useState(false);
   const isEdit = mode === "edit";
-  // Subject/Topic/Task Type are locked read-only both when editing an
-  // existing plan task and when scheduling a backlog item — neither lets
-  // the user change what chapter the task is actually about.
+  // Task Type is read-only both when editing an existing plan task and when
+  // scheduling a backlog item — changing it would change what the task is.
   const isLocked = mode === "edit" || mode === "planFromBacklog";
+  // Subject/Topic are only fixed for a backlog item, whose chapter is the
+  // backlog entry itself. Editing a plan task can move it to another chapter.
+  const isContentLocked = mode === "planFromBacklog";
+  // Edit mode keeps Subject/Topic optional, so a task that never had a chapter
+  // still saves — but once the student touches either picker, a half-made
+  // choice (subject, no topic) isn't a state worth sending.
+  const [isContentTouched, setContentTouched] = useState(false);
 
   // This modal is a single persistent instance shared across every row
   // (e.g. the backlog page opens it for whichever task was clicked), so the
@@ -255,6 +261,7 @@ export function AddCustomTaskModal({
     // re-derives these from initialValues when a caller provides them.
     setSubjectId(null);
     setChapterId("");
+    setContentTouched(false);
     setError(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -272,23 +279,30 @@ export function AddCustomTaskModal({
 
   // The API returns every subject with its own chapters nested — fetched once
   // per open, then subject selection filters the already-loaded chapters
-  // locally instead of refetching. Edit mode shows Subject/Topic as static
-  // text (see below), so it has no need for this list.
+  // locally instead of refetching. planFromBacklog shows Subject/Topic as
+  // static text (see below), so it has no need for this list.
   useEffect(() => {
-    if (!open || isLocked) return;
+    if (!open || isContentLocked) return;
 
     async function loadSubjectsChapters() {
       setLoadingChapters(true);
       try {
         const { data } = await getSubjectsChapters();
         setSubjects(data.subjects);
-        setSubjectId((current) => {
-          if (current != null) return current;
-          const matched = initialValues?.subjectValue
-            ? data.subjects.find((s) => s.name.toLowerCase() === initialValues.subjectValue?.toLowerCase())
-            : undefined;
-          return matched?.id ?? null;
-        });
+
+        // A task carries its subject/chapter as names, not ids, so both
+        // pickers open on the task's current values by matching on name.
+        const matchedSubject = initialValues?.subjectValue
+          ? data.subjects.find((s) => s.name.toLowerCase() === initialValues.subjectValue?.toLowerCase())
+          : undefined;
+        setSubjectId((current) => current ?? matchedSubject?.id ?? null);
+
+        const matchedChapter = initialValues?.topicValue
+          ? matchedSubject?.chapters.find(
+              (c) => c.name.toLowerCase() === initialValues.topicValue?.toLowerCase(),
+            )
+          : undefined;
+        if (matchedChapter) setChapterId((current) => current || matchedChapter.id);
       } catch {
         // Best-effort — the form still works without live subject/chapter data.
       } finally {
@@ -298,7 +312,7 @@ export function AddCustomTaskModal({
 
     loadSubjectsChapters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, isLocked]);
+  }, [open, isContentLocked]);
 
   // Question filters only apply to a task whose questions are drawn fresh from
   // the bank — i.e. a new PRACTICE/DPP task. Editing a task or scheduling a
@@ -337,13 +351,20 @@ export function AddCustomTaskModal({
   };
 
   // Every field is required except Additional Notes. Subject/Topic aren't
-  // user-editable in edit / planFromBacklog mode (they're shown as static
-  // text), so they're only enforced when the pickers are live.
+  // user-editable in planFromBacklog mode (they're shown as static text), and
+  // in edit mode they're only enforced once the student touches a picker —
+  // otherwise a task created without a chapter could never be saved again.
+  const isContentValid = isContentLocked
+    ? true
+    : isEdit && !isContentTouched
+      ? true
+      : subjectId != null && chapterId.length > 0;
+
   const isFormValid =
     taskName.trim().length > 0 &&
     timePreferenceValue.length > 0 &&
     Number(durationValue) >= MIN_DURATION_MINUTES &&
-    (isLocked || (subjectId != null && chapterId.length > 0));
+    isContentValid;
 
   const handleSubmit = () => {
     if (!isFormValid) return;
@@ -373,6 +394,10 @@ export function AddCustomTaskModal({
           estimatedMinutes: Number(durationValue),
           description: notes.trim() || undefined,
           suggestedWindow: SUGGESTED_WINDOW_VALUES[timePreferenceValue],
+          // Sent as a pair only once a topic is actually picked: the API
+          // validates the chapter against the subject, and a task that never
+          // had a chapter stays that way rather than being half-assigned one.
+          ...(subjectId != null && chapterId.length > 0 && { subjectId, chapterId }),
         });
         onTaskUpdated?.();
         onClose();
@@ -532,7 +557,7 @@ export function AddCustomTaskModal({
 
           {/* Subject + Topic */}
           <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
-            {isLocked ? (
+            {isContentLocked ? (
               <StaticField
                 label="Subject"
                 value={initialValues?.subjectValue ?? ""}
@@ -545,12 +570,15 @@ export function AddCustomTaskModal({
                   label: subject.name,
                 }))}
                 value={subjectId != null ? String(subjectId) : ""}
-                onChange={(value) => setSubjectId(Number(value))}
-                placeholder="Subject"
+                onChange={(value) => {
+                  setSubjectId(Number(value));
+                  setContentTouched(true);
+                }}
+                placeholder={isLoadingChapters ? "Loading subjects..." : "Subject"}
               />
             )}
 
-            {isLocked ? (
+            {isContentLocked ? (
               <StaticField
                 label="Topic"
                 value={initialValues?.topicValue ?? ""}
@@ -563,7 +591,10 @@ export function AddCustomTaskModal({
                   label: chapter.name,
                 }))}
                 value={chapterId}
-                onChange={setChapterId}
+                onChange={(value) => {
+                  setChapterId(value);
+                  setContentTouched(true);
+                }}
                 placeholder={isLoadingChapters ? "Loading chapters..." : "Topic"}
               />
             )}
