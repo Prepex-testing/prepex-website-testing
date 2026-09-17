@@ -80,6 +80,8 @@ function RevisionSessionContent() {
   const [task, setTask] = useState<PlannerTaskDetail | null>(null);
   const [isTaskLoading, setTaskLoading] = useState(true);
   const [isActionsOpen, setActionsOpen] = useState(false);
+  // Off collapses the formula sheet and Reference Review, leaving just the timer.
+  const [showResources, setShowResources] = useState(true);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
@@ -383,28 +385,47 @@ function RevisionSessionContent() {
 
       {/* Title */}
       <div>
-        {/* Title */}
-        <h1
-          className="
-      max-w-full
-      text-[20px]
-      font-bold
-      leading-[26px]
-      tracking-normal
-      text-ink
+        {/* Title + Resources toggle */}
+        <div className="flex items-start justify-between gap-3">
+          <h1
+            className="
+        max-w-full
+        text-[20px]
+        font-bold
+        leading-[26px]
+        tracking-normal
+        text-ink
 
-      sm:text-[24px]
-      sm:leading-[31px]
+        sm:text-[24px]
+        sm:leading-[31px]
 
-      md:text-[28px]
-      md:leading-[36px]
+        md:text-[28px]
+        md:leading-[36px]
 
-      lg:text-[32px]
-      lg:leading-[40px]
-    "
-        >
-          {task?.title ? getChapterTitle(task.title) : "Revision Session"}
-        </h1>
+        lg:text-[32px]
+        lg:leading-[40px]
+      "
+          >
+            {task?.title ? getChapterTitle(task.title) : "Revision Session"}
+          </h1>
+
+          <button
+            type="button"
+            role="switch"
+            aria-checked={showResources}
+            onClick={() => setShowResources((value) => !value)}
+            className="mt-1 flex shrink-0 items-center gap-2 text-[11px] font-bold uppercase tracking-[0.5px] text-muted transition-colors hover:text-ink sm:text-xs"
+          >
+            <span>Resources</span>
+            <span
+              className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${showResources ? "bg-cta" : "bg-tint-strong"}`}
+            >
+              <span
+                className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${showResources ? "translate-x-[18px]" : "translate-x-[2px]"}`}
+              />
+            </span>
+          </button>
+        </div>
 
         {/* Metadata */}
         <div
@@ -490,7 +511,7 @@ function RevisionSessionContent() {
         <p className="text-[12px] font-extrabold uppercase leading-[15px] tracking-[1px] text-[#333333] dark:text-[#8B8998]">
           Quick Recall
         </p>
-        {formulas.length > 0 && (
+        {showResources && formulas.length > 0 && (
           <>
             <p className="text-[20px] font-extrabold leading-[28px] text-ink">
               Formula {formulaIndex + 1} of {formulas.length}
@@ -526,88 +547,90 @@ function RevisionSessionContent() {
       </div>
 
       {/* Revision formulas — the chapter's formula sheet, one at a time. */}
-      <div className="rounded-3xl border border-brand/10 bg-surface p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] sm:p-8">
-        {resourcesLoading ? (
-          <p className="text-center text-sm font-semibold leading-5 text-muted">Loading formulas…</p>
-        ) : !currentFormula ? (
-          <p className="mt-2 flex items-center justify-center gap-2 text-sm font-semibold leading-5 text-body-text">
-            Revision Formulas Not Available.
-          </p>
-        ) : (
-          <div className="flex flex-col gap-5">
-            <div className="text-center">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-[11px] font-extrabold uppercase tracking-[1px] text-muted">Revision Formula</p>
-                {/* Compact pager — current / total for this chapter. */}
-                <div className="flex shrink-0 items-center gap-1" aria-label="Formula navigation">
-                  <button
-                    type="button"
-                    onClick={() => showFormula(formulaIndex - 1)}
-                    disabled={formulaIndex === 0}
-                    aria-label="Previous formula"
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
-                  >
-                    <ChevronRightIcon className="h-4 w-4 rotate-180" />
-                  </button>
-                  <span className="min-w-[2.75rem] text-center text-[13px] font-bold tabular-nums text-ink" aria-live="polite">
-                    {formulaIndex + 1}/{formulas.length}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => showFormula(formulaIndex + 1)}
-                    disabled={formulaIndex >= formulas.length - 1}
-                    aria-label="Next formula"
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
-                  >
-                    <ChevronRightIcon className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              <h2 className="mx-auto mt-2 max-w-[640px] break-words text-[20px] font-extrabold leading-[28px] text-ink sm:text-[26px] sm:leading-[34px]">
-                {currentFormula.title}
-              </h2>
-            </div>
-
-            {currentFormula.formula && (
-              <MathText
-                source={currentFormula.formula}
-                className="mx-auto w-full max-w-[640px] rounded-xl bg-tint px-4 py-4 text-center text-[16px] leading-7 text-ink sm:text-[18px]"
-              />
-            )}
-
-            {(currentFormula.variables.length > 0 ||
-              currentFormula.conditions.length > 0 ||
-              currentFormula.jeeTrick) && (
-              <div className="mx-auto grid w-full max-w-[640px] grid-cols-1 gap-4 text-left sm:grid-cols-2">
-                {currentFormula.variables.length > 0 && (
-                  <FormulaDetail label="Variables">
-                    <ul className="list-disc space-y-1 pl-5">
-                      {currentFormula.variables.map((item, index) => (
-                        <li key={index}>{item}</li>
-                      ))}
-                    </ul>
-                  </FormulaDetail>
-                )}
-                {currentFormula.conditions.length > 0 && (
-                  <FormulaDetail label="Conditions">
-                    <ul className="list-disc space-y-1 pl-5">
-                      {currentFormula.conditions.map((item, index) => (
-                        <li key={index}>{item}</li>
-                      ))}
-                    </ul>
-                  </FormulaDetail>
-                )}
-                {currentFormula.jeeTrick && (
-                  <div className="sm:col-span-2">
-                    <FormulaDetail label="JEE Trick">{currentFormula.jeeTrick}</FormulaDetail>
+      {showResources && (
+        <div className="rounded-3xl border border-brand/10 bg-surface p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] sm:p-8">
+          {resourcesLoading ? (
+            <p className="text-center text-sm font-semibold leading-5 text-muted">Loading formulas…</p>
+          ) : !currentFormula ? (
+            <p className="mt-2 flex items-center justify-center gap-2 text-sm font-semibold leading-5 text-body-text">
+              Revision Formulas Not Available.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-5">
+              <div className="text-center">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[11px] font-extrabold uppercase tracking-[1px] text-muted">Revision Formula</p>
+                  {/* Compact pager — current / total for this chapter. */}
+                  <div className="flex shrink-0 items-center gap-1" aria-label="Formula navigation">
+                    <button
+                      type="button"
+                      onClick={() => showFormula(formulaIndex - 1)}
+                      disabled={formulaIndex === 0}
+                      aria-label="Previous formula"
+                      className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+                    >
+                      <ChevronRightIcon className="h-4 w-4 rotate-180" />
+                    </button>
+                    <span className="min-w-[2.75rem] text-center text-[13px] font-bold tabular-nums text-ink" aria-live="polite">
+                      {formulaIndex + 1}/{formulas.length}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => showFormula(formulaIndex + 1)}
+                      disabled={formulaIndex >= formulas.length - 1}
+                      aria-label="Next formula"
+                      className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+                    >
+                      <ChevronRightIcon className="h-4 w-4" />
+                    </button>
                   </div>
-                )}
+                </div>
+                <h2 className="mx-auto mt-2 max-w-[640px] break-words text-[20px] font-extrabold leading-[28px] text-ink sm:text-[26px] sm:leading-[34px]">
+                  {currentFormula.title}
+                </h2>
               </div>
-            )}
 
-          </div>
-        )}
-      </div>
+              {currentFormula.formula && (
+                <MathText
+                  source={currentFormula.formula}
+                  className="mx-auto w-full max-w-[640px] rounded-xl bg-tint px-4 py-4 text-center text-[16px] leading-7 text-ink sm:text-[18px]"
+                />
+              )}
+
+              {(currentFormula.variables.length > 0 ||
+                currentFormula.conditions.length > 0 ||
+                currentFormula.jeeTrick) && (
+                <div className="mx-auto grid w-full max-w-[640px] grid-cols-1 gap-4 text-left sm:grid-cols-2">
+                  {currentFormula.variables.length > 0 && (
+                    <FormulaDetail label="Variables">
+                      <ul className="list-disc space-y-1 pl-5">
+                        {currentFormula.variables.map((item, index) => (
+                          <li key={index}>{item}</li>
+                        ))}
+                      </ul>
+                    </FormulaDetail>
+                  )}
+                  {currentFormula.conditions.length > 0 && (
+                    <FormulaDetail label="Conditions">
+                      <ul className="list-disc space-y-1 pl-5">
+                        {currentFormula.conditions.map((item, index) => (
+                          <li key={index}>{item}</li>
+                        ))}
+                      </ul>
+                    </FormulaDetail>
+                  )}
+                  {currentFormula.jeeTrick && (
+                    <div className="sm:col-span-2">
+                      <FormulaDetail label="JEE Trick">{currentFormula.jeeTrick}</FormulaDetail>
+                    </div>
+                  )}
+                </div>
+              )}
+
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Question card */}
       {/* <div className="rounded-3xl border border-brand/10 bg-surface p-6 text-center shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] sm:p-8">
@@ -675,66 +698,68 @@ function RevisionSessionContent() {
       </div> */}
 
       {/* Reference Review */}
-      <div>
-        <p className="text-xs font-bold uppercase tracking-wide text-[#1E293B] dark:text-[#FAF7F2]">
-          Reference Review
-        </p>
-        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {REFERENCES.map((ref) => {
-            const count = chapterResources?.counts?.[ref.countKey];
-            const meta = !hasChapter
-              ? "No chapter linked to this task"
-              : resourcesLoading
-                ? "Loading…"
-                : count === undefined
-                  ? "Open to browse"
-                  : count === 0
-                    ? "None for this chapter yet"
-                    : `${count} ${count === 1 ? ref.unit[0] : ref.unit[1]}`;
-            const canOpen = hasChapter && count !== 0;
-            const buttonClass = `mt-4 flex h-[38px] w-full items-center justify-center gap-2 rounded-lg border text-xs font-bold text-ink transition-colors hover:bg-tint-strong ${isDark ? "border-white" : "border-brand/15"}`;
+      {showResources && (
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-[#1E293B] dark:text-[#FAF7F2]">
+            Reference Review
+          </p>
+          <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {REFERENCES.map((ref) => {
+              const count = chapterResources?.counts?.[ref.countKey];
+              const meta = !hasChapter
+                ? "No chapter linked to this task"
+                : resourcesLoading
+                  ? "Loading…"
+                  : count === undefined
+                    ? "Open to browse"
+                    : count === 0
+                      ? "None for this chapter yet"
+                      : `${count} ${count === 1 ? ref.unit[0] : ref.unit[1]}`;
+              const canOpen = hasChapter && count !== 0;
+              const buttonClass = `mt-4 flex h-[38px] w-full items-center justify-center gap-2 rounded-lg border text-xs font-bold text-ink transition-colors hover:bg-tint-strong ${isDark ? "border-white" : "border-brand/15"}`;
 
-            return (
-              <div
-                key={ref.label}
-                className="flex flex-col rounded-2xl border border-brand/10 bg-surface p-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]"
-              >
-                {/* Top Row */}
-                <div className="flex items-center gap-4">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg  bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
-                    {ref.icon}
-                  </span>
+              return (
+                <div
+                  key={ref.label}
+                  className="flex flex-col rounded-2xl border border-brand/10 bg-surface p-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]"
+                >
+                  {/* Top Row */}
+                  <div className="flex items-center gap-4">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg  bg-icon-chip-bg text-ink dark:bg-[#FAF7F2]/8">
+                      {ref.icon}
+                    </span>
 
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold leading-5 text-ink">
-                      {ref.label}
-                    </p>
-                    <p className="text-[11px] leading-5 text-muted">
-                      {meta}
-                    </p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold leading-5 text-ink">
+                        {ref.label}
+                      </p>
+                      <p className="text-[11px] leading-5 text-muted">
+                        {meta}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                {/* Button */}
-                {canOpen ? (
-                  <Link href={chapterResourcesHref(subjectName, chapterName, ref.section)} className={buttonClass}>
-                    <span>Open</span>
-                    <Open className="h-3 w-3" />
-                  </Link>
-                ) : (
-                  <button type="button" disabled className={`${buttonClass} cursor-not-allowed opacity-50 hover:bg-transparent`}>
-                    <span>Open</span>
-                    <Open className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
-            );
-          })}
+                  {/* Button */}
+                  {canOpen ? (
+                    <Link href={chapterResourcesHref(subjectName, chapterName, ref.section)} className={buttonClass}>
+                      <span>Open</span>
+                      <Open className="h-3 w-3" />
+                    </Link>
+                  ) : (
+                    <button type="button" disabled className={`${buttonClass} cursor-not-allowed opacity-50 hover:bg-transparent`}>
+                      <span>Open</span>
+                      <Open className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-3 text-xs text-[#64748B] dark:text-[#FAF7F2]">
+            Open any resource to review before continuing.
+          </p>
         </div>
-        <p className="mt-3 text-xs text-[#64748B] dark:text-[#FAF7F2]">
-          Open any resource to review before continuing.
-        </p>
-      </div>
+      )}
 
       {/* End session */}
       <div className="flex flex-col items-center gap-2">
