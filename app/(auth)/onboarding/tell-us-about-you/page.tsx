@@ -117,12 +117,8 @@ export default function TellUsAboutYouPage() {
   const fullName = fullNameTouched ? fullNameInput : storedFullName;
 
   const handleContinue = async () => {
-    if (!phoneNumber.trim()) {
-      setError("Please fill phone number to continue.");
-      return;
-    }
-
-    if (!/^\d{10}$/.test(phoneNumber.trim())) {
+    // Optional — only the format of a number actually entered is enforced.
+    if (phoneNumber.trim() && !/^\d{10}$/.test(phoneNumber.trim())) {
       setError("Enter a valid 10-digit phone number.");
       return;
     }
@@ -144,7 +140,9 @@ export default function TellUsAboutYouPage() {
     try {
       await saveAcademicProfile({
         fullName,
-        phoneNumber,
+        // Left out entirely when blank, so an untouched field isn't stored
+        // as an empty string that later reads as "has a phone number".
+        ...(phoneNumber.trim() && { phoneNumber: phoneNumber.trim() }),
         city,
         targetExamDate,
         currentLevel: selectedClass,
@@ -209,11 +207,10 @@ export default function TellUsAboutYouPage() {
             onChange={(event) => setCity(event.target.value)}
           />
           <Input
-            label="Phone Number"
+            label="Phone Number (optional)"
             helperText="10-digit number, for account events"
             name="phone"
             type="tel"
-            required
             inputMode="numeric"
             maxLength={10}
             placeholder="Phone Number"

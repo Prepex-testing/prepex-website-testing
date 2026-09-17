@@ -102,7 +102,8 @@ export function skipOnboardingStep(step: 2 | 3 | 4) {
 
 export function saveAcademicProfile(input: {
   fullName: string;
-  phoneNumber: string;
+  /** Optional — omit it rather than sending "" when the student leaves it blank. */
+  phoneNumber?: string;
   city: string;
   targetExamDate: string;
   currentLevel: "CLASS_11" | "CLASS_12" | "DROPPER_1" | "DROPPER_2" | "OTHER";
