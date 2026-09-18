@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { ClockIcon, SunIcon, FileIcon, CalendarIcon } from "@/components/ui/icons";
 import { TaskEditMenu } from "@/components/home/TaskEditMenu";
 import { CompleteTaskCheckbox } from "@/components/home/CompleteTaskCheckbox";
-import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE, mockTaskHref } from "@/components/home/taskTypes";
+import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE, customBadgeLabel, mockTaskHref } from "@/components/home/taskTypes";
 import type { TaskType } from "@/components/home/taskTypes";
 
 export type { TaskType };
@@ -193,7 +193,7 @@ export function TaskRow({
                 ${CUSTOM_BADGE_STYLE}
               `}
             >
-              Custom
+              {customBadgeLabel(task.title)}
             </span>
           )}
         </div>

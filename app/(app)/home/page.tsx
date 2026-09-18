@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -138,7 +138,16 @@ const QUICK_ACCESS_COACH_ANCHOR: Record<string, string> = {
   Partner: "quick-partner",
 };
 
-const QUICK_ACCESS = [
+type QuickAccessItem = {
+  label: string;
+  icon: ReactNode;
+  subtitle?: string;
+  /** Omitted when the tile opens a modal instead of navigating. */
+  href?: string;
+  action?: "quickFocus";
+};
+
+const QUICK_ACCESS: QuickAccessItem[] = [
   {
     href: "/practice/sessions",
     label: "Practice", subtitle: "Solve Questions", icon: <PencilIcon />
@@ -153,11 +162,11 @@ const QUICK_ACCESS = [
     href: "/home/mistake-notebook",
     label: "Mistake Notebook", icon: <BookIcon className="h-5 w-5" />
   },
-  // {
-  //   href: "/home/focus-topic",
-  //   label: "This Week's Focus Topic",
-  //   icon: <LayersIcon className="h-5 w-5" />,
-  // },
+  {
+    action: "quickFocus",
+    label: "Quick Focus",
+    icon: <LayersIcon className="h-5 w-5" />,
+  },
   {
     href: "/home/focus-next",
     label: "Where to focus next", icon: <RadarIcon className="h-5 w-5" />
@@ -340,6 +349,7 @@ export default function HomePage() {
   const [isActivatingBacklogRecovery, setActivatingBacklogRecovery] = useState(false);
   const [isLateSignupPromptOpen, setLateSignupPromptOpen] = useState(false);
   const [isQuickSessionTaskOpen, setQuickSessionTaskOpen] = useState(false);
+  const [isQuickFocusTaskOpen, setQuickFocusTaskOpen] = useState(false);
   const hasPromptedLateSignup = useRef(false);
   // Section 4.2.2 — burnout tier / disengagement pop-ups. One per session.
   const [burnout, setBurnout] = useState<BurnoutStatus | null>(null);
@@ -958,6 +968,20 @@ export default function HomePage() {
                 const classes =
                   "flex h-15 items-center justify-between rounded-xl border border-quick-access-border bg-card px-4 shadow-quick-access transition-colors hover:bg-tint";
 
+                if (item.action === "quickFocus") {
+                  return (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => setQuickFocusTaskOpen(true)}
+                      className={`${classes} w-full text-left`}
+                      data-coach={QUICK_ACCESS_COACH_ANCHOR[item.label]}
+                    >
+                      {content}
+                    </button>
+                  );
+                }
+
                 return (
                   <Link
                     key={item.label}
@@ -1209,6 +1233,17 @@ export default function HomePage() {
         cancelLabel="No"
       />
       <AddCustomTaskModal
+        open={isQuickFocusTaskOpen}
+        mode="quickFocus"
+        onClose={() => setQuickFocusTaskOpen(false)}
+        onTaskAdded={(taskId) => {
+          // Straight into the session — a Quick Focus task exists to be started
+          // now, not to sit in the plan.
+          if (taskId) router.push(`/home/session?taskId=${taskId}`);
+          else refetchPlan();
+        }}
+      />
+      <AddCustomTaskModal
         open={isQuickSessionTaskOpen}
         onClose={() => setQuickSessionTaskOpen(false)}
         onTaskAdded={() => window.location.reload()}
@@ -1280,6 +1315,7 @@ export default function HomePage() {
           isRegenerateOpen ||
           isAddTaskOpen ||
           isQuickFocusOpen ||
+          isQuickFocusTaskOpen ||
           isPracticeModalOpen ||
           isRecoveryModeModalOpen ||
           isEndRecoveryOpen ||
