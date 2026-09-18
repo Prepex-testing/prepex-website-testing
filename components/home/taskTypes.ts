@@ -27,6 +27,16 @@ export const TYPE_LABELS: Record<TaskType, string> = {
 
 export const CUSTOM_BADGE_STYLE = "bg-cta/10 text-cta";
 
+/** Task Name every Quick Focus task is created with. It's also what tells one
+ *  apart from any other custom task in the plan — see customBadgeLabel. */
+export const QUICK_FOCUS_TASK_NAME = "Quick Focus";
+
+/** A custom task carries a "Custom" badge, except one Quick Focus created —
+ *  that reads "Focus Task". */
+export function customBadgeLabel(title: string): string {
+  return title.startsWith(QUICK_FOCUS_TASK_NAME) ? "Focus Task" : "Custom";
+}
+
 export const COMPLETED_ACTION_LABELS: Record<TaskType, string> = {
   revision: "Revision Completed",
   "new-learning": "Session Completed",

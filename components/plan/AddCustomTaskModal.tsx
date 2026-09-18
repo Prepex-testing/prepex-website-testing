@@ -21,9 +21,10 @@ import {
   getSubjectsChapters,
   type SubjectWithChapters,
 } from "@/lib/api/profile";
+import { QUICK_FOCUS_TASK_NAME } from "@/components/home/taskTypes";
 import { AddTask } from "@/assets/icons";
 
-type TaskModalMode = "add" | "edit" | "planFromBacklog" | "anchor";
+type TaskModalMode = "add" | "edit" | "planFromBacklog" | "anchor" | "quickFocus";
 
 const HEADER_TEXT: Record<TaskModalMode, { title: string; subtitle: string }> = {
   add: { title: "Add Task", subtitle: "Structure your study plan with precision" },
@@ -33,6 +34,10 @@ const HEADER_TEXT: Record<TaskModalMode, { title: string; subtitle: string }> = 
     title: "Add Anchor Task",
     subtitle: "AI will build the rest of that day around this",
   },
+  quickFocus: {
+    title: "Start Quick Focus",
+    subtitle: "Pick a topic and start focusing right now",
+  },
 };
 
 const SUBMIT_LABEL: Record<TaskModalMode, { idle: string; busy: string }> = {
@@ -40,6 +45,7 @@ const SUBMIT_LABEL: Record<TaskModalMode, { idle: string; busy: string }> = {
   edit: { idle: "Save Changes", busy: "Saving..." },
   planFromBacklog: { idle: "Add to Plan", busy: "Adding..." },
   anchor: { idle: "Add Anchor Task", busy: "Adding..." },
+  quickFocus: { idle: "Start Focus", busy: "Starting..." },
 };
 
 /** PRD 9.6 — an anchor has to be worth planning around; the API rejects
@@ -94,6 +100,22 @@ const TIME_PREFERENCE_OPTIONS = [
   { value: "night", label: "Night (9 PM-4 AM)" },
 ];
 
+/** Quick Focus asks for nothing but Subject/Topic (+ optional notes) — every
+ *  other field is fixed to these, so the session can start on one tap. */
+const QUICK_FOCUS_TASK_TYPE = "New Learning";
+const QUICK_FOCUS_DURATION_MINUTES = 60;
+
+/** The TIME_PREFERENCE_OPTIONS bucket the clock is in right now, so a Quick
+ *  Focus task is scheduled into the window the student is actually studying
+ *  in rather than one they'd have to pick. */
+function currentTimePreference(): string {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 11) return "morning";
+  if (hour >= 11 && hour < 16) return "midday";
+  if (hour >= 16 && hour < 21) return "evening";
+  return "night";
+}
+
 export type TaskFormInitialValues = {
   taskName?: string;
   subjectValue?: string;
@@ -117,7 +139,8 @@ type AddCustomTaskModalProps = {
   /** Backlog task being scheduled — required in planFromBacklog mode, used as the POST target. */
   backlogTaskId?: string;
   initialValues?: TaskFormInitialValues;
-  onTaskAdded?: () => void;
+  /** Receives the new task's id — quickFocus mode uses it to open the session. */
+  onTaskAdded?: (taskId?: string) => void;
   onTaskUpdated?: () => void;
   /** Called after a successful planFromBacklog submit so the parent backlog list can refetch. */
   onPlanned?: () => void;
@@ -212,12 +235,25 @@ export function AddCustomTaskModal({
   onAnchorAdded,
 }: AddCustomTaskModalProps) {
   const headerTitle = title ?? HEADER_TEXT[mode].title;
-  const [taskType, setTaskType] = useState(lockedTaskType ?? initialValues?.taskType ?? "New Learning");
-  const [taskName, setTaskName] = useState(initialValues?.taskName ?? "");
-  const [durationValue, setDurationValue] = useState(initialValues?.durationValue ?? "30");
-  const [timePreferenceValue, setTimePreferenceValue] = useState(
-    initialValues?.timePreferenceValue ?? "",
-  );
+  const isQuickFocus = mode === "quickFocus";
+  // Quick Focus hides Task Name / Task Type / Duration / Time Preference, so
+  // those four are seeded here instead of being asked for.
+  const defaults = {
+    taskType: isQuickFocus
+      ? QUICK_FOCUS_TASK_TYPE
+      : lockedTaskType ?? initialValues?.taskType ?? "New Learning",
+    taskName: isQuickFocus ? QUICK_FOCUS_TASK_NAME : initialValues?.taskName ?? "",
+    durationValue: isQuickFocus
+      ? String(QUICK_FOCUS_DURATION_MINUTES)
+      : initialValues?.durationValue ?? "30",
+    timePreferenceValue: isQuickFocus
+      ? currentTimePreference()
+      : initialValues?.timePreferenceValue ?? "",
+  };
+  const [taskType, setTaskType] = useState(defaults.taskType);
+  const [taskName, setTaskName] = useState(defaults.taskName);
+  const [durationValue, setDurationValue] = useState(defaults.durationValue);
+  const [timePreferenceValue, setTimePreferenceValue] = useState(defaults.timePreferenceValue);
   const [notes, setNotes] = useState(initialValues?.notes ?? "");
   const [difficulties, setDifficulties] = useState<QuestionDifficulty[]>([]);
   const [sources, setSources] = useState<QuestionSource[]>([]);
@@ -248,10 +284,11 @@ export function AddCustomTaskModal({
   // for a different task would keep showing the previous task's form values.
   useEffect(() => {
     if (!open) return;
-    setTaskType(lockedTaskType ?? initialValues?.taskType ?? "New Learning");
-    setTaskName(initialValues?.taskName ?? "");
-    setDurationValue(initialValues?.durationValue ?? "30");
-    setTimePreferenceValue(initialValues?.timePreferenceValue ?? "");
+    setTaskType(defaults.taskType);
+    setTaskName(defaults.taskName);
+    setDurationValue(defaults.durationValue);
+    // Re-derived on every open so the window matches the time of *this* session.
+    setTimePreferenceValue(defaults.timePreferenceValue);
     setNotes(initialValues?.notes ?? "");
     setDifficulties([]);
     setSources([]);
@@ -483,7 +520,7 @@ export function AddCustomTaskModal({
     try {
       const topicName = chapters.find((chapter) => chapter.id === chapterId)?.name;
       const title = topicName ? `${taskName.trim()} . ${topicName}` : taskName.trim();
-      await addPlannerTask({
+      const { data } = await addPlannerTask({
         title,
         taskType: TASK_TYPE_API_VALUES[taskType] ?? "PRACTICE",
         estimatedMinutes: Number(durationValue),
@@ -497,7 +534,7 @@ export function AddCustomTaskModal({
           ...(questionCount && { questionCount: Number(questionCount) }),
         }),
       });
-      onTaskAdded?.();
+      onTaskAdded?.(data.id);
       setTaskName("");
       setNotes("");
       onClose();
@@ -546,14 +583,16 @@ export function AddCustomTaskModal({
       {/* BODY */}
       <div className="-mx-5 w-[calc(100%+2.5rem)] px-3 py-5 sm:-mx-8 sm:w-[calc(100%+4rem)] sm:px-5 sm:py-6 lg:px-6 lg:py-6">
         <div className="flex w-full flex-col gap-4">
-          <Input
-            label="Task Name"
-            name="taskName"
-            placeholder="e.g. Watch PW lecture on Friction"
-            value={taskName}
-            onChange={(event) => setTaskName(event.target.value)}
-            required
-          />
+          {!isQuickFocus && (
+            <Input
+              label="Task Name"
+              name="taskName"
+              placeholder="e.g. Watch PW lecture on Friction"
+              value={taskName}
+              onChange={(event) => setTaskName(event.target.value)}
+              required
+            />
+          )}
 
           {/* Subject + Topic */}
           <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
@@ -601,7 +640,7 @@ export function AddCustomTaskModal({
           </div>
 
           {/* Task Type */}
-          {isLocked ? (
+          {isQuickFocus ? null : isLocked ? (
             <div className="w-full">
               <p className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">
                 Task Type
@@ -688,49 +727,51 @@ export function AddCustomTaskModal({
             </div>
           )}
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {/* Duration */}
-            <div className="flex flex-col gap-1">
-              <label className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">
-                Duration
-              </label>
+          {!isQuickFocus && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {/* Duration */}
+              <div className="flex flex-col gap-1">
+                <label className="text-body-lg font-medium leading-5 text-body-text dark:text-ink">
+                  Duration
+                </label>
 
-              <div className="flex h-11.75 items-center justify-center gap-8 rounded-xl border border-input-border bg-surface px-2">
-                <button
-                  type="button"
-                  onClick={() => adjustDuration(-DURATION_STEP_MINUTES)}
-                  disabled={Number(durationValue) <= MIN_DURATION_MINUTES}
-                  aria-label="Decrease duration"
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  <MinusIcon />
-                </button>
+                <div className="flex h-11.75 items-center justify-center gap-8 rounded-xl border border-input-border bg-surface px-2">
+                  <button
+                    type="button"
+                    onClick={() => adjustDuration(-DURATION_STEP_MINUTES)}
+                    disabled={Number(durationValue) <= MIN_DURATION_MINUTES}
+                    aria-label="Decrease duration"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30"
+                  >
+                    <MinusIcon />
+                  </button>
 
-                <span className="text-sm font-semibold text-body-text">
-                  {durationValue} min
-                </span>
+                  <span className="text-sm font-semibold text-body-text">
+                    {durationValue} min
+                  </span>
 
-                <button
-                  type="button"
-                  onClick={() => adjustDuration(DURATION_STEP_MINUTES)}
-                  disabled={Number(durationValue) >= MAX_DURATION_MINUTES}
-                  aria-label="Increase duration"
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  <PlusIcon />
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => adjustDuration(DURATION_STEP_MINUTES)}
+                    disabled={Number(durationValue) >= MAX_DURATION_MINUTES}
+                    aria-label="Increase duration"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-30"
+                  >
+                    <PlusIcon />
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* Time Preference */}
-            <CustomSelect
-              label="Time Preference"
-              options={TIME_PREFERENCE_OPTIONS}
-              value={timePreferenceValue}
-              onChange={setTimePreferenceValue}
-              placeholder="Time"
-            />
-          </div>
+              {/* Time Preference */}
+              <CustomSelect
+                label="Time Preference"
+                options={TIME_PREFERENCE_OPTIONS}
+                value={timePreferenceValue}
+                onChange={setTimePreferenceValue}
+                placeholder="Time"
+              />
+            </div>
+          )}
 
           {/* Additional Notes */}
           <div className="flex w-full flex-col gap-1">
@@ -754,7 +795,9 @@ export function AddCustomTaskModal({
           {error && <p className="text-sm text-danger">{error}</p>}
           {!error && !isFormValid && (
             <p className="text-sm text-muted">
-              Fill in every field to continue — only Additional Notes is optional.
+              {isQuickFocus
+                ? "Pick a subject and topic to start your focus session."
+                : "Fill in every field to continue — only Additional Notes is optional."}
             </p>
           )}
         </div>

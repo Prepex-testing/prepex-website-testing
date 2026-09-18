@@ -201,8 +201,10 @@ export type QuestionSource =
   | "JEE_ADVANCED_PYQ"
   | "OWN_GENERATED";
 
+/** Resolves with the created task — its id is what a Quick Focus session
+ *  navigates straight to after creating it. */
 export function addPlannerTask(input: AddPlannerTaskInput) {
-  return authRequest<{ success: true; data: unknown }>("/addtask", {
+  return authRequest<{ success: true; data: { id: string } }>("/addtask", {
     method: "POST",
     body: JSON.stringify(input),
   });

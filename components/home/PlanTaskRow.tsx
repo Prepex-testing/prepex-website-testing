@@ -8,7 +8,7 @@ import { TaskEditMenu } from "@/components/home/TaskEditMenu";
 import { CompleteTaskCheckbox } from "@/components/home/CompleteTaskCheckbox";
 import { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE } from "@/components/home/TaskRow";
 import type { TaskType } from "@/components/home/TaskRow";
-import { mockTaskHref } from "@/components/home/taskTypes";
+import { customBadgeLabel, mockTaskHref } from "@/components/home/taskTypes";
 import { Book, Time } from "@/assets/icons";
 import { getChapterTitle } from "@/lib/utils/text";
 import { getTaskQuestions } from "@/lib/api/practice";
@@ -172,7 +172,7 @@ export function PlanTaskRow({
             <span
               className={`rounded-sm px-2 py-0.5 text-[10px] font-bold leading-[15px] ${CUSTOM_BADGE_STYLE}`}
             >
-              Custom
+              {customBadgeLabel(task.title)}
             </span>
           )}
         </div>
