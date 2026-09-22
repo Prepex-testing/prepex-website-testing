@@ -533,6 +533,25 @@ input:disabled,
   transition-timing-function: ease;
 }
 
+/*
+ * In-app theme switches (ThemeProvider's switchTheme) run as a single View
+ * Transition cross-fade of the whole page. Element transitions are off while
+ * `theme-switching` is set, so no element fades on its own clock and lags
+ * behind the rest.
+ */
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: none !important;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 250ms;
+  animation-timing-function: ease;
+}
+
 @media (prefers-reduced-motion: reduce) {
 
   *,

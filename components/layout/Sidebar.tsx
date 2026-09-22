@@ -87,7 +87,7 @@ export function Sidebar({ onCollapse }: SidebarProps) {
   return (
     <aside className="relative hidden w-56 shrink-0 flex-col gap-8 border-r border-brand/10 bg-surface px-4 py-6 lg:flex">
       <div className="px-2">
-        <Logo size="compact" showTagline={false} />
+        <Logo size="compact" showTagline={false} layout="horizontal" />
       </div>
 
       {onCollapse && (

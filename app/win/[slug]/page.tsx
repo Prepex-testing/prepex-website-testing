@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CORE_API_BASE_URL } from "@/lib/api/config";
 import type { SharedJournalCard } from "@/lib/api/journal";
+import { Logo } from "@/components/ui/Logo";
 
 /**
  * Public view for a shared Win Journal card (PRD 7.5.1 — "Copy Link").
@@ -90,9 +91,7 @@ export default async function SharedWinJournalPage({ params }: Props) {
   return (
     <main className="flex min-h-screen flex-col items-center gap-8 bg-page px-4 py-10 sm:px-6">
       <div className="flex flex-col items-center gap-1 text-center">
-        <p className="text-4xl font-extrabold leading-none tracking-tight text-ink">
-          prepex<span className="text-cta">.</span>
-        </p>
+        <Logo size="compact" showTagline={false} />
         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted">
           Plan &middot; Execute &middot; Survive &middot; Win
         </p>
