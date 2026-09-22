@@ -317,8 +317,8 @@ function TodayPlanContent() {
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+      <div className="flex items-start justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1 flex items-center gap-3">
           <Link href="/home" aria-label="Back to Home" className="text-ink">
             <ArrowLeftIcon />
           </Link>
@@ -327,7 +327,7 @@ function TodayPlanContent() {
             <p className="text-sm text-muted">{formatFullDate(new Date())}</p>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-4">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           <ThemeToggle />
           <NotificationBell />
           <UserMenu />

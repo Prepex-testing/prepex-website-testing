@@ -193,14 +193,14 @@ function ViewAnalyticsContent() {
   }, [mockId]);
 
   const header = (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex items-center gap-3">
+    <div className="flex items-start justify-between gap-3 sm:gap-4">
+      <div className="min-w-0 flex-1 flex items-center gap-3">
         <Link href="/home/mock-analysis" aria-label="Back to Mock Analysis" className="text-ink">
           <ArrowLeftIcon />
         </Link>
         <h1 className="text-h1 text-ink">View Analytics</h1>
       </div>
-      <div className="flex shrink-0 items-center gap-4">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-4">
         <ThemeToggle />
         <NotificationBell />
         <UserMenu />

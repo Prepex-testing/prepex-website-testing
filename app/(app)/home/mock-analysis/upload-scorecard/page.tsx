@@ -189,9 +189,9 @@ function UploadScorecardContent() {
       <motion.div
         {...fadeIn}
         transition={{ ...fadeTransition, duration: 0.3 }}
-        className="flex flex-wrap items-center justify-between gap-3"
+        className="flex items-start justify-between gap-3 sm:gap-4"
       >
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           <Link
             href="/home/mock-analysis"
             aria-label="Back to Mock Analysis"
@@ -213,7 +213,7 @@ function UploadScorecardContent() {
             </AnimatePresence>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-4">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           <ThemeToggle />
           <NotificationBell />
           <UserMenu />

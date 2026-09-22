@@ -168,8 +168,8 @@ function QuestionAnalysisContent() {
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+      <div className="flex items-start justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1 flex items-center gap-3">
           <Link
             href={sessionId ? `/practice/complete?sessionId=${sessionId}` : "/practice"}
             aria-label="Back to practice results"
@@ -179,7 +179,7 @@ function QuestionAnalysisContent() {
           </Link>
           <h1 className="text-h1 text-ink">Question Analysis</h1>
         </div>
-        <div className="flex shrink-0 items-center gap-4">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           <ThemeToggle />
           <NotificationBell />
           <UserMenu />
