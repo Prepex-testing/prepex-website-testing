@@ -229,8 +229,8 @@ export default function RevisionPage() {
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Wraps only on mobile — from `sm` up the controls stay on the title's
           row and the subtitle rewraps into the space that is left. */}
-      <div className="flex flex-wrap items-center justify-between gap-3 sm:flex-nowrap sm:gap-4">
-        <div className="flex min-w-0 items-center gap-3">
+      <div className="flex items-start justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1 flex items-center gap-3">
           <Link href="/home" aria-label="Back to Home" className="shrink-0 text-ink">
             <ArrowLeftIcon />
           </Link>
@@ -242,7 +242,7 @@ export default function RevisionPage() {
             </p>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-4">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           <ThemeToggle />
           <NotificationBell />
           <UserMenu />

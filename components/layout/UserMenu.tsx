@@ -45,18 +45,26 @@ export function UserMenu({ name, initial }: UserMenuProps) {
         onClick={() => setOpen((value) => !value)}
         aria-haspopup="menu"
         aria-expanded={isOpen}
+        // Below sm the name is hidden, so the label keeps it for screen readers.
+        aria-label={`Account menu, ${displayName}`}
+        // Below sm: a 44px circle with just the avatar/initial, so the header
+        // title keeps the width. From sm up: avatar + name pill.
         className="
     flex
     h-11
-    min-w-[100px]
+    w-11
     items-center
-    gap-2.5
+    justify-center
     rounded-full
     bg-icon-action-bg
-    px-1.5
-    pr-3
     transition-colors
     hover:bg-tint-strong
+    sm:w-auto
+    sm:min-w-[100px]
+    sm:justify-start
+    sm:gap-2.5
+    sm:px-1.5
+    sm:pr-3
   "
       >
         <AvatarFace
@@ -82,8 +90,10 @@ export function UserMenu({ name, initial }: UserMenuProps) {
 
         <span
           className="
+      hidden
       min-w-0
       truncate
+      sm:block
       text-sm
       font-semibold
       leading-5

@@ -236,14 +236,14 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col gap-5 p-4 sm:p-6 lg:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+      <div className="flex items-start justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
           <h1 className="text-h1 text-ink">Profile</h1>
           <p className="text-xs text-muted">
             Manage your account, preferences and connection
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-4">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           <ThemeToggle />
           <NotificationBell />
           <UserMenu />

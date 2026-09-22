@@ -187,8 +187,8 @@ export default function StreakPage() {
   return (
     <div className="flex flex-col gap-5 p-4 sm:gap-6 sm:p-6 lg:p-8">
       {/* Top bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+      <div className="flex items-start justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1 flex items-center gap-2 sm:gap-3">
           {/* <Link href="/home" aria-label="Back to Home" className="shrink-0 text-ink">
             <ArrowLeftIcon />
           </Link> */}
@@ -196,7 +196,7 @@ export default function StreakPage() {
             Streak
           </h1>
         </div>
-        <div className="flex shrink-0 items-center gap-4">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           <ThemeToggle />
           <NotificationBell />
           <UserMenu />

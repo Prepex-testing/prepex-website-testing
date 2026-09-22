@@ -70,12 +70,12 @@ export default function FocusNextPage() {
 
   return (
     <div className="flex min-h-screen flex-col gap-6 p-4 sm:p-6 lg:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+      <div className="flex items-start justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
           <h1 className="text-h1 text-ink">Where to focus next</h1>
           <p className="text-sm text-muted">Fixing these gains you the most marks.</p>
         </div>
-        <div className="flex shrink-0 items-center gap-4">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           <ThemeToggle />
           <NotificationBell />
           <UserMenu />
