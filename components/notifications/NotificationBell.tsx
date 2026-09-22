@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import {
@@ -65,7 +65,12 @@ export function NotificationBell({ className }: NotificationBellProps) {
   const [items, setItems] = useState<NotificationCard[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoaded, setLoaded] = useState(false);
+  // Below `sm` the panel is pinned to the viewport rather than to the bell —
+  // the bell isn't at the header's right edge, so a right-anchored 22rem panel
+  // would spill off the left of a phone screen. This is where it starts.
+  const [panelTop, setPanelTop] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const applyFeed = useCallback((feed: NotificationFeed) => {
     setItems(feed.notifications);
@@ -140,6 +145,8 @@ export function NotificationBell({ className }: NotificationBellProps) {
   }, [isOpen]);
 
   const handleOpen = () => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (rect) setPanelTop(rect.bottom + 8);
     setOpen((open) => {
       // Opening is also the freshest moment to re-check — the poll may be up
       // to a minute stale.
@@ -177,6 +184,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
   return (
     <div ref={containerRef} className="relative shrink-0">
       <button
+        ref={triggerRef}
         type="button"
         onClick={handleOpen}
         aria-label={hasUnread ? `Notifications, ${unreadCount} unread` : "Notifications"}
@@ -199,14 +207,17 @@ export function NotificationBell({ className }: NotificationBellProps) {
         <div
           role="menu"
           aria-label="Notifications"
+          style={{ "--panel-top": `${panelTop}px` } as CSSProperties}
           className="
-            absolute right-0 top-full z-40 mt-2
-            flex max-h-[26rem] w-[22rem] max-w-[calc(100vw-2rem)] flex-col
+            fixed inset-x-3 top-(--panel-top) z-40
+            flex max-h-[min(26rem,calc(100dvh-var(--panel-top)-0.75rem))] flex-col
             overflow-hidden rounded-xl border border-brand/10
             bg-surface shadow-modal
+            sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2
+            sm:max-h-[26rem] sm:w-[22rem] sm:max-w-[calc(100vw-2rem)]
           "
         >
-          <div className="flex items-center justify-between gap-3 border-b border-brand/10 px-4 py-3">
+          <div className="flex items-center justify-between gap-3 border-b border-brand/10 px-3 py-3 sm:px-4">
             <p className="text-sm font-bold text-ink">
               Notifications
               {hasUnread && <span className="ml-1.5 font-semibold text-cta">{unreadCount}</span>}
@@ -234,7 +245,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
                       type="button"
                       role="menuitem"
                       onClick={() => handleItemClick(item)}
-                      className={`flex w-full gap-3 border-b border-brand/5 px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-tint-strong ${
+                      className={`flex w-full gap-2.5 border-b border-brand/5 px-3 py-3 text-left sm:gap-3 sm:px-4 transition-colors last:border-b-0 hover:bg-tint-strong ${
                         item.isRead ? "" : "bg-tint"
                       }`}
                     >
@@ -257,7 +268,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
                             {relativeTime(item.createdAt)}
                           </span>
                         </span>
-                        <span className="mt-0.5 block text-xs leading-5 text-muted">
+                        <span className="mt-0.5 block break-words text-xs leading-5 text-muted">
                           {item.message}
                         </span>
                       </span>

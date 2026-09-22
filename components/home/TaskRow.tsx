@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ClockIcon, SunIcon, FileIcon, CalendarIcon } from "@/components/ui/icons";
@@ -32,6 +33,8 @@ export type Task = {
   timeSlot: string;
   scheduledRange?: string;
   hasResource: boolean;
+  /** Chapter page in the Resource Library — absent for wellness/mock rows. */
+  resourceHref?: string;
   actionLabel: string;
   isCompleted?: boolean;
   isCustom?: boolean;
@@ -226,11 +229,14 @@ export function TaskRow({
             </span>
           )}
 
-          {task.hasResource && (
-            <span className="flex shrink-0 items-center gap-1">
+          {task.hasResource && task.resourceHref && (
+            <Link
+              href={task.resourceHref}
+              className="flex shrink-0 items-center gap-1 hover:text-ink hover:underline"
+            >
               <Book className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
               Resource
-            </span>
+            </Link>
           )}
 
         </div>
