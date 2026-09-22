@@ -1,33 +1,56 @@
+import { HorizontalMark, StackedMark } from "@/components/ui/LogoMarks";
+
+type LogoLayout = "responsive" | "horizontal" | "stacked";
+
 type LogoProps = {
   size?: "hero" | "compact";
   showTagline?: boolean;
+  /**
+   * "responsive" (default) stacks the symbol over the wordmark on narrow
+   * screens and sets them side by side from `sm` up. Surfaces that only ever
+   * render at one width (the desktop sidebar) pin a layout instead.
+   */
+  layout?: LogoLayout;
 };
 
+// Heights only — each mark's width follows from its viewBox.
 const SIZES = {
   hero: {
     wrapper: "gap-3.5",
-    wordmark: "text-6xl sm:text-8xl",
-    tagline: "text-base sm:text-lg",
+    horizontal: "h-16 sm:h-20",
+    stacked: "h-28",
   },
   compact: {
     wrapper: "gap-2",
-    wordmark: "text-4xl",
-    tagline: "text-xs",
+    horizontal: "h-9",
+    stacked: "h-20",
   },
 } as const;
 
-export function Logo({ size = "hero", showTagline = true }: LogoProps) {
+function BrandLogo({
+  size = "hero",
+  showTagline = true,
+  layout = "responsive",
+  taglineClass,
+}: LogoProps & { taglineClass: string }) {
   const classes = SIZES[size];
 
   return (
     <div className={`flex flex-col items-center ${classes.wrapper}`}>
-      <p
-        className={`${classes.wordmark} font-extrabold leading-none tracking-tight text-ink`}
-      >
-        prepex<span className="text-cta">.</span>
-      </p>
+      <span className="flex text-ink">
+        {layout !== "horizontal" && (
+          <StackedMark
+            className={`${classes.stacked} w-auto ${layout === "responsive" ? "sm:hidden" : ""}`}
+          />
+        )}
+        {layout !== "stacked" && (
+          <HorizontalMark
+            className={`${classes.horizontal} w-auto ${layout === "responsive" ? "hidden sm:block" : ""}`}
+          />
+        )}
+      </span>
       {showTagline && (
-        <p className="mt-2 text-[13px] font-bold uppercase tracking-[0.2em] text-logo-tagline sm:text-base">
+        <p className={`mt-2 text-[13px] font-bold uppercase tracking-[0.2em] sm:text-base ${taglineClass}`}>
           PLAN&middot;EXECUTE&middot;SURVIVE&middot;WIN
         </p>
       )}
@@ -35,40 +58,14 @@ export function Logo({ size = "hero", showTagline = true }: LogoProps) {
   );
 }
 
-export function Logo1({ size = "hero", showTagline = true }: LogoProps) {
-  const classes = SIZES[size];
-
-  return (
-    <div className={`flex flex-col items-center ${classes.wrapper}`}>
-      <p
-        className={`${classes.wordmark} font-extrabold leading-none tracking-tight text-ink`}
-      >
-        prepex<span className="text-cta">.</span>
-      </p>
-      {showTagline && (
-        <p className="mt-2 text-[13px] font-bold uppercase tracking-[0.2em] text-cta sm:text-base">
-          PLAN&middot;EXECUTE&middot;SURVIVE&middot;WIN
-        </p>
-      )}
-    </div>
-  );
+export function Logo(props: LogoProps) {
+  return <BrandLogo {...props} taglineClass="text-logo-tagline" />;
 }
 
-export function Logo2({ size = "hero", showTagline = true }: LogoProps) {
-  const classes = SIZES[size];
+export function Logo1(props: LogoProps) {
+  return <BrandLogo {...props} taglineClass="text-cta" />;
+}
 
-  return (
-    <div className={`flex flex-col items-center ${classes.wrapper}`}>
-      <p
-        className={`${classes.wordmark} font-extrabold leading-none tracking-tight text-ink`}
-      >
-        prepex<span className="text-cta">.</span>
-      </p>
-      {showTagline && (
-        <p className="mt-2 text-[13px] font-bold uppercase tracking-[0.2em] text-[#8B8998] sm:text-base">
-          PLAN&middot;EXECUTE&middot;SURVIVE&middot;WIN
-        </p>
-      )}
-    </div>
-  );
+export function Logo2(props: LogoProps) {
+  return <BrandLogo {...props} taglineClass="text-[#8B8998]" />;
 }

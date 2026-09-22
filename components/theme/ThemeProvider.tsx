@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useLayoutEffect, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
+import { flushSync } from "react-dom";
 import { THEME_STORAGE_KEY } from "@/components/theme/constants";
 import type { ResolvedTheme, Theme } from "@/components/theme/constants";
 
@@ -66,6 +67,51 @@ function getSystemPrefersDarkServerSnapshot() {
   return false;
 }
 
+function resolveTheme(theme: Theme): ResolvedTheme {
+  if (theme !== "system") return theme;
+  return getSystemPrefersDarkSnapshot() ? "dark" : "light";
+}
+
+/**
+ * Applies a theme change as one cross-fade of the whole page.
+ *
+ * Left to per-element CSS transitions, a theme flip fades every element on
+ * its own clock — and an element that inherits its colour re-targets its fade
+ * from the parent's mid-fade colour each frame, so nested cards (e.g. the Home
+ * streak card) visibly finish after their neighbours. The View Transitions
+ * API instead snapshots the old page, applies the new theme in one commit,
+ * and cross-fades the two snapshots, so nothing can lag behind.
+ *
+ * `theme-switching` switches element transitions off for the duration, so the
+ * "new" snapshot is taken of final colours rather than of the first frame of
+ * each element's own fade. Browsers without the API (or with reduced motion)
+ * get the same instant, all-at-once switch.
+ */
+function switchTheme(next: Theme) {
+  const root = document.documentElement;
+  const apply = () => {
+    // Set here as well as in ThemeProvider's layout effect, so the attribute
+    // is guaranteed to be in place when the browser captures the new state.
+    root.setAttribute("data-theme", resolveTheme(next));
+    flushSync(() => writeStoredTheme(next));
+  };
+
+  root.classList.add("theme-switching");
+  const done = () => {
+    // One frame later, so restoring transitions can't animate the switch.
+    requestAnimationFrame(() => root.classList.remove("theme-switching"));
+  };
+
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (typeof document.startViewTransition !== "function" || prefersReducedMotion) {
+    apply();
+    done();
+    return;
+  }
+
+  document.startViewTransition(apply).finished.finally(done);
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const theme = useSyncExternalStore(
     subscribeToStoredTheme,
@@ -99,7 +145,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       .forEach((meta) => meta.setAttribute("content", themeColor));
   }, [resolvedTheme]);
 
-  const setTheme = useCallback((next: Theme) => writeStoredTheme(next), []);
+  const setTheme = useCallback((next: Theme) => switchTheme(next), []);
 
   return (
     <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>

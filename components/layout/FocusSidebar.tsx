@@ -3,9 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS, NAV_COACH_ANCHOR } from "@/components/layout/Sidebar";
-import { useStoredFullName } from "@/lib/auth/useStoredFullName";
-import { useAvatarSrc } from "@/lib/profile/avatar";
-import { AvatarFace } from "@/components/ui/AvatarFace";
+import { SymbolMark } from "@/components/ui/LogoMarks";
 import { ChevronRightIcon } from "@/components/ui/icons";
 
 type FocusSidebarProps = {
@@ -14,32 +12,11 @@ type FocusSidebarProps = {
 
 export function FocusSidebar({ onExpand }: FocusSidebarProps) {
   const pathname = usePathname();
-  const storedFullName = useStoredFullName();
-  const displayInitial = storedFullName.trim()[0]?.toUpperCase() ?? "S";
-  const avatarSrc = useAvatarSrc();
 
   return (
     <aside className="relative hidden w-24.25 flex-col items-center self-stretch border-r border-sidebar-border bg-surface px-6 py-8 lg:flex">
-      <AvatarFace
-        src={avatarSrc}
-        fallback={displayInitial}
-        className="
-    flex
-    h-8
-    w-8
-    shrink-0
-    items-center
-    justify-center
-    rounded-full
-    bg-[#171658]
-    text-sm
-    font-bold
-    leading-5
-    text-white
-    dark:bg-[#FAF7F2]
-    dark:text-[#171658]
-  "
-      />
+      {/* Collapsed rail carries the symbol alone — no room for the wordmark. */}
+      <SymbolMark className="h-8 w-auto shrink-0 text-ink" />
 
       {onExpand && (
         <button
