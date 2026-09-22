@@ -10,7 +10,7 @@ import { TaskRow } from "@/components/home/TaskRow";
 import type { Task, TaskType } from "@/components/home/TaskRow";
 import { toRowDifficulty } from "@/components/home/PlanTaskRow";
 import { prettyDifficulty } from "@/lib/api/practice";
-import { withPracticeProgressLabel, withResumeLabel } from "@/components/home/taskTypes";
+import { taskResourceHref, withPracticeProgressLabel, withResumeLabel } from "@/components/home/taskTypes";
 import { QuickFocusModal } from "@/components/home/QuickFocusModal";
 import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
@@ -262,6 +262,7 @@ function formatWindow(window: string | null | undefined) {
 }
 
 function toHomeTask(task: PlannerTask): Task {
+  const resourceHref = taskResourceHref(task);
   const isSundayDpp = task.taskType === "PRACTICE" && task.title === "DPP Sunday" && !task.chapter;
   return {
     id: task.id,
@@ -282,7 +283,8 @@ function toHomeTask(task: PlannerTask): Task {
     scheduledRange: task.scheduledStart && task.scheduledEnd
       ? `${task.scheduledStart} - ${task.scheduledEnd}`
       : undefined,
-    hasResource: Boolean(task.chapter),
+    hasResource: Boolean(resourceHref),
+    resourceHref,
     actionLabel:
       task.taskType === "WELLNESS"
         ? "Wellness"

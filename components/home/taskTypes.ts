@@ -1,3 +1,6 @@
+import { chapterResourcesHref } from "@/lib/revision/resourceLinks";
+import type { PlannerTask } from "@/lib/api/planner";
+
 export type TaskType = "revision" | "new-learning" | "practice" | "wellness" | "mock";
 
 export const TYPE_STYLES: Record<TaskType, string> = {
@@ -86,4 +89,15 @@ export function withPracticeProgressLabel(
 ): string {
   const started = (secondsCompleted ?? 0) > 0 || status === "IN_PROGRESS";
   return started ? label.replace(/^Start /, "Continue ") : label;
+}
+
+/**
+ * The task chapter's Resource Library page, or undefined when there's nothing
+ * to open — wellness and mock tasks, and rows with no chapter (e.g. DPP Sunday).
+ */
+export function taskResourceHref(task: PlannerTask): string | undefined {
+  if (task.taskType === "WELLNESS" || task.taskType === "MOCK" || !task.chapter) return undefined;
+  const subjectName = task.chapter.subject?.name ?? task.subject?.name;
+  if (!subjectName) return undefined;
+  return chapterResourcesHref(subjectName, task.chapter.name);
 }

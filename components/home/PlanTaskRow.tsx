@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ClockIcon, CalendarIcon, GripVerticalIcon } from "@/components/ui/icons";
@@ -58,6 +59,8 @@ export type PlanTask = {
   isCompleted?: boolean;
   isCustom?: boolean;
   isWellness?: boolean;
+  /** Chapter page in the Resource Library — absent for wellness/mock rows. */
+  resourceHref?: string;
   /** MOCK tasks only — see mockTaskHref. */
   mockAnalysisId?: string | null;
   mockName?: string;
@@ -192,10 +195,15 @@ export function PlanTaskRow({
             <Time className="h-4 w-4 shrink-0" />
             {task.timeRange}
           </span>
-          <span className="flex items-center gap-1">
-            <Book className="h-4 w-4 shrink-0" />
-            Resource
-          </span>
+          {task.resourceHref && (
+            <Link
+              href={task.resourceHref}
+              className="flex items-center gap-1 hover:text-ink hover:underline"
+            >
+              <Book className="h-4 w-4 shrink-0" />
+              Resource
+            </Link>
+          )}
           <span
             className={`rounded-sm px-2 py-0.5 text-[10px] font-semibold ${DIFFICULTY_STYLES[task.difficulty]}`}
           >
