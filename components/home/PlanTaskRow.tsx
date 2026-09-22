@@ -79,6 +79,8 @@ type PlanTaskRowProps = {
   isDropTarget?: boolean;
   onDragStart?: (event: React.DragEvent<HTMLDivElement>) => void;
   onDrop?: (event: React.DragEvent<HTMLDivElement>) => void;
+  /** Leaves out the difficulty chip (e.g. on the Practice Sessions list). */
+  hideDifficulty?: boolean;
 };
 
 export function PlanTaskRow({
@@ -90,6 +92,7 @@ export function PlanTaskRow({
   isDropTarget,
   onDragStart,
   onDrop,
+  hideDifficulty = false,
 }: PlanTaskRowProps) {
   const router = useRouter();
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
@@ -204,11 +207,13 @@ export function PlanTaskRow({
               Resource
             </Link>
           )}
-          <span
-            className={`rounded-sm px-2 py-0.5 text-[10px] font-semibold ${DIFFICULTY_STYLES[task.difficulty]}`}
-          >
-            {DIFFICULTY_LABELS[task.difficulty]}
-          </span>
+          {!hideDifficulty && (
+            <span
+              className={`rounded-sm px-2 py-0.5 text-[10px] font-semibold ${DIFFICULTY_STYLES[task.difficulty]}`}
+            >
+              {DIFFICULTY_LABELS[task.difficulty]}
+            </span>
+          )}
         </div>
       </div>
 

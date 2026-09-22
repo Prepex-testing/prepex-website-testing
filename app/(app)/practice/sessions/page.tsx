@@ -84,13 +84,17 @@ export default function PracticeSessionsPage() {
       ) : !tasks ? (
         <p className="text-sm text-muted">Loading practice sessions…</p>
       ) : tasks.length === 0 ? (
-        <p className="text-sm text-muted">No practice tasks scheduled for today.</p>
+        <div className="flex flex-col items-center gap-1 rounded-2xl border border-brand/10 bg-surface px-6 py-12 text-center shadow-[0px_1px_2px_0px_#1A1A4E0F]">
+          <p className="text-base font-bold text-ink">No practice available</p>
+          <p className="text-sm text-muted">No practice tasks are scheduled for today. Add one below to get started.</p>
+        </div>
       ) : (
         <div className="flex flex-col gap-3">
           {tasks.map((task) => (
             <PlanTaskRow
               key={task.id}
               task={task}
+              hideDifficulty
               onTaskChanged={refetch}
               onStartPractice={(taskId) => {
                 setPracticeTaskId(taskId);
