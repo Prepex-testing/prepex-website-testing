@@ -15,7 +15,7 @@ export function Chip({ children, className = "" }: ChipProps) {
   );
 }
 
-export function Chips({ children, selected, onClick }:any) {
+export function Chips({ children, selected, onClick }: { children: ReactNode; selected?: boolean; onClick?: () => void }) {
   return (
     <button
       onClick={onClick}
