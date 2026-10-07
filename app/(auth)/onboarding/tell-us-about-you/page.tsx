@@ -160,7 +160,7 @@ export default function TellUsAboutYouPage() {
     <AuthCard>
       <StepProgress
         step={2}
-        totalSteps={5}
+        totalSteps={6}
         backHref="/onboarding/preparing-for"
       />
 

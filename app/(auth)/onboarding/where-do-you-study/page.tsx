@@ -183,7 +183,7 @@ export default function WhereDoYouStudyPage() {
     <AuthCard>
       <StepProgress
         step={3}
-        totalSteps={5}
+        totalSteps={6}
         backHref="/onboarding/tell-us-about-you"
         showSkip
         onSkip={handleSkip}

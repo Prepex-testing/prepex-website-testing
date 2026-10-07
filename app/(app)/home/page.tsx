@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { PlanSourceBanner } from "@/components/plan/PlanSourceBanner";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { TaskRow } from "@/components/home/TaskRow";
 import type { Task, TaskType } from "@/components/home/TaskRow";
@@ -45,7 +46,6 @@ import {
   type StudyConsistencyDay,
   getStudyConsistency,
 } from "@/lib/api/planner";
-import { getStoredUser } from "@/lib/auth/session";
 import { getJournalSettings, getLatestJournal, type JournalCard } from "@/lib/api/journal";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
@@ -295,6 +295,8 @@ function toHomeTask(task: PlannerTask): Task {
     isCustom: Boolean(task.isAnchor),
     isWellness: task.taskType === "WELLNESS",
     mockAnalysisId: task.mockAnalysisId ?? null,
+    // A task that serves a LECTURES weekly goal gets a "lecture watched" tick.
+    lectureTick: task.weeklyGoal?.type === "LECTURES" ? { watched: Boolean(task.watchLecture) } : undefined,
     mockName: task.mockName ?? undefined,
     mockDate: task.mockDate ?? undefined,
   };
@@ -529,20 +531,16 @@ export default function HomePage() {
 
   const handleLateSignupDecline = () => {
     setLateSignupPromptOpen(false);
-    const userId = getStoredUser()?.id;
-    if (userId) {
-      acknowledgeLateOnboarding(userId).catch(() => {
-        // Best-effort — the prompt is already dismissed either way.
-      });
-    }
+    acknowledgeLateOnboarding().catch(() => {
+      // Best-effort — the prompt is already dismissed either way.
+    });
   };
 
   const handleLateSignupAccept = async () => {
     setLateSignupPromptOpen(false);
-    const userId = getStoredUser()?.id;
     const plannerId = planData?.plan?.id;
     const requests = [
-      ...(userId ? [acknowledgeLateOnboarding(userId)] : []),
+      acknowledgeLateOnboarding(),
       ...(plannerId ? [deleteAllPlannerTasks(plannerId)] : []),
     ];
     try {
@@ -860,6 +858,7 @@ export default function HomePage() {
           )}
 
           <div className="rounded-2xl border border-brand/10 bg-surface">
+            <PlanSourceBanner source={plan?.planSource} />
             <div className="flex flex-col items-start gap-3 border-b border-[#F3F4F6] pt-4 pr-6 pb-6 pl-6 sm:flex-row sm:items-center sm:justify-between dark:border-[#FAF7F214]">
               <div className="flex min-w-0 items-start gap-2">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#EEF2FF] text-[#6366F1] dark:bg-[#FAF7F2] dark:text-[#111145]">
@@ -872,7 +871,7 @@ export default function HomePage() {
                     data-coach="page-header"
                     className="w-fit text-[18px] leading-[18px] font-bold text-[#333333] dark:text-[#FAF7F2]"
                   >
-                    AI Plan for Today
+                    Plan for Today
                   </p>
                   <p className="mt-1.5 text-[10px] leading-[15px] text-muted">
                     {plan?.aiSummary ?? "Generated at 6:00 AM • Based on your energy, backlog & revision schedule"}

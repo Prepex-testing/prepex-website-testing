@@ -1,12 +1,14 @@
 import { DASHBOARD_API_BASE_URL } from "@/lib/api/config";
 import { apiRequest } from "@/lib/api/http";
+import { authenticatedRequest } from "@/lib/api/authRequest";
 
 /**
  * Unified content library — GET /api/dashboard/resources/library.
  *
- * Unlike most of `lib/api/*`, this uses the plain `apiRequest` rather than
- * `authenticatedRequest`: the route is public on dashboard-service (like
- * /exams, /subjects and /chapters), so no token is attached.
+ * The library itself requires a signed-in student (its questions carry correct
+ * answers and solutions), so `getResourceLibrary` uses `authenticatedRequest`.
+ * `getChapterResourceCounts` returns tallies only and stays public, like
+ * /exams, /subjects and /chapters.
  *
  * The endpoint returns all four content types in one response, each with its
  * own array and its own total in `counts`. `page`/`limit` apply to every array
@@ -167,7 +169,7 @@ export function getResourceLibrary(
     query.set(key, String(value));
   }
 
-  return apiRequest<{ success: true; data: ResourceLibraryResponse }>(
+  return authenticatedRequest<{ success: true; data: ResourceLibraryResponse }>(
     `${DASHBOARD_API_BASE_URL}/api/dashboard/resources/library?${query.toString()}`,
     options,
   );

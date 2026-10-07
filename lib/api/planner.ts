@@ -52,6 +52,9 @@ export type PlannerTask = {
   questionCount: number | null;
   subject: PlannerSubject | null;
   chapter: PlannerChapter;
+  /** The weekly goal this task works towards, if any (goal-driven plans only). */
+  weeklyGoalId?: string | null;
+  weeklyGoal?: { id: string; type: "LECTURES" | "QUESTIONS" | "REVISIONS" | "MOCKS" | "HOURS"; target: number; progressSelfReport: number } | null;
   isAnchor?: boolean;
   taskOrder?: number;
   /** MOCK tasks only — the mock whose score the task asks for. Null for a
@@ -78,6 +81,8 @@ export type PlannerTaskDetail = {
   suggestedWindow: string | null;
   priorityScore?: string;
   aiGenerated?: boolean;
+  /** The weekly goal this task works towards, if any. */
+  weeklyGoalId?: string | null;
   isAnchor?: boolean;
   isStudyingCrossApp?: boolean;
   taskOrder?: number;
@@ -104,6 +109,8 @@ export type DailyPlan = {
   aiSummary: string | null;
   plannerMode: string;
   generationType: PlanGenerationReason;
+  /** What drove the plan: the student's weekly goals, or the legacy chapter-progress suggestion. */
+  planSource?: "GOALS" | "SUGGESTED";
   tasks: PlannerTask[];
   targetedExam?: string;
   targetedExamDate?: string;
@@ -221,6 +228,17 @@ export function updatePlannerTask(taskId: string, input: UpdatePlannerTaskInput)
   });
 }
 
+/**
+ * Ticks (or un-ticks) "lecture watched" on a plan task. When the task serves a
+ * LECTURES weekly goal the server moves that goal's self-reported count with it.
+ */
+export function markLectureWatched(taskId: string, watched: boolean) {
+  return authRequest<{ success: true; data: unknown }>(`/${taskId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ watchLecture: watched }),
+  });
+}
+
 export type EditPlannerTaskInput = {
   title: string;
   estimatedMinutes: number;
@@ -254,8 +272,8 @@ export function deleteAllPlannerTasks(plannerId: string) {
 }
 
 /** Marks the late-signup prompt as acknowledged — called on either Yes or No. */
-export function acknowledgeLateOnboarding(userId: string) {
-  return authRequest<{ success: true; data: unknown }>(`/user/${userId}/late-onboarding`, {
+export function acknowledgeLateOnboarding() {
+  return authRequest<{ success: true; data: unknown }>("/me/late-onboarding", {
     method: "PATCH",
   });
 }

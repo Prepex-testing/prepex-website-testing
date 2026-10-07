@@ -15,6 +15,7 @@ import { Book, Time } from "@/assets/icons";
 import { useState } from "react";
 import { getChapterTitle } from "@/lib/utils/text";
 import { getTaskQuestions } from "@/lib/api/practice";
+import { markLectureWatched } from "@/lib/api/planner";
 export type Task = {
   id: string;
   subjectLabel: string;
@@ -43,6 +44,8 @@ export type Task = {
   mockAnalysisId?: string | null;
   mockName?: string;
   mockDate?: string;
+  /** Set when the task serves a LECTURES weekly goal: shows the "lecture watched" tick. */
+  lectureTick?: { watched: boolean };
 };
 
 type TaskRowProps = {
@@ -62,6 +65,8 @@ export function TaskRow({
 }: TaskRowProps) {
   const [done, setDone] = useState(false);
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
+  const [watched, setWatched] = useState(task.lectureTick?.watched ?? false);
+  const [tickBusy, setTickBusy] = useState(false);
   const router = useRouter();
   const isStartPractice = task.type === "practice";
   const isStartRevision = task.type === "revision";
@@ -91,6 +96,21 @@ export function TaskRow({
         : isWellnessTask
           ? "Wellness"
           : task.actionLabel;
+
+  const handleToggleWatched = async () => {
+    if (tickBusy) return;
+    const next = !watched;
+    setTickBusy(true);
+    setWatched(next);
+    try {
+      await markLectureWatched(task.id, next);
+      onTaskChanged?.();
+    } catch {
+      setWatched(!next); // the server did not take it — put the tick back
+    } finally {
+      setTickBusy(false);
+    }
+  };
 
   const handleViewAnalysis = async () => {
     if (loadingAnalysis) return;
@@ -209,6 +229,22 @@ export function TaskRow({
         <p className="mt-1 break-words text-[11px] font-normal leading-4 tracking-normal text-[#666666] sm:text-[12px] sm:leading-[16px] dark:text-[#8B8998]">
           {task.meta}
         </p>
+
+        {task.lectureTick && !isSkipped && (
+          <button
+            type="button"
+            data-testid="lecture-watched"
+            aria-pressed={watched}
+            disabled={tickBusy}
+            onClick={handleToggleWatched}
+            className={`mt-3 flex min-h-11 items-center gap-2 rounded-lg border px-3 text-[13px] font-semibold transition-colors disabled:opacity-60 ${
+              watched ? "border-[var(--success)] bg-[var(--success-bg)] text-[var(--success)]" : "border-brand/20 bg-surface text-ink hover:bg-tint-strong"
+            }`}
+          >
+            <span aria-hidden>{watched ? "✓" : "○"}</span>
+            {watched ? "Lecture watched — tap to undo" : "Mark lecture watched"}
+          </button>
+        )}
 
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] text-[#8B8998] sm:gap-4 sm:text-xs">
 

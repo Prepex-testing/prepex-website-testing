@@ -19,6 +19,10 @@ const BAD_DAY_PATH = "/home/bad-day";
  * `enabled: false` (e.g. the revision session's focus mode, which wants no
  * check-in interruptions) skips the gate entirely and always renders.
  */
+function isWelcomeGoalsScreen(pathname: string | null): boolean {
+  return pathname === "/goals" && new URLSearchParams(window.location.search).get("welcome") === "1";
+}
+
 export function useCheckInGate(enabled: boolean) {
   const router = useRouter();
   const pathname = usePathname();
@@ -36,6 +40,9 @@ export function useCheckInGate(enabled: boolean) {
       getCheckInStatus()
         .then(({ data }) => {
           if (!data.exists) {
+            // The first-run goals screen comes before the first check-in: saving (or skipping)
+            // there continues to /check-in, so bouncing here would skip goal-setting entirely.
+            if (isWelcomeGoalsScreen(pathname)) return;
             router.push("/check-in");
             return;
           }

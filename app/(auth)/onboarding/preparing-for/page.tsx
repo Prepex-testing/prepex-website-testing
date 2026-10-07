@@ -75,7 +75,7 @@ export default function PreparingForPage() {
 
   return (
     <AuthCard>
-      <StepProgress step={1} totalSteps={5} />
+      <StepProgress step={1} totalSteps={6} />
 
       <div className="mt-4 flex flex-col gap-4 py-2 sm:mt-5">
         <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">

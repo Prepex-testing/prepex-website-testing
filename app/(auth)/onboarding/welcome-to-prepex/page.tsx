@@ -1,5 +1,6 @@
 "use client";
 import type { CSSProperties } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Confetti } from "@/components/ui/confetti";
 import { CheckIcon } from "@/components/ui/icons";
@@ -98,12 +99,15 @@ export default function WelcomeToprepexPage() {
 
           {/* Button */}
           <Button
-            href="/check-in"
+            href="/goals?welcome=1"
             variant="primary"
             className="mt-8 h-[60px] w-full max-w-[284px] rounded-full! border-none! bg-[var(--oc-button-bg)]! px-6 sm:px-8 text-base sm:text-lg! font-bold! text-[var(--oc-button-text)]! whitespace-nowrap"
           >
-            Go to Home Dashboard
+            Set this week&apos;s goals
           </Button>
+          <Link href="/check-in" className="mt-4 text-sm font-semibold text-[var(--oc-subtext)] underline-offset-2 hover:underline">
+            Skip — go to my dashboard
+          </Link>
         </div>
 
         <Confetti

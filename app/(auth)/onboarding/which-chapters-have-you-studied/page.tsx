@@ -162,9 +162,9 @@ export default function WhichChaptersHaveYouStudiedPage() {
   return (
     <AuthCard>
       <StepProgress
-        step={5}
-        totalSteps={5}
-        backHref="/onboarding/time-selection"
+        step={6}
+        totalSteps={6}
+        backHref="/onboarding/build-timetable"
         showSkip
         onSkip={handleSkip}
         skipDisabled={isSubmitting || isSkipping || isLoading}
