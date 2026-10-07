@@ -20,7 +20,7 @@ const PREVIEW_TASKS = [
 ];
 
 const HIGHLIGHTS = [
-  "AI Daily Plans",
+  "Goal-Based Plans",
   "Burnout Detection",
   "Smart Revision",
 ];

@@ -133,7 +133,7 @@ export default function LoginPage() {
       </form>
 
       <p className="mt-6 border-t border-tint pt-5 text-center text-[16px] font-bold leading-[1.4] text-muted dark:text-ink">
-        Don't have an account?{" "}
+        Don&apos;t have an account?{" "}
         <Link
           href="/create-account"
           className="mt-2 block font-semibold text-ink underline dark:text-cta sm:mt-0 sm:inline"

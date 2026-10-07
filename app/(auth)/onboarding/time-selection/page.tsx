@@ -119,7 +119,7 @@ export default function TimeSelectionPage() {
           (slot) => slot.toUpperCase() as "MORNING" | "MIDDAY" | "EVENING" | "NIGHT",
         ),
       });
-      router.push("/onboarding/which-chapters-have-you-studied");
+      router.push("/onboarding/build-timetable");
     } catch (err) {
       setError(
         err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
@@ -133,7 +133,7 @@ export default function TimeSelectionPage() {
     setSkipping(true);
     try {
       await skipOnboardingStep(4);
-      router.push("/onboarding/which-chapters-have-you-studied");
+      router.push("/onboarding/build-timetable");
     } catch (err) {
       setError(
         err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
@@ -146,7 +146,7 @@ export default function TimeSelectionPage() {
     <AuthCard>
       <StepProgress
         step={4}
-        totalSteps={5}
+        totalSteps={6}
         backHref="/onboarding/where-do-you-study"
         showSkip
         onSkip={handleSkip}
