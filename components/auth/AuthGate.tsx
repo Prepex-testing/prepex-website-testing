@@ -25,6 +25,8 @@ const PUBLIC_PATHS = [
   // Shared Win Journal cards (PRD 7.5.1) — the whole point is that someone
   // without a Prepex account can open the link.
   "/win",
+  // Sentry verification page: a 404 unless NEXT_PUBLIC_SENTRY_TEST_ENABLED=true, so it is inert in production.
+  "/sentry-test",
 ];
 
 function isPublicPath(pathname: string) {
