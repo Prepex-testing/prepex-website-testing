@@ -1,0 +1,14 @@
+.git
+.github
+node_modules
+.next
+out
+coverage
+e2e
+playwright-report
+.vercel
+.env
+.env.*
+!.env.example
+*.log
+**/.DS_Store

@@ -12,6 +12,8 @@ const svgrOptions = {
 };
 
 const nextConfig: NextConfig = {
+  // Self-contained server for the Docker image (see Dockerfile).
+  output: "standalone",
   async redirects() {
     return [
       // The Stats tabs used to be separate routes. They're now one page at
