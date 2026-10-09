@@ -1,0 +1,71 @@
+name: Deploy to testing VPS
+
+# Deploys prepex-website-testing to the Prepex TESTING stack on the Hostinger VPS (/opt/prepex-testing only).
+# Needs three repository secrets (Settings -> Secrets and variables -> Actions):
+#   SSH_PRIVATE_KEY  contents of ~/.ssh/prepex_testing_ed25519
+#   VPS_HOST         187.127.175.92
+#   VPS_USER         root
+# Until all three exist the job skips itself with a warning instead of failing.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# one deploy at a time across the whole testing stack
+concurrency:
+  group: deploy-testing-vps
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+    steps:
+      - name: Check deploy secrets
+        id: gate
+        run: |
+          if [ -z "$SSH_PRIVATE_KEY" ] || [ -z "$VPS_HOST" ] || [ -z "$VPS_USER" ]; then
+            echo "::warning::SSH_PRIVATE_KEY / VPS_HOST / VPS_USER are not all set - skipping deploy."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up SSH (host key is pinned)
+        if: steps.gate.outputs.ready == 'true'
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -t ed25519 "$VPS_HOST" > ~/.ssh/known_hosts 2>/dev/null
+          fp=$(ssh-keygen -lf ~/.ssh/known_hosts | awk '{print $2}')
+          if [ "$fp" != "SHA256:eLGdpYfJ+jyQreNRLVq97qX9NhVtLJlcxVTyURU8SjI" ]; then echo "::error::VPS host key mismatch ($fp)"; exit 1; fi
+          printf 'Host vps\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_deploy\n  IdentitiesOnly yes\n' "$VPS_HOST" "$VPS_USER" > ~/.ssh/config
+
+      - name: Pull, build and restart frontend-website
+        if: steps.gate.outputs.ready == 'true'
+        run: |
+          ssh vps 'bash -s' <<'REMOTE'
+          set -euo pipefail
+          cd /opt/prepex-testing/repos/prepex-website-testing
+          git fetch --depth 1 origin main
+          git checkout -q -B main FETCH_HEAD
+          cd /opt/prepex-testing
+          nice -n 19 docker compose build frontend-website
+          docker compose up -d --no-deps frontend-website
+          for i in $(seq 1 40); do
+            curl -fsS -o /dev/null http://127.0.0.1:4400/ && echo "frontend-website is answering on 4400" && exit 0
+            sleep 3
+          done
+          echo "frontend-website did not become healthy" >&2
+          docker compose logs --tail 60 frontend-website >&2
+          exit 1
+          REMOTE
+
+      - name: Public health check
+        if: steps.gate.outputs.ready == 'true'
+        run: curl -fsSL --retry 5 --retry-delay 5 -o /dev/null https://testing.prepex.io/
