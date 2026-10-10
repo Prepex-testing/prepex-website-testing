@@ -606,6 +606,16 @@ export function HomeIcon({ className = "h-4 w-4" }: { className?: string } = {})
   );
 }
 
+/** A stopwatch — the "Study" tab (Focus, study log, mistakes). */
+export function StudyIcon({ className = "h-4 w-4" }: { className?: string } = {}) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="8" cy="9" r="5.25" stroke="currentColor" strokeWidth="1.78" />
+      <path d="M8 9V6.25M6 1.75h4M12.4 3.9l.9-.9" stroke="currentColor" strokeWidth="1.78" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function ChartBarIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">

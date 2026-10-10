@@ -172,11 +172,16 @@ type ProfileSubject = {
   chapters: ProfileSubjectChapter[];
 };
 
-export async function getStudentChapters() {
+/**
+ * The student's subjects with chapters. By default chapters are limited to the student's own class;
+ * `allClasses` returns Class 11, 12 and unclassed chapters together (revising earlier material,
+ * logging a mistake from an older book).
+ */
+export async function getStudentChapters(options: { allClasses?: boolean } = {}) {
   const { success, data } = await authRequest<{
     success: true;
     data: { subjects: ProfileSubject[] };
-  }>("/subjects-chapters", {}, "/api/profile");
+  }>(`/subjects-chapters${options.allClasses ? "?allClasses=true" : ""}`, {}, "/api/profile");
 
   const subjects: SubjectChapters[] = data.subjects.map((subject) => ({
     subjectId: subject.id,
