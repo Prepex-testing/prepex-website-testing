@@ -72,3 +72,21 @@ export async function expectTapTargets(page: Page, selector: string, min = 44) {
   );
   for (const b of boxes) expect(Math.min(b.w, b.h), `tap target "${b.t}" ${b.w}x${b.h}`).toBeGreaterThanOrEqual(min);
 }
+
+/**
+ * Builds today's plan for the logged-in student (the real "generate" endpoint). The shortcut onboarding path skips
+ * the daily check-in that would normally trigger this, so tests that need a plan on the books call it.
+ */
+export async function generateTodayPlan(page: Page) {
+  const core = process.env.E2E_CORE_URL ?? "http://localhost:4002";
+  const status = await page.evaluate(async (base) => {
+    const token = localStorage.getItem("prepex_access_token");
+    const res = await fetch(`${base}/api/planner/generate`, {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+      body: JSON.stringify({ reason: "SCHEDULED" }),
+    });
+    return res.status;
+  }, core);
+  expect(status, "plan generation").toBeLessThan(300);
+}

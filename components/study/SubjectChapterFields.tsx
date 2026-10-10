@@ -16,11 +16,13 @@ type Props = {
   /** Allow "Any subject" (filters) instead of requiring one (forms). */
   allowAnySubject?: boolean;
   disabled?: boolean;
+  /** The chapter must be chosen (revision and practice logs) rather than optional. */
+  chapterRequired?: boolean;
   idPrefix?: string;
 };
 
 /** Subject select + optional chapter select. Picking another subject clears the chapter. */
-export function SubjectChapterFields({ subjects, subjectId, chapterId, onChange, allowAnySubject = false, disabled = false, idPrefix = "sc" }: Props) {
+export function SubjectChapterFields({ subjects, subjectId, chapterId, onChange, allowAnySubject = false, disabled = false, chapterRequired = false, idPrefix = "sc" }: Props) {
   const chapters = [...(subjects.find((s) => s.subjectId === subjectId)?.chapters ?? [])].sort((a, b) => a.sequenceOrder - b.sequenceOrder);
 
   return (
@@ -44,7 +46,7 @@ export function SubjectChapterFields({ subjects, subjectId, chapterId, onChange,
         </select>
       </label>
       <label className={LABEL} htmlFor={`${idPrefix}-chapter`}>
-        Chapter (optional)
+        {chapterRequired ? "Chapter" : "Chapter (optional)"}
         <select
           id={`${idPrefix}-chapter`}
           data-testid={`${idPrefix}-chapter`}
@@ -53,7 +55,7 @@ export function SubjectChapterFields({ subjects, subjectId, chapterId, onChange,
           value={chapterId ?? ""}
           onChange={(e) => onChange({ subjectId, chapterId: e.target.value || null })}
         >
-          <option value="">{subjectId === null ? "Pick a subject first" : "Whole subject"}</option>
+          <option value="">{subjectId === null ? "Pick a subject first" : chapterRequired ? "Choose a chapter" : "Whole subject"}</option>
           {chapters.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
