@@ -11,9 +11,9 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     coverage: {
       provider: "v8",
-      // Phase 1 and Phase 2C logic + components; the older screens are exercised by e2e/.
-      include: ["lib/goals/**", "lib/timetable/**", "lib/study/**", "components/focus/**", "components/mistakes/**", "components/sessions/QuickLogForm.tsx", "components/sessions/StudyLogList.tsx"],
-      exclude: ["**/*.test.ts", "**/*.test.tsx", "components/focus/useFocusSession.ts", "components/sessions/WeekChart.tsx"],
+      // Phase 1, 2C and 3 logic + components; the older screens are exercised by e2e/.
+      include: ["lib/goals/**", "lib/timetable/**", "lib/study/**", "lib/logs/**", "components/logs/**", "components/focus/**", "components/mistakes/**", "components/sessions/QuickLogForm.tsx", "components/sessions/StudyLogList.tsx"],
+      exclude: ["**/*.test.ts", "**/*.test.tsx", "components/focus/useFocusSession.ts", "components/sessions/WeekChart.tsx", "components/logs/charts.tsx", "components/logs/LazyCharts.tsx", "components/logs/SharePanel.tsx"],
       reporter: ["text-summary", "text"],
     },
   },

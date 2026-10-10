@@ -41,8 +41,8 @@ export const NAV_ITEMS = [
   {
     href: "/focus",
     activeMatch: "/focus",
-    // Focus, the study log and the mistake notebook all live behind this one tab.
-    activeAny: ["/focus", "/sessions", "/mistakes"],
+    // Focus, the study log, the mistake notebook and the revision / backlog / practice logs all live behind this one tab.
+    activeAny: ["/focus", "/sessions", "/mistakes", "/logs"],
     label: "Study",
     icon: (
       <span className={ICON_BOX_CLASS}>
