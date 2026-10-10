@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_ITEMS, NAV_COACH_ANCHOR } from "@/components/layout/Sidebar";
+import { NAV_ITEMS, NAV_COACH_ANCHOR, isNavItemActive } from "@/components/layout/Sidebar";
 import { SymbolMark } from "@/components/ui/LogoMarks";
 import { ChevronRightIcon } from "@/components/ui/icons";
 
@@ -31,12 +31,7 @@ export function FocusSidebar({ onExpand }: FocusSidebarProps) {
 
       <nav className="flex w-12 flex-col gap-2 py-6">
         {NAV_ITEMS.map((item) => {
-          const matchPath = item.activeMatch ?? item.href;
-          const active =
-            item.label === "Practice"
-              ? pathname?.startsWith("/practice")
-              : pathname === matchPath ||
-              pathname?.startsWith(`${matchPath}/`);
+          const active = isNavItemActive(item, pathname);
 
           return (
             <Link

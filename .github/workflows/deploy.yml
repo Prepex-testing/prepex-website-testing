@@ -51,6 +51,9 @@ jobs:
         run: |
           ssh vps 'bash -s' <<'REMOTE'
           set -euo pipefail
+          # one build at a time on the VPS, across all three repos (waits up to 30 min for its turn)
+          exec 9>/opt/prepex-testing/.deploy.lock
+          flock -w 1800 9 || { echo "another deploy held the lock for 30 minutes" >&2; exit 1; }
           cd /opt/prepex-testing/repos/prepex-website-testing
           git fetch --depth 1 origin main
           git checkout -q -B main FETCH_HEAD

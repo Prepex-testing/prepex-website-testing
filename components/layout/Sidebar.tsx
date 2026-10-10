@@ -8,6 +8,7 @@ import {
   CalendarIcon,
   TargetIcon,
   ChartBarIcon,
+  StudyIcon,
   ChevronRightIcon,
   // UserIcon,
 } from "@/components/ui/icons";
@@ -34,6 +35,18 @@ export const NAV_ITEMS = [
     icon: (
       <span className={ICON_BOX_CLASS}>
         <CalendarIcon className={ICON_CLASS} />
+      </span>
+    ),
+  },
+  {
+    href: "/focus",
+    activeMatch: "/focus",
+    // Focus, the study log and the mistake notebook all live behind this one tab.
+    activeAny: ["/focus", "/sessions", "/mistakes"],
+    label: "Study",
+    icon: (
+      <span className={ICON_BOX_CLASS}>
+        <StudyIcon className={ICON_CLASS} />
       </span>
     ),
   },
@@ -81,6 +94,14 @@ export const NAV_COACH_ANCHOR: Record<string, string> = {
   Stats: "nav-stats",
 };
 
+/** Whether a nav item is the current section (shared by the sidebar and the mobile bottom bar). */
+export function isNavItemActive(item: (typeof NAV_ITEMS)[number], pathname: string | null): boolean {
+  if (item.activeAny) return item.activeAny.some((p) => pathname === p || pathname?.startsWith(`${p}/`) === true);
+  if (item.label === "Practice") return pathname?.startsWith("/practice") === true;
+  const matchPath = item.activeMatch ?? item.href;
+  return pathname === matchPath || pathname?.startsWith(`${matchPath}/`) === true;
+}
+
 export function Sidebar({ onCollapse }: SidebarProps) {
   const pathname = usePathname();
 
@@ -103,11 +124,7 @@ export function Sidebar({ onCollapse }: SidebarProps) {
 
       <nav className="flex flex-col gap-1">
         {NAV_ITEMS.map((item) => {
-          const matchPath = item.activeMatch ?? item.href;
-          const active =
-            item.label === "Practice"
-              ? pathname?.startsWith("/practice")
-              : pathname === matchPath || pathname?.startsWith(`${matchPath}/`);
+          const active = isNavItemActive(item, pathname);
 
           return (
             <Link

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_ITEMS, NAV_COACH_ANCHOR } from "@/components/layout/Sidebar";
+import { NAV_ITEMS, NAV_COACH_ANCHOR, isNavItemActive } from "@/components/layout/Sidebar";
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -13,11 +13,7 @@ export function BottomNav() {
       className="pb-safe fixed inset-x-0 bottom-0 z-40 flex border-t border-brand/10 bg-surface lg:hidden"
     >
       {NAV_ITEMS.map((item) => {
-        const matchPath = item.activeMatch ?? item.href;
-        const active =
-          item.label === "Practice"
-            ? pathname?.startsWith("/practice")
-            : pathname === matchPath || pathname?.startsWith(`${matchPath}/`);
+        const active = isNavItemActive(item, pathname);
 
         return (
           <Link
