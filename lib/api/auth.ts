@@ -14,6 +14,8 @@ export type AuthUser = {
   avatarUrl: string | null;
   isEmailVerified: boolean;
   isVerified: boolean;
+  /** The rank the student is aiming for; only the profile endpoint returns it. */
+  targetRank?: number | null;
 };
 
 export type AuthTokens = {
@@ -88,6 +90,15 @@ export function resetPassword(input: { token: string; password: string }) {
 export function getProfile(accessToken: string) {
   return request<{ success: true; data: AuthUser }>("/profile", {
     headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
+/** Sets (or, with null, clears) the student's target rank. */
+export function updateTargetRank(accessToken: string, targetRank: number | null) {
+  return request<{ success: true; message?: string }>("/profile", {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ targetRank }),
   });
 }
 
