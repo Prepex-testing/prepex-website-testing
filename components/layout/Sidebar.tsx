@@ -61,8 +61,11 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    href: "/stats",
-    activeMatch: "/stats",
+    // The Stats tab opens the master dashboard; the calendar, syllabus and the older detailed stats are one tap away
+    // on the Insights switcher at the top of each of those screens.
+    href: "/analytics",
+    activeMatch: "/analytics",
+    activeAny: ["/analytics", "/calendar", "/syllabus", "/stats"],
     label: "Stats",
     icon: (
       <span className={ICON_BOX_CLASS}>
