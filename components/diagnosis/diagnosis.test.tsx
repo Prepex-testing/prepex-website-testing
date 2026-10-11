@@ -38,10 +38,10 @@ const card = (o: WeeklyOverview, extra: Partial<Parameters<typeof WeeklyDiagnosi
   render(<WeeklyDiagnosisCard overview={o} starting={false} runError={null} gaveUp={false} onRun={vi.fn()} {...extra} />);
 
 describe("WeeklyDiagnosisCard", () => {
-  it("shows the three sections and three action chips that carry the goal to next week", () => {
+  it("shows the diagnosis sections (the fixes become chips, not repeated prose) and three action chips that carry the goal to next week", () => {
     card(overview({ current: ready(), latest: ready() }));
     expect(screen.getByTestId("weekly-report-label")).toHaveTextContent("Week of 5 – 11 Oct");
-    expect(screen.getAllByTestId("weekly-section").map((s) => within(s).getByRole("heading").textContent)).toEqual(["What is working", "What is leaking", "Top 3 fixes"]);
+    expect(screen.getAllByTestId("weekly-section").map((s) => within(s).getByRole("heading").textContent)).toEqual(["What is working", "What is leaking"]);
     const chips = [0, 1, 2].map((i) => screen.getByTestId(`fix-chip-${i}`));
     expect(chips[0]).toHaveAttribute("href", `/goals?week=next&type=HOURS&unit=MINUTES&target=90&chapter=${CH}`);
     expect(chips[1]).toHaveAttribute("href", "/goals?week=next&type=HOURS&unit=MINUTES&target=45");

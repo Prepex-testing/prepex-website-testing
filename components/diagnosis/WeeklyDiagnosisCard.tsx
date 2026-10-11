@@ -18,7 +18,8 @@ const PLAIN = (text: string) => text.replace(/\*\*/g, "");
 
 /** The finished diagnosis: its named sections, then the three action chips. */
 export function DiagnosisReport({ diagnosis, label }: { diagnosis: WeeklyDiagnosis; label: string }) {
-  const sections = splitSections(diagnosis.diagnosis ?? "");
+  // the "Top 3 fixes" text is shown as the tappable chips below, so it is not repeated as prose
+  const sections = splitSections(diagnosis.diagnosis ?? "").filter((s) => !(diagnosis.fixes.length > 0 && /^top \d+ fix(es)?$/i.test(s.title)));
   return (
     <div className="flex flex-col gap-4" data-testid="weekly-report">
       <p className="text-[12px] font-bold uppercase tracking-wide text-muted" data-testid="weekly-report-label">

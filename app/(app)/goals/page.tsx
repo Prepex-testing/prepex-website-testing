@@ -44,8 +44,12 @@ function GoalsScreen() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
+  // A chapter handed over by a link (a diagnosis chip) may be from another class than the student's own (a class-12
+  // student revising a class-11 chapter), so a link that names one loads every class's chapters.
+  const wantsAllClasses = params.get("chapter") !== null;
+
   const load = useCallback(async () => {
-    const [goals, chapters, timetable] = await Promise.allSettled([getCurrentGoals(), getStudentChapters(), getCurrentTimetable()]);
+    const [goals, chapters, timetable] = await Promise.allSettled([getCurrentGoals(), getStudentChapters(wantsAllClasses ? { allClasses: true } : {}), getCurrentTimetable()]);
     if (goals.status === "rejected") {
       setLoadError(messageOf(goals.reason, "We couldn't load your goals. Please refresh."));
       return;
@@ -53,7 +57,7 @@ function GoalsScreen() {
     setData(goals.value.data);
     if (chapters.status === "fulfilled") setSubjects(chapters.value.data);
     setHasTimetable(timetable.status === "fulfilled" ? timetable.value.data.timetable !== null : null);
-  }, []);
+  }, [wantsAllClasses]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load
