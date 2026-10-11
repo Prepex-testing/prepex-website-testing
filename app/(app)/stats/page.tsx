@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { InsightsTabs } from "@/components/insights/InsightsTabs";
 import { EffortStats } from "@/components/stats/EffortStats";
 import { AccuracyStats } from "@/components/stats/AccuracyStats";
 import { ProgressStats } from "@/components/stats/ProgressStats";
@@ -61,6 +62,8 @@ export default function StatsPage() {
           <UserMenu />
         </div>
       </div>
+
+      <InsightsTabs current="/stats" />
 
       {/* Tabs */}
       {/* Equal-width tabs on a grid. Phones: full width, tabs share it. sm+:

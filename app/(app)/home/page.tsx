@@ -61,6 +61,7 @@ import {
   ArrowRightIcon,
   AlertTriangleIcon,
   XIcon,
+  UsersIcon,
 } from "@/components/ui/icons";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { PageLoader } from "@/components/ui/PageLoader";
@@ -131,6 +132,7 @@ function currentWeekStartIso(): string {
 // data-coach anchors for the Onboarding Coach (Section 16). Keyed by label so
 // the Quick Access list stays a plain array; absent labels get no anchor.
 const QUICK_ACCESS_COACH_ANCHOR: Record<string, string> = {
+  Practice: "nav-practice",
   Revision: "quick-revision",
   "Weekly Win Journal": "quick-journal",
   "Mock Test Analysis": "quick-mock",
@@ -655,6 +657,9 @@ export default function HomePage() {
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+          <Link href="/home/partner" aria-label="Partner and pods" title="Partner (pods are coming)" data-testid="home-pods" className="flex size-11 items-center justify-center rounded-full bg-surface text-ink hover:bg-tint-strong">
+            <UsersIcon />
+          </Link>
           <ThemeToggle />
           <NotificationBell />
           <UserMenu />

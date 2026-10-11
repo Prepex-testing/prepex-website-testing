@@ -12,7 +12,7 @@ import {
   ChevronRightIcon,
   // UserIcon,
 } from "@/components/ui/icons";
-import {UserIcons,PracticeIcon,StatsIcon} from "@/assets/icons";
+import { UserIcons, StatsIcon, BookIcon } from "@/assets/icons";
 
 // Figma: 20x20 icon slot containing a 16x16 glyph (1.78px stroke).
 const ICON_BOX_CLASS = "flex h-5 w-5 shrink-0 items-center justify-center";
@@ -29,21 +29,22 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    href: "/plan",
-    activeMatch: "/plan",
-    label: "Plan",
+    // The Study tab is the hub: sessions, revision, backlog, practice, mock tests, mistakes, and the plan, calendar and
+    // syllabus screens all open from /logs. (Five tabs, not six: Plan and Practice moved in here.)
+    href: "/logs",
+    activeMatch: "/logs",
+    activeAny: ["/logs", "/sessions", "/mistakes", "/plan", "/practice"],
+    label: "Study",
     icon: (
       <span className={ICON_BOX_CLASS}>
-        <CalendarIcon className={ICON_CLASS} />
+        <BookIcon className={ICON_CLASS} />
       </span>
     ),
   },
   {
     href: "/focus",
     activeMatch: "/focus",
-    // Focus, the study log, the mistake notebook and the revision / backlog / practice logs all live behind this one tab.
-    activeAny: ["/focus", "/sessions", "/mistakes", "/logs"],
-    label: "Study",
+    label: "Focus",
     icon: (
       <span className={ICON_BOX_CLASS}>
         <StudyIcon className={ICON_CLASS} />
@@ -51,19 +52,12 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    href: "/practice/sessions",
-    activeMatch: "/practice",
-    label: "Practice",
-    icon: (
-      <span className={ICON_BOX_CLASS}>
-        <PracticeIcon className={ICON_CLASS} />
-      </span>
-    ),
-  },
-  {
-    href: "/stats",
-    activeMatch: "/stats",
-    label: "Stats",
+    // Opens the master dashboard; the calendar, syllabus and the older detailed stats are one tap away on the
+    // Insights switcher at the top of each of those screens.
+    href: "/analytics",
+    activeMatch: "/analytics",
+    activeAny: ["/analytics", "/calendar", "/syllabus", "/stats"],
+    label: "Analytics",
     icon: (
       <span className={ICON_BOX_CLASS}>
         <StatsIcon className={ICON_CLASS} />
@@ -90,14 +84,13 @@ type SidebarProps = {
 // the mobile bottom nav both carry these, and the coach uses whichever is
 // actually laid out at the time.
 export const NAV_COACH_ANCHOR: Record<string, string> = {
-  Practice: "nav-practice",
-  Stats: "nav-stats",
+  // The coach's "practice" step points at the Practice tile on Home now that Practice has no tab of its own.
+  Analytics: "nav-stats",
 };
 
 /** Whether a nav item is the current section (shared by the sidebar and the mobile bottom bar). */
 export function isNavItemActive(item: (typeof NAV_ITEMS)[number], pathname: string | null): boolean {
   if (item.activeAny) return item.activeAny.some((p) => pathname === p || pathname?.startsWith(`${p}/`) === true);
-  if (item.label === "Practice") return pathname?.startsWith("/practice") === true;
   const matchPath = item.activeMatch ?? item.href;
   return pathname === matchPath || pathname?.startsWith(`${matchPath}/`) === true;
 }
