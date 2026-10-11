@@ -365,7 +365,7 @@ describe("dashboard pieces", () => {
     render(<InsightsTabs current="/calendar" />);
     expect(screen.getByRole("link", { name: "Calendar" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: "Dashboard" })).not.toHaveAttribute("aria-current");
-    expect(screen.getAllByRole("link").map((l) => l.getAttribute("href"))).toEqual(["/analytics", "/calendar", "/syllabus", "/stats"]);
+    expect(screen.getAllByRole("link").map((l) => l.getAttribute("href"))).toEqual(["/analytics", "/analytics/week", "/calendar", "/syllabus", "/stats"]);
   });
 });
 

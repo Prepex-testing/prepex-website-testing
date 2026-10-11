@@ -19,6 +19,8 @@ type Props = {
   saving: boolean;
   error: string | null;
   onSave: (goals: NewGoal[]) => void | Promise<void>;
+  /** A goal to start from (e.g. a diagnosis chip): the form opens on it and it is already in the "Ready to save" list. */
+  initial?: NewGoal;
 };
 
 const FIELD =
@@ -39,13 +41,13 @@ function sameGoal(a: NewGoal, b: Pick<NewGoal, "type" | "unit" | "subjectId" | "
  * subject/chapter if you like, set the target, add it to the list, repeat — then
  * save the lot in one go. Everything is tap-friendly (44px+ targets).
  */
-export function GoalComposer({ subjects, existing, saving, error, onSave }: Props) {
-  const [type, setType] = useState<GoalType>("QUESTIONS");
-  const [unit, setUnit] = useState<GoalUnit>("COUNT");
-  const [target, setTarget] = useState<number>(TARGET_RULES.QUESTIONS.start);
-  const [subjectId, setSubjectId] = useState<number | null>(null);
-  const [chapterId, setChapterId] = useState<string | null>(null);
-  const [drafts, setDrafts] = useState<NewGoal[]>([]);
+export function GoalComposer({ subjects, existing, saving, error, onSave, initial }: Props) {
+  const [type, setType] = useState<GoalType>(initial?.type ?? "QUESTIONS");
+  const [unit, setUnit] = useState<GoalUnit>(initial?.unit ?? "COUNT");
+  const [target, setTarget] = useState<number>(initial?.target ?? TARGET_RULES.QUESTIONS.start);
+  const [subjectId, setSubjectId] = useState<number | null>(initial?.subjectId ?? null);
+  const [chapterId, setChapterId] = useState<string | null>(initial?.chapterId ?? null);
+  const [drafts, setDrafts] = useState<NewGoal[]>(initial ? [initial] : []);
   const [formError, setFormError] = useState<string | null>(null);
 
   const subjectNames = new Map(subjects.map((s) => [s.subjectId, s.subjectName]));
