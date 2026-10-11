@@ -12,6 +12,7 @@ import { login, getGoogleAuthUrl, ApiError } from "@/lib/api/auth";
 import { saveSession } from "@/lib/auth/session";
 import { markAccountRestored } from "@/lib/auth/accountRestored";
 import { resolveAuthedLanding } from "@/lib/auth/onboardingGate";
+import { syncTargetRankAfterLogin } from "@/lib/insights/targetRank";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,6 +38,7 @@ export default function LoginPage() {
       const { data } = await login({ email, password });
       saveSession(data.tokens, data.user);
       if (data.restored) markAccountRestored();
+      await syncTargetRankAfterLogin(data.tokens.accessToken);
 
       router.push(await resolveAuthedLanding());
     } catch (err) {
