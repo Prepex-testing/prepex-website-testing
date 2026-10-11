@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { HubCard, type HubStat } from "@/components/logs/HubCard";
+import { HubLink } from "@/components/logs/HubLink";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
 import { StudyTabs } from "@/components/study/StudyTabs";
 import { getBacklogAnalytics } from "@/lib/api/backlogItems";
@@ -45,7 +46,7 @@ export default function LogsHubPage() {
 
   return (
     <div className="flex flex-col gap-5 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl lg:p-8" data-testid="logs-hub">
-      <ProfileSubpageHeader title="Logs" backHref="/home" />
+      <ProfileSubpageHeader title="Study" backHref="/home" />
       <StudyTabs current="/logs" />
       <p className="text-[14px] text-muted">Keep a record of what you revise, what you are behind on, and the questions you solve. Your planner reads all three.</p>
       <div className="grid grid-cols-1 gap-3">
@@ -53,6 +54,15 @@ export default function LogsHubPage() {
         <HubCard testId="hub-backlog" href="/logs/backlog" title="Backlog" blurb="What you are behind on, with deadlines." stat={stats.backlog} loading={loading} />
         <HubCard testId="hub-practice" href="/logs/practice" title="Practice" blurb="Questions solved, accuracy and speed." stat={stats.practice} loading={loading} />
         <HubCard testId="hub-mocks" href="/logs/mocks" title="Mock tests" blurb="Scores, percentile, projected rank and the chapters tests keep exposing." stat={stats.mocks} loading={loading} />
+      </div>
+      <h2 className="text-[13px] font-bold uppercase tracking-wide text-muted">Also here</h2>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2" data-testid="hub-links">
+        <HubLink testId="hub-sessions" href="/sessions" title="Study sessions" blurb="Everything you've studied, by day." />
+        <HubLink testId="hub-mistakes" href="/mistakes" title="Mistake notebook" blurb="Review what you got wrong." />
+        <HubLink testId="hub-practice-sessions" href="/practice/sessions" title="Practice questions" blurb="Solve questions in Prepex." />
+        <HubLink testId="hub-plan" href="/plan" title="Plan" blurb="Your planner and calendar of tasks." />
+        <HubLink testId="hub-calendar" href="/calendar" title="Calendar" blurb="Study heatmap, day by day." />
+        <HubLink testId="hub-syllabus" href="/syllabus" title="Syllabus" blurb="Every chapter: strength, hours, theory." />
       </div>
     </div>
   );

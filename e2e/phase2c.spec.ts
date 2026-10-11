@@ -11,11 +11,13 @@ test("focus: start → pause/resume → stop → the time lands in the study log
   resetStudent();
   await onboardAndEnterApp(page);
 
-  // The Study tab leads to Focus and is highlighted on all three study screens.
+  // Five tabs: Study opens the hub, Focus has its own tab (and is the one highlighted here).
   await page.goto("/focus");
   await expect(page.getByTestId("focus-setup")).toBeVisible();
   const nav = mobile ? page.getByRole("navigation", { name: "Primary" }) : page.locator("aside nav");
-  await expect(nav.getByRole("link", { name: "Study" }).first()).toHaveAttribute("href", "/focus");
+  await expect(nav.getByRole("link", { name: "Study" }).first()).toHaveAttribute("href", "/logs");
+  await expect(nav.getByRole("link", { name: "Focus" }).first()).toHaveAttribute("href", "/focus");
+  await expect(nav.first().getByRole("link")).toHaveCount(5);
   if (mobile) {
     await expectTapTargets(page, '[data-testid="study-tabs"] a');
     await expectTapTargets(page, '[data-testid="start-focus"], [data-testid^="preset-"]');
