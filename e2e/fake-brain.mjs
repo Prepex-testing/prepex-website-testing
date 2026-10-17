@@ -38,6 +38,18 @@ Chemistry got no time at all, and practice accuracy is not being tracked.
 3. A floor of 30 minutes on slow days.
 FIXES_JSON: [{"title":"Kinematics: 90 minutes of graph problems","chapter":"Kinematics","minutes":90},{"title":"Atomic Structure: 45 minutes","chapter":"Atomic Structure","minutes":45},{"title":"Keep a 30-minute floor on slow days","chapter":"Kinematics","minutes":30}]`;
 
+const DAILY = `## Short answer
+Tutor preamble that the product strips.
+
+## What to try next
+Keep going.
+
+## OBSERVATION
+You studied 120 minutes today, mostly Kinematics, which is well above your recent average.
+
+## NUDGE
+Tomorrow start with 20 minutes on the Kinematics graph mistakes before anything new.`;
+
 const server = http.createServer((req, res) => {
   const send = (status, body) => {
     res.writeHead(status, { "content-type": "application/json" });
@@ -69,7 +81,7 @@ const server = http.createServer((req, res) => {
     seen.push({ path: url.pathname, mode: url.searchParams.get("mode") ?? "fast", payload, at: Date.now() });
     setTimeout(() => {
       if (state.fail) return send(502, { detail: "upstream unavailable" });
-      send(200, { answer: WEEKLY, citations: [], confidence: 0.8, model_used: "fake-brain", mode: url.searchParams.get("mode") ?? "fast", tokens_used: 1234, prompt_version: "e2e-1" });
+      send(200, { answer: String(payload.question ?? "").includes("OBSERVATION, NUDGE") ? DAILY : WEEKLY, citations: [], confidence: 0.8, model_used: "fake-brain", mode: url.searchParams.get("mode") ?? "fast", tokens_used: 1234, prompt_version: "e2e-1" });
     }, state.delayMs);
   });
 });
