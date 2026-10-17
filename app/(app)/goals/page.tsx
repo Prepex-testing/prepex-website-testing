@@ -23,6 +23,8 @@ import {
   type NewGoal,
 } from "@/lib/api/goals";
 import { daysLeftText, describeGoal, formatWeekRange, scopeText } from "@/lib/goals/format";
+import { mondayOfNextWeek, weekLabel } from "@/lib/diagnosis/format";
+import { parsePrefill } from "@/lib/goals/prefill";
 
 function messageOf(err: unknown, fallback: string): string {
   return err instanceof ApiError ? err.message : fallback;
@@ -30,7 +32,8 @@ function messageOf(err: unknown, fallback: string): string {
 
 function GoalsScreen() {
   const router = useRouter();
-  const welcome = useSearchParams().get("welcome") === "1";
+  const params = useSearchParams();
+  const welcome = params.get("welcome") === "1";
 
   const [data, setData] = useState<CurrentGoals | null>(null);
   const [subjects, setSubjects] = useState<SubjectChapters[]>([]);
@@ -41,8 +44,12 @@ function GoalsScreen() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
+  // A chapter handed over by a link (a diagnosis chip) may be from another class than the student's own (a class-12
+  // student revising a class-11 chapter), so a link that names one loads every class's chapters.
+  const wantsAllClasses = params.get("chapter") !== null;
+
   const load = useCallback(async () => {
-    const [goals, chapters, timetable] = await Promise.allSettled([getCurrentGoals(), getStudentChapters(), getCurrentTimetable()]);
+    const [goals, chapters, timetable] = await Promise.allSettled([getCurrentGoals(), getStudentChapters(wantsAllClasses ? { allClasses: true } : {}), getCurrentTimetable()]);
     if (goals.status === "rejected") {
       setLoadError(messageOf(goals.reason, "We couldn't load your goals. Please refresh."));
       return;
@@ -50,7 +57,7 @@ function GoalsScreen() {
     setData(goals.value.data);
     if (chapters.status === "fulfilled") setSubjects(chapters.value.data);
     setHasTimetable(timetable.status === "fulfilled" ? timetable.value.data.timetable !== null : null);
-  }, []);
+  }, [wantsAllClasses]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load
@@ -74,13 +81,23 @@ function GoalsScreen() {
     }
   }
 
+  // A goal handed over from elsewhere (a diagnosis chip): `?week=next&type=HOURS&unit=MINUTES&target=90&chapter=<id>`
+  const prefill = parsePrefill(params, (chapterId) => subjects.find((s) => s.chapters.some((c) => c.id === chapterId))?.subjectId ?? null);
+  const targetWeekStart = prefill?.week === "next" && data ? mondayOfNextWeek(data.weekStart) : undefined;
+
   async function handleSave(goals: NewGoal[]) {
     setSaving(true);
     setSaveError(null);
     try {
-      await createGoals(goals);
+      await createGoals(goals, targetWeekStart);
       if (welcome) {
         router.push("/check-in");
+        return;
+      }
+      if (targetWeekStart) {
+        router.replace("/goals");
+        await load();
+        setNotice(`Saved for next week (${weekLabel(targetWeekStart)}). They show up here when the week starts.`);
         return;
       }
       await load();
@@ -196,7 +213,21 @@ function GoalsScreen() {
         </p>
       )}
 
-      <GoalComposer subjects={subjects} existing={data.goals} saving={saving} error={saving ? null : saveError} onSave={handleSave} />
+      {targetWeekStart && (
+        <p role="status" className="rounded-xl bg-tint-strong px-4 py-3 text-[14px] font-semibold leading-snug text-ink dark:bg-[#FAF7F214]" data-testid="goals-next-week">
+          Setting a goal for next week ({weekLabel(targetWeekStart)}). It&apos;s ready below. Change it if you like, then save.
+        </p>
+      )}
+
+      <GoalComposer
+        key={prefill ? `prefill-${subjects.length}` : "plain"}
+        subjects={subjects}
+        existing={data.goals}
+        saving={saving}
+        error={saving ? null : saveError}
+        onSave={handleSave}
+        {...(prefill ? { initial: prefill.goal } : {})}
+      />
 
       {hasTimetable === false && (
         <section className="flex flex-col gap-2 rounded-2xl border border-brand/10 bg-surface p-4" data-testid="timetable-nudge">
