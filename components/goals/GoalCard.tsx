@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import type { Goal } from "@/lib/api/goals";
 import { describeGoal, progressText } from "@/lib/goals/format";
 
@@ -10,6 +11,10 @@ type Props = {
   onWatched: (next: number) => void;
   onToggleDone: () => void;
   onDelete: () => void;
+  /** ✨ Suggest: ask the assistant for hours on this goal's chapter (chapter goals only). */
+  onSuggest?: () => void;
+  /** The inline suggestion panel, shown under the goal while it is open. */
+  suggestSlot?: ReactNode;
 };
 
 const BAR = {
@@ -20,7 +25,7 @@ const BAR = {
 } as const;
 
 /** One weekly goal with its progress; LECTURES goals get a − / + tracker, the rest count themselves. */
-export function GoalCard({ goal, scope, busy, onWatched, onToggleDone, onDelete }: Props) {
+export function GoalCard({ goal, scope, busy, onWatched, onToggleDone, onDelete, onSuggest, suggestSlot }: Props) {
   const done = goal.status === "DONE";
   const percent = done ? 100 : goal.progress.percent;
   const isLectures = goal.type === "LECTURES";
@@ -96,7 +101,19 @@ export function GoalCard({ goal, scope, busy, onWatched, onToggleDone, onDelete 
             {done ? "Mark as not done" : "Mark as done"}
           </button>
         )}
+        {onSuggest && (
+          <button
+            type="button"
+            data-testid="goal-suggest"
+            disabled={busy}
+            onClick={onSuggest}
+            className="min-h-11 rounded-lg border border-brand/20 px-3 text-[13px] font-semibold text-ink hover:bg-tint-strong disabled:opacity-50"
+          >
+            ✨ Suggest
+          </button>
+        )}
       </div>
+      {suggestSlot}
     </li>
   );
 }
