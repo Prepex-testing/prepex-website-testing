@@ -41,6 +41,7 @@ export function FocusSidebar({ onExpand }: FocusSidebarProps) {
               // Same coach anchors as the expanded sidebar; with the rail up
               // it's this icon tile that gets spotlit, not the hidden row.
               data-coach={NAV_COACH_ANCHOR[item.label]}
+              data-tour={item.label === "Focus" ? "focus" : undefined}
               className={`flex w-12 items-center justify-center transition-colors duration-200 ${active
                   ? "h-12 rounded-xl bg-sidebar-active-bg text-sidebar-active-fg"
                   : "h-10 rounded-2xl px-4 py-3 text-sidebar-inactive-fg hover:bg-sidebar-active-bg hover:text-sidebar-active-fg"

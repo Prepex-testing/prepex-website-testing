@@ -124,6 +124,7 @@ export function Sidebar({ onCollapse }: SidebarProps) {
               key={item.label}
               href={item.href}
               data-coach={NAV_COACH_ANCHOR[item.label]}
+              data-tour={item.label === "Focus" ? "focus" : undefined}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                 active
                   ? "bg-sidebar-active-bg text-sidebar-active-fg"
