@@ -25,8 +25,8 @@ import {
   type NewGoal,
 } from "@/lib/api/goals";
 import { daysLeftText, describeGoal, formatWeekRange, scopeText } from "@/lib/goals/format";
-import { mondayOfNextWeek, weekLabel } from "@/lib/diagnosis/format";
-import { parsePrefill } from "@/lib/goals/prefill";
+import { mondayAfterWeeks, weekLabel } from "@/lib/diagnosis/format";
+import { WEEKS_AHEAD, parsePrefill } from "@/lib/goals/prefill";
 import { readTargetRank } from "@/lib/insights/targetRank";
 
 function messageOf(err: unknown, fallback: string): string {
@@ -88,7 +88,9 @@ function GoalsScreen() {
 
   // A goal handed over from elsewhere (a diagnosis chip): `?week=next&type=HOURS&unit=MINUTES&target=90&chapter=<id>`
   const prefill = parsePrefill(params, (chapterId) => subjects.find((s) => s.chapters.some((c) => c.id === chapterId))?.subjectId ?? null);
-  const targetWeekStart = prefill?.week === "next" && data ? mondayOfNextWeek(data.weekStart) : undefined;
+  const weeksAhead = prefill ? WEEKS_AHEAD[prefill.week] : 0;
+  const targetWeekStart = weeksAhead > 0 && data ? mondayAfterWeeks(data.weekStart, weeksAhead) : undefined;
+  const targetWeekName = weeksAhead === 1 ? "next week" : "the week of";
 
   async function handleSave(goals: NewGoal[]) {
     setSaving(true);
@@ -102,7 +104,7 @@ function GoalsScreen() {
       if (targetWeekStart) {
         router.replace("/goals");
         await load();
-        setNotice(`Saved for next week (${weekLabel(targetWeekStart)}). They show up here when the week starts.`);
+        setNotice(`Saved for ${weeksAhead === 1 ? "next week" : "a later week"} (${weekLabel(targetWeekStart)}). They show up here when the week starts.`);
         return;
       }
       await load();
@@ -242,7 +244,7 @@ function GoalsScreen() {
 
       {targetWeekStart && (
         <p role="status" className="rounded-xl bg-tint-strong px-4 py-3 text-[14px] font-semibold leading-snug text-ink dark:bg-[#FAF7F214]" data-testid="goals-next-week">
-          Setting a goal for next week ({weekLabel(targetWeekStart)}). It&apos;s ready below. Change it if you like, then save.
+          Setting a goal for {weeksAhead === 1 ? `next week (${weekLabel(targetWeekStart)})` : `${targetWeekName} ${weekLabel(targetWeekStart)}`}. It&apos;s ready below. Change it if you like, then save.
         </p>
       )}
 

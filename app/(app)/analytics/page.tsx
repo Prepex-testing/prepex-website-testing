@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { DiagnoseNowCard } from "@/components/diagnosis/DiagnoseNowCard";
 import { SeriesLine } from "@/components/insights/LazyCharts";
 import { InsightsTabs } from "@/components/insights/InsightsTabs";
 import { StatTile } from "@/components/analytics/StatTile";
@@ -11,7 +12,9 @@ import { EmptyNote, StatCard } from "@/components/stats/StatCard";
 import { SubjectDonut } from "@/components/stats/SubjectDonut";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { ApiError } from "@/lib/api/http";
+import { listDiagnosisReports, type ReportLimit } from "@/lib/api/diagnosisReports";
 import { getMasterAnalytics, type MasterAnalytics } from "@/lib/api/masterAnalytics";
+import { useStartReport } from "@/lib/diagnosis/useStartReport";
 import { drillHref, goalUnitLabel, latestWeek, streakCaption } from "@/lib/insights/analyticsFormat";
 import { approxRank, rankLabel } from "@/lib/insights/mockMath";
 import { readTargetRank } from "@/lib/insights/targetRank";
@@ -23,6 +26,9 @@ const GOAL_LABEL: Record<string, string> = { HOURS: "Study hours", QUESTIONS: "Q
 export default function AnalyticsPage() {
   const [data, setData] = useState<MasterAnalytics | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // "Diagnose me now": how many are left today (the button works even if this cannot be loaded; the server enforces it)
+  const [limit, setLimit] = useState<ReportLimit | null>(null);
+  const { start, starting, error: startError } = useStartReport();
 
   const load = useCallback(async () => {
     setError(null);
@@ -38,6 +44,13 @@ export default function AnalyticsPage() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    void listDiagnosisReports(1).then(
+      (res) => setLimit(res.data.limit),
+      () => undefined,
+    );
+  }, []);
+
   const subjectNames = useMemo(() => {
     const names = new Map<number, string>();
     for (const s of data?.bySubject ?? []) if (s.subjectId !== null) names.set(s.subjectId, s.name);
@@ -50,6 +63,8 @@ export default function AnalyticsPage() {
     <div className="flex flex-col gap-5 p-4 sm:p-6 lg:mx-auto lg:max-w-4xl lg:p-8" data-testid="analytics-page">
       <ProfileSubpageHeader title="Your dashboard" backHref="/home" />
       <InsightsTabs current="/analytics" />
+
+      <DiagnoseNowCard limit={limit} starting={starting} error={startError} onStart={() => void start()} />
 
       {error && (
         <p role="alert" className="rounded-lg bg-danger-bg px-3 py-2 text-sm font-medium text-danger">

@@ -40,8 +40,13 @@ export function splitSections(text: string): Section[] {
 }
 
 export function mondayOfNextWeek(weekStart: string): string {
+  return mondayAfterWeeks(weekStart, 1);
+}
+
+/** The Monday `weeks` weeks after `weekStart` (a Monday). */
+export function mondayAfterWeeks(weekStart: string, weeks: number): string {
   const d = new Date(`${weekStart}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + 7);
+  d.setUTCDate(d.getUTCDate() + 7 * weeks);
   return d.toISOString().slice(0, 10);
 }
 
