@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GoalCard } from "@/components/goals/GoalCard";
 import { GoalComposer } from "@/components/goals/GoalComposer";
+import { NewSuggestion } from "@/components/goals/NewSuggestion";
+import { SuggestPanel } from "@/components/goals/SuggestPanel";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { ApiError } from "@/lib/api/http";
@@ -25,6 +27,7 @@ import {
 import { daysLeftText, describeGoal, formatWeekRange, scopeText } from "@/lib/goals/format";
 import { mondayOfNextWeek, weekLabel } from "@/lib/diagnosis/format";
 import { parsePrefill } from "@/lib/goals/prefill";
+import { readTargetRank } from "@/lib/insights/targetRank";
 
 function messageOf(err: unknown, fallback: string): string {
   return err instanceof ApiError ? err.message : fallback;
@@ -43,6 +46,8 @@ function GoalsScreen() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  // the goal whose ✨ Suggest panel is open
+  const [suggestingId, setSuggestingId] = useState<string | null>(null);
 
   // A chapter handed over by a link (a diagnosis chip) may be from another class than the student's own (a class-12
   // student revising a class-11 chapter), so a link that names one loads every class's chapters.
@@ -107,6 +112,13 @@ function GoalsScreen() {
     } finally {
       setSaving(false);
     }
+  }
+
+  // a goal was created from a suggestion: refresh the list and say so
+  async function handleSuggestionAdded(message: string) {
+    setSaveError(null);
+    await load();
+    setNotice(`${message} Today's plan has been updated to match.`);
   }
 
   if (loadError) {
@@ -195,6 +207,21 @@ function GoalsScreen() {
               onWatched={(n) => run(g.id, () => reportGoalProgress(g.id, Math.max(0, n)), "Couldn't update that.")}
               onToggleDone={() => run(g.id, () => updateGoal(g.id, { status: g.status === "DONE" ? "ACTIVE" : "DONE" }), "Couldn't update that.")}
               onDelete={() => run(g.id, () => deleteGoal(g.id), "Couldn't remove that goal.")}
+              {...(g.chapterId && g.type !== "HOURS" && g.source !== "PARTNER" ? { onSuggest: () => setSuggestingId(suggestingId === g.id ? null : g.id) } : {})}
+              {...(suggestingId === g.id && g.chapterId
+                ? {
+                    suggestSlot: (
+                      <SuggestPanel
+                        chapterId={g.chapterId}
+                        chapterName={chapterNames.get(g.chapterId) ?? "this chapter"}
+                        weekStartDate={targetWeekStart}
+                        targetRank={readTargetRank()}
+                        onAdded={handleSuggestionAdded}
+                        onClose={() => setSuggestingId(null)}
+                      />
+                    ),
+                  }
+                : {})}
             />
           ))}
         </ul>
@@ -218,6 +245,8 @@ function GoalsScreen() {
           Setting a goal for next week ({weekLabel(targetWeekStart)}). It&apos;s ready below. Change it if you like, then save.
         </p>
       )}
+
+      <NewSuggestion subjects={subjects} weekStartDate={targetWeekStart} targetRank={readTargetRank()} onAdded={handleSuggestionAdded} />
 
       <GoalComposer
         key={prefill ? `prefill-${subjects.length}` : "plain"}

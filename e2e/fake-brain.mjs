@@ -50,6 +50,15 @@ You studied 120 minutes today, mostly Kinematics, which is well above your recen
 ## NUDGE
 Tomorrow start with 20 minutes on the Kinematics graph mistakes before anything new.`;
 
+// 5C — the goal assistant: the tutor template first, our one machine-readable line last.
+const SUGGESTION = `## Short answer
+Tutor preamble that the product strips.
+
+## What to try next
+Keep going.
+
+SUGGESTION_JSON: {"hours": 4, "sub_topics": ["Graph reading", "Relative motion", "Projectile motion"], "pyq_year": 2019, "why": "Your practice here is under 60% and graph mistakes repeat."}`;
+
 const server = http.createServer((req, res) => {
   const send = (status, body) => {
     res.writeHead(status, { "content-type": "application/json" });
@@ -81,7 +90,9 @@ const server = http.createServer((req, res) => {
     seen.push({ path: url.pathname, mode: url.searchParams.get("mode") ?? "fast", payload, at: Date.now() });
     setTimeout(() => {
       if (state.fail) return send(502, { detail: "upstream unavailable" });
-      send(200, { answer: String(payload.question ?? "").includes("OBSERVATION, NUDGE") ? DAILY : WEEKLY, citations: [], confidence: 0.8, model_used: "fake-brain", mode: url.searchParams.get("mode") ?? "fast", tokens_used: 1234, prompt_version: "e2e-1" });
+      const question = String(payload.question ?? "");
+      const answer = question.includes("Student wants to set this week's goal for") ? SUGGESTION : question.includes("OBSERVATION, NUDGE") ? DAILY : WEEKLY;
+      send(200, { answer, citations: [], confidence: 0.8, model_used: "fake-brain", mode: url.searchParams.get("mode") ?? "fast", tokens_used: 1234, prompt_version: "e2e-1" });
     }, state.delayMs);
   });
 });
