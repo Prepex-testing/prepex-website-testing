@@ -8,6 +8,7 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { useCheckInGate } from "@/components/check-in/CheckInGate";
 import { OnboardingCoach } from "@/components/coach/OnboardingCoach";
 import { AccountRestoredNotice } from "@/components/auth/AccountRestoredNotice";
+import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 
 // Immersive "focus" experiences: narrower sidebar, no check-in interruptions.
 // (The practice player also intercepts nav clicks to confirm leaving.)
@@ -98,6 +99,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         ) : null}
       </div>
       <BottomNav />
+      {/* The pilot feedback button: shown only while the server flag is on, and not in the immersive focus screens. */}
+      <FeedbackButton hidden={isFocusMode} />
     </div>
   );
 }
