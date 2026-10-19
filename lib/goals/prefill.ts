@@ -8,16 +8,21 @@ import { GOAL_TYPES, clampTarget } from "@/lib/goals/format";
  * produce a goal the composer would have allowed anyway.
  */
 
+/** The week a prefilled goal is for: this week, next week (the default for the diagnosis chips), or two / three weeks on (the 30-day plan). */
+export type PrefillWeek = "current" | "next" | "plus2" | "plus3";
+
+/** How many weeks after the current one. */
+export const WEEKS_AHEAD: Record<PrefillWeek, number> = { current: 0, next: 1, plus2: 2, plus3: 3 };
+
 export type Prefill = {
-  /** `next`: the goal is for next week (the default for the diagnosis chips); otherwise this week. */
-  week: "next" | "current";
+  week: PrefillWeek;
   goal: NewGoal;
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const TYPES = new Set<string>(GOAL_TYPES.map((t) => t.type));
 
-export function prefillHref(input: { type: GoalType; unit: GoalUnit; target: number; chapterId?: string | null; week?: "next" | "current" }): string {
+export function prefillHref(input: { type: GoalType; unit: GoalUnit; target: number; chapterId?: string | null; week?: PrefillWeek }): string {
   const sp = new URLSearchParams();
   sp.set("week", input.week ?? "next");
   sp.set("type", input.type);
@@ -45,7 +50,7 @@ export function parsePrefill(params: { get(name: string): string | null }, subje
   const chapterId = chapter && UUID.test(chapter) ? chapter : null;
   const subjectId = chapterId ? subjectOfChapter(chapterId) : null;
   return {
-    week: params.get("week") === "current" ? "current" : "next",
+    week: ((w): PrefillWeek => (w === "current" || w === "plus2" || w === "plus3" ? w : "next"))(params.get("week")),
     goal: {
       type: type as GoalType,
       unit: fixedUnit,
