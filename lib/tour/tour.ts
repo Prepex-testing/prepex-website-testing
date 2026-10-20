@@ -1,4 +1,4 @@
-/** The Day-1 tour: its three tooltips (Hinglish, as the operator wrote them) and the layout maths. No library. */
+/** The Day-1 tour: its three tooltips (English, as the operator wrote them) and the layout maths. No library. */
 
 export type TourStep = {
   /** The element to point at: `[data-tour="<anchor>"]`. */
@@ -7,9 +7,9 @@ export type TourStep = {
 };
 
 export const TOUR_STEPS: TourStep[] = [
-  { anchor: "plan", text: "Ye hai aapka Today's Plan — Prepex isko aapke weekly goals aur timetable se banata hai" },
-  { anchor: "focus", text: "Focus pe tap karo aur timed study session shuru karo — Prepex sab track karega" },
-  { anchor: "log-mistake", text: "Jab kuch galat ho jaaye, Log Mistake pe tap karo — AI inhi se seekh ke aapko better coach karta hai" },
+  { anchor: "plan", text: "This is your Today's Plan — Prepex builds it from your weekly goals and timetable." },
+  { anchor: "focus", text: "Tap Focus to start a timed study session — Prepex tracks everything." },
+  { anchor: "log-mistake", text: "Tap Log Mistake whenever you get something wrong — the AI uses these to coach you better." },
 ];
 
 export type Rect = { top: number; left: number; width: number; height: number };

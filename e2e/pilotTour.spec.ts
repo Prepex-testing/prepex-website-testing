@@ -44,7 +44,7 @@ test("tour: three tooltips on Home, each spotlighting the right thing, Got it mo
   await expect(tour).toBeVisible();
   await expect(tour).toHaveAttribute("aria-modal", "true");
   await expect(page.getByTestId("tour-counter")).toHaveText("1 of 3");
-  await expect(page.getByTestId("tour-text")).toHaveText("Ye hai aapka Today's Plan — Prepex isko aapke weekly goals aur timetable se banata hai");
+  await expect(page.getByTestId("tour-text")).toHaveText("This is your Today's Plan — Prepex builds it from your weekly goals and timetable.");
   expect(await ringOver(page, "plan"), "step 1 points at Plan for Today").toBe(true);
   const viewport = page.viewportSize()!;
   const bubble = (await page.getByTestId("tour-bubble").boundingBox())!;
@@ -62,13 +62,13 @@ test("tour: three tooltips on Home, each spotlighting the right thing, Got it mo
 
   await page.getByTestId("tour-next").click();
   await expect(page.getByTestId("tour-counter")).toHaveText("2 of 3");
-  await expect(page.getByTestId("tour-text")).toContainText("Focus pe tap karo");
+  await expect(page.getByTestId("tour-text")).toContainText("Tap Focus to start");
   await expect.poll(() => ringOver(page, "focus")).toBe(true); // the bottom bar on a phone, the sidebar on desktop
   await shot("2-focus");
 
   await page.getByTestId("tour-next").click();
   await expect(page.getByTestId("tour-counter")).toHaveText("3 of 3");
-  await expect(page.getByTestId("tour-text")).toContainText("Log Mistake pe tap karo");
+  await expect(page.getByTestId("tour-text")).toContainText("Tap Log Mistake whenever");
   await expect.poll(() => ringOver(page, "log-mistake")).toBe(true);
   const last = (await page.getByTestId("tour-bubble").boundingBox())!;
   expect(last.x).toBeGreaterThanOrEqual(0);

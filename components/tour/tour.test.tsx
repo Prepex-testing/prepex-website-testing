@@ -55,17 +55,17 @@ describe("the tour", () => {
     expect(screen.queryByTestId("tour")).toBeNull();
   });
 
-  it("shows the three tooltips in order, with the operator's Hinglish text, a counter, and 'Got it' on each; the last one ends it", async () => {
+  it("shows the three tooltips in order, with the operator's English text, a counter, and 'Got it' on each; the last one ends it", async () => {
     addAll();
     show();
     render(<DayOneTour />);
-    expect(await screen.findByTestId("tour-text")).toHaveTextContent("Ye hai aapka Today's Plan — Prepex isko aapke weekly goals aur timetable se banata hai");
+    expect(await screen.findByTestId("tour-text")).toHaveTextContent("This is your Today's Plan — Prepex builds it from your weekly goals and timetable.");
     expect(screen.getByTestId("tour-counter")).toHaveTextContent("1 of 3");
     await userEvent.click(screen.getByTestId("tour-next"));
-    await waitFor(() => expect(screen.getByTestId("tour-text")).toHaveTextContent("Focus pe tap karo aur timed study session shuru karo — Prepex sab track karega"));
+    await waitFor(() => expect(screen.getByTestId("tour-text")).toHaveTextContent("Tap Focus to start a timed study session — Prepex tracks everything."));
     expect(screen.getByTestId("tour-counter")).toHaveTextContent("2 of 3");
     await userEvent.click(screen.getByTestId("tour-next"));
-    await waitFor(() => expect(screen.getByTestId("tour-text")).toHaveTextContent("Jab kuch galat ho jaaye, Log Mistake pe tap karo — AI inhi se seekh ke aapko better coach karta hai"));
+    await waitFor(() => expect(screen.getByTestId("tour-text")).toHaveTextContent("Tap Log Mistake whenever you get something wrong — the AI uses these to coach you better."));
     expect(screen.getByTestId("tour-counter")).toHaveTextContent("3 of 3");
     await userEvent.click(screen.getByTestId("tour-next"));
     await waitFor(() => expect(screen.queryByTestId("tour")).toBeNull());
