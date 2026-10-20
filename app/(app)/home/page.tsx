@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useRef, useState, useSyncExternalStore } fro
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { DayOneTour } from "@/components/tour/DayOneTour";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { PlanSourceBanner } from "@/components/plan/PlanSourceBanner";
 import { CircularProgress } from "@/components/ui/CircularProgress";
@@ -877,6 +878,7 @@ export default function HomePage() {
                       greeting — the plan is what it's introducing. */}
                   <p
                     data-coach="page-header"
+                    data-tour="plan"
                     className="w-fit text-[18px] leading-[18px] font-bold text-[#333333] dark:text-[#FAF7F2]"
                   >
                     Plan for Today
@@ -997,6 +999,7 @@ export default function HomePage() {
                     href={item.href as string}
                     className={classes}
                     data-coach={QUICK_ACCESS_COACH_ANCHOR[item.label]}
+                    data-tour={item.label === "Mistake Notebook" ? "log-mistake" : undefined}
                   >
                     {content}
                   </Link>
@@ -1331,6 +1334,9 @@ export default function HomePage() {
           isGeneratingPlan
         }
       />
+
+      {/* The pilot Day-1 tour: three tooltips for a student who has never seen it (the server decides). */}
+      <DayOneTour />
 
       {isGeneratingPlan && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-background/90 backdrop-blur-sm">

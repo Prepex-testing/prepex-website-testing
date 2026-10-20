@@ -20,6 +20,7 @@ export function BottomNav() {
             key={item.label}
             href={item.href}
             data-coach={NAV_COACH_ANCHOR[item.label]}
+            data-tour={item.label === "Focus" ? "focus" : undefined}
             aria-current={active ? "page" : undefined}
             className={`flex min-h-[56px] flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-semibold transition-colors ${
               active ? "text-ink" : "text-muted"
