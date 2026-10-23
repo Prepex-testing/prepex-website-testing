@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
 import { BlockEditor } from "@/components/timetable/BlockEditor";
+import { UniformWeekControl } from "@/components/timetable/UniformWeekControl";
 import { useMediaQuery } from "@/components/timetable/useMediaQuery";
 import { ACTIVITY_META, ACTIVITY_ORDER } from "@/lib/timetable/activities";
 import { TEMPLATE_OPTIONS, buildTemplate, type TemplateId } from "@/lib/timetable/templates";
@@ -16,15 +17,21 @@ import {
   addBlock,
   blocksOnDay,
   clamp,
+  collapseToUniform,
   copyDay,
   formatDuration,
   formatRange,
+  hasPlanningTime,
+  isUniformWeek,
   moveBlock,
   removeBlock,
+  replicateDay,
   resizeBlock,
   resizeBlockStart,
+  shortSleepDays,
   snap,
   studyMinutes,
+  weekdayWeekendStudy,
   type GridBlock,
 } from "@/lib/timetable/grid";
 import type { ActivityType } from "@/lib/api/timetable";
@@ -47,15 +54,56 @@ type Props = {
   onSave: (blocks: GridBlock[]) => void | Promise<void>;
   /** When set, shows "Import from your uploaded schedule"; resolves to the blocks to load. */
   onImport?: () => Promise<GridBlock[]>;
-  secondaryAction?: { label: string; onClick: () => void };
+  secondaryAction?: { label: string; onClick: () => void; /** Back-style actions sit before the save button. */ placement?: "before" | "after" };
+  /**
+   * "My routine is the same every day". When `onUniformWeekChange` is given the toggle is shown at the top: on, a
+   * single day is edited and mirrored to all seven; off, the seven days are edited separately. The parent owns the value.
+   */
+  uniformWeek?: boolean;
+  onUniformWeekChange?: (uniform: boolean) => void;
+  /** Called with the full week after every change (not on first render) — how a draft is kept up to date. */
+  onBlocksChange?: (blocks: GridBlock[]) => void;
+  /** Called when the student loads a starter template, so the parent can note which one. */
+  onTemplateApplied?: (id: TemplateId) => void;
+  /** The template the week started from, shown as selected. */
+  activeTemplateId?: TemplateId | null;
+  /** Refuse to save a week with no Self-Study or Practice block, and say why. */
+  requirePlanningTime?: boolean;
 };
 
 type Paint = { day: number; anchor: number; current: number };
 type MovePreview = { key: string; day: number; start: number };
 type ChipDrag = { type: ActivityType; x: number; y: number };
 
-export function TimetableBuilder({ initialBlocks, subjects, saving = false, saveLabel = "Save timetable", error, onSave, onImport, secondaryAction }: Props) {
-  const [blocks, setBlocks] = useState<GridBlock[]>(initialBlocks);
+export function TimetableBuilder({
+  initialBlocks,
+  subjects,
+  saving = false,
+  saveLabel = "Save timetable",
+  error,
+  onSave,
+  onImport,
+  secondaryAction,
+  uniformWeek = false,
+  onUniformWeekChange,
+  onBlocksChange,
+  onTemplateApplied,
+  activeTemplateId = null,
+  requirePlanningTime = false,
+}: Props) {
+  const [blocks, setRawBlocks] = useState<GridBlock[]>(initialBlocks);
+  // In "same every day" mode every edit is mirrored from the one visible day (Monday's column) to all seven.
+  const uniformRef = useRef(uniformWeek && Boolean(onUniformWeekChange));
+  useEffect(() => {
+    uniformRef.current = uniformWeek && Boolean(onUniformWeekChange);
+  }, [uniformWeek, onUniformWeekChange]);
+  const setBlocks = useCallback((update: GridBlock[] | ((prev: GridBlock[]) => GridBlock[])) => {
+    setRawBlocks((prev) => {
+      const next = typeof update === "function" ? update(prev) : update;
+      return uniformRef.current ? replicateDay(next, 0) : next;
+    });
+  }, []);
+  const showUniform = uniformWeek && Boolean(onUniformWeekChange);
   const [tool, setTool] = useState<ActivityType | null>(null);
   const [selectedDay, setSelectedDay] = useState(0);
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -67,7 +115,10 @@ export function TimetableBuilder({ initialBlocks, subjects, saving = false, save
   const [dropTarget, setDropTarget] = useState<{ day: number; min: number } | null>(null);
 
   const isWide = useMediaQuery("(min-width: 768px)");
-  const visibleDays = useMemo(() => (isWide ? Array.from({ length: DAY_COUNT }, (_, d) => d) : [selectedDay]), [isWide, selectedDay]);
+  const visibleDays = useMemo(
+    () => (showUniform ? [0] : isWide ? Array.from({ length: DAY_COUNT }, (_, d) => d) : [selectedDay]),
+    [showUniform, isWide, selectedDay],
+  );
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const columnRefs = useRef(new Map<number, HTMLDivElement>());
@@ -81,6 +132,17 @@ export function TimetableBuilder({ initialBlocks, subjects, saving = false, save
 
   useEffect(() => {
     blocksRef.current = blocks;
+  }, [blocks]);
+
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    onBlocksChange?.(blocks);
+    // The callback is deliberately not a dependency: a parent that recreates it every render must not re-fire this.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blocks]);
 
   // Open the grid at 6 AM rather than midnight.
@@ -109,7 +171,7 @@ export function TimetableBuilder({ initialBlocks, subjects, saving = false, save
   const applyResult = useCallback((result: { blocks: GridBlock[]; error?: string }) => {
     if (result.error) setNotice(result.error);
     else setBlocks(result.blocks);
-  }, []);
+  }, [setBlocks]);
 
   // --- painting on empty grid space --------------------------------------
 
@@ -239,9 +301,35 @@ export function TimetableBuilder({ initialBlocks, subjects, saving = false, save
   // --- toolbar actions ---------------------------------------------------
 
   function applyTemplate(id: TemplateId) {
-    if (blocks.length > 0 && !window.confirm("Replace your current timetable with this template?")) return;
-    setBlocks(buildTemplate(id));
-    setNotice("Template applied — now adjust it to your real week.");
+    const untouched = blocks.every((b) => b.fromTemplate);
+    if (blocks.length > 0 && !untouched && !window.confirm("Replace your current timetable with this template?")) return;
+    const template = buildTemplate(id);
+    // A template that differs from day to day cannot be shown as one routine, so the week opens day by day.
+    const staysUniform = isUniformWeek(template);
+    if (showUniform && !staysUniform) {
+      uniformRef.current = false;
+      onUniformWeekChange?.(false);
+      setRawBlocks(template);
+      setNotice("This starter week changes by day, so each day is shown on its own. Adjust it to your real week.");
+    } else {
+      setBlocks(template);
+      setNotice("Template applied. Now adjust it to your real week.");
+    }
+    onTemplateApplied?.(id);
+  }
+
+  function handleUniformConfirm(nextUniform: boolean, sourceDay: number) {
+    if (nextUniform) {
+      uniformRef.current = true;
+      setRawBlocks(collapseToUniform(blocksRef.current, sourceDay));
+      onUniformWeekChange?.(true);
+      setSelectedDay(0);
+      setNotice(`Your ${DAY_LONG[sourceDay]} plan now applies to every day.`);
+    } else {
+      uniformRef.current = false;
+      onUniformWeekChange?.(false);
+      setNotice("Each day can now be edited on its own.");
+    }
   }
 
   async function handleImport() {
@@ -262,9 +350,17 @@ export function TimetableBuilder({ initialBlocks, subjects, saving = false, save
   const editing = editingKey ? blocks.find((b) => b.key === editingKey) ?? null : null;
   const weeklyStudy = studyMinutes(blocks);
   const hasStudyTime = weeklyStudy > 0;
+  const lacksPlanningTime = requirePlanningTime && !hasPlanningTime(blocks);
+  const lowSleepDays = blocks.length > 0 ? shortSleepDays(blocks) : [];
+  const split = weekdayWeekendStudy(blocks);
+  const anyFromTemplate = blocks.some((b) => b.fromTemplate);
 
   return (
     <div className="flex flex-col gap-5" data-testid="timetable-builder">
+      {onUniformWeekChange && (
+        <UniformWeekControl uniform={uniformWeek} blocks={blocks} currentDay={isWide ? undefined : selectedDay} onConfirm={handleUniformConfirm} />
+      )}
+
       {/* Starter templates ------------------------------------------------- */}
       <section aria-label="Starter templates" className="flex flex-col gap-2">
         <p className="text-[14px] font-bold text-body-text dark:text-ink">Start from a template</p>
@@ -275,8 +371,11 @@ export function TimetableBuilder({ initialBlocks, subjects, saving = false, save
               type="button"
               onClick={() => applyTemplate(t.id)}
               data-testid={`template-${t.id}`}
+              aria-pressed={activeTemplateId === t.id}
               title={t.description}
-              className="min-h-11 rounded-full border border-brand/20 bg-surface px-4 text-[14px] font-semibold text-ink transition-colors hover:border-cta hover:bg-tint"
+              className={`min-h-11 rounded-full border px-4 text-[14px] font-semibold text-ink transition-colors hover:border-cta hover:bg-tint ${
+                activeTemplateId === t.id ? "border-brand bg-tint-strong shadow-hover dark:border-[#FAF7F2]" : "border-brand/20 bg-surface"
+              }`}
             >
               {t.label}
             </button>
@@ -303,6 +402,13 @@ export function TimetableBuilder({ initialBlocks, subjects, saving = false, save
           )}
         </div>
       </section>
+
+      {anyFromTemplate && (
+        <p className="-mt-2 flex items-center gap-2 text-[13px] font-medium text-muted" data-testid="template-legend">
+          <span aria-hidden className="inline-block h-2.5 w-2.5 rotate-45 border-2 border-ink/50" />
+          Blocks with this mark come from your starter week. Change or remove any of them.
+        </p>
+      )}
 
       {/* Activity palette ---------------------------------------------------- */}
       <section aria-label="Activities" className="flex flex-col gap-2">
@@ -341,7 +447,7 @@ export function TimetableBuilder({ initialBlocks, subjects, saving = false, save
       </section>
 
       {/* Day tabs (phone) --------------------------------------------------- */}
-      {!isWide && (
+      {!isWide && !showUniform && (
         <div role="tablist" aria-label="Day of week" className="grid grid-cols-7 gap-1">
           {DAY_SHORT.map((d, i) => {
             const active = i === selectedDay;
@@ -372,11 +478,11 @@ export function TimetableBuilder({ initialBlocks, subjects, saving = false, save
 
       {/* The grid ------------------------------------------------------------ */}
       <div ref={scrollRef} className="relative max-h-[62vh] overflow-y-auto rounded-xl border border-brand/10 bg-surface" data-testid="timetable-scroll">
-        {isWide && (
+        {(isWide || showUniform) && (
           <div className="sticky top-0 z-20 flex border-b border-brand/10 bg-surface" style={{ paddingLeft: GUTTER_PX }}>
             {visibleDays.map((d) => (
               <div key={d} className="flex-1 py-2 text-center text-[13px] font-bold text-ink">
-                {DAY_SHORT[d]}
+                {showUniform ? "Every day" : DAY_SHORT[d]}
               </div>
             ))}
           </div>
@@ -401,7 +507,7 @@ export function TimetableBuilder({ initialBlocks, subjects, saving = false, save
                 }}
                 data-day-col={day}
                 data-testid={`day-col-${day}`}
-                aria-label={`${DAY_LONG[day]} timetable`}
+                aria-label={showUniform ? "Timetable for every day" : `${DAY_LONG[day]} timetable`}
                 onPointerDown={(e) => onColumnPointerDown(day, e)}
                 onPointerMove={(e) => onColumnPointerMove(day, e)}
                 onPointerUp={(e) => onColumnPointerUp(day, e)}
@@ -425,7 +531,8 @@ export function TimetableBuilder({ initialBlocks, subjects, saving = false, save
                       data-block={b.key}
                       data-testid="tt-block"
                       data-activity={b.activityType}
-                      aria-label={`${meta.label}${subject ? `, ${subject}` : ""}, ${DAY_LONG[b.dayOfWeek]} ${formatRange(b.startMin, b.endMin)}. Press Enter to edit, arrow keys to move.`}
+                      data-from-template={b.fromTemplate ? "true" : undefined}
+                      aria-label={`${meta.label}${subject ? `, ${subject}` : ""}, ${showUniform ? "every day" : DAY_LONG[b.dayOfWeek]} ${formatRange(b.startMin, b.endMin)}${b.fromTemplate ? ", from your starter week" : ""}. Press Enter to edit, arrow keys to move.`}
                       onPointerDown={(e) => onBlockPointerDown(b, e)}
                       onPointerMove={(e) => onBlockPointerMove(b, e)}
                       onPointerUp={() => onBlockPointerUp(b)}
@@ -443,7 +550,14 @@ export function TimetableBuilder({ initialBlocks, subjects, saving = false, save
                         borderLeft: `4px solid ${meta.color}`,
                       }}
                     >
-                      <p className="truncate text-[11px] font-bold leading-tight text-ink">
+                      {b.fromTemplate && (
+                        <span
+                          aria-hidden
+                          title="From your starter week"
+                          className="absolute right-1 top-1 h-2 w-2 rotate-45 border-[1.5px] border-ink/45"
+                        />
+                      )}
+                      <p className="truncate pr-3 text-[11px] font-bold leading-tight text-ink">
                         {meta.label}
                         {b.label ? ` · ${b.label}` : ""}
                       </p>
@@ -535,25 +649,49 @@ export function TimetableBuilder({ initialBlocks, subjects, saving = false, save
       <div className="flex flex-col gap-3 rounded-xl bg-tint-strong p-4 dark:bg-[#FAF7F214]">
         <p className="text-[14px] font-semibold text-ink" data-testid="study-summary">
           {hasStudyTime
-            ? `Self-study time: ${formatDuration(weeklyStudy)} a week (about ${formatDuration(Math.round(weeklyStudy / DAY_COUNT))} a day)`
-            : "Add some self-study, practice or revision blocks — that is where Prepex plans your tasks."}
+            ? `Study time: ${formatDuration(weeklyStudy)} a week (about ${formatDuration(Math.round(weeklyStudy / DAY_COUNT))} a day${
+                showUniform || split.weekday === split.weekend ? "" : `: ${formatDuration(split.weekday)} on weekdays, ${formatDuration(split.weekend)} on weekends`
+              })`
+            : "Add some self-study, practice or revision blocks. That is where Prepex plans your tasks."}
         </p>
+        {lacksPlanningTime && blocks.length > 0 && (
+          <p role="alert" data-testid="planning-time-error" className="rounded-lg bg-danger-bg px-3 py-2 text-xs font-medium text-danger">
+            Add at least one Self-Study or Practice block. Prepex plans your tasks in that time, so it needs somewhere to put them.
+          </p>
+        )}
+        {lowSleepDays.length > 0 && (
+          <p role="status" data-testid="sleep-warning" className="rounded-lg bg-warning-bg px-3 py-2 text-xs font-medium text-warning">
+            {showUniform
+              ? "You have under 5 hours of sleep planned. You can keep it, but most students study better with more rest."
+              : `You have under 5 hours of sleep planned on ${lowSleepDays.map((d) => DAY_SHORT[d]).join(", ")}. You can keep it, but most students study better with more rest.`}
+          </p>
+        )}
         {error && (
           <p role="alert" className="rounded-lg bg-danger-bg px-3 py-2 text-xs font-medium text-danger">
             {error}
           </p>
         )}
         <div className="flex flex-col gap-2 sm:flex-row">
+          {secondaryAction?.placement === "before" && (
+            <button
+              type="button"
+              onClick={secondaryAction.onClick}
+              disabled={saving}
+              className="min-h-14 rounded-lg border-[1.5px] border-secondary-button-border bg-surface px-5 text-base font-semibold text-body-text hover:bg-tint-strong disabled:opacity-60"
+            >
+              {secondaryAction.label}
+            </button>
+          )}
           <button
             type="button"
             data-testid="save-timetable"
-            disabled={saving || blocks.length === 0}
+            disabled={saving || blocks.length === 0 || lacksPlanningTime}
             onClick={() => void onSave(blocks)}
             className="min-h-14 flex-1 rounded-lg border border-primary-button-border bg-cta px-4 text-base font-semibold text-white transition-colors hover:bg-[#E8623F] disabled:cursor-not-allowed disabled:border-primary-button-disabled-bg disabled:bg-primary-button-disabled-bg disabled:text-primary-button-disabled-text"
           >
             {saving ? "Saving…" : saveLabel}
           </button>
-          {secondaryAction && (
+          {secondaryAction && secondaryAction.placement !== "before" && (
             <button
               type="button"
               onClick={secondaryAction.onClick}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { TEMPLATE_OPTIONS, buildTemplate } from "@/lib/timetable/templates";
-import { DAY_COUNT, blocksOnDay, hasOverlap, studyMinutes, toApiBlocks } from "@/lib/timetable/grid";
+import { TEMPLATE_OPTIONS, buildTemplate, pickTemplateId } from "@/lib/timetable/templates";
+import { DAY_COUNT, blocksOnDay, hasOverlap, isUniformWeek, shortSleepDays, studyMinutes, toApiBlocks } from "@/lib/timetable/grid";
 
 describe.each(TEMPLATE_OPTIONS.map((t) => t.id))("template %s", (id) => {
   const blocks = buildTemplate(id);
@@ -66,5 +66,39 @@ describe("template content", () => {
     expect(b.some((x) => x.activityType === "SCHOOL")).toBe(false);
     const coaching = blocksOnDay(b, 0).find((x) => x.activityType === "COACHING")!;
     expect(coaching.endMin - coaching.startMin).toBeGreaterThanOrEqual(240);
+  });
+});
+
+describe("every template is a sane starting week", () => {
+  it.each(TEMPLATE_OPTIONS.map((t) => t.id))("%s gives at least five hours of sleep a day, so it never opens with a warning", (id) => {
+    expect(shortSleepDays(buildTemplate(id))).toEqual([]);
+  });
+
+  it.each(TEMPLATE_OPTIONS.map((t) => t.id))("%s marks every block as coming from the template", (id) => {
+    expect(buildTemplate(id).every((b) => b.fromTemplate === true)).toBe(true);
+  });
+
+  it("only Self-Prep is the same on all seven days", () => {
+    expect(isUniformWeek(buildTemplate("SELF_PREP"))).toBe(true);
+    expect(isUniformWeek(buildTemplate("SCHOOL_COACHING"))).toBe(false);
+    expect(isUniformWeek(buildTemplate("DROPPER_COACHING"))).toBe(false);
+  });
+});
+
+describe("pickTemplateId: the coaching answer decides which week is waiting", () => {
+  it.each([
+    ["COACHING", "CLASS_11", "SCHOOL_COACHING"],
+    ["COACHING", "CLASS_12", "SCHOOL_COACHING"],
+    ["COACHING", "DROPPER_1", "DROPPER_COACHING"],
+    ["COACHING", "DROPPER_2", "DROPPER_COACHING"],
+    ["COACHING", "OTHER", "DROPPER_COACHING"],
+    ["ONLINE_SELF_PREP", "CLASS_12", "SCHOOL_COACHING"],
+    ["ONLINE_SELF_PREP", "DROPPER_1", "DROPPER_COACHING"],
+    ["SELF_PREP", "CLASS_11", "SELF_PREP"],
+    ["SELF_PREP", "CLASS_12", "SELF_PREP"],
+    ["SELF_PREP", "DROPPER_1", "SELF_PREP"],
+    ["SELF_PREP", "OTHER", "SELF_PREP"],
+  ] as const)("%s + %s -> %s", (coaching, level, expected) => {
+    expect(pickTemplateId(coaching, level)).toBe(expected);
   });
 });

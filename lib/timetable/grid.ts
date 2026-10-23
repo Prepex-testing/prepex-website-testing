@@ -28,9 +28,19 @@ export type GridBlock = {
   activityType: ActivityType;
   subjectId: number | null;
   label: string | null;
+  /** Came from a starter template and has not been touched since — shown with a subtle marker. */
+  fromTemplate?: boolean;
 };
 
 export type GridResult = { blocks: GridBlock[]; error?: string; block?: GridBlock };
+
+/** An edited block is the student's own now: it loses the "from template" marker. */
+function touched(block: GridBlock): GridBlock {
+  if (!block.fromTemplate) return block;
+  const rest = { ...block };
+  delete rest.fromTemplate;
+  return rest;
+}
 
 let keyCounter = 0;
 export function newKey(): string {
@@ -177,7 +187,7 @@ export function moveBlock(blocks: GridBlock[], key: string, dayOfWeek: number, s
   const start = clamp(snap(startMin), 0, DAY_MINUTES - length);
   const end = start + length;
   if (hasOverlap(blocks, day, start, end, key)) return { blocks, error: "That would overlap another block." };
-  const moved = { ...block, dayOfWeek: day, startMin: start, endMin: end };
+  const moved = touched({ ...block, dayOfWeek: day, startMin: start, endMin: end });
   return { blocks: blocks.map((b) => (b.key === key ? moved : b)), block: moved };
 }
 
@@ -187,7 +197,7 @@ export function resizeBlock(blocks: GridBlock[], key: string, endMin: number): G
   if (!block) return { blocks, error: "Block not found." };
   const limit = nextBlockStart(blocks, block.dayOfWeek, block.endMin, key);
   const end = clamp(snap(endMin), block.startMin + MIN_BLOCK_MINUTES, Math.max(block.startMin + MIN_BLOCK_MINUTES, limit));
-  const resized = { ...block, endMin: end };
+  const resized = touched({ ...block, endMin: end });
   return { blocks: blocks.map((b) => (b.key === key ? resized : b)), block: resized };
 }
 
@@ -197,7 +207,7 @@ export function resizeBlockStart(blocks: GridBlock[], key: string, startMin: num
   if (!block) return { blocks, error: "Block not found." };
   const limit = previousBlockEnd(blocks, block.dayOfWeek, block.startMin, key);
   const start = clamp(snap(startMin), Math.min(limit, block.endMin - MIN_BLOCK_MINUTES), block.endMin - MIN_BLOCK_MINUTES);
-  const resized = { ...block, startMin: start };
+  const resized = touched({ ...block, startMin: start });
   return { blocks: blocks.map((b) => (b.key === key ? resized : b)), block: resized };
 }
 
@@ -206,7 +216,7 @@ export function updateBlock(
   key: string,
   patch: Partial<Pick<GridBlock, "activityType" | "subjectId" | "label">>,
 ): GridBlock[] {
-  return blocks.map((b) => (b.key === key ? { ...b, ...patch } : b));
+  return blocks.map((b) => (b.key === key ? touched({ ...b, ...patch }) : b));
 }
 
 export function removeBlock(blocks: GridBlock[], key: string): GridBlock[] {
@@ -224,6 +234,62 @@ export function copyDay(blocks: GridBlock[], fromDay: number, toDays: number[]):
   return [...kept, ...copies];
 }
 
+/**
+ * "My routine is the same every day": every day becomes a copy of `fromDay`. The source day's blocks keep their
+ * identity; the other six days are fresh copies (server ids dropped — the save replaces the whole week).
+ */
+export function replicateDay(blocks: GridBlock[], fromDay = 0): GridBlock[] {
+  const source = blocksOnDay(blocks, fromDay);
+  const copies = Array.from({ length: DAY_COUNT }, (_, day) => day)
+    .filter((day) => day !== fromDay)
+    .flatMap((day) => source.map((b) => ({ ...b, key: newKey(), id: undefined, dayOfWeek: day })));
+  return [...source, ...copies];
+}
+
+/**
+ * Switching to "same every day": the chosen day's routine becomes day 0 (the one editor the student sees) and is
+ * copied onto the other six. Everything that was on the other days is dropped, which is why the switch asks first.
+ */
+export function collapseToUniform(blocks: GridBlock[], fromDay: number): GridBlock[] {
+  return replicateDay(
+    blocksOnDay(blocks, fromDay).map((b) => ({ ...b, dayOfWeek: 0 })),
+    0,
+  );
+}
+
+/** Whether going uniform from `fromDay` would throw something away: some other day differs from it. */
+export function uniformWouldDiscard(blocks: GridBlock[], fromDay: number): boolean {
+  return !matchesDay(blocks, fromDay);
+}
+
+function daySignature(blocks: GridBlock[], day: number): string {
+  return blocksOnDay(blocks, day)
+    .map((b) => `${b.startMin}|${b.endMin}|${b.activityType}|${b.subjectId ?? ""}|${(b.label ?? "").trim()}`)
+    .join(";");
+}
+
+/** A week reduced to what the student would see, ignoring keys and ids: for comparing two weeks. */
+export function weekSignature(blocks: GridBlock[]): string {
+  return Array.from({ length: DAY_COUNT }, (_, day) => daySignature(blocks, day)).join("#");
+}
+
+/** True when every day holds exactly the blocks `fromDay` holds (an empty week counts). */
+export function matchesDay(blocks: GridBlock[], fromDay: number): boolean {
+  const base = daySignature(blocks, fromDay);
+  return Array.from({ length: DAY_COUNT }, (_, day) => day).every((day) => daySignature(blocks, day) === base);
+}
+
+/** True when all seven days hold the same blocks (same times, activity, subject and label). */
+export function isUniformWeek(blocks: GridBlock[]): boolean {
+  return matchesDay(blocks, 0);
+}
+
+/** The first day with any study time, or Monday: where "same every day" copies from by default. */
+export function defaultSourceDay(blocks: GridBlock[]): number {
+  for (let day = 0; day < DAY_COUNT; day += 1) if (studyMinutes(blocks, day) > 0) return day;
+  return 0;
+}
+
 // ---------------------------------------------------------------------------
 // Summaries
 // ---------------------------------------------------------------------------
@@ -234,6 +300,29 @@ export function studyMinutes(blocks: GridBlock[], day?: number): number {
   return blocks
     .filter((b) => STUDY_ACTIVITIES.includes(b.activityType) && (day === undefined || b.dayOfWeek === day))
     .reduce((sum, b) => sum + (b.endMin - b.startMin), 0);
+}
+
+/** Planning needs room to put tasks: at least one Self-Study or Practice block somewhere in the week. */
+export function hasPlanningTime(blocks: GridBlock[]): boolean {
+  return blocks.some((b) => b.activityType === "SELF_STUDY" || b.activityType === "PRACTICE");
+}
+
+export const MIN_SLEEP_MINUTES = 5 * 60;
+
+/** Days whose Sleep blocks add up to under five hours — a gentle warning, never a reason to stop. */
+export function shortSleepDays(blocks: GridBlock[]): number[] {
+  return Array.from({ length: DAY_COUNT }, (_, day) => day).filter((day) => {
+    const sleep = blocksOnDay(blocks, day)
+      .filter((b) => b.activityType === "SLEEP")
+      .reduce((sum, b) => sum + (b.endMin - b.startMin), 0);
+    return sleep < MIN_SLEEP_MINUTES;
+  });
+}
+
+/** Average study minutes on a Monday-Friday day and on a Saturday-Sunday day. */
+export function weekdayWeekendStudy(blocks: GridBlock[]): { weekday: number; weekend: number } {
+  const total = (days: number[]) => days.reduce((sum, d) => sum + studyMinutes(blocks, d), 0);
+  return { weekday: Math.round(total([0, 1, 2, 3, 4]) / 5), weekend: Math.round(total([5, 6]) / 2) };
 }
 
 // ---------------------------------------------------------------------------
