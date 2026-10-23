@@ -17,36 +17,85 @@ export function resetStudent() {
   });
 }
 
-/** The shortest honest path from a fresh student to the app: log in, onboard (skipping the optional steps), skip today's check-in. */
+export async function login(page: Page) {
+  await page.goto("/login");
+  await page.getByPlaceholder("Rohan@example.com").fill(EMAIL);
+  await page.getByPlaceholder("Enter password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Log In" }).click();
+}
+
+/** Answers onboarding steps 1-3 (the first goal option, Class 12, self-prep) and stops on the timetable step. */
+export async function reachTimetableStep(page: Page) {
+  await login(page);
+  await expect(page.getByRole("heading", { name: /I.m preparing for/ })).toBeVisible({ timeout: 60_000 });
+  await next(page);
+  await expect(page.getByRole("heading", { name: "Tell us about you" })).toBeVisible();
+  await page.getByPlaceholder("City").fill("Kota");
+  await page.getByText("Class 12", { exact: true }).click();
+  await next(page);
+  await expect(page).toHaveURL(/where-do-you-study/);
+  await page.getByText("Self-prep only").click();
+  await next(page);
+  await expect(page.getByRole("heading", { name: "Build your week" })).toBeVisible();
+  await expect(page.getByTestId("timetable-builder")).toBeVisible();
+}
+
+/** Runs a read-only SQL query against the local E2E database and returns the rows. */
+export function queryDb<T = Record<string, unknown>>(sql: string, params: unknown[] = []): T[] {
+  const backend = process.env.E2E_BACKEND_DIR ?? path.resolve(__dirname, "../../prepex-backend-testing");
+  const script = `
+    const pg = require('pg');
+    (async () => {
+      const c = new pg.Client({ connectionString: process.env.DATABASE_URL });
+      await c.connect();
+      const r = await c.query(process.env.E2E_SQL, JSON.parse(process.env.E2E_PARAMS));
+      console.log(JSON.stringify(r.rows));
+      await c.end();
+    })();`;
+  const out = execFileSync(process.execPath, ["-e", script], {
+    cwd: backend,
+    env: {
+      ...process.env,
+      DATABASE_URL: process.env.E2E_DATABASE_URL ?? "postgresql://postgres:postgres@localhost:54329/prepex_dev",
+      E2E_SQL: sql,
+      E2E_PARAMS: JSON.stringify(params),
+    },
+  });
+  return JSON.parse(out.toString()) as T[];
+}
+
+/** The "Next" button of whichever onboarding step is showing. */
+export async function next(page: Page) {
+  await page.getByRole("button", { name: "Next", exact: true }).click();
+}
+
+/** The shortest honest path from a fresh student to the app: log in, onboard (accepting the starter week, skipping the chapters), skip today's check-in. */
 export async function onboardAndEnterApp(page: Page) {
   await page.goto("/login");
   await page.getByPlaceholder("Rohan@example.com").fill(EMAIL);
   await page.getByPlaceholder("Enter password").fill(PASSWORD);
   await page.getByRole("button", { name: "Log In" }).click();
 
-  await expect(page.getByRole("heading", { name: /What are you preparing for/ })).toBeVisible({ timeout: 60_000 });
-  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.getByRole("heading", { name: /I.m preparing for/ })).toBeVisible({ timeout: 60_000 });
+  await next(page);
 
   await expect(page.getByRole("heading", { name: "Tell us about you" })).toBeVisible();
   await page.getByPlaceholder("Rohan Sharma").fill("Aarav E2E");
   await page.getByPlaceholder("City").fill("Kota");
   await page.getByText("Class 12", { exact: true }).click();
-  await page.getByRole("button", { name: "Continue" }).click();
+  await next(page);
 
   await expect(page).toHaveURL(/where-do-you-study/);
   await page.getByText("Self-prep only").click();
-  await page.getByRole("button", { name: "Continue" }).click();
+  await next(page);
 
-  await expect(page).toHaveURL(/time-selection/);
-  await page.getByRole("button", { name: /Evening/ }).click();
-  await page.getByText("Evening Person").click();
-  await page.getByRole("button", { name: "Continue" }).click();
-
+  // The coaching answer already loaded a starter week, so the shortest honest path is to accept it.
   await expect(page.getByRole("heading", { name: "Build your week" })).toBeVisible();
-  await page.getByRole("button", { name: /Skip/ }).first().click();
+  await expect(page.getByTestId("tt-block").first()).toBeVisible();
+  await next(page);
 
   await expect(page).toHaveURL(/which-chapters-have-you-studied/);
-  await page.getByRole("button", { name: /Skip/ }).first().click();
+  await page.getByTestId("skip-chapters").click();
 
   await expect(page).toHaveURL(/welcome-to-prepex/, { timeout: 90_000 });
   await page.getByRole("link", { name: /Skip — go to my dashboard/ }).click();

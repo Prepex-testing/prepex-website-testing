@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
+import { reachTimetableStep } from "./helpers";
 
 const EMAIL = "e2e.student@test.prepex.io";
 const PASSWORD = "E2eTest!234";
@@ -48,36 +49,31 @@ test("login → onboarding → timetable → weekly goals → plan", async ({ pa
   await page.getByPlaceholder("Enter password").fill(PASSWORD);
   await page.getByRole("button", { name: "Log In" }).click();
 
-  // ── onboarding 1: exam ───────────────────────────────────────────────────────
-  await expect(page.getByRole("heading", { name: /What are you preparing for/ })).toBeVisible({ timeout: 60_000 });
-  await page.getByRole("button", { name: "Continue" }).click();
+  // ── onboarding 1: goal ───────────────────────────────────────────────────────
+  await expect(page.getByRole("heading", { name: /I.m preparing for/ })).toBeVisible({ timeout: 60_000 });
+  await page.getByRole("button", { name: "Next", exact: true }).click();
 
   // ── onboarding 2: about you ──────────────────────────────────────────────────
   await expect(page.getByRole("heading", { name: "Tell us about you" })).toBeVisible();
   await page.getByPlaceholder("Rohan Sharma").fill("Aarav E2E");
   await page.getByPlaceholder("City").fill("Kota");
   await page.getByText("Class 12", { exact: true }).click();
-  await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByRole("button", { name: "Next", exact: true }).click();
 
-  // ── onboarding 3: where do you study ─────────────────────────────────────────
+  // ── onboarding 3: coaching ───────────────────────────────────────────────────
   await expect(page).toHaveURL(/where-do-you-study/);
   await page.getByText("Self-prep only").click();
-  await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByRole("button", { name: "Next", exact: true }).click();
 
-  // ── onboarding 4: study time ─────────────────────────────────────────────────
-  await expect(page).toHaveURL(/time-selection/);
-  await page.getByRole("button", { name: /Evening/ }).click();
-  await page.getByText("Evening Person").click();
-  await page.getByRole("button", { name: "Continue" }).click();
-
-  // ── onboarding 5: build the timetable ────────────────────────────────────────
+  // ── onboarding 4: build the timetable (the self-prep answer already loaded its starter week) ─────
   await expect(page.getByRole("heading", { name: "Build your week" })).toBeVisible();
   await expect(page.getByTestId("timetable-builder")).toBeVisible();
-  await shot("timetable-empty");
+  await expect(page.getByTestId("template-note")).toContainText("Self-Prep Only");
+  await expect.poll(() => page.getByTestId("tt-block").count()).toBeGreaterThan(5);
+  await shot("timetable-self-prep");
   if (mobile) await noHorizontalScroll(page);
 
   await page.getByTestId("template-SCHOOL_COACHING").click();
-  await expect.poll(() => page.getByTestId("tt-block").count()).toBeGreaterThan(5);
   await expect(page.getByTestId("study-summary")).toContainText(/study/i);
   await shot("timetable-template");
   if (mobile) {
@@ -87,9 +83,9 @@ test("login → onboarding → timetable → weekly goals → plan", async ({ pa
 
   await page.getByTestId("save-timetable").click();
 
-  // ── onboarding 6: chapters studied (skipped), then the first plan ────────────
+  // ── onboarding 5: chapters (skipped), then the first plan ────────────────────
   await expect(page).toHaveURL(/which-chapters-have-you-studied/);
-  await page.getByRole("button", { name: /Skip/ }).first().click();
+  await page.getByTestId("skip-chapters").click();
   await expect(page).toHaveURL(/welcome-to-prepex/, { timeout: 90_000 });
   await expect(page.getByRole("heading", { name: "Your first plan is ready" })).toBeVisible();
   await page.getByRole("link", { name: /Set this week's goals/ }).click();
@@ -140,19 +136,14 @@ test("login → onboarding → timetable → weekly goals → plan", async ({ pa
 });
 
 test("timetable: drag on the grid creates a block, snapped to 15 minutes", async ({ page }) => {
-  resetStudent(); // start from onboarding step 1 so the builder route is reachable
-  await page.goto("/login");
-  await page.getByPlaceholder("Rohan@example.com").fill(EMAIL);
-  await page.getByPlaceholder("Enter password").fill(PASSWORD);
-  await page.getByRole("button", { name: "Log In" }).click();
-  await page.waitForURL((u) => u.pathname !== "/login", { timeout: 60_000 });
-
-  // The builder is the same component on the onboarding step and on /timetable; this route needs no
-  // finished onboarding, so the test stands alone.
-  await page.goto("/onboarding/build-timetable");
+  resetStudent(); // start from onboarding step 1
+  await reachTimetableStep(page);
   await expect(page.getByTestId("timetable-builder")).toBeVisible();
-  await expect(page.getByTestId("tt-block")).toHaveCount(0);
 
+  // Start from an empty week (the starter week is replaced after a confirm), so the new block is the only one.
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Clear all" }).click();
+  await expect(page.getByTestId("tt-block")).toHaveCount(0);
   await page.getByTestId("chip-SELF_STUDY").click();
   const column = page.locator('[data-testid^="day-col-"]').first();
   const scroll = page.getByTestId("timetable-scroll");
