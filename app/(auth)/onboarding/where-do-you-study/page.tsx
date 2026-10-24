@@ -1,335 +1,117 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
-import { Button } from "@/components/ui/Button";
+import { OnboardingNav } from "@/components/onboarding/OnboardingNav";
 import { RadioOption } from "@/components/ui/RadioOption";
 import { Select } from "@/components/ui/Select";
 import { StepProgress } from "@/components/ui/StepProgress";
-import { UploadDropzone } from "@/components/ui/UploadDropzone";
-import { CheckCircleIcon, CheckIcon } from "@/components/ui/icons";
-import {
-  getOnboardingProgress,
-  saveCoachingProfile,
-  skipOnboardingStep,
-  uploadScheduleImage,
-} from "@/lib/api/onboarding";
-import type { OnboardingProfile } from "@/lib/api/onboarding";
-import { ApiError } from "@/lib/api/http";
-import { useScheduleSuggestion } from "@/lib/onboarding/schedule-suggestion-context";
+import { coachingValid, type CoachingType } from "@/lib/onboarding/draft";
+import { useOnboardingDraft, useStepGuard } from "@/lib/onboarding/draft-context";
+import { ONBOARDING_TOTAL_STEPS, stepPath } from "@/lib/onboarding/steps";
+import { useStepTelemetry } from "@/lib/onboarding/useStepTelemetry";
 
-type CoachingStatus = "coaching" | "self-study" | "self-prep";
+// The saved value is the label itself: it is what the profile page and the planner show.
+const COACHING_NAME_OPTIONS = ["Aakash Institute", "Allen Career Institute", "FIITJEE", "Resonance", "PW", "Unacademy", "Narayana", "Other"].map(
+  (label) => ({ value: label, label }),
+);
 
-const COACHING_TYPE_MAP: Record<CoachingStatus, "COACHING" | "SELF_PREP" | "ONLINE_SELF_PREP"> = {
-  coaching: "COACHING",
-  "self-study": "ONLINE_SELF_PREP",
-  "self-prep": "SELF_PREP",
+const BATCH_OPTIONS = ["Morning Batch", "Evening Batch", "Weekend Batch", "Online Batch"].map((label) => ({ value: label, label }));
+
+const RADIO_STYLE = {
+  unselectedLabelClassName: "text-[#333333] dark:text-ink",
+  unselectedBoxClassName: "dark:border-[#D1D5DB]! dark:shadow-[0px_1px_2px_0px_#1A1A4E0F]!",
+  selectedBoxClassName: "dark:border-[#FFFFFF]!",
 };
-
-const COACHING_STATUS_FROM_TYPE: Record<
-  NonNullable<OnboardingProfile["coachingType"]>,
-  CoachingStatus
-> = {
-  COACHING: "coaching",
-  ONLINE_SELF_PREP: "self-study",
-  SELF_PREP: "self-prep",
-};
-
-const COACHING_NAME_OPTIONS = [
-  { value: "aakash", label: "Aakash Institute" },
-  { value: "allen", label: "Allen Career Institute" },
-  { value: "fiitjee", label: "FIITJEE" },
-  { value: "resonance", label: "Resonance" },
-  { value: "pw", label: "PW" },
-  { value: "unacademy", label: "Unacademy" },
-  { value: "narayana", label: "Narayana" },
-  { value: "other", label: "Other" },
-];
-
-const BATCH_OPTIONS = [
-  { value: "morning", label: "Morning Batch" },
-  { value: "evening", label: "Evening Batch" },
-  { value: "weekend", label: "Weekend Batch" },
-  { value: "online", label: "Online Batch" },
-];
 
 export default function WhereDoYouStudyPage() {
   const router = useRouter();
-  const [status, setStatus] = useState<CoachingStatus>("self-prep");
-  const [coachingName, setCoachingName] = useState("");
-  const [batch, setBatch] = useState("");
-  const [hasScheduleUpload, setHasScheduleUpload] = useState(false);
-  const [hadScheduleUploadOnFile, setHadScheduleUploadOnFile] = useState(false);
-  const [previewFile, setPreviewFile] = useState<File | null>(null);
-  const [isUploadingSchedule, setUploadingSchedule] = useState(false);
-  const [uploadSummary, setUploadSummary] = useState<string | null>(null);
-  const [uploadParsed, setUploadParsed] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setSubmitting] = useState(false);
-  const [isSkipping, setSkipping] = useState(false);
-  const { setSuggestion } = useScheduleSuggestion();
+  const allowed = useStepGuard(3);
+  const { draft, update } = useOnboardingDraft();
+  const completeStep = useStepTelemetry(3, "coaching");
+  const { coaching } = draft;
 
-  const previewUrl = useMemo(
-    () => (previewFile ? URL.createObjectURL(previewFile) : null),
-    [previewFile],
-  );
+  if (!allowed) return null;
 
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
+  const setType = (type: CoachingType) =>
+    update((d) => ({
+      ...d,
+      // Only a coaching student has a coaching name and batch to keep.
+      coaching: type === "COACHING" ? { ...d.coaching, type } : { type, name: "", batch: "" },
+    }));
+  const setField = (patch: Partial<typeof coaching>) => update((d) => ({ ...d, coaching: { ...d.coaching, ...patch } }));
+  const valid = coachingValid(coaching);
 
-  useEffect(() => {
-    getOnboardingProgress()
-      .then(({ data }) => {
-        const profile = data.profile;
-        if (!profile) return;
-
-        if (profile.coachingType) setStatus(COACHING_STATUS_FROM_TYPE[profile.coachingType]);
-        if (profile.coachingName) {
-          const matched = COACHING_NAME_OPTIONS.find(
-            (option) => option.label === profile.coachingName,
-          );
-          if (matched) setCoachingName(matched.value);
-        }
-        if (profile.batchName) {
-          const matched = BATCH_OPTIONS.find((option) => option.label === profile.batchName);
-          if (matched) setBatch(matched.value);
-        }
-        setHasScheduleUpload(profile.hasScheduleUpload);
-        setHadScheduleUploadOnFile(profile.hasScheduleUpload);
-      })
-      .catch(() => {
-        // Best-effort — fall back to a blank form if progress can't be loaded.
-      });
-  }, []);
-
-  const handleContinue = async () => {
-    setError(null);
-    setSubmitting(true);
-    try {
-      await saveCoachingProfile({
-        coachingType: COACHING_TYPE_MAP[status],
-        ...(status === "coaching" && {
-          coachingName: COACHING_NAME_OPTIONS.find((o) => o.value === coachingName)?.label,
-          batchName: BATCH_OPTIONS.find((o) => o.value === batch)?.label,
-        }),
-        hasScheduleUpload,
-      });
-      router.push("/onboarding/time-selection");
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
-      );
-      setSubmitting(false);
-    }
+  const handleNext = () => {
+    if (!valid) return;
+    update((d) => ({ ...d, step: Math.max(d.step, 4) }));
+    completeStep();
+    router.push(stepPath(4));
   };
-
-  const handleSkip = async () => {
-    setError(null);
-    setSkipping(true);
-    try {
-      await skipOnboardingStep(3);
-      router.push("/onboarding/time-selection");
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
-      );
-      setSkipping(false);
-    }
-  };
-
-  const handleFileSelect = async (file: File | null) => {
-    setPreviewFile(file);
-
-    if (!file) {
-      setHasScheduleUpload(false);
-      setUploadSummary(null);
-      setUploadParsed(false);
-      return;
-    }
-
-    setError(null);
-    setUploadSummary(null);
-    setUploadParsed(false);
-    setUploadingSchedule(true);
-    try {
-      const { data } = await uploadScheduleImage(file);
-      const { suggestedChronotype: chronotype, suggestedStudyWindows: studyWindows } = data;
-      setHasScheduleUpload(true);
-      setUploadSummary(data.summary);
-
-      if (chronotype !== null && studyWindows !== null) {
-        setUploadParsed(true);
-        setSuggestion({ chronotype, studyWindows });
-      } else {
-        setUploadParsed(false);
-      }
-    } catch (err) {
-      setHasScheduleUpload(false);
-      setError(
-        err instanceof ApiError ? err.message : "Couldn't read that schedule. Please try again.",
-      );
-    } finally {
-      setUploadingSchedule(false);
-    }
-  };
-
-  const showScheduleUpload = status === "coaching" || status === "self-study";
 
   return (
     <AuthCard>
-      <StepProgress
-        step={3}
-        totalSteps={6}
-        backHref="/onboarding/tell-us-about-you"
-        showSkip
-        onSkip={handleSkip}
-        skipDisabled={isSubmitting || isSkipping}
-      />
+      <StepProgress step={3} totalSteps={ONBOARDING_TOTAL_STEPS} />
 
-      <div className="mt-4 flex flex-col gap-4 py-2 sm:mt-5">
-        <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
-          Do you attend coaching?
-        </h1>
-        <p className="text-[14px] font-semibold leading-[100%] text-neutral-text sm:text-[16px]">
-          Tells us when you&apos;re in lecture vs free for self-study.
+      <div className="mt-4 flex flex-col gap-3 py-2 sm:mt-5">
+        <h1 className="text-[24px] font-extrabold leading-tight text-ink sm:text-[32px]">Do you attend coaching?</h1>
+        <p className="text-[14px] font-semibold leading-snug text-neutral-text sm:text-[16px]">
+          This tells us when you are in class and when you are free to study. Next, we will hand you a starter week that fits.
         </p>
       </div>
-
-      {error && (
-        <p
-          role="alert"
-          className="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-xs font-medium text-danger"
-        >
-          {error}
-        </p>
-      )}
 
       <div className="mt-5 flex flex-col gap-3 sm:mt-6" role="radiogroup" aria-label="Coaching status">
         <RadioOption
           name="coachingStatus"
           value="coaching"
-          label="Yes, I'm in a coaching"
-          selected={status === "coaching"}
-          onSelect={() => setStatus("coaching")}
-          unselectedLabelClassName="text-[#333333] dark:text-ink"
-          unselectedBoxClassName="dark:border-[#D1D5DB]! dark:shadow-[0px_1px_2px_0px_#1A1A4E0F]!"
-          selectedBoxClassName="dark:border-[#FFFFFF]!"
+          label="Yes, I attend coaching"
+          selected={coaching.type === "COACHING"}
+          onSelect={() => setType("COACHING")}
+          {...RADIO_STYLE}
         >
           <Select
-            label="Coaching Name"
-            placeholder="Select Coaching"
+            label="Coaching name"
+            placeholder="Select your coaching"
             options={COACHING_NAME_OPTIONS}
             name="coachingName"
-            value={coachingName}
-            onChange={(event) => setCoachingName(event.target.value)}
+            value={coaching.name}
+            onChange={(event) => setField({ name: event.target.value })}
           />
           <Select
-            label="Batch"
-            placeholder="Select Batch"
+            label="Batch (optional)"
+            placeholder="Select your batch"
             options={BATCH_OPTIONS}
             name="batch"
-            value={batch}
-            onChange={(event) => setBatch(event.target.value)}
+            value={coaching.batch}
+            onChange={(event) => setField({ batch: event.target.value })}
           />
         </RadioOption>
 
         <RadioOption
           name="coachingStatus"
           value="self-study"
-          label="Online courses + self-study"
-          selected={status === "self-study"}
-          onSelect={() => setStatus("self-study")}
-          unselectedLabelClassName="text-[#333333] dark:text-ink"
-          unselectedBoxClassName="dark:border-[#D1D5DB]! dark:shadow-[0px_1px_2px_0px_#1A1A4E0F]!"
-          selectedBoxClassName="dark:border-[#FFFFFF]!"
+          label="Online courses and self-study"
+          selected={coaching.type === "ONLINE_SELF_PREP"}
+          onSelect={() => setType("ONLINE_SELF_PREP")}
+          {...RADIO_STYLE}
         />
 
         <RadioOption
           name="coachingStatus"
           value="self-prep"
           label="Self-prep only"
-          selected={status === "self-prep"}
-          onSelect={() => setStatus("self-prep")}
-          unselectedLabelClassName="text-[#333333] dark:text-ink"
-          unselectedBoxClassName="dark:border-[#D1D5DB]! dark:shadow-[0px_1px_2px_0px_#1A1A4E0F]!"
-          selectedBoxClassName="dark:border-[#FFFFFF]!"
+          selected={coaching.type === "SELF_PREP"}
+          onSelect={() => setType("SELF_PREP")}
+          {...RADIO_STYLE}
         />
       </div>
 
-      {showScheduleUpload && (
-        <>
-          {/* Divider */}
-          <div className="mt-5 flex items-center gap-3 sm:mt-6">
-            <span className="h-px flex-1 bg-brand/10 dark:bg-white/10" />
-            <span className="text-xs">or</span>
-            <span className="h-px flex-1 bg-brand/10 dark:bg-white/10" />
-          </div>
-
-          {/* Schedule Screenshot Card */}
-          <div className="mt-5 rounded-2xl border border-[#D1D5DB] p-4 dark:border-[#D1D5DB] sm:mt-6 sm:p-6">
-            <p className="text-[16px] font-bold leading-[100%] text-ink sm:text-[18px]">
-              Got a schedule screenshot?
-            </p>
-
-            <p className="mt-1 text-[14px] font-medium leading-[140%] text-muted sm:text-[16px]">
-              Lets us auto-build your timetable in 30 seconds instead of 5 minutes.
-            </p>
-
-            <div className="mt-4">
-              <UploadDropzone
-                onFileSelect={handleFileSelect}
-                previewUrl={previewUrl}
-                fileName={previewFile?.name}
-              />
-            </div>
-
-            {/* Uploading State */}
-            {isUploadingSchedule && (
-              <p className="mt-3 text-xs text-muted">
-                Reading your schedule...
-              </p>
-            )}
-
-            {/* Success / Error */}
-            {uploadSummary && (
-              <p
-                className={`mt-3 text-xs font-medium ${uploadParsed ? "text-success" : "text-danger"
-                  }`}
-              >
-                {uploadSummary}
-              </p>
-            )}
-
-            {/* Already Uploaded */}
-            {!uploadSummary && hadScheduleUploadOnFile && (
-              <p className="mt-3 text-xs font-medium text-success">
-                Schedule already on file from a previous step.
-              </p>
-            )}
-
-            {/* Default Success Message */}
-            {!isUploadingSchedule && !uploadSummary && !hadScheduleUploadOnFile && (
-              <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-[#1A5276] dark:text-[#FAF7F2]">
-                <CheckCircleIcon className="h-4 w-4 shrink-0 text-[#10B981] dark:text-[#FAF7F2]" />
-                <span>Saves 5 min vs manual entry</span>
-              </p>
-            )}
-          </div>
-        </>
-      )}
-
-      <Button
-        variant="primary"
-        onClick={handleContinue}
-        disabled={isSubmitting || isSkipping || isUploadingSchedule}
-        className="mt-6 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {isSubmitting ? "Saving..." : "Continue"}
-      </Button>
+      <OnboardingNav
+        backHref={stepPath(2)}
+        onNext={handleNext}
+        nextDisabled={!valid}
+        hint={!valid ? "Choose your coaching to continue." : undefined}
+      />
     </AuthCard>
   );
 }

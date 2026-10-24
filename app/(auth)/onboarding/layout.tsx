@@ -1,9 +1,9 @@
-import { ScheduleSuggestionProvider } from "@/lib/onboarding/schedule-suggestion-context";
+import { OnboardingDraftProvider } from "@/lib/onboarding/draft-context";
 
 export default function OnboardingLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <ScheduleSuggestionProvider>{children}</ScheduleSuggestionProvider>;
+  return <OnboardingDraftProvider>{children}</OnboardingDraftProvider>;
 }
