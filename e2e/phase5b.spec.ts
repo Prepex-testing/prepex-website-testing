@@ -87,7 +87,7 @@ test("5B: no card on a zero-activity day → activity + the 22:30 job → card a
   expect(seen[0]!.payload.question).toContain("TODAY (IST");
   expect(Object.keys(seen[0]!.payload).sort()).toEqual(["question", "subject"]);
 
-  // ── the card is on Home, above the planner ─────────────────────────────────
+  // ── the card is on Home, right under today's plan (planner v2 order: greeting, check-in, plan, insight) ──
   await page.goto("/home");
   const card = page.getByTestId("insight-card");
   await expect(card).toBeVisible();
@@ -96,10 +96,11 @@ test("5B: no card on a zero-activity day → activity + the 22:30 job → card a
   await expect(card).not.toContainText("Tutor preamble");
   const above = await page.evaluate(() => {
     const c = document.querySelector('[data-testid="insight-card"]')!.getBoundingClientRect().top;
-    const e = document.querySelector('[data-coach="energy-card"]')!.getBoundingClientRect().top;
-    return c < e;
+    const plan = document.querySelector('[data-testid="today-plan-card"]')!.getBoundingClientRect().top;
+    const quick = document.querySelector('[data-testid="quick-access"]')!.getBoundingClientRect().top;
+    return c > plan && (quick > c || quick < plan);
   });
-  expect(above, "the insight sits above the energy / planner cards").toBe(true);
+  expect(above, "the insight sits below today's plan and before the weekly strip / quick access on a phone").toBe(true);
   await shot("card");
   if (mobile) {
     await noHorizontalScroll(page);
