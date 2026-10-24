@@ -5,18 +5,17 @@ import { usePathname, useRouter } from "next/navigation";
 import { getCheckInStatus } from "@/lib/api/checkin";
 import { getAccessToken } from "@/lib/auth/session";
 
-const WELCOME_BACK_PATH = "/home/session/welcome-back";
 const BAD_DAY_PATH = "/home/bad-day";
 
 /**
- * Verifies today's check-in exists (and the cross-app-study redirect) before
+ * Verifies today's check-in exists before
  * the app shell's children are allowed to render, so a protected page never
  * flashes on screen before this bounces the user to /check-in. Only the very
  * first check of the session blocks rendering — the periodic re-checks this
  * also runs on tab focus happen in the background and never re-hide
  * already-rendered UI, so normal in-app navigation isn't interrupted.
  *
- * `enabled: false` (e.g. the revision session's focus mode, which wants no
+ * `enabled: false` (e.g. the focus timer, which wants no
  * check-in interruptions) skips the gate entirely and always renders.
  */
 function isWelcomeGoalsScreen(pathname: string | null): boolean {
@@ -46,17 +45,12 @@ export function useCheckInGate(enabled: boolean) {
             router.push("/check-in");
             return;
           }
-          if (data.checkin?.isStudyingCrossApp && pathname !== WELCOME_BACK_PATH) {
-            router.push(WELCOME_BACK_PATH);
-            return;
-          }
           // Section 4.3 — returning after 2+ inactive days: show the Bad Day
           // welcome screen once (until acknowledged).
           if (
             data.checkin?.isBadDayReturn &&
             !data.checkin?.badDayAcknowledgedAt &&
-            pathname !== BAD_DAY_PATH &&
-            pathname !== WELCOME_BACK_PATH
+            pathname !== BAD_DAY_PATH
           ) {
             router.push(BAD_DAY_PATH);
           }

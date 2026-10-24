@@ -67,33 +67,8 @@ export function getRevisionOverview(filters: { subjectId?: number; status?: Task
   return authRequest<{ success: true; data: RevisionOverview }>(query ? `?${query}` : "");
 }
 
-export function updateRevisionProgress(revisionId: string) {
-  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/progress`, {
-    method: "PATCH",
-  });
-}
-
 export function markRevisionDone(revisionId: string, secondsCompleted: number) {
   return authRequest<{ success: true; data: unknown }>(`/${revisionId}/mark-done`, {
-    method: "POST",
-    body: JSON.stringify({ secondsCompleted }),
-  });
-}
-
-export function startRevisionSession(revisionId: string) {
-  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/session/start`, {
-    method: "POST",
-  });
-}
-
-export function heartbeatRevisionSession(revisionId: string) {
-  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/session/heartbeat`, {
-    method: "POST",
-  });
-}
-
-export function exitRevisionSession(revisionId: string, secondsCompleted: number) {
-  return authRequest<{ success: true; data: unknown }>(`/${revisionId}/session/exit`, {
     method: "POST",
     body: JSON.stringify({ secondsCompleted }),
   });

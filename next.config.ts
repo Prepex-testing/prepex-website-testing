@@ -23,6 +23,20 @@ const nextConfig: NextConfig = {
         destination: "/stats",
         permanent: false,
       },
+
+      // One focus timer. The legacy timer's routes (and the two aliases older builds and shared links used) are gone, so
+      // they redirect server-side with a 301 to the new timer. A link that carries a task id keeps it, so a saved bookmark
+      // or a push notification from before the change still opens the right task. Everything else lands on a standalone timer.
+      { source: "/home/session", has: [{ type: "query", key: "taskId", value: "(?<taskId>[0-9a-fA-F-]{36})" }], destination: "/focus/start?origin=planner&id=:taskId", statusCode: 301 },
+      { source: "/revision-session", has: [{ type: "query", key: "taskId", value: "(?<taskId>[0-9a-fA-F-]{36})" }], destination: "/focus/start?origin=revision_tab&id=:taskId", statusCode: 301 },
+      { source: "/revision-session/complete", has: [{ type: "query", key: "taskId", value: "(?<taskId>[0-9a-fA-F-]{36})" }], destination: "/focus/start?origin=revision_tab&id=:taskId", statusCode: 301 },
+      { source: "/home/session", destination: "/focus/start?origin=standalone", statusCode: 301 },
+      { source: "/home/session/welcome-back", destination: "/focus/start?origin=standalone", statusCode: 301 },
+      { source: "/revision-session", destination: "/focus/start?origin=standalone", statusCode: 301 },
+      { source: "/revision-session/complete", destination: "/focus/start?origin=standalone", statusCode: 301 },
+      { source: "/focus/legacy", destination: "/focus/start?origin=standalone", statusCode: 301 },
+      { source: "/timer/old", destination: "/focus/start?origin=standalone", statusCode: 301 },
+      { source: "/focus", destination: "/focus/start?origin=standalone", statusCode: 301 },
     ];
   },
   turbopack: {

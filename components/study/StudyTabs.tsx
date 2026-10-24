@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { focusSessionHref } from "@/lib/focus/startFocusSession";
 
 const TABS = [
-  { href: "/focus", label: "Focus" },
+  { href: focusSessionHref({ originSource: "standalone" }), label: "Focus" },
   { href: "/sessions", label: "Sessions" },
   { href: "/mistakes", label: "Mistakes" },
   { href: "/logs", label: "Logs" },

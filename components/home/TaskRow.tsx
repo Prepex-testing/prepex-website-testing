@@ -14,6 +14,8 @@ export { TYPE_STYLES, TYPE_LABELS, COMPLETED_ACTION_LABELS, CUSTOM_BADGE_STYLE }
 import { Book, Time } from "@/assets/icons";
 import { useState } from "react";
 import { getChapterTitle } from "@/lib/utils/text";
+import { plannerTaskIntent } from "@/components/home/focusIntent";
+import { focusSessionHref } from "@/lib/focus/startFocusSession";
 import { getTaskQuestions } from "@/lib/api/practice";
 import { markLectureWatched } from "@/lib/api/planner";
 export type Task = {
@@ -347,11 +349,9 @@ export function TaskRow({
             ? mockTaskHref(task)
             : isPrimaryActionDisabled
             ? undefined
-            : isStartRevision
-              ? `/revision-session?taskId=${task.id}`
-              : task.type === "new-learning"
-                ? `/home/session?taskId=${task.id}`
-                : undefined
+            : isStartRevision || task.type === "new-learning"
+              ? focusSessionHref(plannerTaskIntent(task))
+              : undefined
         }
         onClick={
           isPracticeDone

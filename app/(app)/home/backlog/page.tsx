@@ -1,5 +1,6 @@
 "use client";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { startFocusSession } from "@/lib/focus/startFocusSession";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
 
@@ -426,7 +427,23 @@ export default function BacklogPage() {
                       </div>
 
                       {/* Right */}
-                      <div className="mt-6 flex items-center gap-2 lg:mt-0 lg:ml-8">
+                      <div className="mt-6 flex flex-wrap items-center gap-2 lg:mt-0 lg:ml-8">
+                        <button
+                          type="button"
+                          data-testid={`start-backlog-${item.id}`}
+                          onClick={() =>
+                            startFocusSession({
+                              originSource: "backlog_tab",
+                              originId: item.id,
+                              subject: item.chapter?.subject.name,
+                              chapter: item.chapterId ?? undefined,
+                            })
+                          }
+                          className="flex h-[44px] w-24 items-center justify-center rounded-lg border border-primary-button-border bg-cta text-[16px] font-semibold text-white transition hover:bg-[#E8623F]"
+                        >
+                          Start
+                        </button>
+
                         <button
                           type="button"
                           onClick={() => setPlanningTask(item)}

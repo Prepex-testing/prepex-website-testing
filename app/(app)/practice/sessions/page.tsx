@@ -15,6 +15,8 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { getTodayPlan, type PlannerTask } from "@/lib/api/planner";
 import { prettyDifficulty } from "@/lib/api/practice";
+import { ownContentIntent } from "@/lib/focus/intent";
+import { startFocusSession } from "@/lib/focus/startFocusSession";
 
 function toPracticeRow(task: PlannerTask): PlanTask {
   return {
@@ -131,6 +133,10 @@ export default function PracticeSessionsPage() {
           router.push(
             practiceTaskId ? `/practice?taskId=${practiceTaskId}` : "/practice",
           );
+        }}
+        onUseOwnContent={({ noQuestions }) => {
+          setPracticeModalOpen(false);
+          startFocusSession(ownContentIntent(practiceTaskId, practiceTaskStats?.estimatedMinutes, noQuestions));
         }}
       />
 

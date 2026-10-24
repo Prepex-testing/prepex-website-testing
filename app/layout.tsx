@@ -4,9 +4,6 @@ import { RegisterServiceWorker } from "@/components/pwa/RegisterServiceWorker";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { InlineThemeScript } from "@/components/theme/InlineThemeScript";
 import { AuthGate } from "@/components/auth/AuthGate";
-import { RevisionSessionProvider } from "@/components/session/RevisionSessionProvider";
-import { RevisionSessionBanner } from "@/components/session/RevisionSessionBanner";
-import { FocusSessionBanner } from "@/components/session/FocusSessionBanner";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -63,14 +60,8 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
-          <RevisionSessionProvider>
-            <AuthGate>
-              <RevisionSessionBanner />
-              <FocusSessionBanner />
-              {children}
-            </AuthGate>
-            <RegisterServiceWorker />
-          </RevisionSessionProvider>
+          <AuthGate>{children}</AuthGate>
+          <RegisterServiceWorker />
         </ThemeProvider>
       </body>
     </html>

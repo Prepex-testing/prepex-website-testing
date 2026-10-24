@@ -3,6 +3,7 @@
 import type { Mistake } from "@/lib/api/mistakes";
 import { describeNextReview } from "@/lib/study/mistakeRating";
 import { subjectColor, type SubjectLookup } from "@/lib/study/subjects";
+import { startFocusSession } from "@/lib/focus/startFocusSession";
 
 type Props = {
   items: Mistake[];
@@ -66,6 +67,25 @@ export function MistakeList({ items, lookup, now, busyId, onReview, onEdit, onDe
                   Review now
                 </button>
               )}
+              <button
+                type="button"
+                data-testid="practice-topic"
+                disabled={busy}
+                onClick={() =>
+                  startFocusSession({
+                    originSource: "mistake_notebook",
+                    originId: m.id,
+                    subject: String(m.subjectId),
+                    chapter: m.chapterId ?? undefined,
+                    topic: m.topic ?? undefined,
+                    taskType: "practice",
+                    targetMinutes: 30,
+                  })
+                }
+                className={`${BTN} text-ink hover:bg-tint-strong`}
+              >
+                Practice this topic
+              </button>
               <button type="button" disabled={busy} onClick={() => onEdit(m)} className={`${BTN} text-muted hover:bg-tint-strong`}>
                 Edit
               </button>

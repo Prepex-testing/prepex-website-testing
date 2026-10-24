@@ -12,6 +12,8 @@ import type { TaskType } from "@/components/home/TaskRow";
 import { customBadgeLabel, mockTaskHref } from "@/components/home/taskTypes";
 import { Book, Time } from "@/assets/icons";
 import { getChapterTitle } from "@/lib/utils/text";
+import { plannerTaskIntent } from "@/components/home/focusIntent";
+import { focusSessionHref } from "@/lib/focus/startFocusSession";
 import { getTaskQuestions } from "@/lib/api/practice";
 
 type Difficulty = "easy" | "medium" | "high";
@@ -233,11 +235,9 @@ export function PlanTaskRow({
               ? mockTaskHref(task)
               : isPrimaryActionDisabled
               ? undefined
-              : isStartRevision
-                ? `/revision-session?taskId=${task.id}`
-                : task.type === "new-learning"
-                  ? `/home/session?taskId=${task.id}`
-                  : undefined
+              : isStartRevision || task.type === "new-learning"
+                ? focusSessionHref(plannerTaskIntent(task))
+                : undefined
           }
           onClick={
             isPracticeDone

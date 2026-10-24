@@ -3,6 +3,8 @@
 import type { ReactNode } from "react";
 import type { Goal } from "@/lib/api/goals";
 import { describeGoal, progressText } from "@/lib/goals/format";
+import type { TaskType } from "@/lib/focus/intent";
+import { startFocusSession } from "@/lib/focus/startFocusSession";
 
 type Props = {
   goal: Goal;
@@ -15,6 +17,15 @@ type Props = {
   onSuggest?: () => void;
   /** The inline suggestion panel, shown under the goal while it is open. */
   suggestSlot?: ReactNode;
+};
+
+/** What kind of session works towards each kind of goal. */
+const GOAL_TASK_TYPE: Record<Goal["type"], TaskType> = {
+  LECTURES: "lecture",
+  QUESTIONS: "practice",
+  REVISIONS: "revision",
+  MOCKS: "mock_review",
+  HOURS: "self_study",
 };
 
 const BAR = {
@@ -99,6 +110,26 @@ export function GoalCard({ goal, scope, busy, onWatched, onToggleDone, onDelete,
             className="min-h-11 rounded-lg border border-brand/20 px-3 text-[13px] font-semibold text-ink hover:bg-tint-strong disabled:opacity-50"
           >
             {done ? "Mark as not done" : "Mark as done"}
+          </button>
+        )}
+        {!fromPartner && goal.status === "ACTIVE" && (
+          <button
+            type="button"
+            data-testid="goal-start-now"
+            disabled={busy}
+            onClick={() =>
+              startFocusSession({
+                originSource: "weekly_goals",
+                originId: goal.id,
+                subject: goal.subjectId !== null ? String(goal.subjectId) : undefined,
+                chapter: goal.chapterId ?? undefined,
+                topic: goal.topic ?? undefined,
+                taskType: GOAL_TASK_TYPE[goal.type],
+              })
+            }
+            className="min-h-11 rounded-full border border-primary-button-border bg-cta px-4 text-[13px] font-bold text-white hover:bg-[#E8623F] disabled:opacity-50"
+          >
+            Start now
           </button>
         )}
         {onSuggest && (

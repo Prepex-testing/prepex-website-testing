@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/ui/Logo";
+import { focusSessionHref } from "@/lib/focus/startFocusSession";
 import {
   HomeIcon,
   CalendarIcon,
@@ -42,7 +43,8 @@ export const NAV_ITEMS = [
     ),
   },
   {
-    href: "/focus",
+    // The bottom-nav / sidebar "Focus" entry opens the timer on its own, with nothing pre-filled.
+    href: focusSessionHref({ originSource: "standalone" }),
     activeMatch: "/focus",
     label: "Focus",
     icon: (

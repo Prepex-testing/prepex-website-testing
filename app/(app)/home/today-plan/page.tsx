@@ -20,6 +20,8 @@ import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
 import { getTodayPlan, reorderPlannerTask, type PlannerTask, type TodayPlanResponse } from "@/lib/api/planner";
 import { prettyDifficulty } from "@/lib/api/practice";
 import { formatFullDate } from "@/lib/utils/datetime";
+import { ownContentIntent } from "@/lib/focus/intent";
+import { startFocusSession } from "@/lib/focus/startFocusSession";
 import { CheckIcon, ClockIcon, ListIcon, CalendarIcon, ArrowLeftIcon } from "@/assets/icons";
 import {
   // ArrowLeftIcon,
@@ -496,6 +498,10 @@ function TodayPlanContent() {
         onStart={() => {
           setPracticeModalOpen(false);
           router.push(practiceTaskId ? `/practice?taskId=${practiceTaskId}` : "/practice");
+        }}
+        onUseOwnContent={({ noQuestions }) => {
+          setPracticeModalOpen(false);
+          startFocusSession(ownContentIntent(practiceTaskId, practiceTaskStats?.estimatedMinutes, noQuestions));
         }}
       />
     </div>
