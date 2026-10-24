@@ -1,5 +1,6 @@
 import type { Goal, GoalType, NewGoal } from "@/lib/api/goals";
 import type { GoalDefaults, Proposal } from "@/lib/api/plannerV2";
+import type { FocusSessionIntent, TaskType } from "@/lib/focus/intent";
 import { formatDuration } from "@/lib/planner/format";
 
 /**
@@ -196,4 +197,28 @@ export function weekDays(weekStart: string): { date: string; label: string }[] {
       label: d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }),
     };
   });
+}
+
+const GOAL_TASK_TYPE: Record<Goal["type"], TaskType> = {
+  LECTURES: "lecture",
+  QUESTIONS: "practice",
+  REVISIONS: "revision",
+  MOCKS: "mock_review",
+  HOURS: "self_study",
+  BACKLOG: "self_study",
+};
+
+/** What "Start now" on a goal hands to the focus timer: the goal, its place in the syllabus and the kind of session. */
+export function goalFocusIntent(goal: Goal): FocusSessionIntent {
+  if (goal.type === "BACKLOG" && goal.backlogItemId) {
+    return { originSource: "backlog_tab", originId: goal.backlogItemId, subject: goal.subjectId !== null ? String(goal.subjectId) : undefined, chapter: goal.chapterId ?? undefined };
+  }
+  return {
+    originSource: "weekly_goals",
+    originId: goal.id,
+    subject: goal.subjectId !== null ? String(goal.subjectId) : undefined,
+    chapter: goal.chapterId ?? undefined,
+    topic: goal.topic ?? undefined,
+    taskType: GOAL_TASK_TYPE[goal.type],
+  };
 }

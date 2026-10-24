@@ -18,6 +18,9 @@ import { listBacklogItems } from "@/lib/api/backlogItems";
 vi.mock("@/lib/telemetry/planner", () => ({ trackPlanner: vi.fn() }));
 import { trackPlanner } from "@/lib/telemetry/planner";
 
+vi.mock("@/lib/focus/startFocusSession", () => ({ startFocusSession: vi.fn() }));
+import { startFocusSession } from "@/lib/focus/startFocusSession";
+
 const CH = "11111111-1111-4111-8111-111111111111";
 const physics: FormSubject = { subjectId: 1, name: "Physics", chapters: [{ id: CH, subjectId: 1, name: "Kinematics", sequenceOrder: 1, isActive: true }] };
 
@@ -120,7 +123,7 @@ describe("GoalFormSheet", () => {
   it("lets the student tick backlog items to clear", async () => {
     vi.mocked(listBacklogItems).mockResolvedValue({
       success: true,
-      data: { nextCursor: null, items: [{ id: "b1", subjectId: 1, chapterId: CH, topic: null, source: "manual", estimatedMinutes: 50, deadline: null, priority: 2, status: "open", clearedAt: null, scheduledFor: null, scheduledWindow: null, notes: null, ageDays: 9, isOverdue: false, createdAt: "" }] },
+      data: { nextCursor: null, items: [{ id: "b1", subjectId: 1, chapterId: CH, topic: null, source: "manual", estimatedMinutes: 50, deadline: null, priority: 2, status: "open", clearedAt: null, scheduledFor: null, scheduledWindow: null, notes: null, ageDays: 9, isOverdue: false, progressPercent: 0, createdAt: "" }] },
     });
     const onSubmit = vi.fn();
     render(<GoalFormSheet {...base} kind="BACKLOG" onSubmit={onSubmit} />);
@@ -162,6 +165,12 @@ describe("SubjectGoalCard", () => {
     expect(onEdit).toHaveBeenCalledWith(expect.objectContaining({ id: "g1" }));
     await userEvent.click(screen.getByTestId("lecture-plus"));
     expect(onWatched).toHaveBeenCalledWith(expect.objectContaining({ id: "g1" }), 2);
+  });
+
+  it("'Start now' opens the focus timer on the goal", async () => {
+    render(<SubjectGoalCard subject={physics} goals={[savedGoal()]} drafts={[]} defaults={null} busyId={null} onAdd={vi.fn()} onEdit={vi.fn()} onRemoveDraft={vi.fn()} onWatched={vi.fn()} />);
+    await userEvent.click(screen.getByTestId("goal-start-now"));
+    expect(startFocusSession).toHaveBeenCalledWith(expect.objectContaining({ originSource: "weekly_goals", originId: "g1", taskType: "lecture" }));
   });
 
   it("has an add button for each of the five sections", () => {

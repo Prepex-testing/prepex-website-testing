@@ -5,6 +5,7 @@ import Link from "next/link";
 import { BarChart3, NotebookPen, PenLine, RotateCcw, Timer, Trophy } from "lucide-react";
 import type { PlanDay } from "@/lib/api/plannerV2";
 import { getMistakeStats, type MistakeStats } from "@/lib/api/mistakes";
+import { focusSessionHref } from "@/lib/focus/startFocusSession";
 import { formatClock, formatDuration } from "@/lib/planner/format";
 
 type Tile = { key: string; label: string; href: string; subtitle: string; icon: ReactNode; tint: string; coach?: string };
@@ -44,7 +45,7 @@ export function QuickAccessGrid({ day }: { day: PlanDay | null }) {
 
   const s = tileSubtitles(day, mistakes);
   const tiles: Tile[] = [
-    { key: "focus", label: "Focus", href: "/focus", subtitle: s.focus, icon: <Timer className="size-6" aria-hidden />, tint: "bg-[#EEF2FF] text-[#6366F1] dark:bg-[#6366F1]/20 dark:text-[#A5B4FC]" },
+    { key: "focus", label: "Focus", href: focusSessionHref({ originSource: "home_quick_tile" }), subtitle: s.focus, icon: <Timer className="size-6" aria-hidden />, tint: "bg-[#EEF2FF] text-[#6366F1] dark:bg-[#6366F1]/20 dark:text-[#A5B4FC]" },
     { key: "practice", label: "Practice", href: "/practice/sessions", subtitle: s.practice, icon: <PenLine className="size-6" aria-hidden />, tint: "bg-[#ECFDF5] text-[#10B981] dark:bg-[#10B981]/20 dark:text-[#6EE7B7]", coach: "nav-practice" },
     { key: "revision", label: "Revision", href: "/home/revision", subtitle: s.revision, icon: <RotateCcw className="size-6" aria-hidden />, tint: "bg-[#FFFBEB] text-[#D97706] dark:bg-[#F59E0B]/20 dark:text-[#FCD34D]", coach: "quick-revision" },
     { key: "mistakes", label: "Mistakes", href: "/home/mistake-notebook", subtitle: s.mistakes, icon: <NotebookPen className="size-6" aria-hidden />, tint: "bg-[#FDF2F8] text-[#EC4899] dark:bg-[#EC4899]/20 dark:text-[#F9A8D4]", coach: "quick-mistakes" },

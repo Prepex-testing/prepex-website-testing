@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Goal, NewGoal } from "@/lib/api/goals";
 import type { Proposal } from "@/lib/api/plannerV2";
-import { chipLabel, fitFor, forSave, goalMinutes, hoursText, mockMinutesFor, proposalToGoal, taskName, weekDays } from "@/lib/goals/v2";
+import { chipLabel, fitFor, forSave, goalFocusIntent, goalMinutes, hoursText, mockMinutesFor, proposalToGoal, taskName, weekDays } from "@/lib/goals/v2";
 
 const lectures = (over: Partial<NewGoal> = {}): NewGoal => ({ type: "LECTURES", unit: "COUNT", target: 4, subjectId: 1, minutesPerUnit: 60, ...over });
 
@@ -100,5 +100,17 @@ describe("weekDays", () => {
     expect(days).toHaveLength(7);
     expect(days[0]!.date).toBe("2026-10-26");
     expect(days[6]!.date).toBe("2026-11-01");
+  });
+});
+
+describe("goalFocusIntent", () => {
+  const goal = (over: Partial<Goal> = {}) => ({ id: "g1", type: "LECTURES", subjectId: 1, chapterId: "c1", topic: null, backlogItemId: null, ...over }) as unknown as Goal;
+  it("starts a weekly-goal session of the right kind", () => {
+    expect(goalFocusIntent(goal())).toMatchObject({ originSource: "weekly_goals", originId: "g1", subject: "1", chapter: "c1", taskType: "lecture" });
+    expect(goalFocusIntent(goal({ type: "QUESTIONS" })).taskType).toBe("practice");
+    expect(goalFocusIntent(goal({ type: "HOURS" })).taskType).toBe("self_study");
+  });
+  it("a backlog goal starts from the backlog item", () => {
+    expect(goalFocusIntent(goal({ type: "BACKLOG", backlogItemId: "b9" }))).toMatchObject({ originSource: "backlog_tab", originId: "b9" });
   });
 });

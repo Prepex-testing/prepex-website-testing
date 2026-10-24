@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { PlanTask } from "@/lib/api/plannerV2";
-import { CONFIDENCE_LABELS, focusUrl, inferMock, mockUrl, parseFocusHandoff, practiceUrl } from "@/lib/planner/cta";
+import { focusSessionHref } from "@/lib/focus/startFocusSession";
+import { parseIntentParams } from "@/lib/focus/intent";
+import { CONFIDENCE_LABELS, inferMock, mockUrl, plannerFocusIntent, practiceUrl } from "@/lib/planner/cta";
 import { daySummaryText, formatClock, formatDuration, formatHoursLong, openTasks, subjectStyle } from "@/lib/planner/format";
 import { cleanProps, PLANNER_EVENTS } from "@/lib/telemetry/planner";
 import { isEndOfDay } from "@/components/planner/EndOfDay";
@@ -50,26 +52,19 @@ describe("subjects and ordering", () => {
 });
 
 describe("hand-off to the focus timer", () => {
-  it("carries the task's details in the link and reads them back", () => {
-    const url = focusUrl(task({ topic: "Projectile motion" }), "session");
-    const params = new URL(url, "https://x.test").searchParams;
-    const back = parseFocusHandoff(params);
-    expect(back).toMatchObject({ planTaskId: ID, mode: "session", subjectId: 1, chapterId: "c1", topic: "Projectile motion", minutes: 60, notice: null });
+  it("a lecture hands the timer the plan task and leaves the type for the server to pick", () => {
+    expect(plannerFocusIntent(task())).toEqual({ originSource: "planner", originId: ID, subject: "physics", taskType: undefined, targetMinutes: 60 });
   });
-  it("tags revision and practice, and carries the no-questions notice", () => {
-    const rev = parseFocusHandoff(new URL(focusUrl(task({ kind: "revision" }), "revision"), "https://x.test").searchParams);
-    expect(rev?.mode).toBe("revision");
-    const own = parseFocusHandoff(new URL(focusUrl(task({ kind: "practice" }), "practice", { notice: true }), "https://x.test").searchParams);
-    expect(own?.mode).toBe("practice");
-    expect(own?.notice).toMatch(/No Prepex questions for this chapter yet/);
+  it("a revision is a revision session", () => {
+    expect(plannerFocusIntent(task({ kind: "revision" })).taskType).toBe("revision");
   });
-  it("clamps minutes to a sane range", () => {
-    expect(parseFocusHandoff(new URL(focusUrl(task({ estimatedMinutes: 1000 }), "session"), "https://x.test").searchParams)?.minutes).toBe(480);
-    expect(parseFocusHandoff(new URL(focusUrl(task({ estimatedMinutes: 1 }), "session"), "https://x.test").searchParams)?.minutes).toBe(5);
+  it("the link round-trips through the timer's own parser", () => {
+    const href = focusSessionHref(plannerFocusIntent(task({ kind: "revision", estimatedMinutes: 30 })));
+    expect(href.startsWith("/focus/start?origin=planner&id=")).toBe(true);
+    expect(parseIntentParams(new URL(href, "https://x.test").searchParams)).toMatchObject({ originSource: "planner", originId: ID, taskType: "revision", targetMinutes: 30 });
   });
-  it("ignores a link without a real task id", () => {
-    expect(parseFocusHandoff(new URLSearchParams("planTaskId=nope"))).toBeNull();
-    expect(parseFocusHandoff(new URLSearchParams(""))).toBeNull();
+  it("a task with no subject sends none", () => {
+    expect(plannerFocusIntent(task({ subject: null })).subject).toBeUndefined();
   });
   it("points practice and mock at their own screens with the task id", () => {
     expect(practiceUrl({ id: ID })).toBe(`/practice?taskId=${ID}`);

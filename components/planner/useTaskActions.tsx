@@ -7,7 +7,8 @@ import { PracticeChoiceSheet } from "@/components/planner/PracticeChoiceSheet";
 import { QuickLogSheet } from "@/components/planner/QuickLogSheet";
 import { ApiError } from "@/lib/api/http";
 import { completePlanTask, deletePlanTask, reschedulePlanTask, skipPlanTask, startPlanTask, type CompleteInput, type PlanTask } from "@/lib/api/plannerV2";
-import { focusUrl, mockUrl } from "@/lib/planner/cta";
+import { startFocusSession } from "@/lib/focus/startFocusSession";
+import { mockUrl, plannerFocusIntent } from "@/lib/planner/cta";
 import { trackPlanner } from "@/lib/telemetry/planner";
 
 function messageOf(err: unknown, fallback: string): string {
@@ -55,7 +56,7 @@ export function useTaskActions(onChanged: () => void | Promise<void>, notify: (m
       await guarded(async () => {
         await startPlanTask(task.id);
         if (task.kind === "mock") router.push(mockUrl(task));
-        else router.push(focusUrl(task, task.kind === "revision" ? "revision" : "session"));
+        else startFocusSession(plannerFocusIntent(task));
       }, "Couldn't start that. Please try again.");
     },
     [guarded, router],

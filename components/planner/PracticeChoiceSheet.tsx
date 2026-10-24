@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { Sheet } from "@/components/planner/Sheet";
 import { getPracticeOptions, startPlanTask, type PlanTask } from "@/lib/api/plannerV2";
 import { ApiError } from "@/lib/api/http";
-import { NO_QUESTIONS_NOTICE, focusUrl, practiceUrl } from "@/lib/planner/cta";
+import { NO_QUESTIONS_NOTICE, ownContentIntent } from "@/lib/focus/intent";
+import { startFocusSession } from "@/lib/focus/startFocusSession";
+import { practiceUrl } from "@/lib/planner/cta";
 import { trackPlanner } from "@/lib/telemetry/planner";
 
 type Props = {
@@ -56,11 +58,11 @@ export function PracticeChoiceSheet({ task, onClose }: Props) {
       if (choice === "prepex") {
         setNotice(NO_QUESTIONS_NOTICE);
         trackPlanner("planner_task_start", { kind: "practice", via: "fallback_timer" });
-        window.setTimeout(() => router.push(focusUrl(current, "practice", { notice: true })), 1600);
+        window.setTimeout(() => startFocusSession(ownContentIntent(current.id, current.estimatedMinutes, true)), 1600);
         return;
       }
       trackPlanner("planner_task_start", { kind: "practice", via: "own_content" });
-      router.push(focusUrl(current, "practice"));
+      startFocusSession(ownContentIntent(current.id, current.estimatedMinutes, false));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't start that. Please try again.");
       setBusy(false);

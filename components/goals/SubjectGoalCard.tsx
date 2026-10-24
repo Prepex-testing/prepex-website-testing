@@ -4,7 +4,8 @@ import { Plus, X } from "lucide-react";
 import type { Goal, GoalType, NewGoal } from "@/lib/api/goals";
 import type { GoalDefaults } from "@/lib/api/plannerV2";
 import { progressText } from "@/lib/goals/format";
-import { chipLabel, goalMinutes, labelOf, MOCK_TYPES, taskName } from "@/lib/goals/v2";
+import { startFocusSession } from "@/lib/focus/startFocusSession";
+import { chipLabel, goalFocusIntent, goalMinutes, labelOf, MOCK_TYPES, taskName } from "@/lib/goals/v2";
 import { formatDuration, subjectStyle } from "@/lib/planner/format";
 import type { FormKind, FormSubject } from "@/components/goals/GoalFormSheet";
 
@@ -119,6 +120,17 @@ export function SubjectGoalCard({ subject, goals, drafts, defaults, busyId, onAd
                           className="min-h-9 rounded-lg border border-brand/20 bg-tint-strong px-3 text-[12px] font-bold text-ink disabled:opacity-40 dark:bg-[#FAF7F214]"
                         >
                           + Watched one
+                        </button>
+                      )}
+                      {g.status === "ACTIVE" && (
+                        <button
+                          type="button"
+                          data-testid="goal-start-now"
+                          disabled={busyId === g.id}
+                          onClick={() => startFocusSession(goalFocusIntent(g))}
+                          className="min-h-9 rounded-full border border-primary-button-border bg-cta px-3 text-[12px] font-bold text-white hover:bg-[#E8623F] disabled:opacity-50"
+                        >
+                          Start now
                         </button>
                       )}
                       {onSuggest && g.chapterId && g.type !== "HOURS" && g.source !== "PARTNER" && (

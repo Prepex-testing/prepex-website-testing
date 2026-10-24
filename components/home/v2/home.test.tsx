@@ -13,6 +13,8 @@ import type { PlanDay, PlanTask } from "@/lib/api/plannerV2";
 const push = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 vi.mock("@/lib/telemetry/planner", () => ({ trackPlanner: vi.fn() }));
+vi.mock("@/lib/focus/startFocusSession", async (orig) => ({ ...(await orig<typeof import("@/lib/focus/startFocusSession")>()), startFocusSession: vi.fn() }));
+import { startFocusSession } from "@/lib/focus/startFocusSession";
 vi.mock("@/lib/api/mistakes", () => ({ getMistakeStats: vi.fn() }));
 vi.mock("@/lib/api/weakness", () => ({ getTop5WeakTopics: vi.fn() }));
 vi.mock("@/lib/api/goals", () => ({ getCurrentGoals: vi.fn() }));
@@ -92,15 +94,19 @@ describe("TodayPlanCard", () => {
     expect(screen.getByTestId("today-plan-summary")).toHaveTextContent("planned • 30m done");
   });
 
-  it("starting a lecture goes to the focus timer with the task's details", async () => {
+  it("starting a lecture opens the focus timer from the plan task", async () => {
     render(<TodayPlanCard plan={plan({ day: day([task("a")]) })} />);
     await userEvent.click(screen.getByTestId("task-cta"));
-    await waitFor(() => expect(push).toHaveBeenCalled());
-    const url = String(push.mock.calls[0]![0]);
-    expect(url).toContain("/focus?");
-    expect(url).toContain("planTaskId=a");
-    expect(url).toContain("minutes=60");
+    await waitFor(() => expect(startFocusSession).toHaveBeenCalled());
+    expect(startFocusSession).toHaveBeenCalledWith({ originSource: "planner", originId: "a", subject: "physics", taskType: undefined, targetMinutes: 60 });
     expect(startPlanTask).toHaveBeenCalledWith("a");
+  });
+
+  it("starting a revision is a revision session", async () => {
+    render(<TodayPlanCard plan={plan({ day: day([task("r", { kind: "revision" })]) })} />);
+    await userEvent.click(screen.getByTestId("task-cta"));
+    await waitFor(() => expect(startFocusSession).toHaveBeenCalled());
+    expect(vi.mocked(startFocusSession).mock.calls[0]![0]).toMatchObject({ originSource: "planner", originId: "r", taskType: "revision" });
   });
 
   it("offers 'Build today's plan' when the day is empty, and builds it", async () => {
@@ -148,7 +154,7 @@ describe("QuickAccessGrid", () => {
     vi.mocked(getMistakeStats).mockResolvedValue({ success: true, data: { total: 20, active: 15, mastered: 5, masteredPercent: 25, dueNow: 3, dueNext7Days: 4, reviewedToday: 0, reviewStreak: 0, longestReviewStreak: 0, bySubject: [] } });
     render(<QuickAccessGrid day={day([task("r1", { kind: "revision" }), task("r2", { kind: "revision" }), task("p1", { kind: "practice" })])} />);
     const hrefs = Object.fromEntries(["focus", "practice", "revision", "mistakes", "mocks", "analytics"].map((k) => [k, screen.getByTestId(`tile-${k}`).getAttribute("href")]));
-    expect(hrefs).toEqual({ focus: "/focus", practice: "/practice/sessions", revision: "/home/revision", mistakes: "/home/mistake-notebook", mocks: "/home/mock-analysis", analytics: "/analytics" });
+    expect(hrefs).toEqual({ focus: "/focus/start?origin=home_quick_tile", practice: "/practice/sessions", revision: "/home/revision", mistakes: "/home/mistake-notebook", mocks: "/home/mock-analysis", analytics: "/analytics" });
     await waitFor(() => expect(screen.getByTestId("tile-mistakes-subtitle")).toHaveTextContent("15 unresolved"));
     expect(screen.getByTestId("tile-revision-subtitle")).toHaveTextContent("2 due today");
     expect(screen.getByTestId("tile-practice-subtitle")).toHaveTextContent("1 on today's plan");
