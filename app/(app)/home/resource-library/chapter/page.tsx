@@ -6,9 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import { BookmarkIcon, ChevronDownIcon, ChevronRightIcon, PlayIcon } from "@/components/ui/icons";
 import { PageLoader } from "@/components/ui/PageLoader";
-import { useRevisionSession } from "@/components/session/RevisionSessionProvider";
 import { MathText } from "@/components/ui/MathText";
-import { useFocusResourceVisit } from "@/lib/session/focusResourceVisit";
 import { TargetIcon, ComputerIcon, ArrowLeftIcon } from "@/assets/icons";
 import {
   getResourceLibrary,
@@ -338,12 +336,6 @@ function ChapterLibrary() {
   const [bookmarked, setBookmarked] = useState<Set<string>>(new Set());
   // `pyq=1` — opened from a revision session's "PYQs" reference card.
   const [pyqOnly, setPyqOnly] = useState(() => searchParams.get("pyq") === "1");
-  // A session's timer (revision or focus) floats over the top of the page
-  // while the student is out reviewing here; leave it room so it doesn't
-  // cover the header.
-  const { isActive: isRevising } = useRevisionSession();
-  const focusVisit = useFocusResourceVisit();
-  const topSpacing = isRevising || focusVisit ? "pt-28 sm:pt-28 lg:pt-28" : "";
 
   const toggleBookmark = (id: string) =>
     setBookmarked((current) => {
@@ -687,7 +679,7 @@ function ChapterLibrary() {
   };
 
   return (
-    <div className={`flex flex-col gap-5 p-4 sm:gap-6 sm:p-6 lg:p-8 ${topSpacing}`}>
+    <div className="flex flex-col gap-5 p-4 sm:gap-6 sm:p-6 lg:p-8">
       <div className="flex flex-col gap-4">
         <Link
           href="/home/resource-library"

@@ -24,6 +24,8 @@ import {
 import { QUICK_FOCUS_TASK_NAME } from "@/components/home/taskTypes";
 import { AddTask } from "@/assets/icons";
 
+// TODO(focus-timer-v2): "quickFocus" is no longer opened by anything — the Home Focus tile starts the focus timer
+// directly (lib/focus/startFocusSession). Left for the planner-v2 window, which owns this modal, to remove with its other cleanup.
 type TaskModalMode = "add" | "edit" | "planFromBacklog" | "anchor" | "quickFocus";
 
 const HEADER_TEXT: Record<TaskModalMode, { title: string; subtitle: string }> = {

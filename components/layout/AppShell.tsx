@@ -8,10 +8,12 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { useCheckInGate } from "@/components/check-in/CheckInGate";
 import { OnboardingCoach } from "@/components/coach/OnboardingCoach";
 import { AccountRestoredNotice } from "@/components/auth/AccountRestoredNotice";
+import { ActiveFocusBanner } from "@/components/focus/ActiveFocusBanner";
+import { FocusLauncher } from "@/components/focus/FocusLauncher";
 
 // Immersive "focus" experiences: narrower sidebar, no check-in interruptions.
 // (The practice player also intercepts nav clicks to confirm leaving.)
-const FOCUS_PATHS = ["/revision-session", "/practice"];
+const FOCUS_PATHS = ["/focus/start", "/practice"];
 
 const SIDEBAR_COLLAPSED_KEY = "prepex.sidebarCollapsed";
 // Same-tab writes don't fire the native `storage` event (only other tabs get
@@ -63,6 +65,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-1 bg-background">
+      <FocusLauncher />
       <div
         className={`relative hidden shrink-0 transition-[width] duration-700 ease-in-out lg:block ${
           collapsedState ? "w-24.25" : "w-56"
@@ -93,6 +96,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 where interrupting a running session would violate 16.7. */}
             {!isFocusMode && <OnboardingCoach />}
             <AccountRestoredNotice />
+            <ActiveFocusBanner />
             {children}
           </>
         ) : null}
