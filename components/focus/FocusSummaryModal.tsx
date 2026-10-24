@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
+import { PRACTICE_SOURCES, type PracticeSheet, type PracticeSource, type StopFocusInput } from "@/lib/api/focus";
+import { FOCUS_FLAGS } from "@/lib/focus/flags";
+import type { OriginSource, TaskType } from "@/lib/focus/intent";
 import { formatMinutes } from "@/lib/study/format";
 import { defaultWasCompleted, previewMinutes } from "@/lib/study/timer";
 
@@ -10,17 +13,106 @@ type Props = {
   plannedMinutes: number;
   elapsedSeconds: number;
   interruptions: number;
+  taskType?: TaskType;
+  originSource?: OriginSource;
+  /** The session has a chapter, so a practice log can be filed under it. */
+  hasChapter?: boolean;
   busy: boolean;
   error: string | null;
   /** Keep going: close the summary and leave the clock running. */
   onKeepGoing: () => void;
-  onSave: (wasCompleted: boolean) => void;
+  onSave: (input: StopFocusInput) => void;
 };
 
-/** Planned vs actual, "was this a win?", then save. */
-export function FocusSummaryModal({ open, plannedMinutes, elapsedSeconds, interruptions, busy, error, onKeepGoing, onSave }: Props) {
+const MOODS = [
+  { value: 1, emoji: "😞", label: "Rough" },
+  { value: 2, emoji: "😕", label: "Meh" },
+  { value: 3, emoji: "😐", label: "Okay" },
+  { value: 4, emoji: "🙂", label: "Good" },
+  { value: 5, emoji: "😄", label: "Great" },
+] as const;
+
+const CONFIDENCE = [
+  { value: 1, label: "Shaky" },
+  { value: 2, label: "Patchy" },
+  { value: 3, label: "Okay" },
+  { value: 4, label: "Solid" },
+  { value: 5, label: "Rock solid" },
+] as const;
+
+const LAST_SOURCE_KEY = "prepex.focus.lastPracticeSource";
+
+function initialSource(origin: OriginSource | undefined): PracticeSource {
+  try {
+    const stored = localStorage.getItem(LAST_SOURCE_KEY);
+    const match = PRACTICE_SOURCES.find((s) => s.value === stored);
+    if (match) return match.value;
+  } catch {
+    /* private mode: fall through to the default */
+  }
+  return origin === "practice_own_content_fallback" || origin === "mistake_notebook" ? "own_notebook" : "coaching_dpp";
+}
+
+const toCount = (raw: string): number => {
+  const n = Math.trunc(Number(raw));
+  return Number.isFinite(n) && n > 0 ? Math.min(1000, n) : 0;
+};
+
+/** Planned vs actual, how it went, what was practised or how well it is remembered, "was this a win?", then save. */
+export function FocusSummaryModal({
+  open,
+  plannedMinutes,
+  elapsedSeconds,
+  interruptions,
+  taskType = "self_study",
+  originSource,
+  hasChapter = true,
+  busy,
+  error,
+  onKeepGoing,
+  onSave,
+}: Props) {
   const [choice, setChoice] = useState<boolean | null>(null);
+  const [mood, setMood] = useState<number | null>(null);
+  const [confidence, setConfidence] = useState<number | null>(null);
+  const [attempted, setAttempted] = useState("");
+  const [correct, setCorrect] = useState("");
+  const [wrong, setWrong] = useState("");
+  const [source, setSource] = useState<PracticeSource>(() => initialSource(originSource));
+  const [wrongNotes, setWrongNotes] = useState("");
   const win = choice ?? defaultWasCompleted(plannedMinutes, elapsedSeconds);
+
+  const isPractice = taskType === "practice";
+  const isRevision = taskType === "revision";
+
+  const attemptedN = toCount(attempted);
+  const correctN = toCount(correct);
+  const wrongN = toCount(wrong);
+  const sheetOverflows = attemptedN > 0 && correctN + wrongN > attemptedN;
+  const skippedN = Math.max(0, attemptedN - correctN - wrongN);
+
+  const buildInput = (): StopFocusInput => {
+    const input: StopFocusInput = { wasCompleted: win, moodRating: mood };
+    if (isRevision) input.confidenceRating = confidence;
+    if (isPractice && attemptedN > 0) {
+      const notes = FOCUS_FLAGS.mistakeAutofeed && wrongN > 0 ? wrongNotes.split("\n").map((l) => l.trim().slice(0, 300)).filter(Boolean).slice(0, 20) : [];
+      const sheet: PracticeSheet = {
+        source,
+        questionsAttempted: attemptedN,
+        questionsCorrect: correctN,
+        questionsWrong: wrongN,
+        questionsSkipped: skippedN,
+        ...(notes.length > 0 ? { wrongQuestions: notes } : {}),
+      };
+      input.practice = sheet;
+      try {
+        localStorage.setItem(LAST_SOURCE_KEY, source);
+      } catch {
+        /* fine */
+      }
+    }
+    return input;
+  };
 
   return (
     <Modal open={open} onClose={busy ? () => undefined : onKeepGoing} ariaLabel="Session summary">
@@ -48,6 +140,129 @@ export function FocusSummaryModal({ open, plannedMinutes, elapsedSeconds, interr
             <dd className="mt-1 text-[18px] font-extrabold text-ink">{interruptions}</dd>
           </div>
         </dl>
+
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1 text-[15px] font-bold text-ink">How was the session?</legend>
+          <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="How was the session?">
+            {MOODS.map((m) => (
+              <button
+                key={m.value}
+                type="button"
+                role="radio"
+                aria-checked={mood === m.value}
+                aria-label={m.label}
+                data-testid={`mood-${m.value}`}
+                disabled={busy}
+                onClick={() => setMood(mood === m.value ? null : m.value)}
+                className={`flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border text-[22px] transition-colors ${
+                  mood === m.value ? "border-[1.5px] border-brand bg-tint-strong dark:border-[#FAF7F2]" : "border-brand/15 bg-surface"
+                }`}
+              >
+                <span aria-hidden>{m.emoji}</span>
+                <span className="text-[10px] font-bold text-muted">{m.label}</span>
+              </button>
+            ))}
+          </div>
+        </fieldset>
+
+        {isRevision && (
+          <fieldset className="flex flex-col gap-2" data-testid="revision-confidence">
+            <legend className="mb-1 text-[15px] font-bold text-ink">How well do you remember it now?</legend>
+            <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="Confidence">
+              {CONFIDENCE.map((c) => (
+                <button
+                  key={c.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={confidence === c.value}
+                  data-testid={`conf-${c.value}`}
+                  disabled={busy}
+                  onClick={() => setConfidence(confidence === c.value ? null : c.value)}
+                  className={`min-h-12 rounded-xl border px-1 text-[12px] font-bold transition-colors ${
+                    confidence === c.value ? "border-[1.5px] border-brand bg-tint-strong text-ink dark:border-[#FAF7F2]" : "border-brand/15 bg-surface text-body-text dark:text-ink"
+                  }`}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-[12px] text-muted">This decides when the chapter comes back. A shaky one returns tomorrow; a solid one waits longer.</p>
+          </fieldset>
+        )}
+
+        {isPractice && (
+          <fieldset className="flex flex-col gap-3 rounded-2xl border border-brand/10 p-3" data-testid="practice-sheet">
+            <legend className="px-1 text-[15px] font-bold text-ink">Log your practice (15 seconds)</legend>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { id: "sheet-attempted", label: "Attempted", value: attempted, set: setAttempted },
+                { id: "sheet-correct", label: "Correct", value: correct, set: setCorrect },
+                { id: "sheet-wrong", label: "Wrong", value: wrong, set: setWrong },
+              ].map((f) => (
+                <label key={f.id} className="flex flex-col gap-1 text-[12px] font-semibold text-muted" htmlFor={f.id}>
+                  {f.label}
+                  <input
+                    id={f.id}
+                    data-testid={f.id}
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    max={1000}
+                    placeholder="0"
+                    value={f.value}
+                    disabled={busy}
+                    onChange={(e) => f.set(e.target.value)}
+                    className="h-12 w-full rounded-xl border border-input-border bg-surface px-2 text-center text-[16px] text-body-text outline-none focus:border-brand dark:text-ink"
+                  />
+                </label>
+              ))}
+            </div>
+            {sheetOverflows && (
+              <p role="alert" data-testid="sheet-problem" className="text-[12px] font-medium text-danger">
+                Correct and wrong can&apos;t add up to more than the questions you attempted.
+              </p>
+            )}
+            {attemptedN > 0 && !sheetOverflows && skippedN > 0 && <p className="text-[12px] text-muted">{skippedN} skipped.</p>}
+            <label className="flex flex-col gap-1 text-[12px] font-semibold text-muted" htmlFor="sheet-source">
+              Where were the questions from?
+              <select
+                id="sheet-source"
+                data-testid="sheet-source"
+                value={source}
+                disabled={busy}
+                onChange={(e) => setSource(e.target.value as PracticeSource)}
+                className="h-12 w-full rounded-xl border border-input-border bg-surface px-3 text-[16px] text-body-text outline-none focus:border-brand dark:text-ink"
+              >
+                {PRACTICE_SOURCES.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {FOCUS_FLAGS.mistakeAutofeed && wrongN > 0 && (
+              <label className="flex flex-col gap-1 text-[12px] font-semibold text-muted" htmlFor="sheet-wrong-notes">
+                Which ones went wrong? One per line, and we&apos;ll add them to your mistake notebook.
+                <textarea
+                  id="sheet-wrong-notes"
+                  data-testid="sheet-wrong-notes"
+                  rows={3}
+                  maxLength={3000}
+                  value={wrongNotes}
+                  disabled={busy}
+                  placeholder={"Q7, forgot the sign\nQ12, wrong formula"}
+                  onChange={(e) => setWrongNotes(e.target.value)}
+                  className="w-full rounded-xl border border-input-border bg-surface px-3 py-2 text-[16px] text-body-text outline-none focus:border-brand dark:text-ink"
+                />
+              </label>
+            )}
+            {!hasChapter && attemptedN > 0 && (
+              <p data-testid="sheet-no-chapter" className="text-[12px] text-muted">
+                No chapter was chosen, so this can&apos;t be filed under one. Pick a chapter next time and it will be.
+              </p>
+            )}
+          </fieldset>
+        )}
 
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-[15px] font-bold text-ink">Was this a win?</legend>
@@ -84,8 +299,8 @@ export function FocusSummaryModal({ open, plannedMinutes, elapsedSeconds, interr
           <button
             type="button"
             data-testid="save-session"
-            disabled={busy}
-            onClick={() => onSave(win)}
+            disabled={busy || sheetOverflows}
+            onClick={() => onSave(buildInput())}
             className="min-h-14 rounded-lg border border-primary-button-border bg-cta px-4 text-base font-semibold text-white hover:bg-[#E8623F] disabled:opacity-60"
           >
             {busy ? "Saving…" : "Save session"}

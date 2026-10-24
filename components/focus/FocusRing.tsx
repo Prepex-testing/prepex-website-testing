@@ -8,6 +8,8 @@ type Props = {
   caption?: ReactNode;
   paused?: boolean;
   overtime?: boolean;
+  /** A Pomodoro break: the ring runs in a calmer colour. */
+  onBreak?: boolean;
   /** Screen-reader description of the whole timer. */
   ariaLabel: string;
 };
@@ -18,9 +20,9 @@ const RADIUS = (SIZE - STROKE) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 /** A big circular timer: the ring fills as the plan is focused; the clock sits in the middle. */
-export function FocusRing({ progress, label, caption, paused = false, overtime = false, ariaLabel }: Props) {
+export function FocusRing({ progress, label, caption, paused = false, overtime = false, onBreak = false, ariaLabel }: Props) {
   const clamped = Math.min(1, Math.max(0, progress));
-  const color = overtime ? "var(--success)" : paused ? "var(--warning)" : "var(--cta, #FF7A59)";
+  const color = onBreak ? "var(--success)" : overtime ? "var(--success)" : paused ? "var(--warning)" : "var(--cta, #FF7A59)";
 
   return (
     <div className="relative mx-auto aspect-square w-full max-w-[280px]" role="timer" aria-label={ariaLabel} aria-live="off" data-testid="focus-ring">
