@@ -1,12 +1,12 @@
 "use client";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { startFocusSession } from "@/lib/focus/startFocusSession";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useTheme } from "@/components/theme/ThemeProvider";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { Container, ArrowLeftIcon } from "@/assets/icons";
@@ -136,7 +136,6 @@ function collectSubjectsByTab(data: RevisionOverview): SubjectsByTab {
 }
 
 export default function RevisionPage() {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("due");
   const [activeSubjectId, setActiveSubjectId] = useState<number | "all">("all");
   const [activeStatus, setActiveStatus] = useState<TaskStatus | null>(null);
@@ -149,12 +148,17 @@ export default function RevisionPage() {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
-  // The /revision-session page itself fetches the task (GET /planner/task/:taskId) and
-  // starts the tracked session (POST /revision/:taskId/session/start) on mount, seeding
-  // the timer from secondsCompleted — kept in one place so every entry point behaves the same.
+  // Every entry in the queue opens the same focus timer. It reads the task itself (chapter, topic, length) and,
+  // when the session ends, reschedules the chapter from the confidence rating and marks the task done.
   const handleStartRevision = (topic: RevisionTopic) => {
     if (!topic.taskId) return;
-    router.push(`/revision-session?taskId=${topic.taskId}`);
+    startFocusSession({
+      originSource: "revision_tab",
+      originId: topic.taskId,
+      subject: topic.subjectName,
+      taskType: "revision",
+      targetMinutes: topic.estimatedMinutes > 0 ? topic.estimatedMinutes : 30,
+    });
   };
 
   useEffect(() => {

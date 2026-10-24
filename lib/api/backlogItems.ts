@@ -26,6 +26,8 @@ export type BacklogItem = {
   scheduledFor: string | null;
   scheduledWindow: PlannerWindow | null;
   notes: string | null;
+  /** How much of the estimate focus sessions have covered, 0–100. */
+  progressPercent: number;
   ageDays: number;
   isOverdue: boolean;
   createdAt: string;

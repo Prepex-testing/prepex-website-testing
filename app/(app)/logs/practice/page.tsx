@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { startFocusSession } from "@/lib/focus/startFocusSession";
 import { PlannerPickerModal, type PickedPlacement } from "@/components/logs/PlannerPickerModal";
 import { PracticeAnalyticsPanel } from "@/components/logs/PracticeAnalyticsPanel";
 import { PracticeForm } from "@/components/logs/PracticeForm";
@@ -167,6 +168,17 @@ export default function PracticePage() {
       <TabPanel name="practice" tab={tab}>
         {tab === "log" && (
           <section aria-label="Log practice" className="rounded-2xl border border-brand/10 bg-surface p-4 sm:p-6">
+            <div className="mb-4 flex flex-col gap-2 rounded-xl bg-tint-strong p-3 sm:flex-row sm:items-center sm:justify-between dark:bg-[#FAF7F214]">
+              <p className="text-[13px] font-semibold text-ink">Practising now? Time it, and the log fills itself in when you finish.</p>
+              <button
+                type="button"
+                data-testid="start-practice-timer"
+                onClick={() => startFocusSession({ originSource: "practice_tab", taskType: "practice", targetMinutes: 30 })}
+                className="min-h-11 shrink-0 rounded-lg border border-primary-button-border bg-cta px-4 text-[14px] font-bold text-white hover:bg-[#E8623F]"
+              >
+                Start a timed session
+              </button>
+            </div>
             <h2 className="mb-3 text-[18px] font-extrabold text-ink">Log a practice session</h2>
             <PracticeForm key={formKey} subjects={subjects.subjects} busy={busy} error={editing ? null : formError} onSubmit={(input) => void handleCreate(input)} />
           </section>

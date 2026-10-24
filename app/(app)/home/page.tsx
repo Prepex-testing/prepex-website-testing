@@ -12,7 +12,8 @@ import type { Task, TaskType } from "@/components/home/TaskRow";
 import { toRowDifficulty } from "@/components/home/PlanTaskRow";
 import { prettyDifficulty } from "@/lib/api/practice";
 import { taskResourceHref, withPracticeProgressLabel, withResumeLabel } from "@/components/home/taskTypes";
-import { QuickFocusModal } from "@/components/home/QuickFocusModal";
+import { ownContentIntent } from "@/lib/focus/intent";
+import { startFocusSession } from "@/lib/focus/startFocusSession";
 import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
@@ -145,9 +146,10 @@ type QuickAccessItem = {
   label: string;
   icon: ReactNode;
   subtitle?: string;
-  /** Omitted when the tile opens a modal instead of navigating. */
+  /** Omitted when the tile starts something instead of navigating. */
   href?: string;
-  action?: "quickFocus";
+  /** "focus": opens the focus timer on its own, nothing pre-filled. */
+  action?: "focus";
 };
 
 const QUICK_ACCESS: QuickAccessItem[] = [
@@ -166,8 +168,8 @@ const QUICK_ACCESS: QuickAccessItem[] = [
     label: "Mistake Notebook", icon: <BookIcon className="h-5 w-5" />
   },
   {
-    action: "quickFocus",
-    label: "Quick Focus",
+    action: "focus",
+    label: "Focus",
     icon: <LayersIcon className="h-5 w-5" />,
   },
   {
@@ -328,7 +330,6 @@ export default function HomePage() {
   const storedFullName = useStoredFullName();
   const firstName = storedFullName.trim().split(/\s+/)[0] || "there";
   const greeting = useGreeting();
-  const [isQuickFocusOpen, setQuickFocusOpen] = useState(false);
   const [isPracticeModalOpen, setPracticeModalOpen] = useState(false);
   const [practiceTaskId, setPracticeTaskId] = useState<string | null>(null);
   const [practiceTaskStats, setPracticeTaskStats] = useState<{
@@ -356,7 +357,6 @@ export default function HomePage() {
   const [isActivatingBacklogRecovery, setActivatingBacklogRecovery] = useState(false);
   const [isLateSignupPromptOpen, setLateSignupPromptOpen] = useState(false);
   const [isQuickSessionTaskOpen, setQuickSessionTaskOpen] = useState(false);
-  const [isQuickFocusTaskOpen, setQuickFocusTaskOpen] = useState(false);
   const hasPromptedLateSignup = useRef(false);
   // Section 4.2.2 — burnout tier / disengagement pop-ups. One per session.
   const [burnout, setBurnout] = useState<BurnoutStatus | null>(null);
@@ -977,12 +977,12 @@ export default function HomePage() {
                 const classes =
                   "flex h-15 items-center justify-between rounded-xl border border-quick-access-border bg-card px-4 shadow-quick-access transition-colors hover:bg-tint";
 
-                if (item.action === "quickFocus") {
+                if (item.action === "focus") {
                   return (
                     <button
                       key={item.label}
                       type="button"
-                      onClick={() => setQuickFocusTaskOpen(true)}
+                      onClick={() => startFocusSession({ originSource: "home_quick_tile" })}
                       className={`${classes} w-full text-left`}
                       data-coach={QUICK_ACCESS_COACH_ANCHOR[item.label]}
                     >
@@ -1226,7 +1226,6 @@ export default function HomePage() {
         name={firstName}
         onSave={handleMoodSave}
       />
-      <QuickFocusModal open={isQuickFocusOpen} onClose={() => setQuickFocusOpen(false)} />
       <AddCustomTaskModal
         open={isAddTaskOpen}
         onClose={() => setAddTaskOpen(false)}
@@ -1240,17 +1239,6 @@ export default function HomePage() {
         description="Next plan is ready, but want to do a quick session now instead?"
         confirmLabel="Yes"
         cancelLabel="No"
-      />
-      <AddCustomTaskModal
-        open={isQuickFocusTaskOpen}
-        mode="quickFocus"
-        onClose={() => setQuickFocusTaskOpen(false)}
-        onTaskAdded={(taskId) => {
-          // Straight into the session — a Quick Focus task exists to be started
-          // now, not to sit in the plan.
-          if (taskId) router.push(`/home/session?taskId=${taskId}`);
-          else refetchPlan();
-        }}
       />
       <AddCustomTaskModal
         open={isQuickSessionTaskOpen}
@@ -1305,6 +1293,10 @@ export default function HomePage() {
           setPracticeModalOpen(false);
           router.push(practiceTaskId ? `/practice?taskId=${practiceTaskId}` : "/practice");
         }}
+        onUseOwnContent={({ noQuestions }) => {
+          setPracticeModalOpen(false);
+          startFocusSession(ownContentIntent(practiceTaskId, practiceTaskStats?.estimatedMinutes, noQuestions));
+        }}
       />
       <RecoveryModeModal
         open={isRecoveryModeModalOpen}
@@ -1323,8 +1315,6 @@ export default function HomePage() {
           isCheckInOpen ||
           isRegenerateOpen ||
           isAddTaskOpen ||
-          isQuickFocusOpen ||
-          isQuickFocusTaskOpen ||
           isPracticeModalOpen ||
           isRecoveryModeModalOpen ||
           isEndRecoveryOpen ||

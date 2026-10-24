@@ -5,6 +5,7 @@ import { dayLabel } from "@/lib/logs/dates";
 import { BACKLOG_SOURCE_LABEL, labelOf, PRIORITIES, WINDOWS } from "@/lib/logs/labels";
 import { formatMinutes } from "@/lib/study/format";
 import { subjectColor, type SubjectLookup } from "@/lib/study/subjects";
+import { startFocusSession } from "@/lib/focus/startFocusSession";
 
 const PRIORITY_STYLE: Record<number, string> = {
   1: "bg-[#EF444426] text-[#DC2626] dark:text-[#F87171]",
@@ -77,6 +78,11 @@ export function BacklogOpenList({ items, lookup, hasMore, onLoadMore, onClear, o
                   </Chip>
                 )}
                 {item.estimatedMinutes && <Chip className="bg-tint-strong text-body-text dark:bg-[#FAF7F214] dark:text-ink">{formatMinutes(item.estimatedMinutes)}</Chip>}
+                {item.progressPercent > 0 && (
+                  <Chip className="bg-[#10B98126] text-[#047857] dark:text-[#34D399]" testId={`progress-${item.id}`}>
+                    {item.progressPercent}% done
+                  </Chip>
+                )}
                 {item.source !== "manual" && <Chip className="bg-[#6366F126] text-[#4338CA] dark:text-[#A5B4FC]">{BACKLOG_SOURCE_LABEL[item.source]}</Chip>}
                 {scheduled && item.scheduledFor && (
                   <Chip className="bg-[#10B98126] text-[#047857] dark:text-[#34D399]" testId={`scheduled-${item.id}`}>
@@ -87,6 +93,24 @@ export function BacklogOpenList({ items, lookup, hasMore, onLoadMore, onClear, o
               </div>
               {item.notes && <p className="mt-2 line-clamp-2 text-[13px] text-body-text dark:text-ink">{item.notes}</p>}
               <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <button
+                  type="button"
+                  disabled={disabled}
+                  data-testid={`start-${item.id}`}
+                  onClick={() =>
+                    startFocusSession({
+                      originSource: "backlog_tab",
+                      originId: item.id,
+                      subject: String(item.subjectId),
+                      chapter: item.chapterId ?? undefined,
+                      topic: item.topic ?? undefined,
+                      targetMinutes: item.estimatedMinutes ?? undefined,
+                    })
+                  }
+                  className="col-span-2 min-h-12 rounded-lg border border-primary-button-border bg-cta px-3 text-[15px] font-bold text-white hover:bg-[#E8623F] disabled:opacity-60 sm:col-span-4"
+                >
+                  {item.progressPercent > 0 ? "Keep going" : "Start"}
+                </button>
                 <button type="button" disabled={disabled} data-testid={`clear-${item.id}`} onClick={() => onClear(item)} className="min-h-11 rounded-lg border border-primary-button-border bg-cta px-3 text-[14px] font-bold text-white hover:bg-[#E8623F] disabled:opacity-60">
                   Clear
                 </button>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { startFocusSession } from "@/lib/focus/startFocusSession";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { DatesPickerModal, type PickedDates } from "@/components/insights/DatesPickerModal";
@@ -146,9 +147,19 @@ export default function ChapterPage() {
       <section className={CARD} aria-label="Theory">
         <h2 className="text-[16px] font-extrabold text-ink">Theory</h2>
         <TheorySwitch value={p.theoryStatus} busy={busy} onChange={(v) => void mark({ aspect: "theory", value: v })} />
-        <button type="button" data-testid="schedule-open" onClick={() => { setActionError(null); setScheduling(true); }} className="min-h-12 rounded-lg border border-primary-button-border bg-cta px-4 text-base font-semibold text-white hover:bg-[#E8623F]">
-          Schedule study
-        </button>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <button
+            type="button"
+            data-testid="study-chapter"
+            onClick={() => startFocusSession({ originSource: "syllabus_overview", chapter: chapterId, taskType: "self_study", targetMinutes: 60 })}
+            className="min-h-12 rounded-lg border border-primary-button-border bg-cta px-4 text-base font-semibold text-white hover:bg-[#E8623F]"
+          >
+            Study this chapter
+          </button>
+          <button type="button" data-testid="schedule-open" onClick={() => { setActionError(null); setScheduling(true); }} className="min-h-12 rounded-lg border-[1.5px] border-secondary-button-border bg-surface px-4 text-base font-semibold text-body-text hover:bg-tint-strong dark:text-ink">
+            Schedule study
+          </button>
+        </div>
       </section>
 
       <section className={CARD} aria-label="Work done">

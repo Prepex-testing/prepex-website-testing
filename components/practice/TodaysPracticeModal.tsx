@@ -140,6 +140,12 @@ type TodaysPracticeModalProps = {
   taskId?: string | null;
 
   /**
+   * The student would rather practise from their own book or notes. Opens the focus timer for this task
+   * (`noQuestions` is true when Prepex has no questions for the chapter, so the timer can say why it opened).
+   */
+  onUseOwnContent?: (options: { noQuestions: boolean }) => void;
+
+  /**
    * Duration/difficulty straight from the plan task (getTodayPlan), e.g. the
    * same PlanTask/Task row the caller already has in hand. getTaskQuestions
    * has no task-level duration or difficulty — only per-question data — so
@@ -155,6 +161,7 @@ export function TodaysPracticeModal({
   onClose,
   onStart,
   taskId,
+  onUseOwnContent,
   estimatedMinutes,
   taskDifficultyLabel,
 }: TodaysPracticeModalProps) {
@@ -359,7 +366,30 @@ export function TodaysPracticeModal({
           >
             Start Practice
           </Button>
+
+          {onUseOwnContent && (
+            <button
+              type="button"
+              data-testid="practice-own-content"
+              onClick={() => onUseOwnContent({ noQuestions: false })}
+              className="mt-3 min-h-11 w-full rounded-lg border-[1.5px] border-secondary-button-border bg-surface text-sm font-semibold text-body-text hover:bg-tint-strong dark:text-ink"
+            >
+              Use my own content
+            </button>
+          )}
         </>
+      )}
+
+      {/* Nothing in the Prepex bank for this chapter yet: the focus timer is the way to practise from their own source. */}
+      {isNotFound && onUseOwnContent && (
+        <Button
+          variant="primary"
+          className="mt-4 sm:mt-5"
+          data-testid="practice-no-questions-timer"
+          onClick={() => onUseOwnContent({ noQuestions: true })}
+        >
+          Practice from my own source
+        </Button>
       )}
 
       {/* Not Now / Close */}
