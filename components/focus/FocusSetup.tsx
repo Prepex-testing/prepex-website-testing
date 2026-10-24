@@ -9,7 +9,7 @@ import { SoundPicker } from "@/components/focus/SoundPicker";
 import { FIELD, LABEL, SubjectChapterFields } from "@/components/study/SubjectChapterFields";
 import { readBlockedApps, storeBlockedApps, type BlockableAppId } from "@/lib/focus/appBlock";
 import { TASK_TYPES, TASK_TYPE_LABELS, type FocusMode, type ResolvedFocusIntent, type TaskType } from "@/lib/focus/intent";
-import { clampPomodoro, pomodoroForTarget, pomodoroPlannedMinutes, type PomodoroConfig } from "@/lib/focus/pomodoro";
+import { clampPomodoro, fitPomodoro, pomodoroForTarget, pomodoroPlannedMinutes, type PomodoroConfig } from "@/lib/focus/pomodoro";
 import { readStoredSound, storeSound, type SoundId } from "@/lib/focus/soundscape";
 import { PLAN_PRESETS_MINUTES, clampPlannedMinutes } from "@/lib/study/timer";
 
@@ -50,12 +50,12 @@ export function FocusSetup({ subjects, initial, busy, error, onStart }: Props) {
   const changeMode = (next: FocusMode) => {
     setMode(next);
     // Switching to Pomodoro fits the rhythm to the length already chosen instead of throwing it away.
-    if (next === "pomodoro") setPomodoro((p) => clampPomodoro({ ...p, cycles: Math.max(1, Math.round(clampPlannedMinutes(minutes) / p.studyMinutes)) }));
+    if (next === "pomodoro") setPomodoro((p) => fitPomodoro(p, clampPlannedMinutes(minutes)));
   };
 
   const pickLength = (m: number) => {
     setMinutes(m);
-    if (mode === "pomodoro") setPomodoro((p) => clampPomodoro({ ...p, cycles: Math.max(1, Math.round(m / p.studyMinutes)) }));
+    if (mode === "pomodoro") setPomodoro((p) => fitPomodoro(p, m));
   };
 
   const setPom = (patch: Partial<PomodoroConfig>) => setPomodoro((p) => clampPomodoro({ ...p, ...patch }));

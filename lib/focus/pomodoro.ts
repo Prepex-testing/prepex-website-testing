@@ -28,10 +28,18 @@ export function pomodoroPlannedMinutes(config: PomodoroConfig): number {
   return Math.min(480, config.studyMinutes * config.cycles);
 }
 
-/** A target length ("45 minutes") as the classic 25/5 rhythm that fits it best. */
+/**
+ * Fits a rhythm to a target length ("45 minutes") keeping its study and break minutes: as many rounds as come closest.
+ * A target shorter than one round becomes a single, shorter round, so "15m" really is 15 minutes.
+ */
+export function fitPomodoro(config: PomodoroConfig, targetMinutes: number): PomodoroConfig {
+  if (targetMinutes < config.studyMinutes) return clampPomodoro({ ...config, studyMinutes: targetMinutes, cycles: 1 });
+  return clampPomodoro({ ...config, cycles: Math.max(1, Math.round(targetMinutes / config.studyMinutes)) });
+}
+
+/** A target length as the classic 25/5 rhythm that fits it best. */
 export function pomodoroForTarget(targetMinutes: number): PomodoroConfig {
-  const study = DEFAULT_POMODORO.studyMinutes;
-  return clampPomodoro({ studyMinutes: study, breakMinutes: DEFAULT_POMODORO.breakMinutes, cycles: Math.max(1, Math.round(targetMinutes / study)) });
+  return fitPomodoro(DEFAULT_POMODORO, targetMinutes);
 }
 
 export type PomodoroPosition = {

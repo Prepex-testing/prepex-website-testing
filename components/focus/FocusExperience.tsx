@@ -306,16 +306,16 @@ export function FocusExperience({ launch }: { launch: FocusSessionIntent }) {
   const originSource = session?.originSource ?? launch.originSource;
   const chip = originChipText(originSource);
   const header = (
-    <header className="flex items-center justify-between gap-3">
-      <button type="button" onClick={closeTimer} aria-label={running ? "Minimise the timer" : "Close the timer"} data-testid="close-focus" className="flex size-11 items-center justify-center rounded-full border border-brand/15 bg-surface text-[20px] text-ink hover:bg-tint-strong">
+    <header className="flex items-center justify-between gap-2">
+      <button type="button" onClick={closeTimer} aria-label={running ? "Minimise the timer" : "Close the timer"} data-testid="close-focus" className="flex size-11 shrink-0 items-center justify-center rounded-full border border-brand/15 bg-surface text-[20px] text-ink hover:bg-tint-strong">
         <span aria-hidden>{running ? "▾" : "✕"}</span>
       </button>
       {chip ? (
-        <span data-testid="origin-chip" className="truncate rounded-full bg-tint-strong px-3 py-1.5 text-[12px] font-bold text-ink dark:bg-[#FAF7F214]">
+        <span data-testid="origin-chip" className="min-w-0 flex-1 truncate rounded-full text-center bg-tint-strong px-3 py-1.5 text-[12px] font-bold text-ink dark:bg-[#FAF7F214]">
           {chip}
         </span>
       ) : (
-        <h1 className="text-[16px] font-extrabold text-ink">Focus</h1>
+        <h1 className="min-w-0 flex-1 text-center text-[16px] font-extrabold text-ink">Focus</h1>
       )}
       <StreakChip streak={stats?.streak ?? focus.result?.extras.streak ?? null} />
     </header>

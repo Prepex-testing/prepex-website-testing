@@ -20,6 +20,7 @@ import {
   breakRemainingSeconds,
   breaksTakenBefore,
   clampPomodoro,
+  fitPomodoro,
   pomodoroForTarget,
   pomodoroPlannedMinutes,
   pomodoroPosition,
@@ -206,7 +207,9 @@ describe("pomodoro", () => {
   it("fits cycles of 25 to a target length", () => {
     expect(pomodoroForTarget(25)).toEqual({ studyMinutes: 25, breakMinutes: 5, cycles: 1 });
     expect(pomodoroForTarget(60)).toMatchObject({ cycles: 2 });
-    expect(pomodoroForTarget(5)).toMatchObject({ cycles: 1 });
+    expect(pomodoroForTarget(5)).toEqual({ studyMinutes: 5, breakMinutes: 5, cycles: 1 }); // shorter than one round: one short round
+    expect(pomodoroForTarget(15)).toMatchObject({ studyMinutes: 15, cycles: 1 });
+    expect(fitPomodoro({ studyMinutes: 50, breakMinutes: 10, cycles: 1 }, 150)).toEqual({ studyMinutes: 50, breakMinutes: 10, cycles: 3 });
   });
 
   const cfg = { studyMinutes: 25, breakMinutes: 5, cycles: 3 };
