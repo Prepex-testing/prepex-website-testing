@@ -4,138 +4,110 @@ import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
-import { Button } from "@/components/ui/Button";
+import { OnboardingNav } from "@/components/onboarding/OnboardingNav";
 import { OptionCard } from "@/components/ui/OptionCard";
 import { OptionCardSkeleton } from "@/components/ui/OptionCardSkeleton";
 import { StepProgress } from "@/components/ui/StepProgress";
 import { LayersIcon, BookIcon, RadarIcons, BriefcaseIcons, CuteIcon } from "@/assets/icons";
 import { getExams } from "@/lib/api/dashboard";
-import { getOnboardingProgress, selectExam } from "@/lib/api/onboarding";
-import { ApiError } from "@/lib/api/http";
 import type { Exam } from "@/lib/api/dashboard";
+import { useOnboardingDraft } from "@/lib/onboarding/draft-context";
+import { DEFAULT_GOAL_SUBTITLE, GOAL_SUBTITLES, needsSubjectPick, sortExams } from "@/lib/onboarding/goal";
+import { ONBOARDING_TOTAL_STEPS, SELECT_SUBJECT_PATH, stepPath } from "@/lib/onboarding/steps";
+import { useStepTelemetry } from "@/lib/onboarding/useStepTelemetry";
 
-const EXAM_META: Record<string, { subtitle: string; icon: ReactNode }> = {
-  JEE_MAIN: { subtitle: "NITs, IIITs & GFTIs", icon: <RadarIcons /> },
-  "JEE_MAIN+ADVANCED": { subtitle: "NITs, IIITs & GFTIs", icon: <LayersIcon /> },
-  NEET: { subtitle: "Medical Entrance Exam", icon: <BriefcaseIcons /> },
-  CUET: { subtitle: "Central University Entrance Test", icon: <CuteIcon /> },
-  BOARDS: { subtitle: "Class 12 Boards", icon: <BookIcon /> },
+const GOAL_ICONS: Record<string, ReactNode> = {
+  JEE_MAIN: <RadarIcons />,
+  "JEE_MAIN+ADVANCED": <LayersIcon />,
+  NEET: <BriefcaseIcons />,
+  JEE_AND_NEET: <LayersIcon />,
+  CUET: <CuteIcon />,
+  BOARDS: <BookIcon />,
 };
-const DEFAULT_META = { subtitle: "Personalized prep plan", icon: <CuteIcon /> };
-
-// Exams that always need a subject pick, regardless of what the API reports —
-// covers combo exams like JEE+CUET that share Boards/CUET's subject-selection flow.
-const SUBJECT_SELECTION_EXAM_CODES = new Set(["CUET", "BOARDS", "JEE+CUET"]);
 
 export default function PreparingForPage() {
   const router = useRouter();
+  const { draft, ready, update } = useOnboardingDraft();
+  const completeStep = useStepTelemetry(1, "goal");
   const [exams, setExams] = useState<Exam[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    Promise.all([getExams(), getOnboardingProgress().catch(() => null)])
-      .then(([{ data }, progress]) => {
-        setExams(data);
-        const savedExamId = progress?.data.profile?.examId;
-        setSelected(
-          savedExamId && data.some((exam) => exam.id === savedExamId)
-            ? savedExamId
-            : (data[0]?.id ?? null),
-        );
-      })
-      .catch(() => setError("Couldn't load exams. Please refresh and try again."))
+    getExams()
+      .then(({ data }) => setExams(sortExams(data)))
+      .catch(() => setError("We couldn't load the exams. Please refresh and try again."))
       .finally(() => setLoading(false));
   }, []);
 
-  const handleContinue = async () => {
-    if (!selected) return;
-    setError(null);
-    setSubmitting(true);
-    try {
-      const { requiresSubjectSelection } = await selectExam({ examId: selected });
-      const selectedExam = exams.find((exam) => exam.id === selected);
-      const needsSubjectSelection =
-        requiresSubjectSelection ||
-        (selectedExam ? SUBJECT_SELECTION_EXAM_CODES.has(selectedExam.code.toUpperCase()) : false);
-      router.push(
-        needsSubjectSelection
-          ? "/onboarding/select-subject"
-          : "/onboarding/tell-us-about-you",
-      );
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
-      );
-      setSubmitting(false);
-    }
+  // First visit: the first option is selected, so Next is one tap away. A saved choice always wins.
+  const selectedId = draft.goal.examId ?? (ready ? (exams[0]?.id ?? null) : null);
+  const selectedExam = exams.find((exam) => exam.id === selectedId) ?? null;
+
+  const choose = (exam: Exam) => {
+    update((d) => {
+      const changed = d.goal.examId !== exam.id;
+      return {
+        ...d,
+        // A different goal means a different syllabus: the subject pick and any chapters already ticked no longer apply.
+        goal: { examId: exam.id, examCode: exam.code, examName: exam.name, subjectIds: changed ? [] : d.goal.subjectIds },
+        chapters: changed ? { completedIds: [] } : d.chapters,
+      };
+    });
+  };
+
+  const handleNext = () => {
+    if (!selectedExam) return;
+    update((d) => ({
+      ...d,
+      goal:
+        d.goal.examId === selectedExam.id
+          ? d.goal
+          : { examId: selectedExam.id, examCode: selectedExam.code, examName: selectedExam.name, subjectIds: [] },
+      step: Math.max(d.step, 2),
+    }));
+    completeStep();
+    router.push(needsSubjectPick(selectedExam) ? SELECT_SUBJECT_PATH : stepPath(2));
   };
 
   return (
     <AuthCard>
-      <StepProgress step={1} totalSteps={6} />
+      <StepProgress step={1} totalSteps={ONBOARDING_TOTAL_STEPS} />
 
-      <div className="mt-4 flex flex-col gap-4 py-2 sm:mt-5">
-        <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
-          What are you preparing for?
-        </h1>
-        <p className="text-[14px] font-semibold leading-[100%] text-neutral-text sm:text-[16px]">
-          This filters your syllabus, mocks, and partner matching to match
-          your goal
+      <div className="mt-4 flex flex-col gap-3 py-2 sm:mt-5">
+        <h1 className="text-[24px] font-extrabold leading-tight text-ink sm:text-[32px]">I&apos;m preparing for</h1>
+        <p className="text-[14px] font-semibold leading-snug text-neutral-text sm:text-[16px]">
+          This sets your syllabus, your mock tests and who you get matched with.
         </p>
       </div>
 
       {error && (
-        <p
-          role="alert"
-          className="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-xs font-medium text-danger"
-        >
+        <p role="alert" className="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-xs font-medium text-danger">
           {error}
         </p>
       )}
 
-      <div className="mt-6 flex flex-col gap-3">
-        {isLoading &&
-          Array.from({ length: 4 }).map((_, index) => (
-            <OptionCardSkeleton key={index} />
-          ))}
+      <div className="mt-6 flex flex-col gap-3" role="group" aria-label="What are you preparing for?">
+        {(isLoading || !ready) && Array.from({ length: 4 }).map((_, index) => <OptionCardSkeleton key={index} />)}
         {!isLoading &&
-          exams.map((exam) => {
-            const meta = EXAM_META[exam.code.toUpperCase()] ?? DEFAULT_META;
-            return (
-              <OptionCard
-                key={exam.id}
-                icon={meta.icon}
-                title={exam.name}
-                subtitle={meta.subtitle}
-                selected={selected === exam.id}
-                onClick={() => setSelected(exam.id)}
-              />
-            );
-          })}
+          ready &&
+          exams.map((exam) => (
+            <OptionCard
+              key={exam.id}
+              icon={GOAL_ICONS[exam.code.toUpperCase()] ?? <CuteIcon />}
+              title={exam.name}
+              subtitle={GOAL_SUBTITLES[exam.code.toUpperCase()] ?? DEFAULT_GOAL_SUBTITLE}
+              selected={selectedId === exam.id}
+              onClick={() => choose(exam)}
+            />
+          ))}
       </div>
 
-      <div className="mt-6 flex flex-col items-center gap-2">
-        <Button
-          variant="primary"
-          onClick={handleContinue}
-          disabled={!selected || isSubmitting}
-          className="disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isSubmitting ? "Saving..." : "Continue"}
-        </Button>
-        <p className="px-4 text-center text-[12px] leading-[18px] text-muted sm:px-0 sm:text-xs sm:leading-5">
-          By continuing, you agree to our{" "}
-          <button
-            type="button"
-            className="whitespace-nowrap font-semibold text-ink"
-          >
-            Terms of Service
-          </button>
-        </p>
-      </div>
+      <OnboardingNav
+        onNext={handleNext}
+        nextDisabled={!selectedExam}
+        hint={!selectedExam && !isLoading && !error ? "Pick what you are preparing for to continue." : undefined}
+      />
     </AuthCard>
   );
 }

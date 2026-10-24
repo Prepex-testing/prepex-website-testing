@@ -3,285 +3,184 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
-import { Accordion } from "@/components/ui/Accordion";
-import { Button } from "@/components/ui/Button";
-import { ChapterItem } from "@/components/ui/ChapterItem";
+import { ChapterPicker } from "@/components/onboarding/ChapterPicker";
+import { OnboardingNav } from "@/components/onboarding/OnboardingNav";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { StepProgress } from "@/components/ui/StepProgress";
-import { CheckIcon, XIcon } from "@/components/ui/icons";
-import { getOnboardingProgress, getStudentChapters, saveChapterProgress } from "@/lib/api/onboarding";
+import { completeOnboarding } from "@/lib/api/onboarding";
 import { ApiError } from "@/lib/api/http";
-import type { SubjectChapters } from "@/lib/api/dashboard";
+import { markOnboardingComplete } from "@/lib/auth/onboardingGate";
+import { countChapters, filterSections, groupByClass, keepKnown } from "@/lib/onboarding/chapters";
+import { needsSubjectPick } from "@/lib/onboarding/goal";
+import { useOnboardingDraft, useStepGuard } from "@/lib/onboarding/draft-context";
+import { defaultExamDateIso, displayDateToIso } from "@/lib/onboarding/draft";
+import { buildCompletePayload } from "@/lib/onboarding/payload";
+import { ONBOARDING_TOTAL_STEPS, stepPath } from "@/lib/onboarding/steps";
+import { useStepTelemetry } from "@/lib/onboarding/useStepTelemetry";
+import { useOnboardingSyllabus } from "@/lib/onboarding/useSyllabus";
 
-type ChapterState = "none" | "partial" | "done";
+const COACHING_LABEL = { COACHING: "In coaching", ONLINE_SELF_PREP: "Online courses and self-study", SELF_PREP: "Self-prep" } as const;
 
-function cycleState(state: ChapterState): ChapterState {
-  if (state === "none") return "partial";
-  if (state === "partial") return "done";
-  return "none";
-}
-
-function stateFromStatus(status: "NOT_STARTED" | "LEARNING" | "IN_REVISION" | "MASTERED"): ChapterState {
-  // A fully-studied chapter persists as IN_REVISION (legacy rows may still
-  // be MASTERED) — either way it reloads as "done". A partially-studied one
-  // persists as LEARNING and reloads as "partial". Everything else is "none".
-  if (status === "MASTERED" || status === "IN_REVISION") return "done";
-  if (status === "LEARNING") return "partial";
-  return "none";
-}
-
-// chapterState → the status saved for it in the /step5 payload.
-const STATUS_BY_STATE: Record<ChapterState, "NOT_STARTED" | "LEARNING" | "IN_REVISION"> = {
-  none: "NOT_STARTED",
-  partial: "LEARNING",
-  done: "IN_REVISION",
-};
-
+/**
+ * Onboarding step 5 of 5. A chapter is either complete or not: one tap toggles it. Next is the only place anything
+ * is sent to the server, and it sends everything from all five steps in one request.
+ */
 export default function WhichChaptersHaveYouStudiedPage() {
   const router = useRouter();
-  const [subjects, setSubjects] = useState<SubjectChapters[]>([]);
-  const [chapterState, setChapterState] = useState<Record<string, ChapterState>>({});
-  const [isLoading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const allowed = useStepGuard(5);
+  const { draft, update, clearStored, setSummary } = useOnboardingDraft();
+  const completeStep = useStepTelemetry(5, "chapters");
+  const { data: syllabus, loading, error: loadError, retry } = useOnboardingSyllabus();
+  const [query, setQuery] = useState("");
   const [isSubmitting, setSubmitting] = useState(false);
-  const [isSkipping, setSkipping] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  const sections = useMemo(() => groupByClass(syllabus?.subjects ?? []), [syllabus]);
+  const visible = useMemo(() => filterSections(sections, query), [sections, query]);
+  const total = useMemo(() => countChapters(sections), [sections]);
+  const completed = draft.chapters.completedIds;
+
+  // A goal that changed since the draft was saved can leave ticks for chapters that are no longer in the syllabus.
   useEffect(() => {
-    Promise.all([getStudentChapters(), getOnboardingProgress().catch(() => null)])
-      .then(([{ data }, progress]) => {
-        const withChapters = data.filter((subject) => subject.chapters.length > 0);
-        setSubjects(withChapters);
+    if (!syllabus) return;
+    const known = keepKnown(completed, syllabus.subjects);
+    if (known.length !== completed.length) update((d) => ({ ...d, chapters: { completedIds: known } }));
+  }, [syllabus, completed, update]);
 
-        const savedStatusById = new Map<string, "NOT_STARTED" | "LEARNING" | "IN_REVISION" | "MASTERED">();
-        for (const subject of progress?.data.subjects ?? []) {
-          for (const chapter of subject.chapters) {
-            savedStatusById.set(chapter.id, chapter.status);
-          }
-        }
+  if (!allowed) return null;
 
-        const initial: Record<string, ChapterState> = {};
-        for (const subject of withChapters) {
-          for (const chapter of subject.chapters) {
-            const savedStatus = savedStatusById.get(chapter.id);
-            initial[chapter.id] = savedStatus ? stateFromStatus(savedStatus) : "none";
-          }
-        }
-        setChapterState(initial);
-      })
-      .catch(() => setError("Couldn't load chapters. Please refresh and try again."))
-      .finally(() => setLoading(false));
-  }, []);
+  const setCompleted = (completedIds: string[]) => update((d) => ({ ...d, chapters: { completedIds } }));
+  const searching = query.trim().length > 0;
+  const noChapters = !loading && !loadError && total === 0;
 
-  const { markedCount, partialCount, allMarked } = useMemo(() => {
-    const values = Object.values(chapterState);
-    return {
-      markedCount: values.filter((value) => value !== "none").length,
-      partialCount: values.filter((value) => value === "partial").length,
-      allMarked: values.length > 0 && values.every((value) => value !== "none"),
-    };
-  }, [chapterState]);
-
-  const toggleChapter = (key: string) => {
-    setChapterState((current) => ({ ...current, [key]: cycleState(current[key]) }));
-  };
-
-  const markAll = () => {
-    setChapterState((current) => {
-      const next = { ...current };
-      for (const key of Object.keys(next)) next[key] = "done";
-      return next;
-    });
-  };
-
-  const clearAll = () => {
-    setChapterState((current) => {
-      const next = { ...current };
-      for (const key of Object.keys(next)) next[key] = "none";
-      return next;
-    });
-  };
-
-  const toggleMarkAll = () => {
-    if (allMarked) {
-      clearAll();
-    } else {
-      markAll();
-    }
-  };
-
-  const handleContinue = async () => {
-    // Every chapter is sent, mapped from its local state: done → IN_REVISION,
-    // partial → LEARNING, unmarked → NOT_STARTED.
-    const chapterProgress = subjects.flatMap((subject) =>
-      subject.chapters.map((chapter) => ({
-        chapterId: chapter.id,
-        status: STATUS_BY_STATE[chapterState[chapter.id] ?? "none"],
-      })),
-    );
-
-    if (chapterProgress.length === 0) {
-      router.push("/onboarding/analyzing");
-      return;
-    }
-
+  async function submit(completedIds: string[]) {
+    const final = { ...draft, chapters: { completedIds } };
+    const needsSubjects = draft.goal.examCode ? needsSubjectPick({ code: draft.goal.examCode, name: draft.goal.examName ?? "" }) : false;
     setError(null);
     setSubmitting(true);
     try {
-      await saveChapterProgress({ chapterProgress });
-      router.push("/onboarding/analyzing");
+      await completeOnboarding(buildCompletePayload(final, needsSubjects));
     } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
-      );
-      setSubmitting(false);
-    }
-  };
-
-  const handleSkip = async () => {
-    setError(null);
-    setSkipping(true);
-    try {
-      const chapterProgress = subjects.flatMap((subject) =>
-        subject.chapters.map((chapter) => ({
-          chapterId: chapter.id,
-          status: "NOT_STARTED" as const,
-        })),
-      );
-      if (chapterProgress.length > 0) {
-        await saveChapterProgress({ chapterProgress });
+      // 409 means the save already went through (a double tap, or another tab): carry on to the end.
+      if (!(err instanceof ApiError && err.status === 409)) {
+        setError(
+          err instanceof ApiError && err.status >= 400 && err.status < 500
+            ? err.message
+            : "We couldn't save your setup. Nothing was changed, so you can try again.",
+        );
+        setSubmitting(false);
+        return;
       }
-      router.push("/onboarding/analyzing");
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
-      );
-      setSkipping(false);
     }
+
+    completeStep();
+    markOnboardingComplete();
+    setSummary({
+      examName: draft.goal.examName,
+      examDateIso: displayDateToIso(draft.about.examDate) ?? defaultExamDateIso(draft.about.currentLevel),
+      weeklyStudyMinutes: draft.timetable.blocks
+        .filter((b) => ["SELF_STUDY", "PRACTICE", "REVISION"].includes(b.activityType))
+        .reduce((sum, b) => sum + (b.endMin - b.startMin), 0),
+      coachingLabel: draft.coaching.type === "COACHING" && draft.coaching.name ? draft.coaching.name : COACHING_LABEL[draft.coaching.type],
+      chaptersCompleted: completedIds.length,
+    });
+    // The saved copy is wiped now; the screen keeps its state until the closing screen takes over.
+    clearStored();
+    router.push("/onboarding/analyzing");
+  }
+
+  const handleSkip = () => {
+    setCompleted([]);
+    void submit([]);
   };
 
   return (
     <AuthCard>
-      <StepProgress
-        step={6}
-        totalSteps={6}
-        backHref="/onboarding/build-timetable"
-        showSkip
-        onSkip={handleSkip}
-        skipDisabled={isSubmitting || isSkipping || isLoading}
-      />
+      <StepProgress step={5} totalSteps={ONBOARDING_TOTAL_STEPS} />
 
-      <div className="mt-4 flex flex-col gap-4 sm:mt-5">
-        <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
-          Which chapters have you studied?
-        </h1>
-        <p className="text-[14px] font-semibold leading-[100%] text-neutral-text sm:text-[16px]">
-          Tap to mark studied. Skip what you haven&apos;t touched. Even partial study
-          counts
+      <div className="mt-4 flex flex-col gap-3 sm:mt-5">
+        <h1 className="text-[24px] font-extrabold leading-tight text-ink sm:text-[32px]">Which chapters have you finished?</h1>
+        <p className="text-[14px] font-semibold leading-snug text-neutral-text sm:text-[16px]">
+          Tap a chapter to mark it complete. Leave out anything you have not finished. Finished chapters go straight into your
+          revision plan instead of being taught again.
         </p>
       </div>
 
       {error && (
-        <p
-          role="alert"
-          className="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-xs font-medium text-danger"
-        >
+        <p role="alert" data-testid="submit-error" className="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-sm font-medium text-danger">
           {error}
         </p>
       )}
 
-      <div className="mt-6 rounded-xl border border-brand/10 bg-surface p-4 dark:border-white/10">
-        <div className="flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="whitespace-nowrap rounded-lg bg-ink px-3 py-2 text-xs font-semibold text-surface dark:text-[#111145] sm:px-4 sm:text-sm">
-              {markedCount - partialCount} chapter
-              {markedCount - partialCount !== 1 ? "s" : ""} marked as complete
-            </span>
-
-            <span className="whitespace-nowrap rounded-lg border border-ink bg-surface px-3 py-2 text-xs font-semibold text-ink sm:px-4 sm:text-sm">
-              {partialCount} chapter
-              {partialCount !== 1 ? "s" : ""} marked as partial
-            </span>
-          </div>
-
-          <div className="flex shrink-0 items-center gap-4">
-            <button
-              type="button"
-              onClick={toggleMarkAll}
-              aria-pressed={allMarked}
-              className="flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold text-ink dark:text-muted"
-            >
-              <span
-                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${allMarked
-                  ? "border-brand bg-brand text-white"
-                  : "border-brand/25 text-transparent dark:border-white/25"
-                  }`}
-              >
-                <CheckIcon className="h-2.5 w-2.5" />
-              </span>
-              Mark all
-            </button>
-
-            <button
-              type="button"
-              onClick={clearAll}
-              className="flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold text-ink dark:text-muted"
-            >
-              <XIcon />
-              Clear
-            </button>
-          </div>
-        </div>
-
-        <p className="mt-4 text-sm text-muted">
-          Marked chapters skip new learning and go to revision rotation.
-          Unmarked chapters will be taught as new. Tap once to set a
-          chapter as Partially Selected; tap again to mark it Done.
+      <div className="mt-5 flex flex-col gap-3 rounded-xl border border-brand/10 bg-surface p-4 dark:border-white/10">
+        <p aria-live="polite" data-testid="chapter-counter" className="text-[15px] font-bold text-ink">
+          You&apos;ve marked {completed.length} of {total} chapters complete
         </p>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="chapter-search" className="text-[13px] font-bold text-body-text dark:text-ink">
+            Search chapters
+          </label>
+          <input
+            id="chapter-search"
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Try “kinematics” or “organic”"
+            autoComplete="off"
+            className="min-h-11 w-full rounded-lg border border-brand/20 bg-surface px-3 text-[15px] text-ink placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] dark:border-white/20"
+          />
+        </div>
       </div>
 
-      <div className="mt-5 flex flex-col gap-2 sm:mt-6">
-        {isLoading && (
+      <div className="mt-5">
+        {loading && (
           <div className="flex items-center justify-center py-10">
             <LoadingIndicator size={40} />
           </div>
         )}
-        {!isLoading &&
-          subjects.map((subject, index) => {
-            const selectedCount = subject.chapters.filter(
-              (chapter) => chapterState[chapter.id] !== "none",
-            ).length;
-
-            return (
-              <Accordion
-                key={subject.subjectId}
-                avatarLabel={subject.subjectName.charAt(0)}
-                title={subject.subjectName}
-                meta={`${String(selectedCount).padStart(2, "0")}/${subject.chapters.length} CHAPTERS SELECTED`}
-                defaultOpen={index === 0}
-              >
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {subject.chapters.map((chapter) => (
-                    <ChapterItem
-                      key={chapter.id}
-                      title={chapter.name}
-                      state={chapterState[chapter.id] ?? "none"}
-                      onCycle={() => toggleChapter(chapter.id)}
-                    />
-                  ))}
-                </div>
-              </Accordion>
-            );
-          })}
+        {loadError && (
+          <div role="alert" className="flex flex-col items-start gap-2 rounded-lg bg-danger-bg px-3 py-3 text-sm font-medium text-danger">
+            We couldn&apos;t load your chapters.
+            <button type="button" onClick={retry} className="min-h-11 rounded-lg border border-danger px-4 font-semibold">
+              Try again
+            </button>
+          </div>
+        )}
+        {noChapters && (
+          <p className="rounded-lg bg-tint-strong px-3 py-3 text-sm font-medium text-ink dark:bg-[#FAF7F214]">
+            No chapters are set up for your exam yet. You can carry on, and add your progress later from the syllabus screen.
+          </p>
+        )}
+        {!loading && !loadError && total > 0 && (
+          <>
+            {searching && visible.length === 0 ? (
+              <p role="status" className="rounded-lg bg-tint-strong px-3 py-3 text-sm font-medium text-ink dark:bg-[#FAF7F214]">
+                No chapter matches “{query.trim()}”.
+              </p>
+            ) : (
+              <ChapterPicker sections={visible} completed={completed} onChange={setCompleted} expandAll={searching} />
+            )}
+          </>
+        )}
       </div>
 
-      <Button
-        variant="primary"
-        onClick={handleContinue}
-        disabled={isSubmitting || isSkipping}
-        className="mt-6 disabled:cursor-not-allowed disabled:opacity-60"
+      <button
+        type="button"
+        onClick={handleSkip}
+        disabled={isSubmitting}
+        data-testid="skip-chapters"
+        className="mt-6 min-h-12 w-full rounded-lg border-[1.5px] border-dashed border-brand/30 px-4 text-[15px] font-semibold text-ink hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/30"
       >
-        {isSubmitting ? "Saving..." : "Skip & Continue"}
-      </Button>
+        Skip for now — I haven&apos;t started yet
+      </button>
+
+      <OnboardingNav
+        backHref={stepPath(4)}
+        onNext={() => void submit(completed)}
+        nextDisabled={loading}
+        busy={isSubmitting}
+        sticky
+      />
     </AuthCard>
   );
 }

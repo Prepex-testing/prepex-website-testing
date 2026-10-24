@@ -1,5 +1,5 @@
 import type { ActivityType } from "@/lib/api/timetable";
-import { parseTime, newKey, type GridBlock } from "@/lib/timetable/grid";
+import { parseTime, newKey, weekSignature, type GridBlock } from "@/lib/timetable/grid";
 
 /**
  * Starter timetables. Each is a plain week of typical blocks the student then
@@ -95,7 +95,7 @@ const TEMPLATES: Record<TemplateId, Row[]> = {
   ],
 };
 
-/** Expands a template into editable grid blocks (fresh keys, no server ids). */
+/** Expands a template into editable grid blocks (fresh keys, no server ids), marked as coming from the template. */
 export function buildTemplate(id: TemplateId): GridBlock[] {
   return TEMPLATES[id].flatMap((row) =>
     row.days.map((dayOfWeek) => ({
@@ -106,6 +106,28 @@ export function buildTemplate(id: TemplateId): GridBlock[] {
       activityType: row.type,
       subjectId: null,
       label: row.label ?? null,
+      fromTemplate: true,
     })),
   );
+}
+
+export type CoachingKind = "COACHING" | "SELF_PREP" | "ONLINE_SELF_PREP";
+export type LevelKind = "CLASS_11" | "CLASS_12" | "DROPPER_1" | "DROPPER_2" | "OTHER";
+
+/**
+ * Which starter week a student is handed on arrival at the timetable step, from what they told us earlier:
+ *   self-prep                                  -> Self-Prep
+ *   coaching + Class 11 / 12                   -> School + Coaching  (school in the morning, coaching after)
+ *   coaching + dropper year (or "other")       -> Dropper + Coaching (no school; the day is coaching and study)
+ * "Online courses + self-study" counts as coaching: they still have set lecture hours to plan around.
+ * They can swap templates at any time; this only decides which one is waiting for them.
+ */
+export function pickTemplateId(coachingType: CoachingKind, currentLevel: LevelKind): TemplateId {
+  if (coachingType === "SELF_PREP") return "SELF_PREP";
+  return currentLevel === "CLASS_11" || currentLevel === "CLASS_12" ? "SCHOOL_COACHING" : "DROPPER_COACHING";
+}
+
+/** Whether a week is still exactly the template it started from (no block added, moved, resized, relabelled or removed). */
+export function matchesTemplate(blocks: GridBlock[], id: TemplateId): boolean {
+  return weekSignature(blocks) === weekSignature(buildTemplate(id));
 }

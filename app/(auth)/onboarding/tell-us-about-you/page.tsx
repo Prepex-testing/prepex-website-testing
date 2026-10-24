@@ -1,285 +1,151 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
-import { Button } from "@/components/ui/Button";
+import { OnboardingNav } from "@/components/onboarding/OnboardingNav";
 import { DateInput } from "@/components/ui/DateInput";
 import { Input } from "@/components/ui/Input";
 import { OptionCard } from "@/components/ui/OptionCard";
 import { StepProgress } from "@/components/ui/StepProgress";
 import { GraduationCapIcon, StarIcons, LayersIcon } from "@/assets/icons";
-import { getOnboardingProgress, saveAcademicProfile } from "@/lib/api/onboarding";
-import { ApiError } from "@/lib/api/http";
-import { useStoredFullName } from "@/lib/auth/useStoredFullName";
+import { aboutError, aboutValid, type CurrentLevel } from "@/lib/onboarding/draft";
+import { useOnboardingDraft, useStepGuard } from "@/lib/onboarding/draft-context";
+import { isClassTwelveOnly, needsSubjectPick } from "@/lib/onboarding/goal";
+import { ONBOARDING_TOTAL_STEPS, SELECT_SUBJECT_PATH, stepPath } from "@/lib/onboarding/steps";
+import { useStepTelemetry } from "@/lib/onboarding/useStepTelemetry";
 
-type CurrentLevel = "CLASS_11" | "CLASS_12" | "DROPPER_1" | "DROPPER_2" | "OTHER";
-
-const CLASSES: Array<{
-  id: CurrentLevel;
-  title: string;
-  subtitle?: string;
-  icon: ReactNode;
-}> = [
-  {
-    id: "CLASS_11",
-    title: "Class 11",
-    subtitle: "For IIT Aspirants",
-    icon: <GraduationCapIcon />,
-  },
-  {
-    id: "CLASS_12",
-    title: "Class 12",
-    subtitle: "For IIT Aspirants",
-    icon: <GraduationCapIcon />,
-  },
-  {
-    id: "DROPPER_1",
-    title: "Dropper (1st year)",
-    subtitle: "For IIT Aspirants",
-    icon: <StarIcons />,
-  },
-  {
-    id: "DROPPER_2",
-    title: "Dropper (2nd year)",
-    subtitle: "For IIT Aspirants",
-    icon: <LayersIcon />,
-  },
+const CLASSES: Array<{ id: CurrentLevel; title: string; subtitle?: string; icon: ReactNode }> = [
+  { id: "CLASS_11", title: "Class 11", subtitle: "Two years to go", icon: <GraduationCapIcon /> },
+  { id: "CLASS_12", title: "Class 12", subtitle: "Final school year", icon: <GraduationCapIcon /> },
+  { id: "DROPPER_1", title: "Dropper (1st year)", subtitle: "Full-time preparation", icon: <StarIcons /> },
+  { id: "DROPPER_2", title: "Dropper (2nd year)", subtitle: "Full-time preparation", icon: <LayersIcon /> },
   { id: "OTHER", title: "Other", icon: <StarIcons /> },
 ];
 
-function displayDateToIso(display: string): string | null {
-  const match = display.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if (!match) return null;
-  const [, day, month, year] = match;
-  return `${year}-${month}-${day}`;
-}
-
-function isoToDisplayDate(iso: string): string {
-  const [year, month, day] = iso.slice(0, 10).split("-");
-  if (!year || !month || !day) return "";
-  return `${day}/${month}/${year}`;
-}
-
-// JEE Main falls in mid-May, so the default exam date targets May 15 of the
-// target year rather than carrying over today's day-of-year.
-function addYearsIso(years: number): string {
-  const year = new Date().getFullYear() + years;
-  return `${year}-05-15`;
-}
-
-// Class 11 students are 2 years out from their target exam; everyone else
-// (class 12, droppers, other) is assumed to be 1 year out.
-function defaultExamDateIso(level: CurrentLevel): string {
-  return addYearsIso(level === "CLASS_11" ? 2 : 1);
-}
-
 export default function TellUsAboutYouPage() {
   const router = useRouter();
-  const storedFullName = useStoredFullName();
-  const [fullNameInput, setFullNameInput] = useState("");
-  const [fullNameTouched, setFullNameTouched] = useState(false);
-  const [city, setCity] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [examDate, setExamDate] = useState("");
-  const [selectedClass, setSelectedClass] = useState<CurrentLevel>("CLASS_11");
-  // Boards and CUET are Class 12-only exams — lock the class picker to
-  // Class 12 and disable the rest instead of letting a mismatched level
-  // (e.g. Class 11 or a dropper year) be saved against them.
-  const [isClassLocked, setClassLocked] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setSubmitting] = useState(false);
-  const [isLoading, setLoading] = useState(true);
+  const allowed = useStepGuard(2);
+  const { draft, update } = useOnboardingDraft();
+  const completeStep = useStepTelemetry(2, "about_you");
+  const { about, goal } = draft;
+
+  const exam = goal.examCode ? { code: goal.examCode, name: goal.examName ?? "" } : null;
+  // Boards and CUET are Class 12 exams: lock the picker to Class 12 rather than save a mismatched level.
+  const classLocked = isClassTwelveOnly(exam);
+  const hasSubjectScreen = exam ? needsSubjectPick(exam) : false;
 
   useEffect(() => {
-    getOnboardingProgress()
-      .then(({ data }) => {
-        const profile = data.profile;
-        const examCode = profile?.exam?.code?.toUpperCase();
-        const locked = examCode === "BOARDS" || examCode === "CUET";
-        setClassLocked(locked);
-        if (locked) {
-          setSelectedClass("CLASS_12");
-        } else if (profile?.currentLevel) {
-          setSelectedClass(profile.currentLevel);
-        }
-        if (profile?.targetExamDate) setExamDate(isoToDisplayDate(profile.targetExamDate));
-        if (profile?.city) setCity(profile.city);
-        if (profile?.phoneNumber) setPhoneNumber(profile.phoneNumber);
-      })
-      .catch(() => {
-        // Best-effort — fall back to a blank form if progress can't be loaded.
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  const fullName = fullNameTouched ? fullNameInput : storedFullName;
-
-  const handleContinue = async () => {
-    // Optional — only the format of a number actually entered is enforced.
-    if (phoneNumber.trim() && !/^\d{10}$/.test(phoneNumber.trim())) {
-      setError("Enter a valid 10-digit phone number.");
-      return;
+    if (allowed && classLocked && about.currentLevel !== "CLASS_12") {
+      update((d) => ({ ...d, about: { ...d.about, currentLevel: "CLASS_12" } }));
     }
+  }, [allowed, classLocked, about.currentLevel, update]);
 
-    let targetExamDate: string;
-    if (examDate.trim()) {
-      const parsed = displayDateToIso(examDate);
-      if (!parsed) {
-        setError("Enter a valid exam date (DD/MM/YYYY).");
-        return;
-      }
-      targetExamDate = parsed;
-    } else {
-      targetExamDate = defaultExamDateIso(selectedClass);
-    }
+  if (!allowed) return null;
 
-    setError(null);
-    setSubmitting(true);
-    try {
-      await saveAcademicProfile({
-        fullName,
-        // Left out entirely when blank, so an untouched field isn't stored
-        // as an empty string that later reads as "has a phone number".
-        ...(phoneNumber.trim() && { phoneNumber: phoneNumber.trim() }),
-        city,
-        targetExamDate,
-        currentLevel: selectedClass,
-      });
-      router.push("/onboarding/where-do-you-study");
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Something went wrong. Please try again.",
-      );
-      setSubmitting(false);
-    }
+  const setAbout = (patch: Partial<typeof about>) => update((d) => ({ ...d, about: { ...d.about, ...patch } }));
+  const valid = aboutValid(about);
+
+  const handleNext = () => {
+    if (!valid) return;
+    update((d) => ({ ...d, step: Math.max(d.step, 3) }));
+    completeStep();
+    router.push(stepPath(3));
   };
 
   return (
     <AuthCard>
-      <StepProgress
-        step={2}
-        totalSteps={6}
-        backHref="/onboarding/preparing-for"
-      />
+      <StepProgress step={2} totalSteps={ONBOARDING_TOTAL_STEPS} />
 
-      <div className="mt-4 flex flex-col gap-4 py-2 sm:mt-5">
-        <h1 className="text-[24px] font-extrabold leading-[100%] text-ink sm:text-[32px]">
-          Tell us about you
-        </h1>
-        <p className="text-[14px] font-semibold leading-[100%] text-neutral-text sm:text-[16px]">
-          We&apos;ll personalize your plan to fit your life
+      <div className="mt-4 flex flex-col gap-3 py-2 sm:mt-5">
+        <h1 className="text-[24px] font-extrabold leading-tight text-ink sm:text-[32px]">Tell us about you</h1>
+        <p className="text-[14px] font-semibold leading-snug text-neutral-text sm:text-[16px]">
+          We use this to fit your plan to your year and your exam date.
         </p>
       </div>
 
-      {error && (
-        <p
-          role="alert"
-          className="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-xs font-medium text-danger"
-        >
-          {error}
-        </p>
-      )}
-
       <div className="mt-5 flex flex-col gap-6 sm:mt-6">
         <Input
-          label="Full Name"
-          helperText="Used in your daily plan greetings"
+          label="Full name"
+          helperText="Used to greet you in your daily plan"
           name="fullName"
           type="text"
           placeholder="Rohan Sharma"
-          value={fullName}
-          onChange={(event) => {
-            setFullNameInput(event.target.value);
-            setFullNameTouched(true);
-          }}
+          value={about.fullName}
+          onChange={(event) => setAbout({ fullName: event.target.value })}
         />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Input
             label="City"
-            helperText="For partner matching by region"
+            helperText="Used to match you with study partners nearby"
             name="city"
             type="text"
             placeholder="City"
-            value={city}
-            onChange={(event) => setCity(event.target.value)}
+            value={about.city}
+            onChange={(event) => setAbout({ city: event.target.value })}
           />
           <Input
-            label="Phone Number (optional)"
-            helperText="10-digit number, for account events"
+            label="Phone number (optional)"
+            helperText="10 digits, only for account alerts"
             name="phone"
             type="tel"
             inputMode="numeric"
             maxLength={10}
-            placeholder="Phone Number"
-            value={phoneNumber}
-            onChange={(event) =>
-              setPhoneNumber(event.target.value.replace(/\D/g, "").slice(0, 10))
-            }
+            placeholder="Phone number"
+            value={about.phoneNumber}
+            onChange={(event) => setAbout({ phoneNumber: event.target.value.replace(/\D/g, "").slice(0, 10) })}
           />
         </div>
 
         <div className="flex flex-col gap-4">
           <div>
-            <p className="text-[14px] font-bold leading-[100%] text-body-text dark:text-ink sm:text-[16px]">
-              Current class?
-            </p>
+            <p className="text-[14px] font-bold leading-tight text-body-text dark:text-ink sm:text-[16px]">Which class are you in?</p>
             <p className="mt-1 text-xs text-muted">
-              {isClassLocked
-                ? "Boards and CUET are Class 12 exams, so this is locked to Class 12."
-                : "Helps us understand your overall schedule and content depth"}
+              {classLocked
+                ? "Boards and CUET are Class 12 exams, so this is set to Class 12."
+                : "This shapes how much of your day is school and how deep your plan goes."}
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2" role="group" aria-label="Current class">
             {CLASSES.map((item) => {
-              const isDisabled = isClassLocked && item.id !== "CLASS_12";
+              const isDisabled = classLocked && item.id !== "CLASS_12";
               return (
-              <OptionCard
-                key={item.id}
-                compact
-                icon={item.icon}
-                title={item.title}
-                subtitle={item.subtitle}
-                selected={selectedClass === item.id}
-                disabled={isDisabled}
-                onClick={isDisabled ? undefined : () => setSelectedClass(item.id)}
-                className={`${
-                  selectedClass === item.id
-                    ? "dark:border! dark:border-[#FAF7F2]!"
-                    : "dark:border-[#8B8998]!"
-                } dark:shadow-[0px_2px_8px_0px_#1A1A4E14] ${
-                  item.id === "OTHER" ? "sm:col-span-2" : ""
-                }`}
-              />
+                <OptionCard
+                  key={item.id}
+                  compact
+                  icon={item.icon}
+                  title={item.title}
+                  subtitle={item.subtitle}
+                  selected={about.currentLevel === item.id}
+                  disabled={isDisabled}
+                  onClick={isDisabled ? undefined : () => setAbout({ currentLevel: item.id })}
+                  className={`${
+                    about.currentLevel === item.id ? "dark:border! dark:border-[#FAF7F2]!" : "dark:border-[#8B8998]!"
+                  } dark:shadow-[0px_2px_8px_0px_#1A1A4E14] ${item.id === "OTHER" ? "sm:col-span-2" : ""}`}
+                />
               );
             })}
           </div>
         </div>
 
-        {isLoading ? (
-          <p className="text-sm text-muted">Loading...</p>
-        ) : (
-          <DateInput
-            label="When is your exam?"
-            helperText="We use this to calculate your daily pace and exam countdown."
-            name="examDate"
-            defaultValue={examDate}
-            onDateChange={setExamDate}
-            disablePast
-          />
-        )}
+        <DateInput
+          label="When is your exam?"
+          helperText="Leave it blank and we will use the usual date for your year. It sets your countdown and your daily pace."
+          name="examDate"
+          defaultValue={about.examDate}
+          onDateChange={(value) => setAbout({ examDate: value })}
+          disablePast
+        />
       </div>
 
-      <Button
-        variant="primary"
-        onClick={handleContinue}
-        disabled={isSubmitting || isLoading}
-        className="mt-6 h-[52px] rounded-xl bg-cta text-[15px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-60 sm:h-[54px] sm:text-[16px]"
-      >
-        {isSubmitting ? "Saving..." : "Continue"}
-      </Button>
+      <OnboardingNav
+        backHref={hasSubjectScreen ? SELECT_SUBJECT_PATH : stepPath(1)}
+        onNext={handleNext}
+        nextDisabled={!valid}
+        hint={aboutError(about) ?? undefined}
+      />
     </AuthCard>
   );
 }
