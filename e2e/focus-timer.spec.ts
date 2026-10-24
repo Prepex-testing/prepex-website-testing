@@ -271,11 +271,47 @@ test("backlog: finishing the item clears it", async ({ page }) => {
   expect(item.body.data).toMatchObject({ status: "cleared", progressPercent: 100 });
 });
 
-test("the timer in dark mode on a phone", async ({ page }, info) => {
+test("practice with no Prepex questions: the timer opens for the task, with the reason", async ({ page }) => {
+  // The seeded syllabus has no practice questions, so a practice task takes the "no questions" path for real.
+  await page.goto("/home");
+  const added = await api<{ data: { id: string } }>(page, "POST", "/api/planner/addtask", { title: "Kinematics practice", taskType: "PRACTICE", estimatedMinutes: 30, chapterId: kinematics, subjectId: 1 });
+  expect(added.status, JSON.stringify(added.body)).toBeLessThan(300);
+  await page.reload();
+
+  await page.getByRole("button", { name: /^Start Practice$/ }).first().click();
+  await expect(page.getByTestId("practice-no-questions-timer")).toBeVisible();
+  await page.getByTestId("practice-no-questions-timer").click();
+
+  await expect(page).toHaveURL(/origin=practice_own_content_fallback/);
+  await expect(page.getByTestId("focus-notice")).toContainText("No Prepex questions for this chapter yet");
+  await expect(page.getByTestId("origin-chip")).toHaveText("From today's plan");
+  await expect(page.getByTestId("type-practice")).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByTestId("focus-chapter")).toHaveValue(kinematics);
+});
+
+test("the timer in dark mode: the three modes, running and the end screen", async ({ page }, info) => {
+  const dark = (name: string) => page.screenshot({ path: `e2e/.shots/${info.project.name}-focus-dark-${name}.png` });
   await page.addInitScript(() => localStorage.setItem("prepex-theme", "dark"));
   await page.goto("/focus/start?origin=standalone");
   await expect(page.getByTestId("focus-page")).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  await page.screenshot({ path: `e2e/.shots/${info.project.name}-focus-8-setup-dark.png` });
+  await dark("1-setup-pomodoro");
   if (info.project.name.startsWith("mobile")) await noHorizontalScroll(page);
+
+  await page.getByTestId("focus-subject").selectOption({ label: "Physics" });
+  await page.getByTestId("mode-stopwatch").click();
+  await dark("2-setup-stopwatch");
+  await page.getByTestId("mode-countdown").click();
+  await dark("3-setup-countdown");
+  await page.getByTestId("mode-pomodoro").click();
+
+  await page.getByTestId("start-focus").click();
+  await expect(page.getByTestId("focus-running")).toBeVisible();
+  await dark("4-running");
+  await page.getByTestId("stop-focus").click();
+  await expect(page.getByTestId("focus-summary")).toBeVisible();
+  await dark("5-end-session");
+  await page.getByTestId("save-session").click();
+  await expect(page.getByTestId("focus-done")).toBeVisible();
+  await dark("6-done");
 });
