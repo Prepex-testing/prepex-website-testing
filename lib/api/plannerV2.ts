@@ -1,0 +1,222 @@
+import { CORE_API_BASE_URL } from "@/lib/api/config";
+import { authenticatedRequest } from "@/lib/api/authRequest";
+
+/**
+ * Planner v2 — core-service /api/planner/v2/*. Times are minutes of the student's day (IST), so the screens never do
+ * time-zone maths. Every call is made as the signed-in student; the server takes the student from the token.
+ */
+
+export type TaskKind = "lecture" | "self_study" | "practice" | "revision" | "mock" | "backlog" | "other";
+export type TaskStatus = "pending" | "in_progress" | "done" | "skipped" | "rolled_over";
+export type PlannerMode = "auto" | "manual";
+
+export type PlanTask = {
+  id: string;
+  planId: string;
+  kind: TaskKind;
+  title: string;
+  description: string | null;
+  subjectId: number | null;
+  /** physics | chemistry | maths | biology (null when the task has no subject). */
+  subject: string | null;
+  chapterId: string | null;
+  chapterName: string | null;
+  topic: string | null;
+  startMin: number | null;
+  endMin: number | null;
+  estimatedMinutes: number;
+  plannedUnits: number | null;
+  questionCount: number | null;
+  status: TaskStatus;
+  origin: string | null;
+  contentSource: string | null;
+  contentSourceLabel: string | null;
+  generatedBy: string;
+  fixedSlot: boolean;
+  weeklyGoalId: string | null;
+  backlogItemId: string | null;
+  secondsCompleted: number;
+  actualMinutes: number | null;
+  linkedSessionLogId: string | null;
+  linkedPracticeLogId: string | null;
+  linkedRevisionLogId: string | null;
+  linkedMockLogId: string | null;
+  warning: string | null;
+};
+
+export type PlanWarning = { code: string; message: string };
+export type PolishNote = { kind: string; message: string };
+export type Band = { startMin: number; endMin: number; chip: string };
+
+export type UsageState = { kind: string; used: number; limit: number; remaining: number; resetsAt: string };
+
+export type DaySummary = { plannedMinutes: number; doneMinutes: number; plannedCount: number; doneCount: number; percent: number };
+
+export type SuggestedRevision = { queueId: string; chapterId: string; chapterName: string; subject: string; subjectId: number | null; minutes: number; dueOn: string };
+export type SuggestedBacklog = { id: string; chapterId: string | null; chapterName: string | null; topic: string | null; subject: string; subjectId: number | null; minutes: number };
+
+export type PlanDay = {
+  date: string;
+  isToday: boolean;
+  mode: PlannerMode;
+  plan: null | {
+    id: string;
+    version: number;
+    generatedBy: string;
+    engineVersion: number;
+    budgetMinutes: number | null;
+    warnings: PlanWarning[];
+    polishNotes: PolishNote[];
+    generatedAt: string;
+  };
+  tasks: PlanTask[];
+  bands: Band[];
+  studyBlocks: { startMin: number; endMin: number }[];
+  slotSource: "timetable" | "gaps" | "default";
+  summary: DaySummary;
+  regenerate: UsageState;
+  suggestions: null | { revisions: SuggestedRevision[]; backlog: SuggestedBacklog[] };
+};
+
+function req<T>(path: string, options: RequestInit = {}): Promise<{ success: true; data: T }> {
+  return authenticatedRequest<{ success: true; data: T }>(`${CORE_API_BASE_URL}/api/planner/v2${path}`, options);
+}
+
+const post = (body: unknown): RequestInit => ({ method: "POST", body: JSON.stringify(body ?? {}) });
+
+export function getPlanDay(date?: string) {
+  return req<PlanDay>(`/day${date ? `?date=${encodeURIComponent(date)}` : ""}`);
+}
+
+export function buildPlan(input: { reason?: "SCHEDULED" | "REGENERATE"; date?: string; regenReason?: string } = {}) {
+  return req<{ day: PlanDay | null; skipped?: "manual" | "exists" }>("/generate", post(input));
+}
+
+export function setPlannerMode(mode: PlannerMode) {
+  return req<{ mode: PlannerMode }>("/mode", { method: "PUT", body: JSON.stringify({ mode }) });
+}
+
+// ---- tasks ----
+export type AddTaskInput = {
+  kind: TaskKind;
+  subjectId: number;
+  chapterId?: string;
+  topic?: string;
+  minutes: number;
+  slot?: "now" | "next_free" | "specific";
+  startMin?: number;
+  date?: string;
+  contentSource?: string;
+  origin?: "manual" | "sr" | "backlog";
+  backlogItemId?: string;
+  override?: boolean;
+};
+
+export function addPlanTask(input: AddTaskInput) {
+  return req<{ task: PlanTask; warning: string | null }>("/tasks", post(input));
+}
+export const startPlanTask = (id: string) => req<PlanTask>(`/tasks/${id}/start`, post({}));
+export const skipPlanTask = (id: string) => req<PlanTask>(`/tasks/${id}/skip`, post({}));
+export const deletePlanTask = (id: string) => req<{ deleted: true }>(`/tasks/${id}`, { method: "DELETE" });
+export const reschedulePlanTask = (id: string, input: { date?: string; startMin?: number } = {}) => req<PlanTask>(`/tasks/${id}/reschedule`, post(input));
+export const recordTaskProgress = (id: string, input: { focusSessionId?: string; minutes?: number }) => req<PlanTask>(`/tasks/${id}/progress`, post(input));
+
+export type CompleteInput = {
+  via?: "focus" | "revision" | "practice" | "mock" | "manual";
+  focusSessionId?: string;
+  actualMinutes?: number;
+  log?: boolean;
+  confidence?: number;
+  revision?: { revisionType?: string; questionsSolved?: number; questionsCorrect?: number; errors?: string };
+  practice?: { source: string; sourceDetail?: string; questionsAttempted: number; questionsCorrect: number; questionsWrong: number; questionsSkipped?: number; difficulty?: string };
+  mock?: {
+    testType: string;
+    examPattern: string;
+    testName?: string;
+    totalMarks: number;
+    maxMarks?: number;
+    physicsMarks?: number;
+    chemistryMarks?: number;
+    mathsMarks?: number;
+    biologyMarks?: number;
+    timeMinutes?: number;
+    weakChapterIds?: string[];
+    percentile?: number;
+  };
+  mistakes?: { questionText: string; correctAnswer: string; studentAnswer: string; topic?: string }[];
+};
+
+export function completePlanTask(id: string, input: CompleteInput) {
+  return req<{ task: PlanTask; alreadyDone: boolean }>(`/tasks/${id}/complete`, post(input));
+}
+
+export function getPracticeOptions(id: string) {
+  return req<{ available: number; prepexQuestions: boolean }>(`/tasks/${id}/practice-options`);
+}
+
+// ---- preferences ----
+export type SubjectPreference = { subjectId: number; name: string | null; dailyMinutes: number | null };
+export const getPlannerPreferences = () => req<{ subjects: SubjectPreference[]; regenerate: UsageState }>("/preferences");
+export const savePlannerPreferences = (subjects: { subjectId: number; dailyMinutes: number | null }[]) =>
+  req<{ saved: number }>("/preferences", { method: "PUT", body: JSON.stringify({ subjects }) });
+
+// ---- weekly goals helpers ----
+export type WeekSummary = {
+  weekStart: string;
+  weekEnd: string;
+  availableMinutes: number;
+  perDay: { date: string; minutes: number }[];
+  perStudyDayMinutes: number;
+  allocatedMinutes: number;
+  remainingMinutes: number;
+  overCommittedMinutes: number;
+  fit: "under" | "perfect" | "over";
+  defaultTimetable: boolean;
+  bySubject: { subjectId: number | null; minutes: number }[];
+};
+export const getWeekSummary = (weekStart?: string) => req<WeekSummary>(`/week${weekStart ? `?weekStart=${weekStart}` : ""}`);
+
+export type GoalDefaults = {
+  lectureMinutes: { value: number; source: "history" | "default"; samples: number };
+  practiceSessionMinutes: { value: number; source: "history" | "default"; samples: number };
+  revisionMinutes: { value: number; source: "history" | "default"; samples: number };
+  minutesPerQuestion: { value: number; source: "history" | "default"; samples: number };
+  selfStudyChunkMinutes: number;
+};
+export const getGoalDefaults = (subjectId?: number | null) => req<GoalDefaults>(`/goal-defaults${subjectId ? `?subjectId=${subjectId}` : ""}`);
+
+export type ProposalGoal = {
+  type: "LECTURES" | "QUESTIONS" | "REVISIONS" | "MOCKS" | "HOURS" | "BACKLOG";
+  unit: "COUNT" | "MINUTES" | "HOURS";
+  target: number;
+  subjectId: number | null;
+  chapterId?: string;
+  topic?: string;
+  minutesPerUnit?: number;
+  practiceSource?: string;
+  revisionType?: string;
+  mockType?: string;
+  examPattern?: string;
+  fixedDate?: string;
+  fixedStartTime?: string;
+  backlogItemId?: string;
+};
+export type Proposal = {
+  id: string;
+  source: "mock" | "spaced_repetition" | "weakness" | "backlog" | "pace" | "balance";
+  label: string;
+  totalMinutes: number;
+  reason: string;
+  goal: ProposalGoal;
+};
+export type WeekSuggestion = {
+  weekStart: string;
+  availableMinutes: number;
+  alreadyAllocatedMinutes: number;
+  budgetMinutes: number;
+  proposedMinutes: number;
+  basis: string[];
+  proposals: Proposal[];
+  usage: UsageState;
+};
+export const suggestWeek = (weekStart?: string) => req<WeekSuggestion>("/week/suggest", post(weekStart ? { weekStart } : {}));
