@@ -7,7 +7,7 @@ import { authenticatedRequest } from "@/lib/api/authRequest";
  * type except LECTURES is counted automatically from what the student does.
  */
 
-export type GoalType = "LECTURES" | "QUESTIONS" | "REVISIONS" | "MOCKS" | "HOURS";
+export type GoalType = "LECTURES" | "QUESTIONS" | "REVISIONS" | "MOCKS" | "HOURS" | "BACKLOG";
 export type GoalUnit = "COUNT" | "MINUTES" | "HOURS";
 export type GoalStatus = "ACTIVE" | "DONE" | "CARRIED_OVER" | "ABANDONED";
 export type GoalSource = "STUDENT" | "PARTNER" | "AI_SUGGESTED";
@@ -34,6 +34,18 @@ export type Goal = {
   progressSelfReport: number;
   carriedFromGoalId: string | null;
   progress: GoalProgress;
+  /** Planner v2: how long one unit takes, and the goal's whole time commitment this week. */
+  minutesPerUnit: number | null;
+  totalMinutes: number | null;
+  practiceSource: string | null;
+  revisionType: string | null;
+  targetAccuracy: number | null;
+  mockType: string | null;
+  examPattern: string | null;
+  fixedDate: string | null;
+  fixedStartTime: string | null;
+  fixedEndTime: string | null;
+  backlogItemId: string | null;
 };
 
 export type GoalsWeek = {
@@ -57,6 +69,16 @@ export type NewGoal = {
   subjectId?: number | null;
   chapterId?: string | null;
   topic?: string | null;
+  minutesPerUnit?: number | null;
+  practiceSource?: string | null;
+  revisionType?: string | null;
+  targetAccuracy?: number | null;
+  mockType?: string | null;
+  examPattern?: string | null;
+  fixedDate?: string | null;
+  fixedStartTime?: string | null;
+  fixedEndTime?: string | null;
+  backlogItemId?: string | null;
 };
 
 function goalsRequest<T>(path: string, options: RequestInit = {}): Promise<T> {

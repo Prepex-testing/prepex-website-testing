@@ -16,6 +16,7 @@ const NOUN: Record<GoalType, [string, string]> = {
   REVISIONS: ["revision", "revisions"],
   MOCKS: ["mock", "mocks"],
   HOURS: ["hour", "hours"],
+  BACKLOG: ["backlog item", "backlog items"],
 };
 
 export function typeLabel(type: GoalType): string {
@@ -38,6 +39,7 @@ const VERB: Record<GoalType, string> = {
   REVISIONS: "Do",
   MOCKS: "Take",
   HOURS: "Study",
+  BACKLOG: "Clear",
 };
 
 /** "Watch 5 lectures", "Solve 100 questions", "Study 20 hours". */
@@ -67,6 +69,7 @@ export function progressText(goal: Goal): string {
     REVISIONS: "done",
     MOCKS: "taken",
     HOURS: "",
+    BACKLOG: "cleared",
   };
   if (goal.type === "HOURS") {
     const unit = goal.unit === "MINUTES" ? "min" : "hours";
@@ -82,6 +85,7 @@ export const TARGET_RULES: Record<GoalType, { start: number; min: number; max: n
   REVISIONS: { start: 3, min: 1, max: 50, step: 1 },
   MOCKS: { start: 1, min: 1, max: 7, step: 1 },
   HOURS: { start: 20, min: 1, max: 100, step: 1 },
+  BACKLOG: { start: 1, min: 1, max: 1, step: 1 },
 };
 
 export function defaultUnit(type: GoalType): GoalUnit {

@@ -26,6 +26,7 @@ const GOAL_TASK_TYPE: Record<Goal["type"], TaskType> = {
   REVISIONS: "revision",
   MOCKS: "mock_review",
   HOURS: "self_study",
+  BACKLOG: "self_study",
 };
 
 const BAR = {

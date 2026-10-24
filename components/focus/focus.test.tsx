@@ -377,6 +377,17 @@ describe("goalStripFor (weekly goal countdown)", () => {
     progressSelfReport: 0,
     carriedFromGoalId: null,
     progress: { current: 3, target: 10, unit: "HOURS", percent: 30, complete: false },
+    minutesPerUnit: null,
+    totalMinutes: null,
+    practiceSource: null,
+    revisionType: null,
+    targetAccuracy: null,
+    mockType: null,
+    examPattern: null,
+    fixedDate: null,
+    fixedStartTime: null,
+    fixedEndTime: null,
+    backlogItemId: null,
     ...over,
   });
 
