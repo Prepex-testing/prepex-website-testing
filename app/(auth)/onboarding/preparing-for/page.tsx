@@ -3,26 +3,26 @@
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { Stethoscope } from "lucide-react";
 import { AuthCard } from "@/components/layout/AuthCard";
-import { OnboardingNav } from "@/components/onboarding/OnboardingNav";
+import { StepFooter } from "@/components/onboarding/StepFooter";
 import { OptionCard } from "@/components/ui/OptionCard";
 import { OptionCardSkeleton } from "@/components/ui/OptionCardSkeleton";
 import { StepProgress } from "@/components/ui/StepProgress";
-import { LayersIcon, BookIcon, RadarIcons, BriefcaseIcons, CuteIcon } from "@/assets/icons";
+import { LayersIcon, RadarIcons, CuteIcon } from "@/assets/icons";
 import { getExams } from "@/lib/api/dashboard";
 import type { Exam } from "@/lib/api/dashboard";
 import { useOnboardingDraft } from "@/lib/onboarding/draft-context";
-import { DEFAULT_GOAL_SUBTITLE, GOAL_SUBTITLES, needsSubjectPick, sortExams } from "@/lib/onboarding/goal";
+import { examForOption, GOAL_OPTIONS, goalOption, needsSubjectPick, optionForExam } from "@/lib/onboarding/goal";
+import type { GoalOption, GoalOptionKey } from "@/lib/onboarding/goal";
 import { ONBOARDING_TOTAL_STEPS, SELECT_SUBJECT_PATH, stepPath } from "@/lib/onboarding/steps";
 import { useStepTelemetry } from "@/lib/onboarding/useStepTelemetry";
 
-const GOAL_ICONS: Record<string, ReactNode> = {
+const GOAL_ICONS: Record<GoalOptionKey, ReactNode> = {
   JEE_MAIN: <RadarIcons />,
-  "JEE_MAIN+ADVANCED": <LayersIcon />,
-  NEET: <BriefcaseIcons />,
-  JEE_AND_NEET: <LayersIcon />,
-  CUET: <CuteIcon />,
-  BOARDS: <BookIcon />,
+  JEE_ADVANCED: <CuteIcon />,
+  JEE_BOTH: <LayersIcon />,
+  NEET: <Stethoscope aria-hidden className="h-6 w-6" />,
 };
 
 export default function PreparingForPage() {
@@ -35,35 +35,56 @@ export default function PreparingForPage() {
 
   useEffect(() => {
     getExams()
-      .then(({ data }) => setExams(sortExams(data)))
+      .then(({ data }) => setExams(data))
       .catch(() => setError("We couldn't load the exams. Please refresh and try again."))
       .finally(() => setLoading(false));
   }, []);
 
-  // First visit: the first option is selected, so Next is one tap away. A saved choice always wins.
-  const selectedId = draft.goal.examId ?? (ready ? (exams[0]?.id ?? null) : null);
-  const selectedExam = exams.find((exam) => exam.id === selectedId) ?? null;
+  // An option can only be picked once the exam behind it exists.
+  const examFor = (option: GoalOption) => examForOption(option, exams);
 
-  const choose = (exam: Exam) => {
+  // A saved pick always wins. A saved exam from before the cards changed is matched to its card when there is one.
+  // On a first visit the first available card is selected, so Next is one tap away.
+  const savedExam = exams.find((exam) => exam.id === draft.goal.examId) ?? null;
+  const firstAvailable = GOAL_OPTIONS.find((option) => examFor(option)) ?? null;
+  const selectedKey: GoalOptionKey | null =
+    draft.goal.option ?? optionForExam(savedExam) ?? (ready && !draft.goal.examId ? (firstAvailable?.key ?? null) : null);
+  const selected = goalOption(selectedKey);
+  const selectedExam = selected ? examFor(selected) : null;
+
+  const choose = (option: GoalOption, exam: Exam) => {
     update((d) => {
       const changed = d.goal.examId !== exam.id;
       return {
         ...d,
-        // A different goal means a different syllabus: the subject pick and any chapters already ticked no longer apply.
-        goal: { examId: exam.id, examCode: exam.code, examName: exam.name, subjectIds: changed ? [] : d.goal.subjectIds },
+        // A different exam means a different syllabus: the subject pick and any chapters already ticked no longer apply.
+        // Switching between "JEE Advanced" and "Both" keeps both, since they are the same exam.
+        goal: {
+          examId: exam.id,
+          examCode: exam.code,
+          examName: exam.name,
+          subjectIds: changed ? [] : d.goal.subjectIds,
+          option: option.key,
+        },
         chapters: changed ? { completedIds: [] } : d.chapters,
       };
     });
   };
 
   const handleNext = () => {
-    if (!selectedExam) return;
+    if (!selected || !selectedExam) return;
     update((d) => ({
       ...d,
       goal:
-        d.goal.examId === selectedExam.id
+        d.goal.examId === selectedExam.id && d.goal.option === selected.key
           ? d.goal
-          : { examId: selectedExam.id, examCode: selectedExam.code, examName: selectedExam.name, subjectIds: [] },
+          : {
+              examId: selectedExam.id,
+              examCode: selectedExam.code,
+              examName: selectedExam.name,
+              subjectIds: d.goal.examId === selectedExam.id ? d.goal.subjectIds : [],
+              option: selected.key,
+            },
       step: Math.max(d.step, 2),
     }));
     completeStep();
@@ -88,22 +109,26 @@ export default function PreparingForPage() {
       )}
 
       <div className="mt-6 flex flex-col gap-3" role="group" aria-label="What are you preparing for?">
-        {(isLoading || !ready) && Array.from({ length: 4 }).map((_, index) => <OptionCardSkeleton key={index} />)}
+        {(isLoading || !ready) && GOAL_OPTIONS.map((option) => <OptionCardSkeleton key={option.key} />)}
         {!isLoading &&
           ready &&
-          exams.map((exam) => (
-            <OptionCard
-              key={exam.id}
-              icon={GOAL_ICONS[exam.code.toUpperCase()] ?? <CuteIcon />}
-              title={exam.name}
-              subtitle={GOAL_SUBTITLES[exam.code.toUpperCase()] ?? DEFAULT_GOAL_SUBTITLE}
-              selected={selectedId === exam.id}
-              onClick={() => choose(exam)}
-            />
-          ))}
+          GOAL_OPTIONS.map((option) => {
+            const exam = examFor(option);
+            return (
+              <OptionCard
+                key={option.key}
+                icon={GOAL_ICONS[option.key]}
+                title={option.title}
+                subtitle={exam ? option.subtitle : "Coming soon"}
+                selected={selectedKey === option.key}
+                disabled={!exam}
+                onClick={exam ? () => choose(option, exam) : undefined}
+              />
+            );
+          })}
       </div>
 
-      <OnboardingNav
+      <StepFooter
         onNext={handleNext}
         nextDisabled={!selectedExam}
         hint={!selectedExam && !isLoading && !error ? "Pick what you are preparing for to continue." : undefined}
