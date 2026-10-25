@@ -36,7 +36,7 @@ const CTA_RESUME = "border-warning/60 text-warning";
  * the chapter; exactly what to do; how long, when in the day and where the time falls; and the resource for the
  * chapter. Used on Home and on the full plan, so a change here shows up in both.
  */
-export function StudyTaskCard({ task, onStart, onMarkDone, onSkip, onTomorrow, onDelete }: { task: PlanTask } & StudyTaskActions) {
+export function StudyTaskCard({ task, coachAnchor, onStart, onMarkDone, onSkip, onTomorrow, onDelete }: { task: PlanTask; /** data-coach anchor for the Start button (the first card on Home). */ coachAnchor?: string } & StudyTaskActions) {
   const [menu, setMenu] = useState(false);
   const root = useRef<HTMLElement>(null);
   const style = subjectStyle(task.subject);
@@ -129,7 +129,7 @@ export function StudyTaskCard({ task, onStart, onMarkDone, onSkip, onTomorrow, o
 
         <div className="flex shrink-0 items-center gap-2">
           {open && (
-            <button type="button" data-testid="task-cta" onClick={() => onStart(task)} className={`${CTA} ${task.status === "in_progress" ? CTA_RESUME : CTA_DEFAULT}`}>
+            <button type="button" data-testid="task-cta" {...(coachAnchor ? { "data-coach": coachAnchor } : {})} onClick={() => onStart(task)} className={`${CTA} ${task.status === "in_progress" ? CTA_RESUME : CTA_DEFAULT}`}>
               {task.status === "in_progress" ? resumeLabel(task) : meta(task).cta}
             </button>
           )}
