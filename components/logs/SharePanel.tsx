@@ -142,7 +142,7 @@ export function SharePanel({ subjects, onNotice }: Props) {
         <button type="button" data-testid="share-download" disabled={busy || !card} onClick={() => void download()} className="min-h-14 rounded-lg border-[1.5px] border-secondary-button-border bg-surface px-4 text-base font-semibold text-body-text hover:bg-tint-strong disabled:opacity-60 dark:text-ink">
           Download
         </button>
-        <button type="button" data-testid="share-share" disabled={busy || !card} onClick={() => void share()} className="min-h-14 rounded-lg border border-primary-button-border bg-cta px-4 text-base font-semibold text-white hover:bg-[#E8623F] disabled:opacity-60">
+        <button type="button" data-testid="share-share" disabled={busy || !card} onClick={() => void share()} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-border-strong bg-transparent px-[18px] py-2.5 text-[14px] font-medium text-ink transition-colors hover:bg-surface-elevated-2 disabled:cursor-not-allowed disabled:opacity-50">
           Share
         </button>
       </div>
