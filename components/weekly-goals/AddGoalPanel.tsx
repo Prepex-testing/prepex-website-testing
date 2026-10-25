@@ -30,7 +30,7 @@ type Props = {
 };
 
 const FIELD =
-  "h-11 w-full rounded-[10px] border border-border-subtle bg-surface-elevated-2 px-3 text-[15px] text-ink outline-none focus:border-border-strong disabled:opacity-50";
+  "h-11 rounded-[10px] border border-border-subtle bg-surface-elevated-2 px-3 text-[15px] text-ink outline-none focus:border-border-strong disabled:opacity-50";
 const LABEL = "flex flex-col gap-1.5 text-[13px] font-medium text-body-text dark:text-ink";
 
 function sameGoal(a: NewGoal, b: Pick<NewGoal, "type" | "unit" | "subjectId" | "chapterId" | "topic" | "backlogItemId" | "fixedDate" | "fixedStartTime">): boolean {
@@ -196,7 +196,7 @@ export function AddGoalPanel({ subjects, existing, saving, error, onSave, onCanc
         <div className={`grid grid-cols-1 gap-3 ${type === "BACKLOG" ? "" : "sm:grid-cols-2"}`}>
           <label className={LABEL}>
             Subject
-            <select data-testid="goal-subject" value={subjectId ?? ""} onChange={(e) => chooseSubject(e.target.value ? Number(e.target.value) : null)} className={FIELD}>
+            <select data-testid="goal-subject" value={subjectId ?? ""} onChange={(e) => chooseSubject(e.target.value ? Number(e.target.value) : null)} className={`${FIELD} w-full`}>
               <option value="">Any subject</option>
               {subjects.map((s) => (
                 <option key={s.subjectId} value={s.subjectId}>
@@ -208,7 +208,7 @@ export function AddGoalPanel({ subjects, existing, saving, error, onSave, onCanc
           {type !== "BACKLOG" && (
             <label className={LABEL}>
               Chapter (optional)
-              <select data-testid="goal-chapter" value={chapterId ?? ""} disabled={subjectId === null} onChange={(e) => setChapterId(e.target.value || null)} className={FIELD}>
+              <select data-testid="goal-chapter" value={chapterId ?? ""} disabled={subjectId === null} onChange={(e) => setChapterId(e.target.value || null)} className={`${FIELD} w-full`}>
                 <option value="">{subjectId === null ? "Pick a subject first" : "Whole subject"}</option>
                 {[...chapters]
                   .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
@@ -340,7 +340,7 @@ export function AddGoalPanel({ subjects, existing, saving, error, onSave, onCanc
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2" data-testid="goal-mock">
           <label className={LABEL}>
             Test type
-            <select data-testid="goal-mock-type" value={mockType} onChange={(e) => setMockType(e.target.value)} className={FIELD}>
+            <select data-testid="goal-mock-type" value={mockType} onChange={(e) => setMockType(e.target.value)} className={`${FIELD} w-full`}>
               {MOCK_TYPES.map((o) => (
                 <option key={o.key} value={o.key}>
                   {o.label}
@@ -350,7 +350,7 @@ export function AddGoalPanel({ subjects, existing, saving, error, onSave, onCanc
           </label>
           <label className={LABEL}>
             Exam pattern
-            <select data-testid="goal-mock-pattern" value={pattern} onChange={(e) => setPattern(e.target.value)} className={FIELD}>
+            <select data-testid="goal-mock-pattern" value={pattern} onChange={(e) => setPattern(e.target.value)} className={`${FIELD} w-full`}>
               {EXAM_PATTERNS.map((o) => (
                 <option key={o.key} value={o.key}>
                   {o.label}
@@ -362,7 +362,7 @@ export function AddGoalPanel({ subjects, existing, saving, error, onSave, onCanc
             <>
               <label className={LABEL}>
                 Day (optional)
-                <select data-testid="goal-mock-day" value={day} onChange={(e) => setDay(e.target.value)} className={FIELD}>
+                <select data-testid="goal-mock-day" value={day} onChange={(e) => setDay(e.target.value)} className={`${FIELD} w-full`}>
                   <option value="">Any day</option>
                   {days.map((d) => (
                     <option key={d.date} value={d.date}>
@@ -373,7 +373,7 @@ export function AddGoalPanel({ subjects, existing, saving, error, onSave, onCanc
               </label>
               <label className={LABEL}>
                 Start time
-                <input data-testid="goal-mock-start" type="time" value={start} disabled={day === ""} onChange={(e) => setStart(e.target.value)} className={FIELD} />
+                <input data-testid="goal-mock-start" type="time" value={start} disabled={day === ""} onChange={(e) => setStart(e.target.value)} className={`${FIELD} w-full`} />
               </label>
             </>
           )}
