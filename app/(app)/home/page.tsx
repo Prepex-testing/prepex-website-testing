@@ -45,11 +45,8 @@ import {
 import { getJournalSettings, getLatestJournal, type JournalCard } from "@/lib/api/journal";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
-import { FlameIcon, BackIcon, LoderIcon, SparkleIcon, DotIcon } from "@/assets/icons";
+import { FlameIcon, BackIcon, LoderIcon, DotIcon } from "@/assets/icons";
 import {
-  // SparkleIcon,
-  RefreshIcon,
-  PlusIcon1 as PlusIcon,
   CheckCircleIcon,
   ArrowRightIcon,
   AlertTriangleIcon,
@@ -189,7 +186,8 @@ export default function HomePage() {
     });
   }, [isFriday]);
 
-  const refetchPlan = () => {
+  // The older payload: exam countdown, late-sign-up flag, plan id.
+  const refetchLegacyPlan = () => {
     getTodayPlan()
       .then(({ data }) => {
         setPlanData(data);
@@ -198,6 +196,10 @@ export default function HomePage() {
       .catch(() => {
         setPlanLoadFailed(true);
       });
+  };
+
+  const refetchPlan = () => {
+    refetchLegacyPlan();
     void todayPlan.refresh();
   };
 
@@ -246,11 +248,6 @@ export default function HomePage() {
         // Best-effort — mood/streak stay unset (no dummy fallback) until this succeeds.
       })
       .finally(() => setCheckInLoaded(true));
-  };
-
-  const handleHomeTaskChanged = () => {
-    refetchPlan();
-    refetchCheckInStatus();
   };
 
   // Section 4.2.2 — pick at most one tier/inquiry pop-up per session. Tier 4/5
@@ -328,7 +325,7 @@ export default function HomePage() {
       .catch(() => undefined);
   }, []);
 
-  useEffect(refetchPlan, []);
+  useEffect(refetchLegacyPlan, []);
   useEffect(refetchCheckInStatus, []);
 
   useEffect(() => {

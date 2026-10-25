@@ -42,7 +42,7 @@ export function EndOfDay({ percent, rolling, onOpenTomorrow }: Props) {
           ))}
         </ul>
       )}
-      <button type="button" data-testid="open-tomorrow" onClick={onOpenTomorrow} className="min-h-14 w-full rounded-lg border border-primary-button-border bg-cta px-4 text-base font-semibold text-white hover:bg-[#E8623F]">
+      <button type="button" data-testid="open-tomorrow" onClick={onOpenTomorrow} className="min-h-12 w-full max-w-xs rounded-[10px] border border-secondary-button-border bg-transparent px-5 text-[14px] font-medium text-ink transition-colors hover:bg-tint-strong">
         Open tomorrow
       </button>
     </section>
