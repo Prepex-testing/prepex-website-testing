@@ -287,7 +287,7 @@ export function AccuracyStats() {
           subtitleClassName="font-sans text-[11px]! font-normal! leading-4 tracking-normal! align-middle text-[#9CA3AF] dark:text-muted sm:text-[10px]! sm:leading-[15px]"
           right={
             <Link
-              href="/home/mock-analysis"
+              href="/logs/mocks"
               className="flex shrink-0 items-center gap-1 text-xs font-semibold text-ink"
             >
               Detailed view

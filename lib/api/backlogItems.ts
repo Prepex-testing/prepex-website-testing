@@ -8,7 +8,7 @@ import { query, type Page, type PlannerPlacement, type PlannerWindow } from "@/l
  */
 
 export type BacklogStatus = "open" | "scheduled" | "cleared" | "dropped";
-export type BacklogSource = "auto_weekly_goal" | "auto_coaching_sync" | "manual";
+export type BacklogSource = "auto_weekly_goal" | "auto_coaching_sync" | "auto_daily_plan" | "skipped_task" | "manual";
 
 export type BacklogItem = {
   id: string;
@@ -41,6 +41,8 @@ export type NewBacklogItem = {
   deadline?: string | null;
   priority?: number;
   notes?: string | null;
+  /** "skipped_task" when the item comes from skipping a planned task; omit for a manual item. */
+  source?: "manual" | "skipped_task";
 };
 
 export type UpdateBacklogItem = Partial<NewBacklogItem> & { status?: "open" | "dropped" | "cleared" };
@@ -66,7 +68,7 @@ export type SuggestedSlot = {
 
 export type Suggestions = { itemId: string; estimatedMinutes: number; usedTimetable: boolean; suggestions: SuggestedSlot[] };
 
-export type SweepResult = { sweptWeek: string; created: number; skipped: number; fromGoals: number; fromCoaching: number; items: BacklogItem[] };
+export type SweepResult = { sweptWeek: string; created: number; skipped: number; fromGoals: number; fromCoaching: number; fromPlan?: number; items: BacklogItem[] };
 
 export type BacklogTaskType = "NEW_LEARNING" | "REVISION" | "PRACTICE" | "CUSTOM";
 

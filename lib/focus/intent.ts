@@ -88,9 +88,9 @@ export function originBackHref(source: OriginSource): string {
     case "weekly_goals":
       return "/goals";
     case "revision_tab":
-      return "/home/revision";
+      return "/logs/revision";
     case "backlog_tab":
-      return "/home/backlog";
+      return "/logs/backlog";
     case "practice_tab":
       return "/logs/practice";
     case "mistake_notebook":

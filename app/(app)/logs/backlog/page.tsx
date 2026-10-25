@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { BacklogAnalyticsPanel } from "@/components/logs/BacklogAnalyticsPanel";
+import { BacklogSidePanel } from "@/components/logs/panels/BacklogSidePanel";
+import { LogScreenScaffold, type LogTab } from "@/components/logs/LogScreenScaffold";
 import { BacklogForm } from "@/components/logs/BacklogForm";
 import { BacklogHistory, BacklogOpenList, daysToClear, itemTitle } from "@/components/logs/BacklogLists";
 import { PlannerPickerModal, type PickedPlacement } from "@/components/logs/PlannerPickerModal";
-import { SectionTabs, TabPanel, type TabDef } from "@/components/logs/SectionTabs";
-import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
+import { TabPanel } from "@/components/logs/SectionTabs";
 import { SubjectsError } from "@/components/study/SubjectsError";
 import { useSubjects } from "@/components/study/useSubjects";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
@@ -29,7 +30,7 @@ import {
 import { ApiError } from "@/lib/api/http";
 
 type Tab = "open" | "add" | "analytics" | "history";
-const TABS: TabDef<Tab>[] = [
+const TABS: LogTab<Tab>[] = [
   { id: "open", label: "Open" },
   { id: "add", label: "Add" },
   { id: "analytics", label: "Analytics" },
@@ -213,10 +214,25 @@ export default function BacklogPage() {
   const avg = days.length > 0 ? Math.round((days.reduce((a, b) => a + b, 0) / days.length) * 10) / 10 : null;
 
   return (
-    <div className="flex flex-col gap-5 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl lg:p-8" data-testid="backlog-page">
-      <ProfileSubpageHeader title="Backlog" backHref="/logs" />
+    <LogScreenScaffold
+      name="backlog"
+      title="Backlog"
+      subtitle="What you are behind on, with deadlines."
+      tabs={TABS}
+      activeTab={tab}
+      onTabChange={changeTab}
+      sidePanelLabel="Backlog overview"
+      sidePanel={
+        <BacklogSidePanel
+          lookup={subjects.lookup}
+          onPlanned={(count) => {
+            toast.show(`${count} ${count === 1 ? "item" : "items"} added to today's plan.`);
+            void loadOpen();
+          }}
+        />
+      }
+    >
       {subjects.status === "error" && <SubjectsError />}
-      <SectionTabs name="backlog" tabs={TABS} current={tab} onChange={changeTab} />
 
       <TabPanel name="backlog" tab={tab}>
         {loadError && (
@@ -399,6 +415,6 @@ export default function BacklogPage() {
       />
 
       <Toast state={toast} />
-    </div>
+    </LogScreenScaffold>
   );
 }

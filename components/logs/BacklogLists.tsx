@@ -1,5 +1,7 @@
 "use client";
 
+import { CoralButton } from "@/components/ui/CoralButton";
+import { GHOST_CLASSES } from "@/components/ui/GhostButton";
 import type { BacklogItem } from "@/lib/api/backlogItems";
 import { dayLabel } from "@/lib/logs/dates";
 import { BACKLOG_SOURCE_LABEL, labelOf, PRIORITIES, WINDOWS } from "@/lib/logs/labels";
@@ -40,6 +42,13 @@ type OpenProps = {
   busyId: string | null;
 };
 
+/** The card the screen's one coral button belongs to: the oldest open item that is not already scheduled. */
+export function primaryBacklogId(items: Pick<BacklogItem, "id" | "status" | "ageDays">[]): string | null {
+  const open = items.filter((i) => i.status === "open");
+  if (open.length === 0) return null;
+  return open.reduce((a, b) => (b.ageDays > a.ageDays ? b : a)).id;
+}
+
 /** The Open tab: most urgent first. Clear · Schedule · Edit · Drop on every card. */
 export function BacklogOpenList({ items, lookup, hasMore, onLoadMore, onClear, onSchedule, onUnschedule, onEdit, onDrop, busyId }: OpenProps) {
   if (items.length === 0) {
@@ -49,10 +58,12 @@ export function BacklogOpenList({ items, lookup, hasMore, onLoadMore, onClear, o
       </p>
     );
   }
+  const primaryId = primaryBacklogId(items);
   return (
     <div className="flex flex-col gap-3" data-testid="backlog-open-list">
       <ul className="flex flex-col gap-3">
         {items.map((item) => {
+          const primary = item.id === primaryId;
           const scheduled = item.status === "scheduled";
           const disabled = busyId === item.id;
           return (
@@ -93,11 +104,8 @@ export function BacklogOpenList({ items, lookup, hasMore, onLoadMore, onClear, o
               </div>
               {item.notes && <p className="mt-2 line-clamp-2 text-[13px] text-body-text dark:text-ink">{item.notes}</p>}
               <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <button
-                  type="button"
-                  disabled={disabled}
-                  data-testid={`start-${item.id}`}
-                  onClick={() =>
+                {(() => {
+                  const begin = () =>
                     startFocusSession({
                       originSource: "backlog_tab",
                       originId: item.id,
@@ -105,13 +113,19 @@ export function BacklogOpenList({ items, lookup, hasMore, onLoadMore, onClear, o
                       chapter: item.chapterId ?? undefined,
                       topic: item.topic ?? undefined,
                       targetMinutes: item.estimatedMinutes ?? undefined,
-                    })
-                  }
-                  className="col-span-2 min-h-12 rounded-lg border border-primary-button-border bg-cta px-3 text-[15px] font-bold text-white hover:bg-[#E8623F] disabled:opacity-60 sm:col-span-4"
-                >
-                  {item.progressPercent > 0 ? "Keep going" : "Start"}
-                </button>
-                <button type="button" disabled={disabled} data-testid={`clear-${item.id}`} onClick={() => onClear(item)} className="min-h-11 rounded-lg border border-primary-button-border bg-cta px-3 text-[14px] font-bold text-white hover:bg-[#E8623F] disabled:opacity-60">
+                    });
+                  const label = item.progressPercent > 0 ? "Keep going" : "Start";
+                  return primary ? (
+                    <CoralButton disabled={disabled} data-testid={`start-${item.id}`} onClick={begin} className="col-span-2 w-full sm:col-span-4">
+                      {label}
+                    </CoralButton>
+                  ) : (
+                    <button type="button" disabled={disabled} data-testid={`start-${item.id}`} onClick={begin} className={`${GHOST_CLASSES} col-span-2 w-full sm:col-span-4`}>
+                      {label}
+                    </button>
+                  );
+                })()}
+                <button type="button" disabled={disabled} data-testid={`clear-${item.id}`} onClick={() => onClear(item)} className={GHOST_CLASSES}>
                   Clear
                 </button>
                 {scheduled ? (

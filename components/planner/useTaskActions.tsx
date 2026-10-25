@@ -3,6 +3,9 @@
 import { useCallback, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { GhostButton } from "@/components/ui/GhostButton";
+import { WhiteModal } from "@/components/ui/WhiteModal";
+import { createBacklogItem } from "@/lib/api/backlogItems";
 import { PracticeChoiceSheet } from "@/components/planner/PracticeChoiceSheet";
 import { QuickLogSheet } from "@/components/planner/QuickLogSheet";
 import { ApiError } from "@/lib/api/http";
@@ -25,6 +28,8 @@ export function useTaskActions(onChanged: () => void | Promise<void>, notify: (m
   const [practiceFor, setPracticeFor] = useState<PlanTask | null>(null);
   const [logFor, setLogFor] = useState<PlanTask | null>(null);
   const [deleteFor, setDeleteFor] = useState<PlanTask | null>(null);
+  // a task the student just skipped: offered a place in the backlog
+  const [backlogFor, setBacklogFor] = useState<PlanTask | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,10 +87,24 @@ export function useTaskActions(onChanged: () => void | Promise<void>, notify: (m
         await skipPlanTask(task.id);
         trackPlanner("planner_task_skip", { kind: task.kind });
       }, "Couldn't skip that.");
-      if (ok) await onChanged();
+      if (ok) {
+        await onChanged();
+        if (task.subjectId !== null && task.chapterId && task.kind !== "mock") setBacklogFor(task);
+      }
     },
     [guarded, onChanged],
   );
+
+  const moveToBacklog = useCallback(async () => {
+    const task = backlogFor;
+    if (!task || task.subjectId === null || !task.chapterId) return;
+    const ok = await guarded(async () => {
+      await createBacklogItem({ subjectId: task.subjectId!, chapterId: task.chapterId!, ...(task.topic ? { topic: task.topic } : {}), estimatedMinutes: Math.min(480, Math.max(1, task.estimatedMinutes)), source: "skipped_task" });
+      trackPlanner("planner_task_to_backlog", { kind: task.kind });
+      notify("Moved to your backlog.");
+    }, "Couldn't move that to your backlog.");
+    if (ok) setBacklogFor(null);
+  }, [backlogFor, guarded, notify]);
 
   const tomorrow = useCallback(
     async (task: PlanTask) => {
@@ -128,6 +147,25 @@ export function useTaskActions(onChanged: () => void | Promise<void>, notify: (m
           onSubmit={(log) => void finishManually(logFor, log)}
         />
       )}
+      <WhiteModal open={backlogFor !== null} onClose={() => setBacklogFor(null)} ariaLabel="Move to backlog?">
+        <div className="mx-auto flex w-full max-w-[340px] flex-col gap-3 text-center" data-testid="skip-backlog-prompt">
+          <h2 className="text-[20px] font-extrabold text-ink">Move to backlog?</h2>
+          <p className="text-[14px] text-muted">{backlogFor ? `"${backlogFor.title}" is skipped for today. Keep it in your backlog so it does not get lost.` : ""}</p>
+          {error && backlogFor && (
+            <p role="alert" className="text-[13px] font-medium text-danger">
+              {error}
+            </p>
+          )}
+          <div className="flex gap-3 pt-2">
+            <GhostButton className="flex-1" disabled={busy} data-testid="skip-backlog-no" onClick={() => setBacklogFor(null)}>
+              Not now
+            </GhostButton>
+            <GhostButton className="flex-1" disabled={busy} data-testid="skip-backlog-yes" onClick={() => void moveToBacklog()}>
+              Move to backlog
+            </GhostButton>
+          </div>
+        </div>
+      </WhiteModal>
       <ConfirmModal
         open={deleteFor !== null}
         onClose={() => {
