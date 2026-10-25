@@ -14,6 +14,7 @@ export const PLANNER_EVENTS = [
   "planner_task_start",
   "planner_task_complete",
   "planner_task_skip",
+  "planner_task_to_backlog",
   "planner_task_delete",
   "planner_add_task",
   "planner_manual_toggle",

@@ -59,6 +59,8 @@ export const BACKLOG_SOURCE_LABEL: Record<BacklogSource, string> = {
   manual: "Added by you",
   auto_weekly_goal: "Missed weekly goal",
   auto_coaching_sync: "Coaching, not studied yet",
+  auto_daily_plan: "Planned, not started",
+  skipped_task: "Skipped from your plan",
 };
 
 export const BACKLOG_STATUS_LABEL: Record<BacklogStatus, string> = { open: "Open", scheduled: "Scheduled", cleared: "Cleared", dropped: "Dropped" };
