@@ -257,7 +257,7 @@ const goal = (over: Partial<Goal> = {}): Goal => ({
 describe("GoalCard", () => {
   const base = { scope: "Physics · Rotational Motion", busy: false, onWatched: vi.fn(), onToggleDone: vi.fn(), onDelete: vi.fn() };
 
-  it("has a ✨ Suggest button only when the page offers one, and the slot shows under the goal", async () => {
+  it("has a Suggest button only when the page offers one, and the slot shows under the goal", async () => {
     const onSuggest = vi.fn();
     const { rerender } = render(<GoalCard goal={goal()} {...base} />);
     expect(screen.queryByTestId("goal-suggest")).toBeNull();

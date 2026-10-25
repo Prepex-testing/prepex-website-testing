@@ -1,5 +1,6 @@
 "use client";
 
+import { Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Goal } from "@/lib/api/goals";
 import { describeGoal, progressText } from "@/lib/goals/format";
@@ -13,7 +14,7 @@ type Props = {
   onWatched: (next: number) => void;
   onToggleDone: () => void;
   onDelete: () => void;
-  /** ✨ Suggest: ask the assistant for hours on this goal's chapter (chapter goals only). */
+  /** Suggest: ask the assistant for hours on this goal's chapter (chapter goals only). */
   onSuggest?: () => void;
   /** The inline suggestion panel, shown under the goal while it is open. */
   suggestSlot?: ReactNode;
@@ -139,9 +140,10 @@ export function GoalCard({ goal, scope, busy, onWatched, onToggleDone, onDelete,
             data-testid="goal-suggest"
             disabled={busy}
             onClick={onSuggest}
-            className="min-h-11 rounded-lg border border-brand/20 px-3 text-[13px] font-semibold text-ink hover:bg-tint-strong disabled:opacity-50"
+            className="flex min-h-11 items-center gap-1.5 rounded-lg border border-brand/20 px-3 text-[13px] font-semibold text-ink hover:bg-tint-strong disabled:opacity-50"
           >
-            ✨ Suggest
+            <Sparkles className="size-4 shrink-0" aria-hidden />
+            Suggest
           </button>
         )}
       </div>

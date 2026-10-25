@@ -87,7 +87,7 @@ export function WeekSuggestSheet({ open, onClose, weekStart, subjectNames, chapt
       footer={
         data && data.proposals.length > 0 ? (
           <div className="flex flex-col gap-2 sm:flex-row">
-            <button type="button" data-testid="suggest-accept-all" disabled={pending.length === 0} onClick={() => decide(pending, "accepted")} className="min-h-14 flex-1 rounded-lg border border-primary-button-border bg-cta px-4 text-base font-semibold text-white hover:bg-[#E8623F] disabled:cursor-not-allowed disabled:opacity-50">
+            <button type="button" data-testid="suggest-accept-all" disabled={pending.length === 0} onClick={() => decide(pending, "accepted")} className="min-h-12 flex-1 rounded-[10px] border border-secondary-button-border bg-transparent px-4 text-[14px] font-medium text-ink transition-colors hover:bg-tint-strong disabled:cursor-not-allowed disabled:opacity-50">
               {pending.length === 0 ? (accepted > 0 ? `Added ${accepted}` : "Done") : `Add all ${pending.length}`}
             </button>
             <button type="button" data-testid="suggest-reject-all" disabled={pending.length === 0} onClick={() => decide(pending, "rejected")} className="min-h-14 rounded-lg border-[1.5px] border-secondary-button-border bg-surface px-4 text-base font-semibold text-body-text hover:bg-tint-strong disabled:opacity-50 dark:text-ink">
@@ -160,7 +160,7 @@ export function WeekSuggestSheet({ open, onClose, weekStart, subjectNames, chapt
                     <p className="text-[13px] leading-snug text-body-text dark:text-ink/80">{p.reason}</p>
                     {state === "pending" ? (
                       <div className="flex gap-2">
-                        <button type="button" data-testid="proposal-accept" onClick={() => decide([p], "accepted")} className="min-h-11 flex-1 rounded-lg bg-cta px-3 text-[14px] font-semibold text-white hover:bg-[#E8623F]">
+                        <button type="button" data-testid="proposal-accept" onClick={() => decide([p], "accepted")} className="min-h-11 flex-1 rounded-[10px] border border-secondary-button-border bg-transparent px-3 text-[14px] font-medium text-ink transition-colors hover:bg-tint-strong">
                           Add
                         </button>
                         <button type="button" data-testid="proposal-reject" onClick={() => decide([p], "rejected")} className="min-h-11 rounded-lg border border-brand/20 px-4 text-[14px] font-semibold text-ink hover:bg-tint-strong">

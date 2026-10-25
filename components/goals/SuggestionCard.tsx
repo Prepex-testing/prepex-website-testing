@@ -1,10 +1,11 @@
 "use client";
 
+import { Sparkles } from "lucide-react";
 import { useState } from "react";
 import type { GoalSuggestion } from "@/lib/api/goalSuggestions";
 import { HOURS_STEP, MAX_HOURS, MIN_HOURS, hoursText, parseHours, type SuggestionProblem } from "@/lib/goals/suggestion";
 
-/** The ✨ Suggest card, in its states: waiting for the Brain, the suggestion, and the problems. */
+/** The Suggest card, in its states: waiting for the Brain, the suggestion, and the problems. */
 
 /** Grey placeholders while the Brain thinks (about five seconds). */
 export function SuggestionSkeleton({ chapterName }: { chapterName: string }) {
@@ -61,7 +62,10 @@ export function SuggestionCard({ suggestion, busy, error, onAccept, onModify, on
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-brand/20 bg-tint-strong p-4 dark:bg-[#FAF7F214]" data-testid="suggest-card">
       <div>
-        <p className="text-[12px] font-bold uppercase tracking-wide text-muted">✨ Suggested for {suggestion.chapterName}</p>
+        <p className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-muted">
+          <Sparkles className="size-4 shrink-0" aria-hidden />
+          Suggested for {suggestion.chapterName}
+        </p>
         <p className="mt-1 text-[20px] font-extrabold text-ink" data-testid="suggest-hours">
           {hoursText(suggestion.suggestedHours)} this week
         </p>
