@@ -7,12 +7,13 @@ import { SeriesLine } from "@/components/insights/LazyCharts";
 import { InsightsTabs } from "@/components/insights/InsightsTabs";
 import { StatTile } from "@/components/analytics/StatTile";
 import { StrengthGrid } from "@/components/analytics/StrengthGrid";
-import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
+import { DashboardSidePanel } from "@/components/insights/panels/DashboardSidePanel";
+import { LogScreenScaffold } from "@/components/logs/LogScreenScaffold";
 import { EmptyNote, StatCard } from "@/components/stats/StatCard";
 import { SubjectDonut } from "@/components/stats/SubjectDonut";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { ApiError } from "@/lib/api/http";
-import { listDiagnosisReports, type ReportLimit } from "@/lib/api/diagnosisReports";
+import { listDiagnosisReports, type ReportLimit, type ReportListItem } from "@/lib/api/diagnosisReports";
 import { getMasterAnalytics, type MasterAnalytics } from "@/lib/api/masterAnalytics";
 import { useStartReport } from "@/lib/diagnosis/useStartReport";
 import { drillHref, goalUnitLabel, latestWeek, streakCaption } from "@/lib/insights/analyticsFormat";
@@ -28,6 +29,7 @@ export default function AnalyticsPage() {
   const [error, setError] = useState<string | null>(null);
   // "Diagnose me now": how many are left today (the button works even if this cannot be loaded; the server enforces it)
   const [limit, setLimit] = useState<ReportLimit | null>(null);
+  const [lastReport, setLastReport] = useState<ReportListItem | null>(null);
   const { start, starting, error: startError } = useStartReport();
 
   const load = useCallback(async () => {
@@ -46,7 +48,10 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     void listDiagnosisReports(1).then(
-      (res) => setLimit(res.data.limit),
+      (res) => {
+        setLimit(res.data.limit);
+        setLastReport(res.data.reports.find((r) => r.status === "complete") ?? null);
+      },
       () => undefined,
     );
   }, []);
@@ -60,9 +65,7 @@ export default function AnalyticsPage() {
   if (!data && !error) return <PageLoader label="Building your dashboard…" />;
 
   return (
-    <div className="flex flex-col gap-5 p-4 sm:p-6 lg:mx-auto lg:max-w-4xl lg:p-8" data-testid="analytics-page">
-      <ProfileSubpageHeader title="Your dashboard" backHref="/home" />
-      <InsightsTabs current="/analytics" />
+    <LogScreenScaffold name="analytics" title="Your dashboard" backHref="/home" tabBar={<InsightsTabs current="/analytics" />} sidePanelLabel="Last diagnosis and weakest chapter" sidePanel={data ? <DashboardSidePanel data={data} lastReport={lastReport} /> : undefined}>
 
       <DiagnoseNowCard limit={limit} starting={starting} error={startError} onStart={() => void start()} />
 
@@ -76,7 +79,7 @@ export default function AnalyticsPage() {
       )}
 
       {data && <Dashboard data={data} subjectNames={subjectNames} />}
-    </div>
+    </LogScreenScaffold>
   );
 }
 
@@ -89,14 +92,14 @@ function Dashboard({ data, subjectNames }: { data: MasterAnalytics; subjectNames
 
   return (
     <>
-      <section aria-label="Hours" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section aria-label="Hours" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile testId="tile-hours-today" label="Today" value={formatMinutes(data.minutes.today)} caption="studied" href={drillHref("hours", "week")} />
         <StatTile testId="tile-hours-week" label="This week" value={formatMinutes(data.minutes.week)} caption="studied" href={drillHref("hours", "week")} />
         <StatTile testId="tile-hours-month" label="This month" value={formatMinutes(data.minutes.month)} caption="studied" href={drillHref("hours", "month")} />
         <StatTile testId="tile-hours-all" label="All time" value={formatMinutes(data.minutes.all)} caption="studied" href={drillHref("hours", "all")} />
       </section>
 
-      <section aria-label="Highlights" className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <section aria-label="Highlights" className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         <StatTile testId="tile-streak" label="Streak" value={`${data.streaks.current} day${data.streaks.current === 1 ? "" : "s"}`} caption={streakCaption(data.streaks)} />
         <StatTile testId="tile-goals" label="Weekly goals" value={goals.summary.total > 0 ? `${goals.summary.percent}%` : "—"} caption={goals.summary.total > 0 ? `${goals.summary.done} of ${goals.summary.total} done · ${goals.daysLeft}d left` : "No goals this week"} href="/goals" />
         <StatTile testId="tile-accuracy" label="Accuracy" value={accuracy ? `${accuracy.accuracy}%` : "—"} caption={accuracy ? `week of ${accuracy.weekStart}` : "no practice yet"} href={drillHref("accuracy", "quarter")} />

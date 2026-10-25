@@ -2,15 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DayModal } from "@/components/calendar/DayModal";
-import { HeatLegend, MonthHeatmap } from "@/components/calendar/MonthHeatmap";
+import { MonthHeatmap } from "@/components/calendar/MonthHeatmap";
 import { WeekList } from "@/components/calendar/WeekList";
 import { InsightsTabs } from "@/components/insights/InsightsTabs";
-import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
+import { CalendarSidePanel } from "@/components/insights/panels/CalendarSidePanel";
+import { LogScreenScaffold } from "@/components/logs/LogScreenScaffold";
 import { ApiError } from "@/lib/api/http";
 import { getMonthView, getWeekView, type MonthView, type WeekView } from "@/lib/api/calendarView";
 import { isoWeekMondayKey, isoWeekOf, monthTitle, shiftMonth, shiftWeek, swipeDirection } from "@/lib/insights/heatmap";
 import { dayKey } from "@/lib/logs/dates";
-import { formatMinutes } from "@/lib/study/format";
 
 type Mode = "month" | "week";
 
@@ -72,9 +72,7 @@ export default function CalendarPage() {
   const current = mode === "month" ? month : week;
 
   return (
-    <div className="flex flex-col gap-5 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl lg:p-8" data-testid="calendar-page">
-      <ProfileSubpageHeader title="Calendar" backHref="/home" />
-      <InsightsTabs current="/calendar" />
+    <LogScreenScaffold name="calendar" title="Calendar" backHref="/home" tabBar={<InsightsTabs current="/calendar" />} sidePanelLabel="Legend and month totals" sidePanel={<CalendarSidePanel month={month} />}>
 
       <div role="radiogroup" aria-label="View" className="grid grid-cols-2 gap-1 rounded-xl bg-tint-strong p-1 dark:bg-[#FAF7F214]">
         {(["month", "week"] as Mode[]).map((m) => (
@@ -137,16 +135,7 @@ export default function CalendarPage() {
         ) : null}
       </div>
 
-      {mode === "month" && month && (
-        <>
-          <HeatLegend />
-          <p className="text-[14px] font-semibold text-body-text dark:text-ink" data-testid="month-totals">
-            {formatMinutes(month.totals.studiedMinutes)} studied · {month.totals.activeDays} active day{month.totals.activeDays === 1 ? "" : "s"} · {formatMinutes(month.totals.plannedMinutes)} planned
-          </p>
-        </>
-      )}
-
       <DayModal date={selected} onClose={() => setSelected(null)} />
-    </div>
+    </LogScreenScaffold>
   );
 }

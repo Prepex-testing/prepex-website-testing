@@ -15,7 +15,7 @@ export function ChapterListRow({ chapter }: { chapter: ChapterRow }) {
         data-testid={`chapter-row-${chapter.chapterId}`}
         data-strength={key}
         data-theory={p.theoryStatus}
-        className="flex min-h-16 min-w-0 flex-1 items-center gap-3 rounded-xl border border-brand/10 bg-surface px-3 py-3 hover:bg-tint-strong"
+        className="flex min-h-16 min-w-0 flex-1 items-center gap-3 rounded-xl border border-border-subtle bg-surface-elevated px-3 py-3 hover:bg-surface-elevated-2"
       >
         <span aria-hidden className="size-3.5 shrink-0 rounded-full" style={{ background: style.dot }} data-testid={`chapter-dot-${chapter.chapterId}`} />
         <span className="min-w-0 flex-1">
@@ -38,7 +38,7 @@ export function ChapterListRow({ chapter }: { chapter: ChapterRow }) {
         data-testid={`study-chapter-${chapter.chapterId}`}
         aria-label={`Study ${chapter.name}`}
         onClick={() => startFocusSession({ originSource: "syllabus_overview", chapter: chapter.chapterId, taskType: "self_study", targetMinutes: 60 })}
-        className="flex min-h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-primary-button-border bg-cta px-2 text-[13px] font-bold text-white hover:bg-[#E8623F]"
+        className="flex min-h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-border-strong bg-transparent px-2 text-[13px] font-medium text-ink transition-colors hover:bg-surface-elevated-2"
       >
         Study
       </button>

@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { InsightsTabs } from "@/components/insights/InsightsTabs";
 import { WeeklyDiagnosisCard } from "@/components/diagnosis/WeeklyDiagnosisCard";
-import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
+import { WeekSidePanel } from "@/components/insights/panels/WeekSidePanel";
+import { LogScreenScaffold } from "@/components/logs/LogScreenScaffold";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { ApiError } from "@/lib/api/http";
 import { getWeeklyOverview, runWeeklyDiagnosis, type WeeklyOverview } from "@/lib/api/diagnosis";
@@ -73,9 +74,7 @@ export default function ThisWeekPage() {
   if (!overview && !error) return <PageLoader label="Loading your week…" />;
 
   return (
-    <div className="flex flex-col gap-5 p-4 sm:p-6 lg:mx-auto lg:max-w-4xl lg:p-8" data-testid="week-page">
-      <ProfileSubpageHeader title="This week" backHref="/home" />
-      <InsightsTabs current="/analytics/week" />
+    <LogScreenScaffold name="week" title="This week" backHref="/home" tabBar={<InsightsTabs current="/analytics/week" />} sidePanelLabel="Top fixes, hours and streak" sidePanel={<WeekSidePanel fixes={(overview?.current ?? overview?.latest)?.fixes ?? []} />}>
 
       {error && (
         <p role="alert" className="rounded-lg bg-danger-bg px-3 py-2 text-sm font-medium text-danger">
@@ -87,6 +86,6 @@ export default function ThisWeekPage() {
       )}
 
       {overview && <WeeklyDiagnosisCard overview={overview} starting={starting} runError={runError} gaveUp={gaveUp} onRun={() => void run()} />}
-    </div>
+    </LogScreenScaffold>
   );
 }
