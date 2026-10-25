@@ -1,12 +1,15 @@
 "use client";
 
+import { RotateCw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { LogScreenScaffold, type LogTab } from "@/components/logs/LogScreenScaffold";
 import { PlannerPickerModal, type PickedPlacement } from "@/components/logs/PlannerPickerModal";
+import { RevisionSidePanel } from "@/components/logs/panels/RevisionSidePanel";
+import { SpacedRepetitionTab } from "@/components/logs/SpacedRepetitionTab";
 import { RevisionAnalyticsPanel } from "@/components/logs/RevisionAnalyticsPanel";
 import { RevisionForm, type RevisionFormInitial } from "@/components/logs/RevisionForm";
 import { RevisionHistory, RevisionToday } from "@/components/logs/RevisionLists";
-import { SectionTabs, TabPanel, type TabDef } from "@/components/logs/SectionTabs";
-import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
+import { TabPanel } from "@/components/logs/SectionTabs";
 import { FIELD } from "@/components/study/SubjectChapterFields";
 import { SubjectsError } from "@/components/study/SubjectsError";
 import { useSubjects } from "@/components/study/useSubjects";
@@ -32,9 +35,10 @@ import {
 } from "@/lib/api/revisionLogs";
 import { formatMinutes } from "@/lib/study/format";
 
-type Tab = "today" | "log" | "analytics" | "history";
-const TABS: TabDef<Tab>[] = [
+type Tab = "today" | "sr" | "log" | "analytics" | "history";
+const TABS: LogTab<Tab>[] = [
   { id: "today", label: "Today" },
+  { id: "sr", label: "Spaced Repetition", icon: <RotateCw className="size-4" aria-hidden /> },
   { id: "log", label: "Log" },
   { id: "analytics", label: "Analytics" },
   { id: "history", label: "History" },
@@ -204,12 +208,30 @@ export default function RevisionPage() {
         : undefined;
 
   return (
-    <div className="flex flex-col gap-5 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl lg:p-8" data-testid="revision-page">
-      <ProfileSubpageHeader title="Revision" backHref="/logs" />
+    <LogScreenScaffold
+      name="revision"
+      title="Revision"
+      subtitle="What you revised, and what is going stale."
+      tabs={TABS}
+      activeTab={tab}
+      onTabChange={changeTab}
+      sidePanelLabel="Streak and stale chapters"
+      sidePanel={
+        <RevisionSidePanel
+          lookup={subjects.lookup}
+          onSeeAll={() => changeTab("analytics")}
+          onAddTask={(chapter) => {
+            setPlanError(null);
+            setPlanTarget({ kind: "chapter", chapter });
+          }}
+        />
+      }
+    >
       {subjects.status === "error" && <SubjectsError />}
-      <SectionTabs name="revision" tabs={TABS} current={tab} onChange={changeTab} />
 
       <TabPanel name="revision" tab={tab}>
+        {tab === "sr" && <SpacedRepetitionTab />}
+
         {tab === "today" && <RevisionToday tasks={todayTasks} loading={todayLoading} error={todayError} onLog={startFromTask} />}
 
         {tab === "log" && (
@@ -341,6 +363,6 @@ export default function RevisionPage() {
       />
 
       <Toast state={toast} />
-    </div>
+    </LogScreenScaffold>
   );
 }
