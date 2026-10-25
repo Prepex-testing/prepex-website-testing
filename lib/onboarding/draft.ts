@@ -1,5 +1,6 @@
 import type { GridBlock } from "@/lib/timetable/grid";
 import type { TemplateId } from "@/lib/timetable/templates";
+import type { GoalOptionKey } from "@/lib/onboarding/goal";
 
 /**
  * Everything the five onboarding screens collect, kept on the device until the last Next sends it in one go.
@@ -14,7 +15,14 @@ export type OnboardingDraft = {
   version: 1;
   /** The furthest step reached, for resuming (1-5). */
   step: number;
-  goal: { examId: string | null; examCode: string | null; examName: string | null; subjectIds: number[] };
+  goal: {
+    examId: string | null;
+    examCode: string | null;
+    examName: string | null;
+    subjectIds: number[];
+    /** Which of the four goal cards was picked (null until then, and for drafts saved before the cards changed). */
+    option: GoalOptionKey | null;
+  };
   about: { fullName: string; city: string; phoneNumber: string; examDate: string; currentLevel: CurrentLevel };
   coaching: { type: CoachingType; name: string; batch: string };
   timetable: {
@@ -35,7 +43,7 @@ export function emptyDraft(): OnboardingDraft {
   return {
     version: 1,
     step: 1,
-    goal: { examId: null, examCode: null, examName: null, subjectIds: [] },
+    goal: { examId: null, examCode: null, examName: null, subjectIds: [], option: null },
     about: { fullName: "", city: "", phoneNumber: "", examDate: "", currentLevel: "CLASS_11" },
     coaching: { type: "SELF_PREP", name: "", batch: "" },
     timetable: { uniformWeek: true, blocks: [], templateId: null, templateFor: null, edited: false },

@@ -1,5 +1,6 @@
 "use client";
 
+import { StepFooter } from "@/components/onboarding/StepFooter";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
 import { BlockEditor } from "@/components/timetable/BlockEditor";
@@ -671,37 +672,40 @@ export function TimetableBuilder({
             {error}
           </p>
         )}
-        <div className="flex flex-col gap-2 sm:flex-row">
-          {secondaryAction?.placement === "before" && (
+        {secondaryAction?.placement === "before" ? (
+          // The onboarding step: the same Back / Next row every other onboarding screen ends with.
+          <StepFooter
+            className="mt-0"
+            onBack={secondaryAction.onClick}
+            nextLabel={saveLabel}
+            onNext={() => void onSave(blocks)}
+            nextDisabled={blocks.length === 0 || lacksPlanningTime}
+            busy={saving}
+            nextTestId="save-timetable"
+          />
+        ) : (
+          <div className="flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
-              onClick={secondaryAction.onClick}
-              disabled={saving}
-              className="min-h-14 rounded-lg border-[1.5px] border-secondary-button-border bg-surface px-5 text-base font-semibold text-body-text hover:bg-tint-strong disabled:opacity-60"
+              data-testid="save-timetable"
+              disabled={saving || blocks.length === 0 || lacksPlanningTime}
+              onClick={() => void onSave(blocks)}
+              className="min-h-14 flex-1 rounded-lg border border-primary-button-border bg-cta px-4 text-base font-semibold text-white transition-colors hover:bg-[#E8623F] disabled:cursor-not-allowed disabled:border-primary-button-disabled-bg disabled:bg-primary-button-disabled-bg disabled:text-primary-button-disabled-text"
             >
-              {secondaryAction.label}
+              {saving ? "Saving…" : saveLabel}
             </button>
-          )}
-          <button
-            type="button"
-            data-testid="save-timetable"
-            disabled={saving || blocks.length === 0 || lacksPlanningTime}
-            onClick={() => void onSave(blocks)}
-            className="min-h-14 flex-1 rounded-lg border border-primary-button-border bg-cta px-4 text-base font-semibold text-white transition-colors hover:bg-[#E8623F] disabled:cursor-not-allowed disabled:border-primary-button-disabled-bg disabled:bg-primary-button-disabled-bg disabled:text-primary-button-disabled-text"
-          >
-            {saving ? "Saving…" : saveLabel}
-          </button>
-          {secondaryAction && secondaryAction.placement !== "before" && (
-            <button
-              type="button"
-              onClick={secondaryAction.onClick}
-              disabled={saving}
-              className="min-h-14 rounded-lg border-[1.5px] border-secondary-button-border bg-surface px-5 text-base font-semibold text-body-text hover:bg-tint-strong disabled:opacity-60"
-            >
-              {secondaryAction.label}
-            </button>
-          )}
-        </div>
+            {secondaryAction && (
+              <button
+                type="button"
+                onClick={secondaryAction.onClick}
+                disabled={saving}
+                className="min-h-14 rounded-lg border-[1.5px] border-secondary-button-border bg-surface px-5 text-base font-semibold text-body-text hover:bg-tint-strong disabled:opacity-60"
+              >
+                {secondaryAction.label}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {editing && (

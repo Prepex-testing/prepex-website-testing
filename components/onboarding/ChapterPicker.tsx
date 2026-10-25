@@ -10,6 +10,9 @@ import {
   type SubjectSection,
 } from "@/lib/onboarding/chapters";
 
+/** The "done" look for chapters and for a fully ticked subject: a soft indigo tint, readable in light and dark. */
+export const DONE_TINT = "border-[#818CF8]/60 bg-[#818CF8]/[0.18] text-ink";
+
 type Props = {
   sections: ClassSection[];
   completed: readonly string[];
@@ -98,37 +101,37 @@ function SubjectBlock({
           aria-pressed={allDone}
           data-testid="mark-all"
           className={`min-h-11 shrink-0 rounded-full border px-3.5 text-[13px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] ${
-            allDone ? "border-[#15803d] bg-[#15803d] text-white" : "border-brand/25 bg-surface text-ink dark:border-white/25"
+            allDone ? DONE_TINT : "border-brand/25 bg-surface text-ink dark:border-white/25"
           }`}
         >
-          {allDone ? "All complete" : "Mark all complete"}
+          {allDone ? "Unmark all" : "Mark all complete"}
         </button>
       </div>
 
       {isOpen && (
-        <ul id={panelId} className="grid grid-cols-1 gap-2 p-3 sm:grid-cols-2">
+        <ul id={panelId} className="grid grid-cols-1 gap-3 p-3 sm:auto-rows-fr sm:grid-cols-2">
           {subject.chapters.map((chapter) => {
             const isDone = done.has(chapter.id);
             return (
-              <li key={chapter.id}>
+              <li key={chapter.id} className="flex">
                 <button
                   type="button"
                   aria-pressed={isDone}
                   data-testid="chapter-chip"
                   onClick={() => onChange(toggleChapter(completed, chapter.id))}
-                  className={`flex min-h-11 w-full items-center gap-3 rounded-lg border px-3 py-2 text-left text-[14px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] ${
+                  className={`flex min-h-[68px] w-full items-center gap-3 rounded-xl border p-4 text-left text-[14px] font-semibold leading-[1.3] [overflow-wrap:anywhere] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] ${
                     isDone
-                      ? "border-[#15803d] bg-[#15803d] text-white"
+                      ? DONE_TINT
                       : "border-brand/20 bg-surface text-body-text hover:border-brand/40 dark:border-white/20 dark:text-ink"
                   }`}
                 >
                   <span
                     aria-hidden
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-                      isDone ? "border-white bg-white/20 text-white" : "border-brand/25 text-transparent dark:border-white/30"
+                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+                      isDone ? "border-transparent bg-ink text-white dark:text-[#1A1A4E]" : "border-brand/25 text-transparent dark:border-white/30"
                     }`}
                   >
-                    <CheckIcon className="h-3 w-3" />
+                    <CheckIcon className="h-3.5 w-3.5" />
                   </span>
                   <span className="flex-1">{chapter.name}</span>
                   <span className="sr-only">{isDone ? "Complete" : "Not complete"}</span>

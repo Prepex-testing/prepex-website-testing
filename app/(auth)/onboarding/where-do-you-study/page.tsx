@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
-import { OnboardingNav } from "@/components/onboarding/OnboardingNav";
+import { StepFooter } from "@/components/onboarding/StepFooter";
 import { RadioOption } from "@/components/ui/RadioOption";
 import { Select } from "@/components/ui/Select";
 import { StepProgress } from "@/components/ui/StepProgress";
@@ -106,7 +106,7 @@ export default function WhereDoYouStudyPage() {
         />
       </div>
 
-      <OnboardingNav
+      <StepFooter
         backHref={stepPath(2)}
         onNext={handleNext}
         nextDisabled={!valid}

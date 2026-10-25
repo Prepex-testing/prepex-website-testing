@@ -3,15 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
-import { ChapterPicker } from "@/components/onboarding/ChapterPicker";
-import { OnboardingNav } from "@/components/onboarding/OnboardingNav";
+import { ChapterPicker, DONE_TINT } from "@/components/onboarding/ChapterPicker";
+import { StepFooter } from "@/components/onboarding/StepFooter";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { StepProgress } from "@/components/ui/StepProgress";
 import { completeOnboarding } from "@/lib/api/onboarding";
 import { ApiError } from "@/lib/api/http";
 import { markOnboardingComplete } from "@/lib/auth/onboardingGate";
 import { countChapters, filterSections, groupByClass, keepKnown } from "@/lib/onboarding/chapters";
-import { needsSubjectPick } from "@/lib/onboarding/goal";
+import { goalOption, needsSubjectPick } from "@/lib/onboarding/goal";
 import { useOnboardingDraft, useStepGuard } from "@/lib/onboarding/draft-context";
 import { defaultExamDateIso, displayDateToIso } from "@/lib/onboarding/draft";
 import { buildCompletePayload } from "@/lib/onboarding/payload";
@@ -76,7 +76,7 @@ export default function WhichChaptersHaveYouStudiedPage() {
     completeStep();
     markOnboardingComplete();
     setSummary({
-      examName: draft.goal.examName,
+      examName: goalOption(draft.goal.option)?.title ?? draft.goal.examName,
       examDateIso: displayDateToIso(draft.about.examDate) ?? defaultExamDateIso(draft.about.currentLevel),
       weeklyStudyMinutes: draft.timetable.blocks
         .filter((b) => ["SELF_STUDY", "PRACTICE", "REVISION"].includes(b.activityType))
@@ -113,8 +113,14 @@ export default function WhichChaptersHaveYouStudiedPage() {
       )}
 
       <div className="mt-5 flex flex-col gap-3 rounded-xl border border-brand/10 bg-surface p-4 dark:border-white/10">
-        <p aria-live="polite" data-testid="chapter-counter" className="text-[15px] font-bold text-ink">
-          You&apos;ve marked {completed.length} of {total} chapters complete
+        <p
+          aria-live="polite"
+          data-testid="chapter-counter"
+          className={`self-start rounded-full border px-3.5 py-1.5 text-[14px] font-bold ${
+            completed.length > 0 ? DONE_TINT : "border-brand/20 bg-surface text-ink dark:border-white/20"
+          }`}
+        >
+          {completed.length} of {total} chapters complete
         </p>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="chapter-search" className="text-[13px] font-bold text-body-text dark:text-ink">
@@ -174,7 +180,7 @@ export default function WhichChaptersHaveYouStudiedPage() {
         Skip for now — I haven&apos;t started yet
       </button>
 
-      <OnboardingNav
+      <StepFooter
         backHref={stepPath(4)}
         onNext={() => void submit(completed)}
         nextDisabled={loading}

@@ -15,11 +15,13 @@ import {
   type OnboardingDraft,
 } from "@/lib/onboarding/draft";
 import {
-  GOAL_SUBTITLES,
+  examForOption,
+  GOAL_OPTIONS,
+  goalOption,
   includesBiology,
   isClassTwelveOnly,
   needsSubjectPick,
-  sortExams,
+  optionForExam,
   targetExamsFor,
 } from "@/lib/onboarding/goal";
 import { buildCompletePayload } from "@/lib/onboarding/payload";
@@ -78,13 +80,65 @@ describe("goal", () => {
     expect(isClassTwelveOnly(null)).toBe(false);
   });
 
-  it("puts Both JEE and NEET straight after NEET", () => {
-    const sorted = sortExams([{ code: "BOARDS" }, { code: "JEE_AND_NEET" }, { code: "BITSAT" }, { code: "NEET" }, { code: "JEE_MAIN+ADVANCED" }, { code: "JEE_MAIN" }]);
-    expect(sorted.map((e) => e.code)).toEqual(["JEE_MAIN", "JEE_MAIN+ADVANCED", "NEET", "JEE_AND_NEET", "BOARDS", "BITSAT"]);
+});
+
+describe("goal options", () => {
+  // The exam rows the testing API serves today, plus the NEET row that is still to be added.
+  const EXAMS = [exam("JEE_MAIN", "JEE Main"), exam("JEE_ADVANCED", "JEE Advanced"), exam("JEE_AND_NEET", "Both JEE and NEET"), exam("NEET", "NEET")];
+
+  it("offers exactly four, in this order, with these labels", () => {
+    expect(GOAL_OPTIONS.map((o) => [o.title, o.subtitle])).toEqual([
+      ["JEE Main", "NITs, IIITs and GFTIs"],
+      ["JEE Advanced", "IITs — includes JEE Main"],
+      ["Both JEE Main + Advanced", "The full JEE journey"],
+      ["NEET", "AIIMS and medical colleges"],
+    ]);
   });
 
-  it("describes Both JEE and NEET in plain English", () => {
-    expect(GOAL_SUBTITLES.JEE_AND_NEET).toMatch(/Biology/);
+  it("no longer offers Both JEE and NEET", () => {
+    expect(GOAL_OPTIONS.some((o) => /neet/i.test(o.title) && /jee/i.test(o.title))).toBe(false);
+    expect(GOAL_OPTIONS.some((o) => o.examCodes.includes("JEE_AND_NEET"))).toBe(false);
+    expect(optionForExam(exam("JEE_AND_NEET", "Both JEE and NEET"))).toBeNull();
+  });
+
+  it("gives JEE Advanced and Both the same target exams: Main + Advanced", () => {
+    expect(goalOption("JEE_ADVANCED")?.targetExams).toEqual(["JEE_MAIN", "JEE_ADVANCED"]);
+    expect(goalOption("JEE_BOTH")?.targetExams).toEqual(["JEE_MAIN", "JEE_ADVANCED"]);
+    expect(goalOption("JEE_MAIN")?.targetExams).toEqual(["JEE_MAIN"]);
+    expect(goalOption("NEET")?.targetExams).toEqual(["NEET"]);
+  });
+
+  it("serves every option from an exam whose derived target exams are exactly the option's", () => {
+    for (const option of GOAL_OPTIONS) {
+      const served = examForOption(option, EXAMS);
+      expect(served, option.key).not.toBeNull();
+      expect(targetExamsFor(served!), option.key).toEqual(option.targetExams);
+    }
+  });
+
+  it("serves Both from the JEE Advanced exam until a Main + Advanced exam exists, then prefers that", () => {
+    const both = goalOption("JEE_BOTH")!;
+    expect(examForOption(both, EXAMS)?.code).toBe("JEE_ADVANCED");
+    expect(examForOption(both, [...EXAMS, exam("JEE_MAIN+ADVANCED", "JEE Main + Advanced")])?.code).toBe("JEE_MAIN+ADVANCED");
+  });
+
+  it("has no exam for NEET until the row exists, rather than guessing one", () => {
+    expect(examForOption(goalOption("NEET")!, EXAMS.filter((e) => e.code !== "NEET"))).toBeNull();
+  });
+
+  it("matches a saved exam back to its card", () => {
+    expect(optionForExam(exam("JEE_MAIN", "JEE Main"))).toBe("JEE_MAIN");
+    expect(optionForExam(exam("JEE_ADVANCED", "JEE Advanced"))).toBe("JEE_ADVANCED");
+    expect(optionForExam(exam("JEE_MAIN+ADVANCED", "JEE Main + Advanced"))).toBe("JEE_BOTH");
+    expect(optionForExam(exam("NEET", "NEET"))).toBe("NEET");
+    expect(optionForExam(null)).toBeNull();
+  });
+
+  it("shows Physics, Chemistry and Maths for every JEE option and Biology only for NEET", () => {
+    for (const key of ["JEE_MAIN", "JEE_ADVANCED", "JEE_BOTH"] as const) {
+      expect(includesBiology(examForOption(goalOption(key)!, EXAMS)!), key).toBe(false);
+    }
+    expect(includesBiology(examForOption(goalOption("NEET")!, EXAMS)!)).toBe(true);
   });
 });
 
@@ -210,6 +264,7 @@ describe("draft storage (survives a reload, never crosses students)", () => {
     expect(d.about.currentLevel).toBe("CLASS_11");
     expect(d.timetable.uniformWeek).toBe(true);
     expect(d.chapters.completedIds).toEqual([]);
+    expect(d.goal.option).toBeNull();
   });
 });
 
@@ -218,7 +273,7 @@ describe("buildCompletePayload", () => {
     const d = emptyDraft();
     return {
       ...d,
-      goal: { examId: "exam-1", examCode: "JEE_AND_NEET", examName: "Both JEE and NEET", subjectIds: [] },
+      goal: { examId: "exam-1", examCode: "JEE_ADVANCED", examName: "JEE Advanced", subjectIds: [], option: "JEE_BOTH" },
       about: { fullName: "  Rohan Sharma ", city: " Bhopal ", phoneNumber: "", examDate: "15/05/2027", currentLevel: "CLASS_12" },
       coaching: { type: "COACHING", name: "Allen Career Institute", batch: "Evening Batch" },
       timetable: { uniformWeek: false, blocks: buildTemplate("SCHOOL_COACHING").map((b) => ({ ...b, id: "server-id" })), templateId: "SCHOOL_COACHING", templateFor: "x", edited: false },
