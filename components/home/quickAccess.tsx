@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { AlertCircle, BookOpen, Compass, FileCheck, Library, NotebookPen, RotateCw, Target, Trophy } from "lucide-react";
+import { AlertCircle, BookOpen, Compass, FileCheck, Library, ListChecks, NotebookPen, RotateCw, Target, Trophy } from "lucide-react";
 import { getRevisionOverview } from "@/lib/api/revision";
+import { getBacklogAnalytics } from "@/lib/api/backlogItems";
 import { getMistakeStats } from "@/lib/api/mistakes";
 import { getPracticeAnalytics } from "@/lib/api/practiceLogs";
 import { listMocks } from "@/lib/api/mocks";
@@ -10,12 +11,13 @@ import { getStudySummary } from "@/lib/api/studyLog";
 
 /** Home's Quick Access list: the same rows as before, with line icons and a live one-line status on the six main ones. */
 
-export type QuickAccessKey = "focus" | "practice" | "revision" | "mistakes" | "mocks";
+export type QuickAccessKey = "focus" | "practice" | "revision" | "backlog" | "mistakes" | "mocks";
 
 export type QuickAccessCounts = {
   sessionsToday: number | null;
   questionsThisWeek: number | null;
   revisionsDue: number | null;
+  backlogOpen: number | null;
   mistakesOpen: number | null;
   mocksThisWeek: number | null;
 };
@@ -28,6 +30,7 @@ export function quickAccessSubtitles(c: QuickAccessCounts): Record<QuickAccessKe
     focus: c.sessionsToday === null ? "Start a session" : plural(c.sessionsToday, "session today", "sessions today"),
     practice: c.questionsThisWeek === null ? "Solve questions" : plural(c.questionsThisWeek, "question this week", "questions this week"),
     revision: c.revisionsDue === null ? "Revise chapters" : `${c.revisionsDue} due today`,
+    backlog: c.backlogOpen === null ? "Clear what you owe" : `${c.backlogOpen} open`,
     mistakes: c.mistakesOpen === null ? "Review mistakes" : `${c.mistakesOpen} unresolved`,
     mocks: c.mocksThisWeek === null ? "Analyze and improve" : `${c.mocksThisWeek} this week`,
   };
@@ -42,7 +45,7 @@ function thisWeek(now = new Date()): { from: string; to: string } {
   return { from: iso(monday), to: iso(now) };
 }
 
-const EMPTY: QuickAccessCounts = { sessionsToday: null, questionsThisWeek: null, revisionsDue: null, mistakesOpen: null, mocksThisWeek: null };
+const EMPTY: QuickAccessCounts = { sessionsToday: null, questionsThisWeek: null, revisionsDue: null, backlogOpen: null, mistakesOpen: null, mocksThisWeek: null };
 
 /** Each count loads on its own: one slow or failing source never blanks the others. */
 export function useQuickAccessCounts(): QuickAccessCounts {
@@ -55,6 +58,7 @@ export function useQuickAccessCounts(): QuickAccessCounts {
     getStudySummary("day").then((r) => set({ sessionsToday: r.data.sessionCount }), () => undefined);
     getPracticeAnalytics({ period: "week" }).then((r) => set({ questionsThisWeek: r.data.totals.attempted }), () => undefined);
     getRevisionOverview().then((r) => set({ revisionsDue: r.data.todaysRevisionTasks.count }), () => undefined);
+    getBacklogAnalytics().then((r) => set({ backlogOpen: r.data.totals.open + r.data.totals.scheduled }), () => undefined);
     getMistakeStats().then((r) => set({ mistakesOpen: r.data.active }), () => undefined);
     listMocks({ from: week.from, to: week.to, limit: 100 }).then((r) => set({ mocksThisWeek: r.data.items.length }), () => undefined);
     return () => {
@@ -83,10 +87,11 @@ export function quickAccessItems(counts: QuickAccessCounts): QuickAccessItem[] {
   const s = quickAccessSubtitles(counts);
   return [
     { key: "focus", label: "Focus", subtitle: s.focus, icon: <Target className={ICON} aria-hidden />, action: "focus" },
-    { key: "practice", label: "Practice", subtitle: s.practice, icon: <BookOpen className={ICON} aria-hidden />, href: "/practice/sessions", coach: "nav-practice" },
-    { key: "revision", label: "Revision", subtitle: s.revision, icon: <RotateCw className={ICON} aria-hidden />, href: "/home/revision", coach: "quick-revision" },
+    { key: "practice", label: "Practice", subtitle: s.practice, icon: <BookOpen className={ICON} aria-hidden />, href: "/logs/practice", coach: "nav-practice" },
+    { key: "revision", label: "Revision", subtitle: s.revision, icon: <RotateCw className={ICON} aria-hidden />, href: "/logs/revision", coach: "quick-revision" },
+    { key: "backlog", label: "Backlog", subtitle: s.backlog, icon: <ListChecks className={ICON} aria-hidden />, href: "/logs/backlog", coach: "quick-backlog" },
     { key: "mistakes", label: "Mistakes", subtitle: s.mistakes, icon: <AlertCircle className={ICON} aria-hidden />, href: "/home/mistake-notebook", coach: "quick-mistakes" },
-    { key: "mocks", label: "Mocks", subtitle: s.mocks, icon: <FileCheck className={ICON} aria-hidden />, href: "/home/mock-analysis", coach: "quick-mock" },
+    { key: "mocks", label: "Mocks", subtitle: s.mocks, icon: <FileCheck className={ICON} aria-hidden />, href: "/logs/mocks", coach: "quick-mock" },
     // TODO(tile-wire): Where to focus next, Leader Board and Resource Library have no count yet; add one when their windows expose it.
     { key: "focus-next", label: "Where to focus next", icon: <Compass className={ICON} aria-hidden />, href: "/home/focus-next" },
     { key: "leaderboard", label: "Leader Board", icon: <Trophy className={ICON} aria-hidden />, href: "/home/leaderboard" },

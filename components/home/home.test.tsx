@@ -8,22 +8,22 @@ import { plannerTaskIntent } from "@/components/home/focusIntent";
 
 const EMOJI = /\p{Extended_Pictographic}/u;
 const root = path.resolve(import.meta.dirname, "..", "..");
-const counts: QuickAccessCounts = { sessionsToday: 2, questionsThisWeek: 140, revisionsDue: 3, mistakesOpen: 15, mocksThisWeek: 1 };
+const counts: QuickAccessCounts = { sessionsToday: 2, questionsThisWeek: 140, revisionsDue: 3, backlogOpen: 4, mistakesOpen: 15, mocksThisWeek: 1 };
 
 describe("Quick Access", () => {
-  it("shows live counts on the five rows that have one", () => {
-    expect(quickAccessSubtitles(counts)).toEqual({ focus: "2 sessions today", practice: "140 questions this week", revision: "3 due today", mistakes: "15 unresolved", mocks: "1 this week" });
+  it("shows live counts on the six rows that have one", () => {
+    expect(quickAccessSubtitles(counts)).toEqual({ focus: "2 sessions today", practice: "140 questions this week", revision: "3 due today", backlog: "4 open", mistakes: "15 unresolved", mocks: "1 this week" });
   });
 
   it("falls back to what the row does when a count is missing", () => {
-    const s = quickAccessSubtitles({ sessionsToday: null, questionsThisWeek: null, revisionsDue: null, mistakesOpen: null, mocksThisWeek: null });
+    const s = quickAccessSubtitles({ sessionsToday: null, questionsThisWeek: null, revisionsDue: null, backlogOpen: null, mistakesOpen: null, mocksThisWeek: null });
     expect(s.focus).toBe("Start a session");
     expect(s.mistakes).toBe("Review mistakes");
   });
 
-  it("is exactly nine rows, in order, with no Partner and no Analytics", () => {
+  it("is exactly ten rows, in order, with no Partner and no Analytics", () => {
     const labels = quickAccessItems(counts).map((i) => i.label);
-    expect(labels).toEqual(["Focus", "Practice", "Revision", "Mistakes", "Mocks", "Where to focus next", "Leader Board", "Resource Library", "Weekly Win Journal"]);
+    expect(labels).toEqual(["Focus", "Practice", "Revision", "Backlog", "Mistakes", "Mocks", "Where to focus next", "Leader Board", "Resource Library", "Weekly Win Journal"]);
     expect(labels).not.toContain("Partner");
     expect(labels).not.toContain("Analytics");
     expect(quickAccessItems(counts).map((i) => i.href ?? "")).not.toContain("/analytics");
@@ -49,7 +49,7 @@ describe("Quick Access", () => {
       </ul>,
     );
     expect(container.textContent ?? "").not.toMatch(EMOJI);
-    expect(within(container).getAllByRole("listitem")).toHaveLength(9);
+    expect(within(container).getAllByRole("listitem")).toHaveLength(10);
   });
 });
 
