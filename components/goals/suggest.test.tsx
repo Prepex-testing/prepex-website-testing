@@ -3,7 +3,7 @@ import { StrictMode } from "react";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { GoalCard } from "@/components/goals/GoalCard";
+import { GoalCard } from "@/components/weekly-goals/GoalCard";
 import { NewSuggestion } from "@/components/goals/NewSuggestion";
 import { SuggestPanel } from "@/components/goals/SuggestPanel";
 import { ApiError } from "@/lib/api/http";
@@ -255,16 +255,16 @@ const goal = (over: Partial<Goal> = {}): Goal => ({
 });
 
 describe("GoalCard", () => {
-  const base = { scope: "Physics · Rotational Motion", busy: false, onWatched: vi.fn(), onToggleDone: vi.fn(), onDelete: vi.fn() };
+  const base = { title: "Rotational Motion", busy: false, onWatched: vi.fn(), onToggleDone: vi.fn(), onDelete: vi.fn(), onEdit: vi.fn() };
 
-  it("has a Suggest button only when the page offers one, and the slot shows under the goal", async () => {
+  it("offers Suggest in the goal's menu only when the page offers one", async () => {
     const onSuggest = vi.fn();
     const { rerender } = render(<GoalCard goal={goal()} {...base} />);
+    await userEvent.click(screen.getByTestId("goal-menu"));
     expect(screen.queryByTestId("goal-suggest")).toBeNull();
-    rerender(<GoalCard goal={goal()} {...base} onSuggest={onSuggest} suggestSlot={<p data-testid="slot">panel</p>} />);
+    rerender(<GoalCard goal={goal()} {...base} onSuggest={onSuggest} />);
     await userEvent.click(screen.getByTestId("goal-suggest"));
     expect(onSuggest).toHaveBeenCalledTimes(1);
-    expect(screen.getByTestId("slot")).toBeInTheDocument();
   });
 });
 
