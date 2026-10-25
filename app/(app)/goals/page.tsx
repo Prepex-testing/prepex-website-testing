@@ -28,6 +28,10 @@ import { daysLeftText, describeGoal, formatWeekRange, scopeText } from "@/lib/go
 import { mondayAfterWeeks, weekLabel } from "@/lib/diagnosis/format";
 import { WEEKS_AHEAD, parsePrefill } from "@/lib/goals/prefill";
 import { readTargetRank } from "@/lib/insights/targetRank";
+import { SmartSuggestion } from "@/components/goals/SmartSuggestion";
+import { getGoalDefaults, getWeekSummary, type GoalDefaults, type WeekSummary } from "@/lib/api/plannerV2";
+import { forSave, hoursText } from "@/lib/goals/v2";
+import { trackPlanner } from "@/lib/telemetry/planner";
 
 function messageOf(err: unknown, fallback: string): string {
   return err instanceof ApiError ? err.message : fallback;
@@ -46,15 +50,19 @@ function GoalsScreen() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  // the goal whose ✨ Suggest panel is open
+  // the goal whose Suggest panel is open
   const [suggestingId, setSuggestingId] = useState<string | null>(null);
+  // the hours the week holds (from the timetable) and the student's own typical minutes per lecture, practice and revision
+  const [summary, setSummary] = useState<WeekSummary | null>(null);
+  const [defaults, setDefaults] = useState<GoalDefaults | null>(null);
+  const [version, setVersion] = useState(0);
 
   // A chapter handed over by a link (a diagnosis chip) may be from another class than the student's own (a class-12
   // student revising a class-11 chapter), so a link that names one loads every class's chapters.
   const wantsAllClasses = params.get("chapter") !== null;
 
   const load = useCallback(async () => {
-    const [goals, chapters, timetable] = await Promise.allSettled([getCurrentGoals(), getStudentChapters(wantsAllClasses ? { allClasses: true } : {}), getCurrentTimetable()]);
+    const [goals, chapters, timetable, defs] = await Promise.allSettled([getCurrentGoals(), getStudentChapters(wantsAllClasses ? { allClasses: true } : {}), getCurrentTimetable(), getGoalDefaults()]);
     if (goals.status === "rejected") {
       setLoadError(messageOf(goals.reason, "We couldn't load your goals. Please refresh."));
       return;
@@ -62,6 +70,8 @@ function GoalsScreen() {
     setData(goals.value.data);
     if (chapters.status === "fulfilled") setSubjects(chapters.value.data);
     setHasTimetable(timetable.status === "fulfilled" ? timetable.value.data.timetable !== null : null);
+    if (defs.status === "fulfilled") setDefaults(defs.value.data);
+    setVersion((v) => v + 1);
   }, [wantsAllClasses]);
 
   useEffect(() => {
@@ -91,12 +101,27 @@ function GoalsScreen() {
   const weeksAhead = prefill ? WEEKS_AHEAD[prefill.week] : 0;
   const targetWeekStart = weeksAhead > 0 && data ? mondayAfterWeeks(data.weekStart, weeksAhead) : undefined;
   const targetWeekName = weeksAhead === 1 ? "next week" : "the week of";
+  const viewWeekStart = targetWeekStart ?? data?.weekStart;
+
+  // The week's free hours for the week being planned.
+  useEffect(() => {
+    if (!viewWeekStart) return;
+    let live = true;
+    getWeekSummary(viewWeekStart).then(
+      (res) => live && setSummary(res.data),
+      () => live && setSummary(null),
+    );
+    return () => {
+      live = false;
+    };
+  }, [viewWeekStart, version]);
 
   async function handleSave(goals: NewGoal[]) {
     setSaving(true);
     setSaveError(null);
     try {
       await createGoals(goals, targetWeekStart);
+      trackPlanner("weekly_goal_save", { count: goals.length, nextWeek: !!targetWeekStart });
       if (welcome) {
         router.push("/check-in");
         return;
@@ -113,6 +138,24 @@ function GoalsScreen() {
       setSaveError(messageOf(err, "Couldn't save your goals. Please try again."));
     } finally {
       setSaving(false);
+    }
+  }
+
+  // goals accepted from "Suggest this week's goals": saved straight away, skipping any the student already has
+  async function handleWeekSuggestions(goals: NewGoal[]) {
+    const fresh = goals.filter((g) => !data?.goals.some((x) => x.status !== "ABANDONED" && x.type === g.type && (x.subjectId ?? null) === (g.subjectId ?? null) && (x.chapterId ?? null) === (g.chapterId ?? null) && (x.topic ?? null) === (g.topic ?? null) && (x.backlogItemId ?? null) === (g.backlogItemId ?? null)));
+    if (fresh.length === 0) {
+      setNotice("Those goals are already on your list.");
+      return;
+    }
+    setSaveError(null);
+    try {
+      await createGoals(fresh.map(forSave), targetWeekStart);
+      trackPlanner("weekly_goal_save", { count: fresh.length, via: "suggestion", nextWeek: !!targetWeekStart });
+      await load();
+      setNotice(`${fresh.length === 1 ? "A suggested goal was" : `${fresh.length} suggested goals were`} added. Today's plan has been updated to match.`);
+    } catch (err) {
+      setSaveError(messageOf(err, "Couldn't add those goals. Please try again."));
     }
   }
 
@@ -160,7 +203,15 @@ function GoalsScreen() {
             {data.summary.done} of {data.summary.total} done · {data.summary.percent}%
           </span>
         )}
+        <SmartSuggestion weekStart={viewWeekStart ?? data.weekStart} subjectNames={subjectNames} chapterNames={chapterNames} onAccept={handleWeekSuggestions} />
       </div>
+
+      {summary && (
+        <p className="-mt-2 text-[12px] text-muted" data-testid="hours-available">
+          {hoursText(summary.availableMinutes)} available {targetWeekStart ? "that week" : "this week"}
+          {summary.perStudyDayMinutes > 0 ? ` · about ${hoursText(summary.perStudyDayMinutes)} a day` : ""}
+        </p>
+      )}
 
       {notice && (
         <p role="status" className="flex flex-wrap items-center gap-x-3 rounded-lg bg-[var(--success-bg)] px-3 py-2 text-[13px] font-semibold text-[var(--success)]">
@@ -257,6 +308,8 @@ function GoalsScreen() {
         saving={saving}
         error={saving ? null : saveError}
         onSave={handleSave}
+        defaults={defaults}
+        {...(viewWeekStart ? { weekStart: viewWeekStart } : {})}
         {...(prefill ? { initial: prefill.goal } : {})}
       />
 
