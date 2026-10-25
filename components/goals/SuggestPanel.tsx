@@ -22,7 +22,7 @@ type Props = {
 type Phase = { name: "loading" } | { name: "ready"; suggestion: GoalSuggestion } | { name: "problem"; problem: SuggestionProblem };
 
 /**
- * The whole ✨ Suggest flow for one chapter, inline: it asks as soon as it appears (skeleton while the Brain thinks),
+ * The whole Suggest flow for one chapter, inline: it asks as soon as it appears (skeleton while the Brain thinks),
  * then shows the suggestion with Accept / Modify / Dismiss. Nothing is made up when the Brain is away: "AI is resting".
  */
 export function SuggestPanel({ chapterId, chapterName, weekStartDate, targetRank, onAdded, onClose }: Props) {

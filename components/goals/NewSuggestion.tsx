@@ -1,5 +1,6 @@
 "use client";
 
+import { Sparkles } from "lucide-react";
 import { useState } from "react";
 import type { SubjectChapters } from "@/lib/api/dashboard";
 import { getStudentChapters } from "@/lib/api/onboarding";
@@ -40,7 +41,8 @@ export function NewSuggestion({ subjects: ownClass, weekStartDate, targetRank, o
         }}
         className="flex min-h-12 items-center justify-center gap-2 rounded-lg border-[1.5px] border-secondary-button-border bg-surface px-4 text-[15px] font-semibold text-body-text hover:bg-tint-strong"
       >
-        ✨ Suggest new goal
+        <Sparkles className="size-4 shrink-0" aria-hidden />
+        Suggest new goal
       </button>
     );
   }
@@ -49,7 +51,10 @@ export function NewSuggestion({ subjects: ownClass, weekStartDate, targetRank, o
     <section aria-label="Suggest a goal" className="flex flex-col gap-3 rounded-2xl border border-brand/10 bg-surface p-4" data-testid="suggest-new-panel">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[15px] font-bold text-ink">✨ Suggest a goal</p>
+          <p className="flex items-center gap-1.5 text-[15px] font-bold text-ink">
+            <Sparkles className="size-4 shrink-0" aria-hidden />
+            Suggest a goal
+          </p>
           <p className="mt-0.5 text-[12px] text-muted">Pick a chapter. Prepex looks at your recent practice and mistakes on it and proposes hours for this week.</p>
         </div>
         <button
@@ -95,9 +100,10 @@ export function NewSuggestion({ subjects: ownClass, weekStartDate, targetRank, o
           data-testid="suggest-go"
           disabled={chapterId === ""}
           onClick={() => setAsked((prev) => ({ id: chapterId, name: chapterName(chapterId), key: (prev?.key ?? 0) + 1 }))}
-          className="min-h-12 rounded-lg border border-primary-button-border bg-cta px-4 text-[15px] font-semibold text-white hover:bg-[#E8623F] disabled:cursor-not-allowed disabled:border-primary-button-disabled-bg disabled:bg-primary-button-disabled-bg disabled:text-primary-button-disabled-text"
+          className="flex min-h-12 items-center gap-1.5 rounded-lg border border-primary-button-border bg-cta px-4 text-[15px] font-semibold text-white hover:bg-[#E8623F] disabled:cursor-not-allowed disabled:border-primary-button-disabled-bg disabled:bg-primary-button-disabled-bg disabled:text-primary-button-disabled-text"
         >
-          ✨ Suggest
+          <Sparkles className="size-4 shrink-0" aria-hidden />
+          Suggest
         </button>
       </div>
 
