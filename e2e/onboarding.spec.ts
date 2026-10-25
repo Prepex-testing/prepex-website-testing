@@ -19,7 +19,7 @@ async function trackedEvents(page: Page) {
 }
 const events = (page: Page) => page.evaluate(() => (window as unknown as { __events: { event: string; stepNumber: number; stepName: string }[] }).__events);
 
-test("a coaching student who is preparing for both exams: every step, the toggle, the draft, and the single save", async ({ page }, info) => {
+test("a coaching student who is preparing for the full JEE journey (Main + Advanced): every step, the toggle, the draft, and the single save", async ({ page }, info) => {
   const mobile = info.project.name.startsWith("mobile");
   resetStudent();
   await trackedEvents(page);
@@ -31,9 +31,10 @@ test("a coaching student who is preparing for both exams: every step, the toggle
   await expect(page.getByRole("button", { name: /Back/ })).toHaveCount(0); // the first step has no Back
   const options = await page.locator("main button").filter({ hasText: /JEE|NEET/ }).allInnerTexts();
   const names = options.map((t) => t.split("\n")[0]);
-  expect(names).toContain("Both JEE and NEET");
-  expect(names.indexOf("Both JEE and NEET")).toBe(names.indexOf("NEET") + 1);
-  await page.getByRole("button", { name: /Both JEE and NEET/ }).click();
+  expect(names).toEqual(["JEE Main", "JEE Advanced", "Both JEE Main + Advanced", "NEET"]);
+  await page.getByRole("button", { name: /Both JEE Main \+ Advanced/ }).click();
+  await expect(page.getByRole("button", { name: /Both JEE Main \+ Advanced/ })).toHaveClass(/border-ink/);
+  await expect(page.getByRole("button", { name: /^JEE Main/ })).not.toHaveClass(/border-ink/);
   await next(page);
 
   // ── Step 2: about you ────────────────────────────────────────────────────────
@@ -102,19 +103,32 @@ test("a coaching student who is preparing for both exams: every step, the toggle
   await expect(page.getByRole("heading", { name: "Which chapters have you finished?" })).toBeVisible();
   await expect(page.getByText("Step 5 of 5")).toBeVisible();
   const counter = page.getByTestId("chapter-counter");
-  await expect(counter).toContainText("You've marked 0 of");
-  // Both exams: Biology is in the list, in both classes.
+  await expect(counter).toContainText(/^0 of \d+ chapters complete$/);
+  // Main + Advanced is Physics, Chemistry and Maths in both classes: no Biology.
   await expect(page.getByRole("heading", { name: "Class 11" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Class 12" })).toBeVisible();
   await page.getByLabel("Search chapters").fill("biology");
-  await expect(page.getByTestId("chapter-chip").first()).toBeVisible();
+  await expect(page.getByText(/No chapter matches/)).toBeVisible();
   await page.getByLabel("Search chapters").fill("");
+  const subjectNames = await page.locator("button[aria-expanded] span.font-bold").allInnerTexts();
+  expect(subjectNames.length).toBeGreaterThan(0);
+  expect(subjectNames.every((n) => ["Physics", "Chemistry", "Maths"].includes(n))).toBe(true);
+
+  // Selected chapters are never green.
+  await page.getByTestId("chapter-chip").first().click();
+  const selectedStyle = await page.getByTestId("chapter-chip").first().evaluate((el) => {
+    const css = getComputedStyle(el);
+    return { background: css.backgroundColor, border: css.borderTopColor };
+  });
+  const [, r = 0, g = 0, b = 0] = selectedStyle.background.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)?.map(Number) ?? [];
+  expect(g > r + 24 && g > b + 24).toBe(false);
+  await page.getByTestId("chapter-chip").first().click();
 
   // One tap marks a chapter complete; a second tap clears it. There is no partial state.
   const first = page.getByTestId("chapter-chip").first();
   await first.click();
   await expect(first).toHaveAttribute("aria-pressed", "true");
-  await expect(counter).toContainText("You've marked 1 of");
+  await expect(counter).toContainText(/^1 of \d+ chapters complete$/);
   await first.click();
   await expect(first).toHaveAttribute("aria-pressed", "false");
 
@@ -122,7 +136,8 @@ test("a coaching student who is preparing for both exams: every step, the toggle
   const subject = page.getByTestId(/^subject-11-/).first();
   const subjectTotal = await subject.getByTestId("chapter-chip").count();
   await subject.getByTestId("mark-all").click();
-  await expect(counter).toContainText(`You've marked ${subjectTotal} of`);
+  await expect(counter).toContainText(`${subjectTotal} of`);
+  await expect(subject.getByTestId("mark-all")).toHaveText("Unmark all");
   if (mobile) await expectTapTargets(page, '[data-testid="chapter-chip"]');
 
   // Search filters live across classes and subjects.
@@ -132,7 +147,7 @@ test("a coaching student who is preparing for both exams: every step, the toggle
 
   // The ticks survive a reload.
   await page.reload();
-  await expect(page.getByTestId("chapter-counter")).toContainText(`You've marked ${subjectTotal} of`);
+  await expect(page.getByTestId("chapter-counter")).toContainText(`${subjectTotal} of`);
 
   await next(page);
   await expect(page).toHaveURL(/welcome-to-prepex/, { timeout: 90_000 });
@@ -151,7 +166,7 @@ test("a coaching student who is preparing for both exams: every step, the toggle
        from core.user_profiles p join core.users u on u.id = p.user_id where u.email = $1`,
     [STUDENT],
   );
-  expect(profile!.target_exams).toEqual(["JEE_MAIN", "JEE_ADVANCED", "NEET"]);
+  expect(profile!.target_exams).toEqual(["JEE_MAIN", "JEE_ADVANCED"]);
   expect(profile!.timetable_uniform_week).toBe(true);
   expect(profile!.current_level).toBe("CLASS_12");
   expect(profile!.coaching_type).toBe("COACHING");
@@ -162,7 +177,7 @@ test("a coaching student who is preparing for both exams: every step, the toggle
     `select s.subject_id from core.user_profile_subjects s join core.user_profiles p on p.id = s.profile_id join core.users u on u.id = p.user_id where u.email = $1 order by 1`,
     [STUDENT],
   );
-  expect(subjects).toHaveLength(4); // Physics, Chemistry, Maths and Biology
+  expect(subjects).toHaveLength(3); // Physics, Chemistry and Maths: no Biology for JEE
 
   const statuses = queryDb<{ status: string; onboarding: boolean; revision_phase: string; n: string }>(
     `select c.status, c.onboarding, c.revision_phase, count(*) n from core.user_chapter_progress c join core.users u on u.id = c.user_id where u.email = $1 group by 1,2,3 order by 1`,

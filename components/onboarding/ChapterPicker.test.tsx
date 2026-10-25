@@ -72,10 +72,18 @@ describe("ChapterPicker", () => {
     fireEvent.click(within(subject).getByTestId("mark-all"));
     expect(screen.getByTestId("marked")).toHaveTextContent("p1,p2");
     expect(within(subject).getByTestId("subject-count")).toHaveTextContent("2 of 2 complete");
-    expect(within(subject).getByTestId("mark-all")).toHaveTextContent("All complete");
+    expect(within(subject).getByTestId("mark-all")).toHaveTextContent("Unmark all");
 
     fireEvent.click(within(subject).getByTestId("mark-all"));
     expect(screen.getByTestId("marked")).toHaveTextContent("");
+    expect(within(subject).getByTestId("mark-all")).toHaveTextContent("Mark all complete");
+  });
+
+  it("tints the Unmark all pill like a selected chapter once a subject is fully ticked", () => {
+    render(<Harness initial={["p1", "p2"]} />);
+    const pill = within(screen.getByTestId("subject-11-1")).getByTestId("mark-all");
+    expect(pill).toHaveTextContent("Unmark all");
+    expect(pill.className).toContain("bg-[#818CF8]/[0.18]");
   });
 
   it("subjects open and close, and a search opens them all so no match hides behind a closed header", () => {
@@ -100,7 +108,39 @@ describe("ChapterPicker", () => {
   it("gives every control a tap target of at least 44px", () => {
     render(<Harness />);
     for (const el of [chip("Kinematics"), screen.getAllByTestId("mark-all")[0]!, screen.getAllByRole("button", { name: /Physics/ })[0]!]) {
-      expect(el.className).toMatch(/min-h-11/);
+      expect(el.className).toMatch(/min-h-11|min-h-\[68px\]/); // 44px or taller
     }
   });
+
+  it("lays chapters out in equal-height rows so a two-line name never leaves a gap beside a one-line one", () => {
+    render(<Harness />);
+    const list = screen.getByTestId("subject-11-1").querySelector("ul")!;
+    expect(list.className).toMatch(/sm:grid-cols-2/);
+    expect(list.className).toMatch(/sm:auto-rows-fr/);
+    for (const item of list.querySelectorAll("li")) expect(item.className).toMatch(/\bflex\b/);
+    const card = chip("Kinematics");
+    expect(card.className).toMatch(/min-h-\[68px\]/);
+    expect(card.className).toMatch(/items-center/);
+    expect(card.className).toMatch(/leading-\[1\.3\]/);
+  });
+
+  it("never uses green, selected or not", () => {
+    const { container } = render(<Harness initial={["p1", "p2"]} />);
+    const classes = Array.from(container.querySelectorAll("[class]"), (el) => el.getAttribute("class") ?? "").join(" ");
+    expect(classes).not.toMatch(/green|emerald|lime|teal/i);
+    expect(greenHexes(classes)).toEqual([]);
+    // ...and the selected look is the soft indigo tint.
+    expect(chip("Units and Measurements").className).toMatch(/border-\[#818CF8\]\/60/);
+    expect(chip("Units and Measurements").className).toMatch(/bg-\[#818CF8\]\/\[0\.18\]/);
+  });
 });
+
+/** Every hex colour in `text` whose green channel clearly leads red and blue. */
+function greenHexes(text: string): string[] {
+  const found = text.match(/#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g) ?? [];
+  return found.filter((hex) => {
+    const full = hex.length === 4 ? `#${[...hex.slice(1)].map((c) => c + c).join("")}` : hex;
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(full.slice(i, i + 2), 16)) as [number, number, number];
+    return g > r + 24 && g > b + 24;
+  });
+}
