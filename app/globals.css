@@ -70,6 +70,15 @@
 
   --sub: #A0A0B0;
 
+  /* Three surface tiers: page, card, and the inputs inside a card. Borders come in two strengths. */
+  --surface-base: #f8f8f5;
+  --surface-elevated: #ffffff;
+  --surface-elevated-2: #f0f0ea;
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-strong: rgba(15, 23, 42, 0.14);
+  --saffron: #a66b00;
+  --brand-coral: var(--cta);
+
   /* icon for color */
   --button-border: #333333;
 
@@ -224,6 +233,13 @@
   --score-ring-to: #ffffff;
 
   --sub: #242453;
+
+  --surface-base: #0b0b1f;
+  --surface-elevated: #16163a;
+  --surface-elevated-2: #20204a;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --saffron: #f5b74a;
 
   /* icon for color */
   --button-border: #FAF7F2;
@@ -387,6 +403,14 @@
 
   --color-accordion-open-bg: var(--accordion-open-bg);
   --color-sub: var(--sub);
+
+  --color-surface-base: var(--surface-base);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-elevated-2: var(--surface-elevated-2);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-saffron: var(--saffron);
+  --color-brand-coral: var(--brand-coral);
 
 
   --color-accordion-row-bg: var(--accordion-row-bg);
