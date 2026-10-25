@@ -12,9 +12,12 @@ type Props<T extends string> = {
   title: string;
   subtitle?: string;
   backHref?: string;
-  tabs: LogTab<T>[];
-  activeTab: T;
-  onTabChange: (id: T) => void;
+  /** In-page tabs. Leave out and pass `tabBar` when the tabs are links to other screens (Analytics). */
+  tabs?: LogTab<T>[];
+  activeTab?: T;
+  onTabChange?: (id: T) => void;
+  /** A ready-made tab strip that replaces the built-in one. */
+  tabBar?: ReactNode;
   /** Fills the right column on a desktop; sits under the content as a collapsible section on smaller screens. */
   sidePanel?: ReactNode;
   /** Label of the collapsible section on smaller screens. */
@@ -31,14 +34,14 @@ type Props<T extends string> = {
  * and a side panel on the right (desktop, up to 1400px wide) so the screen never leaves its corners empty. Below 1024px
  * it is one column and the side panel moves to the bottom.
  */
-export function LogScreenScaffold<T extends string>({ name, title, subtitle, backHref = "/logs", tabs, activeTab, onTabChange, sidePanel, sidePanelLabel = "More", summaryChips, headerActions, children }: Props<T>) {
+export function LogScreenScaffold<T extends string>({ name, title, subtitle, backHref = "/logs", tabs = [], activeTab, onTabChange, tabBar, sidePanel, sidePanelLabel = "More", summaryChips, headerActions, children }: Props<T>) {
   const [panelOpen, setPanelOpen] = useState(false);
 
   function onKey(e: KeyboardEvent<HTMLButtonElement>, index: number) {
     if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
     e.preventDefault();
     const next = tabs[(index + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length]!;
-    onTabChange(next.id);
+    onTabChange?.(next.id);
     document.getElementById(`${name}-tab-${next.id}`)?.focus();
   }
 
@@ -53,6 +56,7 @@ export function LogScreenScaffold<T extends string>({ name, title, subtitle, bac
           </div>
         )}
 
+        {tabBar ?? (
         <div role="tablist" aria-label={name} className="flex gap-1 overflow-x-auto rounded-full border border-border-subtle bg-surface-elevated p-1" data-testid={`${name}-tabs`}>
           {tabs.map((tab, i) => {
             const active = tab.id === activeTab;
@@ -66,7 +70,7 @@ export function LogScreenScaffold<T extends string>({ name, title, subtitle, bac
                 aria-controls={`${name}-panel`}
                 tabIndex={active ? 0 : -1}
                 data-testid={`${name}-tab-${tab.id}`}
-                onClick={() => onTabChange(tab.id)}
+                onClick={() => onTabChange?.(tab.id)}
                 onKeyDown={(e) => onKey(e, i)}
                 className={`flex min-h-11 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border-b-2 px-4 text-[14px] font-semibold transition-colors ${
                   active ? "border-saffron bg-surface-elevated-2 text-ink" : "border-transparent text-muted hover:text-ink"
@@ -78,6 +82,7 @@ export function LogScreenScaffold<T extends string>({ name, title, subtitle, bac
             );
           })}
         </div>
+        )}
 
         {summaryChips && summaryChips.length > 0 && (
           <div className="hidden gap-2 overflow-x-auto md:flex lg:hidden" data-testid="summary-chips">
