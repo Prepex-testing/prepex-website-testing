@@ -27,6 +27,13 @@ export type Task = {
   meta: string;
   description?: string;
   chapterName?: string;
+  /** From the planner v2 plan: carried into the focus timer, and shown under the chapter. */
+  chapterId?: string | null;
+  topic?: string | null;
+  /** Where the task stands, in words ("Pending", "In progress", "Done"). */
+  statusLabel?: string;
+  /** A planned mock is logged on the planner's mock screen. */
+  mockHref?: string;
   duration: string;
   estimatedMinutes: number;
   /** Row doesn't render this — carried through for TodaysPracticeModal. */
@@ -200,6 +207,15 @@ export function TaskRow({
             {TYPE_LABELS[task.type]}
           </span>
 
+          {task.statusLabel && (
+            <span
+              data-testid="task-status"
+              className="whitespace-nowrap rounded-sm bg-[#EEF0F8] px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-[0.5px] text-[#666666] sm:px-2 sm:text-[10px] md:text-xs dark:bg-[#FAF7F214] dark:text-[#8B8998]"
+            >
+              {task.statusLabel}
+            </span>
+          )}
+
           {task.isCustom && (
             <span
               className={`
@@ -228,7 +244,7 @@ export function TaskRow({
           {getChapterTitle(task.title)}
         </h3>
 
-        <p className="mt-1 break-words text-[11px] font-normal leading-4 tracking-normal text-[#666666] sm:text-[12px] sm:leading-[16px] dark:text-[#8B8998]">
+        <p data-testid="task-meta" className="mt-1 break-words text-[11px] font-normal leading-4 tracking-normal text-[#666666] sm:text-[12px] sm:leading-[16px] dark:text-[#8B8998]">
           {task.meta}
         </p>
 
@@ -346,7 +362,7 @@ export function TaskRow({
         }
         href={
           isMockTask
-            ? mockTaskHref(task)
+            ? (task.mockHref ?? mockTaskHref(task))
             : isPrimaryActionDisabled
             ? undefined
             : isStartRevision || task.type === "new-learning"

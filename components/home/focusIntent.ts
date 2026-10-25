@@ -5,6 +5,8 @@ type PlannerRowTask = {
   type: string;
   estimatedMinutes: number;
   subjectName?: string;
+  chapterId?: string | null;
+  topic?: string | null;
 };
 
 /**
@@ -17,6 +19,8 @@ export function plannerTaskIntent(task: PlannerRowTask): FocusSessionIntent {
     originSource: "planner",
     originId: task.id,
     subject: task.subjectName || undefined,
+    chapter: task.chapterId || undefined,
+    topic: task.topic || undefined,
     taskType: task.type === "revision" ? "revision" : undefined,
     targetMinutes: task.estimatedMinutes > 0 ? task.estimatedMinutes : undefined,
   };
