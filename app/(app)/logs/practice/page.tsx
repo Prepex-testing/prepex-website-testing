@@ -1,14 +1,17 @@
 "use client";
 
+import { SquarePen } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { startFocusSession } from "@/lib/focus/startFocusSession";
+import { LogScreenScaffold, type LogTab } from "@/components/logs/LogScreenScaffold";
 import { PlannerPickerModal, type PickedPlacement } from "@/components/logs/PlannerPickerModal";
+import { PracticeSidePanel } from "@/components/logs/panels/PracticeSidePanel";
+import { PracticeTab } from "@/components/logs/PracticeTab";
 import { PracticeAnalyticsPanel } from "@/components/logs/PracticeAnalyticsPanel";
 import { PracticeForm } from "@/components/logs/PracticeForm";
 import { PracticeSessions } from "@/components/logs/PracticeLists";
-import { SectionTabs, TabPanel, type TabDef } from "@/components/logs/SectionTabs";
+import { TabPanel } from "@/components/logs/SectionTabs";
 import { SharePanel } from "@/components/logs/SharePanel";
-import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
 import { SubjectsError } from "@/components/study/SubjectsError";
 import { useSubjects } from "@/components/study/useSubjects";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
@@ -30,8 +33,9 @@ import {
 } from "@/lib/api/practiceLogs";
 import { percentLabel } from "@/lib/logs/labels";
 
-type Tab = "log" | "sessions" | "analytics" | "share";
-const TABS: TabDef<Tab>[] = [
+type Tab = "practice" | "log" | "sessions" | "analytics" | "share";
+const TABS: LogTab<Tab>[] = [
+  { id: "practice", label: "Practice", icon: <SquarePen className="size-4" aria-hidden /> },
   { id: "log", label: "Log" },
   { id: "sessions", label: "Sessions" },
   { id: "analytics", label: "Analytics" },
@@ -43,7 +47,7 @@ const msg = (err: unknown, fallback: string) => (err instanceof ApiError ? err.m
 export default function PracticePage() {
   const subjects = useSubjects();
   const toast = useToast();
-  const [tab, setTab] = useState<Tab>("log");
+  const [tab, setTab] = useState<Tab>("practice");
 
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -160,12 +164,21 @@ export default function PracticePage() {
   if (subjects.status === "loading") return <PageLoader label="Loading practice…" />;
 
   return (
-    <div className="flex flex-col gap-5 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl lg:p-8" data-testid="practice-page">
-      <ProfileSubpageHeader title="Practice log" backHref="/logs" />
+    <LogScreenScaffold
+      name="practice"
+      title="Practice"
+      subtitle="Questions solved, accuracy and speed."
+      tabs={TABS}
+      activeTab={tab}
+      onTabChange={changeTab}
+      sidePanelLabel="Accuracy and weak chapters"
+      sidePanel={<PracticeSidePanel onLog={() => changeTab("log")} />}
+    >
       {subjects.status === "error" && <SubjectsError />}
-      <SectionTabs name="practice" tabs={TABS} current={tab} onChange={changeTab} />
 
       <TabPanel name="practice" tab={tab}>
+        {tab === "practice" && <PracticeTab subjects={subjects.subjects} onLog={() => changeTab("log")} />}
+
         {tab === "log" && (
           <section aria-label="Log practice" className="rounded-2xl border border-brand/10 bg-surface p-4 sm:p-6">
             <div className="mb-4 flex flex-col gap-2 rounded-xl bg-tint-strong p-3 sm:flex-row sm:items-center sm:justify-between dark:bg-[#FAF7F214]">
@@ -174,13 +187,13 @@ export default function PracticePage() {
                 type="button"
                 data-testid="start-practice-timer"
                 onClick={() => startFocusSession({ originSource: "practice_tab", taskType: "practice", targetMinutes: 30 })}
-                className="min-h-11 shrink-0 rounded-lg border border-primary-button-border bg-cta px-4 text-[14px] font-bold text-white hover:bg-[#E8623F]"
+                className="min-h-11 shrink-0 rounded-[10px] border border-border-strong bg-transparent px-[18px] text-[14px] font-medium text-ink transition-colors hover:bg-surface-elevated-2"
               >
                 Start a timed session
               </button>
             </div>
             <h2 className="mb-3 text-[18px] font-extrabold text-ink">Log a practice session</h2>
-            <PracticeForm key={formKey} subjects={subjects.subjects} busy={busy} error={editing ? null : formError} onSubmit={(input) => void handleCreate(input)} />
+            <PracticeForm key={formKey} subjects={subjects.subjects} busy={busy} error={editing ? null : formError} submitLabel="+ Log a session" onSubmit={(input) => void handleCreate(input)} />
           </section>
         )}
 
@@ -294,6 +307,6 @@ export default function PracticePage() {
       />
 
       <Toast state={toast} />
-    </div>
+    </LogScreenScaffold>
   );
 }
