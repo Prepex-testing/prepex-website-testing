@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -8,12 +8,14 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { PlanSourceBanner } from "@/components/plan/PlanSourceBanner";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { TaskRow } from "@/components/home/TaskRow";
-import type { Task, TaskType } from "@/components/home/TaskRow";
-import { toRowDifficulty } from "@/components/home/PlanTaskRow";
 import { prettyDifficulty } from "@/lib/api/practice";
-import { taskResourceHref, withPracticeProgressLabel, withResumeLabel } from "@/components/home/taskTypes";
 import { ownContentIntent } from "@/lib/focus/intent";
 import { startFocusSession } from "@/lib/focus/startFocusSession";
+import { inPlanOrder, planTaskToHomeTask } from "@/components/home/planTaskToHomeTask";
+import { quickAccessItems, useQuickAccessCounts } from "@/components/home/quickAccess";
+import { buildPlan, getPlanDay, type PlanDay } from "@/lib/api/plannerV2";
+import { getFocusStats } from "@/lib/api/focus";
+import * as Sentry from "@sentry/nextjs";
 import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
@@ -41,7 +43,6 @@ import {
   getTodayPlan,
   deleteAllPlannerTasks,
   acknowledgeLateOnboarding,
-  type PlannerTask,
   type TodayPlanResponse,
   type StudyConsistency,
   type StudyConsistencyDay,
@@ -50,14 +51,11 @@ import {
 import { getJournalSettings, getLatestJournal, type JournalCard } from "@/lib/api/journal";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
-import { FlameIcon, BackIcon, BookIcon, BriefcaseIcon, ChartBarIcon, LayersIcon, LoderIcon, QuickIcon, RadarIcon, RevisionIcon, TrophyIcon, UserIcon, SparkleIcon, DotIcon } from "@/assets/icons";
+import { FlameIcon, BackIcon, LoderIcon, SparkleIcon, DotIcon } from "@/assets/icons";
 import {
   // SparkleIcon,
   RefreshIcon,
   PlusIcon1 as PlusIcon,
-  ClockIcon,
-  InfoIcon,
-  PencilIcon,
   CheckCircleIcon,
   ArrowRightIcon,
   AlertTriangleIcon,
@@ -69,137 +67,12 @@ import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { useTheme } from "@/components/theme/ThemeProvider";
 
-const TASKS: Task[] = [
-  {
-    id: "newtons-laws",
-    subjectLabel: "P",
-    subjectName: "Physics",
-    type: "revision",
-    title: "Newton's Laws",
-    meta: "Concept Video • NCERT Chapter",
-    duration: "40 min",
-    estimatedMinutes: 40,
-    timeSlot: "Midday",
-    hasResource: true,
-    actionLabel: "Start Revision",
-  },
-  {
-    id: "electrochemistry",
-    subjectLabel: "C",
-    subjectName: "Chemistry",
-    type: "new-learning",
-    title: "Electrochemistry",
-    meta: "Concept Video • NCERT Chapter",
-    duration: "60 min",
-    estimatedMinutes: 60,
-    timeSlot: "Midday",
-    hasResource: true,
-    actionLabel: "Start Session",
-  },
-  {
-    id: "calculus-practice-1",
-    subjectLabel: "M",
-    subjectName: "Maths",
-    type: "practice",
-    title: "Calculus Practice",
-    meta: "Concept Video • NCERT Chapter",
-    duration: "60 min",
-    estimatedMinutes: 60,
-    timeSlot: "Midday",
-    hasResource: true,
-    actionLabel: "Start Practice",
-  },
-  {
-    id: "calculus-practice-2",
-    subjectLabel: "M",
-    subjectName: "Maths",
-    type: "practice",
-    title: "Calculus Practice",
-    meta: "Concept Video • NCERT Chapter",
-    duration: "90 min",
-    estimatedMinutes: 90,
-    timeSlot: "Midday",
-    hasResource: true,
-    actionLabel: "Start Practice",
-  },
-];
-
 /** Monday of the current local week as YYYY-MM-DD — the form of a card's weekStart. */
 function currentWeekStartIso(): string {
   const d = new Date();
   d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
-
-// data-coach anchors for the Onboarding Coach (Section 16). Keyed by label so
-// the Quick Access list stays a plain array; absent labels get no anchor.
-const QUICK_ACCESS_COACH_ANCHOR: Record<string, string> = {
-  Practice: "nav-practice",
-  Revision: "quick-revision",
-  "Weekly Win Journal": "quick-journal",
-  "Mock Test Analysis": "quick-mock",
-  "Mistake Notebook": "quick-mistakes",
-  Partner: "quick-partner",
-};
-
-type QuickAccessItem = {
-  label: string;
-  icon: ReactNode;
-  subtitle?: string;
-  /** Omitted when the tile starts something instead of navigating. */
-  href?: string;
-  /** "focus": opens the focus timer on its own, nothing pre-filled. */
-  action?: "focus";
-};
-
-const QUICK_ACCESS: QuickAccessItem[] = [
-  {
-    href: "/practice/sessions",
-    label: "Practice", subtitle: "Solve Questions", icon: <PencilIcon />
-  },
-  {
-    href: "/home/mock-analysis",
-    label: "Mock Test Analysis",
-    subtitle: "Analyze & Improve",
-    icon: <ChartBarIcon className="h-5 w-5" />,
-  },
-  {
-    href: "/home/mistake-notebook",
-    label: "Mistake Notebook", icon: <BookIcon className="h-5 w-5" />
-  },
-  {
-    action: "focus",
-    label: "Focus",
-    icon: <LayersIcon className="h-5 w-5" />,
-  },
-  {
-    href: "/home/focus-next",
-    label: "Where to focus next", icon: <RadarIcon className="h-5 w-5" />
-  },
-  {
-    href: "/home/partner",
-    label: "Partner", icon: <UserIcon className="h-5 w-5" />
-  },
-  {
-    href: "/home/leaderboard",
-    label: "Leader Board", icon: <TrophyIcon className="h-5 w-5" />
-  },
-  {
-    href: "/home/resource-library",
-    label: "Resource Library", icon: <BriefcaseIcon className="h-5 w-5" />
-  },
-  { 
-    href: "/home/revision", 
-    label: "Revision", icon: <RevisionIcon className="h-5 w-5" /> 
-
-  },
-  {
-    href: "/home/journal",
-    label: "Weekly Win Journal",
-    subtitle: "Reflect & celebrate wins",
-    icon: <PencilIcon />,
-  },
-];
 
 const CONSISTENCY_THEME = {
   light: ["#eef0f8", "#c7cbe8", "#9aa0d1", "#5b62a8", "#1a1a4e"],
@@ -243,70 +116,6 @@ function groupConsistencyByWeek(days: StudyConsistencyDay[]): (StudyConsistencyD
   return weeks;
 }
 
-const TASK_TYPE_STYLE: Record<string, TaskType> = {
-  PRACTICE: "practice",
-  REVISION: "revision",
-  LEARNING: "new-learning",
-  WELLNESS: "wellness",
-  MOCK: "mock",
-};
-
-const TASK_ACTION_LABEL: Record<string, string> = {
-  PRACTICE: "Start Practice",
-  REVISION: "Start Revision",
-  LEARNING: "Start Session",
-  WELLNESS: "Start Session",
-  MOCK: "Upload Score",
-};
-
-
-function formatWindow(window: string | null | undefined) {
-  if (!window) return "";
-  const label = window.toLowerCase();
-  return label.charAt(0).toUpperCase() + label.slice(1);
-}
-
-function toHomeTask(task: PlannerTask): Task {
-  const resourceHref = taskResourceHref(task);
-  const isSundayDpp = task.taskType === "PRACTICE" && task.title === "DPP Sunday" && !task.chapter;
-  return {
-    id: task.id,
-    // Subject-less rows fall back to Wellness — a MOCK task names itself instead.
-    subjectLabel: isSundayDpp ? "DPP" : task.taskType === "MOCK" ? "M" : task.subject?.code?.[0] ?? "W",
-    subjectName: isSundayDpp ? "DPP" : task.taskType === "MOCK" ? "Mock" : task.subject?.name ?? "Wellness",
-    type: TASK_TYPE_STYLE[task.taskType] ?? "new-learning",
-    title: task.title,
-    meta: task.description ?? task.chapter?.name ?? "",
-    description: task.description ?? "",
-    chapterName: task.chapter?.name ?? "",
-    duration: `${task.estimatedMinutes} min`,
-    estimatedMinutes: task.estimatedMinutes,
-    difficulty: toRowDifficulty(task.chapter?.chapterMetadata?.difficulty),
-    secondsCompleted: task.secondsCompleted,
-    status: task.status,
-    timeSlot: formatWindow(task.suggestedWindow),
-    scheduledRange: task.scheduledStart && task.scheduledEnd
-      ? `${task.scheduledStart} - ${task.scheduledEnd}`
-      : undefined,
-    hasResource: Boolean(resourceHref),
-    resourceHref,
-    actionLabel:
-      task.taskType === "WELLNESS"
-        ? "Wellness"
-        : task.taskType === "PRACTICE"
-          ? withPracticeProgressLabel("Start Practice", task.secondsCompleted, task.status)
-          : withResumeLabel(TASK_ACTION_LABEL[task.taskType] ?? "Start Session", task.status),
-    isCompleted: task.status === "COMPLETED",
-    isCustom: Boolean(task.isAnchor),
-    isWellness: task.taskType === "WELLNESS",
-    mockAnalysisId: task.mockAnalysisId ?? null,
-    // A task that serves a LECTURES weekly goal gets a "lecture watched" tick.
-    lectureTick: task.weeklyGoal?.type === "LECTURES" ? { watched: Boolean(task.watchLecture) } : undefined,
-    mockName: task.mockName ?? undefined,
-    mockDate: task.mockDate ?? undefined,
-  };
-}
-
 function formatHours(minutes: number) {
   return `${(minutes / 60).toFixed(1)}h`;
 }
@@ -342,6 +151,12 @@ export default function HomePage() {
   const [energyMood, setEnergyMood] = useState<Mood | null>(null);
   const [planData, setPlanData] = useState<TodayPlanResponse | null>(null);
   const [planLoadFailed, setPlanLoadFailed] = useState(false);
+  // Today's tasks come from the planner v2 plan; the older payload above still supplies the exam countdown and late-sign-up flag.
+  const [planDay, setPlanDay] = useState<PlanDay | null>(null);
+  const [planDayFailed, setPlanDayFailed] = useState(false);
+  const [isBuildingPlan, setBuildingPlan] = useState(false);
+  const [focusStreak, setFocusStreak] = useState<number | null>(null);
+  const quickCounts = useQuickAccessCounts();
   // First-paint gates — the page renders once all three initial fetches settle.
   const [checkInLoaded, setCheckInLoaded] = useState(false);
   const [consistencyLoaded, setConsistencyLoaded] = useState(false);
@@ -398,6 +213,42 @@ export default function HomePage() {
       .catch(() => {
         setPlanLoadFailed(true);
       });
+    getPlanDay()
+      .then(({ data }) => {
+        setPlanDay(data);
+        setPlanDayFailed(false);
+      })
+      .catch((err: unknown) => {
+        // A planner failure never takes Home down: the card shows a retry, and the error goes to Sentry.
+        try {
+          Sentry.captureException(err, { tags: { area: "planner", step: "home-load" } });
+        } catch {
+          /* logging must never throw */
+        }
+        setPlanDayFailed(true);
+      });
+  };
+
+  const handleBuildPlan = async () => {
+    setBuildingPlan(true);
+    try {
+      const res = await buildPlan({ reason: "SCHEDULED" });
+      if (res.data.day) {
+        setPlanDay(res.data.day);
+        setPlanDayFailed(false);
+      } else {
+        refetchPlan();
+      }
+    } catch (err) {
+      try {
+        Sentry.captureException(err, { tags: { area: "planner", step: "home-build" } });
+      } catch {
+        /* logging must never throw */
+      }
+      setPlanDayFailed(true);
+    } finally {
+      setBuildingPlan(false);
+    }
   };
 
   const [consistency, setConsistency] = useState<StudyConsistency | null>(null);
@@ -521,6 +372,12 @@ export default function HomePage() {
     // "plan_strategy_review" / "none" — nothing more to show; response is saved.
   };
 
+  useEffect(() => {
+    getFocusStats()
+      .then(({ data }) => setFocusStreak(data.currentStreak))
+      .catch(() => undefined);
+  }, []);
+
   useEffect(refetchPlan, []);
   useEffect(refetchCheckInStatus, []);
 
@@ -604,14 +461,14 @@ export default function HomePage() {
 
   const plan = planData?.plan;
   const summary = planData?.summary;
-  const planTasks = (plan ? plan.tasks.map(toHomeTask) : TASKS).slice(0, 5);
+  const planTasks = planDay ? inPlanOrder(planDay.tasks).slice(0, 5).map(planTaskToHomeTask) : [];
   const examCountdown =
     plan?.targetedExam && plan?.dayRemainingForExam != null
       ? `${plan.targetedExam} in ${plan.dayRemainingForExam} days`
       : null;
-  const completionPercent = summary?.completionPercentage ?? 0;
-  const completedMinutes = summary ? summary.totalTimeCompletedSeconds / 60 : 78;
-  const plannedMinutes = summary?.totalPlannedMinutes ?? 360;
+  const completionPercent = planDay?.summary.percent ?? summary?.completionPercentage ?? 0;
+  const completedMinutes = planDay ? planDay.summary.doneMinutes : summary ? summary.totalTimeCompletedSeconds / 60 : 0;
+  const plannedMinutes = planDay ? planDay.summary.plannedMinutes : (summary?.totalPlannedMinutes ?? 0);
 
   // Friday Win Journal card. The latest card may still be last week's until
   // this week's is generated on Friday evening, so it's labelled by its week.
@@ -639,6 +496,7 @@ export default function HomePage() {
   // (mood change, recovery toggle, …) keep the page mounted.
   const isPageLoading =
     (!planData && !planLoadFailed) ||
+    (!planDay && !planDayFailed) ||
     !checkInLoaded ||
     !consistencyLoaded ||
     (isFriday && weeklyJournal === undefined);
@@ -760,7 +618,7 @@ export default function HomePage() {
 
                 <div className="min-w-0 flex flex-col items-start gap-0.5 @4xl:gap-1">
                   <h3 className="truncate text-[14px] font-bold leading-5 text-ink @4xl:text-[18px] @4xl:leading-7">
-                    {streakCount !== null ? `${streakCount} Day Streak` : "—"}
+                    {(focusStreak ?? streakCount) !== null ? `${focusStreak ?? streakCount} Day Streak` : "—"}
                   </h3>
 
                   <p className="truncate text-[10px] font-semibold leading-4 tracking-normal text-muted @4xl:text-[14px] @4xl:leading-5">
@@ -913,8 +771,28 @@ export default function HomePage() {
             </div>
 
             <div className="p-5">
-              {!plan && planLoadFailed ? (
-                <p className="py-8 text-center text-sm text-muted">No plan available</p>
+              {planDayFailed && !planDay ? (
+                <div role="alert" data-testid="plan-error" className="flex flex-col items-center gap-3 py-8 text-center">
+                  <p className="text-sm text-muted">Couldn&apos;t build your plan — tap retry.</p>
+                  <button type="button" data-testid="plan-retry" onClick={refetchPlan} className="flex min-h-11 items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-[#E5E7EB] bg-surface px-4 py-2 text-xs font-bold text-[#333333] transition-colors hover:bg-tint disabled:opacity-60 dark:border-[#FAF7F2] dark:text-[#FAF7F2]">
+                    Retry
+                  </button>
+                </div>
+              ) : planDay && planTasks.length === 0 ? (
+                <div data-testid="plan-empty" className="flex flex-col items-center gap-3 py-8 text-center">
+                  <p className="text-sm text-muted">
+                    {planDay.mode === "manual" ? "Nothing planned yet. Add the tasks you want to do today." : "No plan for today yet."}
+                  </p>
+                  {planDay.mode === "manual" ? (
+                    <button type="button" onClick={() => setAddTaskOpen(true)} className="flex min-h-11 items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-[#E5E7EB] bg-surface px-4 py-2 text-xs font-bold text-[#333333] transition-colors hover:bg-tint disabled:opacity-60 dark:border-[#FAF7F2] dark:text-[#FAF7F2]">
+                      Add a task
+                    </button>
+                  ) : (
+                    <button type="button" data-testid="plan-build" disabled={isBuildingPlan} onClick={() => void handleBuildPlan()} className="flex min-h-11 items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-[#E5E7EB] bg-surface px-4 py-2 text-xs font-bold text-[#333333] transition-colors hover:bg-tint disabled:opacity-60 dark:border-[#FAF7F2] dark:text-[#FAF7F2]">
+                      {isBuildingPlan ? "Building…" : "Build today's plan"}
+                    </button>
+                  )}
+                </div>
               ) : (
                 <>
                   <div className="flex flex-col gap-3">
@@ -937,7 +815,8 @@ export default function HomePage() {
                   </div>
 
                   <Link
-                    href="/home/today-plan"
+                    href="/planner"
+                    data-testid="see-full-plan"
                     className="mt-4 block w-full text-center text-sm font-semibold text-ink underline"
                   >
                     View all
@@ -952,7 +831,7 @@ export default function HomePage() {
           <div className="rounded-2xl border border-brand/10 bg-surface p-4">
             <p className="text-base font-bold text-ink">Quick Access</p>
             <div className="mt-4 flex flex-col gap-3">
-              {QUICK_ACCESS.map((item) => {
+              {quickAccessItems(quickCounts).map((item) => {
                 const content = (
                   <>
                     <div className="flex items-center gap-4">
@@ -980,11 +859,12 @@ export default function HomePage() {
                 if (item.action === "focus") {
                   return (
                     <button
-                      key={item.label}
+                      key={item.key}
                       type="button"
+                      data-testid={`quick-${item.key}`}
                       onClick={() => startFocusSession({ originSource: "home_quick_tile" })}
                       className={`${classes} w-full text-left`}
-                      data-coach={QUICK_ACCESS_COACH_ANCHOR[item.label]}
+                      {...(item.coach ? { "data-coach": item.coach } : {})}
                     >
                       {content}
                     </button>
@@ -993,10 +873,11 @@ export default function HomePage() {
 
                 return (
                   <Link
-                    key={item.label}
+                    key={item.key}
                     href={item.href as string}
+                    data-testid={`quick-${item.key}`}
                     className={classes}
-                    data-coach={QUICK_ACCESS_COACH_ANCHOR[item.label]}
+                    {...(item.coach ? { "data-coach": item.coach } : {})}
                   >
                     {content}
                   </Link>
