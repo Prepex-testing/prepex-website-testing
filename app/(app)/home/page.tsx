@@ -5,20 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
-import { PlanSourceBanner } from "@/components/plan/PlanSourceBanner";
 import { CircularProgress } from "@/components/ui/CircularProgress";
-import { TaskRow } from "@/components/home/TaskRow";
-import { prettyDifficulty } from "@/lib/api/practice";
-import { ownContentIntent } from "@/lib/focus/intent";
 import { startFocusSession } from "@/lib/focus/startFocusSession";
-import { inPlanOrder, planTaskToHomeTask } from "@/components/home/planTaskToHomeTask";
 import { quickAccessItems, useQuickAccessCounts } from "@/components/home/quickAccess";
-import { buildPlan, getPlanDay, type PlanDay } from "@/lib/api/plannerV2";
 import { getFocusStats } from "@/lib/api/focus";
-import * as Sentry from "@sentry/nextjs";
 import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
-import { TodaysPracticeModal } from "@/components/practice/TodaysPracticeModal";
+import { HomePlanSection } from "@/components/home/HomePlanSection";
+import { usePlanDay } from "@/components/planner/usePlanDay";
 import { RecoveryModeModal } from "@/components/home/RecoveryModeModal";
 import { CheckInModal, MOODS, type Mood } from "@/components/check-in/CheckInModal";
 import {
@@ -51,11 +45,8 @@ import {
 import { getJournalSettings, getLatestJournal, type JournalCard } from "@/lib/api/journal";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
-import { FlameIcon, BackIcon, LoderIcon, SparkleIcon, DotIcon } from "@/assets/icons";
+import { FlameIcon, BackIcon, LoderIcon, DotIcon } from "@/assets/icons";
 import {
-  // SparkleIcon,
-  RefreshIcon,
-  PlusIcon1 as PlusIcon,
   CheckCircleIcon,
   ArrowRightIcon,
   AlertTriangleIcon,
@@ -139,22 +130,13 @@ export default function HomePage() {
   const storedFullName = useStoredFullName();
   const firstName = storedFullName.trim().split(/\s+/)[0] || "there";
   const greeting = useGreeting();
-  const [isPracticeModalOpen, setPracticeModalOpen] = useState(false);
-  const [practiceTaskId, setPracticeTaskId] = useState<string | null>(null);
-  const [practiceTaskStats, setPracticeTaskStats] = useState<{
-    estimatedMinutes: number;
-    difficultyLabel: string;
-  } | null>(null);
-  const [isAddTaskOpen, setAddTaskOpen] = useState(false);
   const [isRegenerateOpen, setRegenerateOpen] = useState(false);
   const [isCheckInOpen, setCheckInOpen] = useState(false);
   const [energyMood, setEnergyMood] = useState<Mood | null>(null);
   const [planData, setPlanData] = useState<TodayPlanResponse | null>(null);
   const [planLoadFailed, setPlanLoadFailed] = useState(false);
-  // Today's tasks come from the planner v2 plan; the older payload above still supplies the exam countdown and late-sign-up flag.
-  const [planDay, setPlanDay] = useState<PlanDay | null>(null);
-  const [planDayFailed, setPlanDayFailed] = useState(false);
-  const [isBuildingPlan, setBuildingPlan] = useState(false);
+  // Today's plan comes from the planner v2 hook, which also rebuilds it; the older payload above still supplies the exam countdown and late-sign-up flag.
+  const todayPlan = usePlanDay(undefined);
   const [focusStreak, setFocusStreak] = useState<number | null>(null);
   const quickCounts = useQuickAccessCounts();
   // First-paint gates — the page renders once all three initial fetches settle.
@@ -204,7 +186,8 @@ export default function HomePage() {
     });
   }, [isFriday]);
 
-  const refetchPlan = () => {
+  // The older payload: exam countdown, late-sign-up flag, plan id.
+  const refetchLegacyPlan = () => {
     getTodayPlan()
       .then(({ data }) => {
         setPlanData(data);
@@ -213,42 +196,11 @@ export default function HomePage() {
       .catch(() => {
         setPlanLoadFailed(true);
       });
-    getPlanDay()
-      .then(({ data }) => {
-        setPlanDay(data);
-        setPlanDayFailed(false);
-      })
-      .catch((err: unknown) => {
-        // A planner failure never takes Home down: the card shows a retry, and the error goes to Sentry.
-        try {
-          Sentry.captureException(err, { tags: { area: "planner", step: "home-load" } });
-        } catch {
-          /* logging must never throw */
-        }
-        setPlanDayFailed(true);
-      });
   };
 
-  const handleBuildPlan = async () => {
-    setBuildingPlan(true);
-    try {
-      const res = await buildPlan({ reason: "SCHEDULED" });
-      if (res.data.day) {
-        setPlanDay(res.data.day);
-        setPlanDayFailed(false);
-      } else {
-        refetchPlan();
-      }
-    } catch (err) {
-      try {
-        Sentry.captureException(err, { tags: { area: "planner", step: "home-build" } });
-      } catch {
-        /* logging must never throw */
-      }
-      setPlanDayFailed(true);
-    } finally {
-      setBuildingPlan(false);
-    }
+  const refetchPlan = () => {
+    refetchLegacyPlan();
+    void todayPlan.refresh();
   };
 
   const [consistency, setConsistency] = useState<StudyConsistency | null>(null);
@@ -296,11 +248,6 @@ export default function HomePage() {
         // Best-effort — mood/streak stay unset (no dummy fallback) until this succeeds.
       })
       .finally(() => setCheckInLoaded(true));
-  };
-
-  const handleHomeTaskChanged = () => {
-    refetchPlan();
-    refetchCheckInStatus();
   };
 
   // Section 4.2.2 — pick at most one tier/inquiry pop-up per session. Tier 4/5
@@ -378,7 +325,7 @@ export default function HomePage() {
       .catch(() => undefined);
   }, []);
 
-  useEffect(refetchPlan, []);
+  useEffect(refetchLegacyPlan, []);
   useEffect(refetchCheckInStatus, []);
 
   useEffect(() => {
@@ -461,7 +408,7 @@ export default function HomePage() {
 
   const plan = planData?.plan;
   const summary = planData?.summary;
-  const planTasks = planDay ? inPlanOrder(planDay.tasks).slice(0, 5).map(planTaskToHomeTask) : [];
+  const planDay = todayPlan.day;
   const examCountdown =
     plan?.targetedExam && plan?.dayRemainingForExam != null
       ? `${plan.targetedExam} in ${plan.dayRemainingForExam} days`
@@ -496,7 +443,7 @@ export default function HomePage() {
   // (mood change, recovery toggle, …) keep the page mounted.
   const isPageLoading =
     (!planData && !planLoadFailed) ||
-    (!planDay && !planDayFailed) ||
+    todayPlan.status === "loading" ||
     !checkInLoaded ||
     !consistencyLoaded ||
     (isFriday && weeklyJournal === undefined);
@@ -516,7 +463,7 @@ export default function HomePage() {
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-          <Link href="/home/partner" aria-label="Partner and pods" title="Partner (pods are coming)" data-testid="home-pods" className="flex size-11 items-center justify-center rounded-full bg-surface text-ink hover:bg-tint-strong">
+          <Link href="/home/partner" aria-label="Partner and pods" title="Partner (pods are coming)" data-testid="home-pods" data-coach="quick-partner" className="flex size-11 items-center justify-center rounded-full bg-surface text-ink hover:bg-tint-strong">
             <UsersIcon />
           </Link>
           <ThemeToggle />
@@ -723,108 +670,7 @@ export default function HomePage() {
             </Link>
           )}
 
-          <div className="rounded-2xl border border-brand/10 bg-surface">
-            <PlanSourceBanner source={plan?.planSource} />
-            <div className="flex flex-col items-start gap-3 border-b border-[#F3F4F6] pt-4 pr-6 pb-6 pl-6 sm:flex-row sm:items-center sm:justify-between dark:border-[#FAF7F214]">
-              <div className="flex min-w-0 items-start gap-2">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#EEF2FF] text-[#6366F1] dark:bg-[#FAF7F2] dark:text-[#111145]">
-                  <SparkleIcon className="h-5 w-5" />
-                </span>
-                <div className="min-w-0">
-                  {/* The coach's welcome step points here rather than at the
-                      greeting — the plan is what it's introducing. */}
-                  <p
-                    data-coach="page-header"
-                    className="w-fit text-[18px] leading-[18px] font-bold text-[#333333] dark:text-[#FAF7F2]"
-                  >
-                    Plan for Today
-                  </p>
-                  <p className="mt-1.5 text-[10px] leading-[15px] text-muted">
-                    {plan?.aiSummary ?? "Generated at 6:00 AM • Based on your energy, backlog & revision schedule"}
-                  </p>
-                </div>
-              </div>
-              <div className="flex w-full shrink-0 items-center justify-center gap-2 sm:w-auto sm:justify-start sm:gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRegenerateOpen(true)}
-                  className="flex h-8 items-center gap-1 whitespace-nowrap rounded-lg border border-[#E5E7EB] bg-surface px-2.5 py-1.5 text-[11px] font-bold text-[#333333] transition-colors hover:bg-tint sm:h-8.5 sm:px-4 sm:py-2 sm:text-xs dark:border-[#FAF7F2] dark:text-[#FAF7F2]"
-                >
-                  <RefreshIcon
-                    width={14}
-                    height={14}
-                    className="shrink-0 sm:h-[15px] sm:w-[15px]"
-                  />
-                  <span>Regenerate Plan</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setAddTaskOpen(true)}
-                  className="flex h-8 items-center gap-1 whitespace-nowrap rounded-lg border border-[#E5E7EB] bg-surface px-2.5 py-1.5 text-[11px] font-bold text-[#333333] transition-colors hover:bg-tint sm:h-8.5 sm:px-4 sm:py-2 sm:text-xs dark:border-[#FAF7F2] dark:text-[#FAF7F2]"
-                >
-                  <PlusIcon className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" />
-                  <span>Add task</span>
-                </button>
-              </div>
-
-            </div>
-
-            <div className="p-5">
-              {planDayFailed && !planDay ? (
-                <div role="alert" data-testid="plan-error" className="flex flex-col items-center gap-3 py-8 text-center">
-                  <p className="text-sm text-muted">Couldn&apos;t build your plan — tap retry.</p>
-                  <button type="button" data-testid="plan-retry" onClick={refetchPlan} className="flex min-h-11 items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-[#E5E7EB] bg-surface px-4 py-2 text-xs font-bold text-[#333333] transition-colors hover:bg-tint disabled:opacity-60 dark:border-[#FAF7F2] dark:text-[#FAF7F2]">
-                    Retry
-                  </button>
-                </div>
-              ) : planDay && planTasks.length === 0 ? (
-                <div data-testid="plan-empty" className="flex flex-col items-center gap-3 py-8 text-center">
-                  <p className="text-sm text-muted">
-                    {planDay.mode === "manual" ? "Nothing planned yet. Add the tasks you want to do today." : "No plan for today yet."}
-                  </p>
-                  {planDay.mode === "manual" ? (
-                    <button type="button" onClick={() => setAddTaskOpen(true)} className="flex min-h-11 items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-[#E5E7EB] bg-surface px-4 py-2 text-xs font-bold text-[#333333] transition-colors hover:bg-tint disabled:opacity-60 dark:border-[#FAF7F2] dark:text-[#FAF7F2]">
-                      Add a task
-                    </button>
-                  ) : (
-                    <button type="button" data-testid="plan-build" disabled={isBuildingPlan} onClick={() => void handleBuildPlan()} className="flex min-h-11 items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-[#E5E7EB] bg-surface px-4 py-2 text-xs font-bold text-[#333333] transition-colors hover:bg-tint disabled:opacity-60 dark:border-[#FAF7F2] dark:text-[#FAF7F2]">
-                      {isBuildingPlan ? "Building…" : "Build today's plan"}
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <>
-                  <div className="flex flex-col gap-3">
-                    {planTasks.map((task, taskIndex) => (
-                      <TaskRow
-                        key={task.id}
-                        task={task}
-                        coachAnchor={taskIndex === 0 ? "start-session" : undefined}
-                        onStartPractice={(taskId) => {
-                          setPracticeTaskId(taskId);
-                          setPracticeTaskStats({
-                            estimatedMinutes: task.estimatedMinutes,
-                            difficultyLabel: prettyDifficulty(task.difficulty),
-                          });
-                          setPracticeModalOpen(true);
-                        }}
-                        onTaskChanged={handleHomeTaskChanged}
-                      />
-                    ))}
-                  </div>
-
-                  <Link
-                    href="/planner"
-                    data-testid="see-full-plan"
-                    className="mt-4 block w-full text-center text-sm font-semibold text-ink underline"
-                  >
-                    View all
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
+          <HomePlanSection plan={todayPlan} onChanged={refetchCheckInStatus} />
         </div>
 
         <div className="flex flex-col gap-6">
@@ -1107,11 +953,6 @@ export default function HomePage() {
         name={firstName}
         onSave={handleMoodSave}
       />
-      <AddCustomTaskModal
-        open={isAddTaskOpen}
-        onClose={() => setAddTaskOpen(false)}
-        onTaskAdded={refetchPlan}
-      />
       <ConfirmModal
         open={isLateSignupPromptOpen}
         onClose={handleLateSignupDecline}
@@ -1164,21 +1005,6 @@ export default function HomePage() {
         secondaryLabel="Got it"
       />
       <WellnessResourceModal open={burnoutModal === "wellness"} onClose={dismissBurnoutModal} />
-      <TodaysPracticeModal
-        open={isPracticeModalOpen}
-        onClose={() => setPracticeModalOpen(false)}
-        taskId={practiceTaskId}
-        estimatedMinutes={practiceTaskStats?.estimatedMinutes}
-        taskDifficultyLabel={practiceTaskStats?.difficultyLabel}
-        onStart={() => {
-          setPracticeModalOpen(false);
-          router.push(practiceTaskId ? `/practice?taskId=${practiceTaskId}` : "/practice");
-        }}
-        onUseOwnContent={({ noQuestions }) => {
-          setPracticeModalOpen(false);
-          startFocusSession(ownContentIntent(practiceTaskId, practiceTaskStats?.estimatedMinutes, noQuestions));
-        }}
-      />
       <RecoveryModeModal
         open={isRecoveryModeModalOpen}
         onClose={() => setRecoveryModeModalOpen(false)}
@@ -1195,8 +1021,6 @@ export default function HomePage() {
           isQuickSessionTaskOpen ||
           isCheckInOpen ||
           isRegenerateOpen ||
-          isAddTaskOpen ||
-          isPracticeModalOpen ||
           isRecoveryModeModalOpen ||
           isEndRecoveryOpen ||
           isGeneratingPlan
