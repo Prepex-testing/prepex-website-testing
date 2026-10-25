@@ -192,6 +192,8 @@ test("practice: log a session (the sum is checked) → the weekly accuracy chart
 
   await page.goto("/logs/practice");
   await expect(page.getByTestId("practice-page")).toBeVisible();
+  // the page opens on the Practice tab; the manual log is one tab over
+  await page.getByTestId("practice-tab-log").click();
   await page.getByTestId("prac-subject").selectOption({ label: "Physics" });
   await page.getByTestId("prac-chapter").selectOption({ label: "Kinematics" });
   await page.getByTestId("prac-source").selectOption({ label: "HC Verma" });
