@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { AlertCircle, BarChart3, BookOpen, Compass, FileCheck, Library, NotebookPen, RotateCw, Target, Trophy, Users } from "lucide-react";
+import { AlertCircle, BookOpen, Compass, FileCheck, Library, NotebookPen, RotateCw, Target, Trophy } from "lucide-react";
 import { getRevisionOverview } from "@/lib/api/revision";
 import { getMistakeStats } from "@/lib/api/mistakes";
 import { getPracticeAnalytics } from "@/lib/api/practiceLogs";
@@ -10,7 +10,7 @@ import { getStudySummary } from "@/lib/api/studyLog";
 
 /** Home's Quick Access list: the same rows as before, with line icons and a live one-line status on the six main ones. */
 
-export type QuickAccessKey = "focus" | "practice" | "revision" | "mistakes" | "mocks" | "analytics";
+export type QuickAccessKey = "focus" | "practice" | "revision" | "mistakes" | "mocks";
 
 export type QuickAccessCounts = {
   sessionsToday: number | null;
@@ -30,7 +30,6 @@ export function quickAccessSubtitles(c: QuickAccessCounts): Record<QuickAccessKe
     revision: c.revisionsDue === null ? "Revise chapters" : `${c.revisionsDue} due today`,
     mistakes: c.mistakesOpen === null ? "Review mistakes" : `${c.mistakesOpen} unresolved`,
     mocks: c.mocksThisWeek === null ? "Analyze and improve" : `${c.mocksThisWeek} this week`,
-    analytics: "View deep insights",
   };
 }
 
@@ -88,11 +87,11 @@ export function quickAccessItems(counts: QuickAccessCounts): QuickAccessItem[] {
     { key: "revision", label: "Revision", subtitle: s.revision, icon: <RotateCw className={ICON} aria-hidden />, href: "/home/revision", coach: "quick-revision" },
     { key: "mistakes", label: "Mistakes", subtitle: s.mistakes, icon: <AlertCircle className={ICON} aria-hidden />, href: "/home/mistake-notebook", coach: "quick-mistakes" },
     { key: "mocks", label: "Mocks", subtitle: s.mocks, icon: <FileCheck className={ICON} aria-hidden />, href: "/home/mock-analysis", coach: "quick-mock" },
-    { key: "analytics", label: "Analytics", subtitle: s.analytics, icon: <BarChart3 className={ICON} aria-hidden />, href: "/analytics" },
+    // TODO(tile-wire): Where to focus next, Leader Board and Resource Library have no count yet; add one when their windows expose it.
     { key: "focus-next", label: "Where to focus next", icon: <Compass className={ICON} aria-hidden />, href: "/home/focus-next" },
-    { key: "partner", label: "Partner", icon: <Users className={ICON} aria-hidden />, href: "/home/partner", coach: "quick-partner" },
     { key: "leaderboard", label: "Leader Board", icon: <Trophy className={ICON} aria-hidden />, href: "/home/leaderboard" },
     { key: "library", label: "Resource Library", icon: <Library className={ICON} aria-hidden />, href: "/home/resource-library" },
+    // TODO(tile-wire): Weekly Win Journal shows a fixed line; show the latest card's week when the journal API has a cheap summary.
     { key: "journal", label: "Weekly Win Journal", subtitle: "Reflect & celebrate wins", icon: <NotebookPen className={ICON} aria-hidden />, href: "/home/journal", coach: "quick-journal" },
   ];
 }
