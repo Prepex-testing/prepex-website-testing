@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
-import { OnboardingNav } from "@/components/onboarding/OnboardingNav";
+import { StepFooter } from "@/components/onboarding/StepFooter";
 import { DateInput } from "@/components/ui/DateInput";
 import { Input } from "@/components/ui/Input";
 import { OptionCard } from "@/components/ui/OptionCard";
@@ -140,7 +140,7 @@ export default function TellUsAboutYouPage() {
         />
       </div>
 
-      <OnboardingNav
+      <StepFooter
         backHref={hasSubjectScreen ? SELECT_SUBJECT_PATH : stepPath(1)}
         onNext={handleNext}
         nextDisabled={!valid}

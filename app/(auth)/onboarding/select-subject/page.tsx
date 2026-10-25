@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
-import { OnboardingNav } from "@/components/onboarding/OnboardingNav";
+import { StepFooter } from "@/components/onboarding/StepFooter";
 import { OptionCard } from "@/components/ui/OptionCard";
 import { OptionCardSkeleton } from "@/components/ui/OptionCardSkeleton";
 import { StepProgress } from "@/components/ui/StepProgress";
@@ -102,7 +102,7 @@ export default function SelectSubjectPage() {
           ))}
       </div>
 
-      <OnboardingNav
+      <StepFooter
         backHref={stepPath(1)}
         onNext={handleNext}
         nextDisabled={selected.length === 0}
