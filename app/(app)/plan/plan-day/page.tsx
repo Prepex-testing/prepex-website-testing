@@ -367,7 +367,7 @@ function PlanDayContent() {
                 </p>
               </div>
               <Button
-                href={`/home/mock-analysis`}
+                href="/logs/mocks"
                 variant="secondary"
                 size="sm"
                 className="border-[#1A1A4E]! dark:border-white!"

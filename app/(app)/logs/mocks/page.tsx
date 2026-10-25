@@ -1,16 +1,19 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DatesPickerModal, type PickedDates } from "@/components/insights/DatesPickerModal";
 import { MockAnalyticsPanel } from "@/components/mocks/MockAnalyticsPanel";
-import { MockForm } from "@/components/mocks/MockForm";
+import { MockForm, type MockFormInitial } from "@/components/mocks/MockForm";
 import { MockList } from "@/components/mocks/MockList";
 import { MockSharePanel } from "@/components/mocks/MockSharePanel";
-import { SectionTabs, TabPanel, type TabDef } from "@/components/logs/SectionTabs";
-import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
+import { ScorecardUpload } from "@/components/mocks/ScorecardUpload";
+import { LogScreenScaffold, type LogTab } from "@/components/logs/LogScreenScaffold";
+import { MockSidePanel } from "@/components/logs/panels/MockSidePanel";
+import { TabPanel } from "@/components/logs/SectionTabs";
 import { SubjectsError } from "@/components/study/SubjectsError";
 import { useSubjects } from "@/components/study/useSubjects";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { CoralButton } from "@/components/ui/CoralButton";
 import { Modal } from "@/components/ui/Modal";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { Toast, useToast } from "@/components/ui/Toast";
@@ -31,7 +34,7 @@ import { approxRank } from "@/lib/insights/mockMath";
 import { readTargetRank, writeTargetRank } from "@/lib/insights/targetRank";
 
 type Tab = "log" | "all" | "analytics" | "share";
-const TABS: TabDef<Tab>[] = [
+const TABS: LogTab<Tab>[] = [
   { id: "log", label: "Log Mock" },
   { id: "all", label: "All Mocks" },
   { id: "analytics", label: "Analytics" },
@@ -48,6 +51,21 @@ export default function MocksPage() {
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [formKey, setFormKey] = useState(0);
+  const [prefill, setPrefill] = useState<MockFormInitial | undefined>(undefined);
+
+  // A link from a planned mock (or a finished one) lands here with ?tab=all or ?mockName=...&date=...
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const name = q.get("mockName");
+    const date = q.get("date");
+    if (q.get("tab") === "all") changeTab("all");
+    if (name || date) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- read the link once on arrival
+      setPrefill({ ...(name ? { testName: name } : {}), ...(date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? { dateTaken: date } : {}) });
+      setFormKey((k) => k + 1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on arrival
+  }, []);
 
   const [rows, setRows] = useState<MockTest[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -109,6 +127,7 @@ export default function MocksPage() {
       const res = await createMock(input);
       const m = res.data;
       toast.show(m.projectedRank !== null ? `Logged: ${m.totalMarks}/${m.maxMarks}. Projected rank ${approxRank(m.projectedRank)}.` : `Logged: ${m.totalMarks}/${m.maxMarks}.`);
+      setPrefill(undefined);
       setFormKey((k) => k + 1);
     } catch (err) {
       setFormError(msg(err, "Couldn't save that. Please try again."));
@@ -167,16 +186,37 @@ export default function MocksPage() {
   if (subjects.status === "loading") return <PageLoader label="Loading mocks…" />;
 
   return (
-    <div className="flex flex-col gap-5 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl lg:p-8" data-testid="mocks-page">
-      <ProfileSubpageHeader title="Mock tests" backHref="/logs" />
+    <LogScreenScaffold
+      name="mocks"
+      title="Mock tests"
+      subtitle="Scores, percentile, projected rank and the chapters tests keep exposing."
+      tabs={TABS}
+      activeTab={tab}
+      onTabChange={changeTab}
+      sidePanelLabel="Scores and projected rank"
+      sidePanel={<MockSidePanel onLog={() => changeTab("log")} />}
+      headerActions={
+        tab !== "log" ? (
+          <CoralButton data-testid="mock-log-attempt" onClick={() => changeTab("log")}>
+            + Log a mock attempt
+          </CoralButton>
+        ) : undefined
+      }
+    >
       {subjects.status === "error" && <SubjectsError />}
-      <SectionTabs name="mocks" tabs={TABS} current={tab} onChange={changeTab} />
 
       <TabPanel name="mocks" tab={tab}>
         {tab === "log" && (
           <section aria-label="Log a mock" className="rounded-2xl border border-brand/10 bg-surface p-4 sm:p-6">
             <h2 className="mb-3 text-[18px] font-extrabold text-ink">Log a mock test</h2>
-            <MockForm key={formKey} subjects={subjects.subjects} busy={busy} error={editing ? null : formError} onSubmit={(input) => void handleCreate(input)} />
+            <ScorecardUpload
+              subjects={subjects.subjects}
+              onExtracted={(initial) => {
+                setPrefill(initial);
+                setFormKey((k) => k + 1);
+              }}
+            />
+            <MockForm key={formKey} subjects={subjects.subjects} busy={busy} error={editing ? null : formError} initial={prefill} submitLabel="+ Log a mock attempt" onSubmit={(input) => void handleCreate(input)} />
           </section>
         )}
 
@@ -291,6 +331,6 @@ export default function MocksPage() {
       />
 
       <Toast state={toast} />
-    </div>
+    </LogScreenScaffold>
   );
 }

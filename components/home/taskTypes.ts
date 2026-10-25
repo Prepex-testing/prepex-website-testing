@@ -49,23 +49,18 @@ export const COMPLETED_ACTION_LABELS: Record<TaskType, string> = {
 };
 
 /**
- * Where a MOCK task's action goes: the scorecard form until the score is in
- * (prefilled from the scheduled mock when there is one), then the analysis.
+ * Where a MOCK task's action goes: the mock log. Done and scored goes to the list; otherwise to the Log Mock form,
+ * with the scheduled mock's name and date filled in when there is one.
  */
 export function mockTaskHref(
   task: { mockAnalysisId?: string | null; isCompleted?: boolean; mockName?: string; mockDate?: string },
 ): string {
-  if (task.isCompleted && task.mockAnalysisId) {
-    return `/home/mock-analysis/view-analytics?id=${task.mockAnalysisId}`;
-  }
-  if (task.mockAnalysisId) {
-    return `/home/mock-analysis/upload-scorecard?id=${task.mockAnalysisId}`;
-  }
+  if (task.isCompleted && task.mockAnalysisId) return "/logs/mocks?tab=all";
   const params = new URLSearchParams();
   if (task.mockName) params.set("mockName", task.mockName);
   if (task.mockDate) params.set("date", task.mockDate);
   const query = params.toString();
-  return `/home/mock-analysis/upload-scorecard${query ? `?${query}` : ""}`;
+  return `/logs/mocks${query ? `?${query}` : ""}`;
 }
 
 /** Swaps a "Start X" action label for "Resume X" when the task is already in progress. */
