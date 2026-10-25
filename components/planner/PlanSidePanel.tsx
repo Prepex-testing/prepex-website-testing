@@ -50,7 +50,7 @@ export function PlanSidePanel({ day, explanation, onAdd }: Props) {
   if (desktop) {
     return (
       <aside aria-label="Beside your plan" data-testid="side-panel" className="sticky top-6 flex flex-col gap-4 self-start">
-        <PlanExplanation text={explanation.text} loading={explanation.loading} />
+        <PlanExplanation text={explanation.text} loading={explanation.loading} narrow />
         <WeeklyProgressStrip />
         {sections.map((s) => (
           <Block key={s.id} title={s.title} testId={`side-${s.id}`}>

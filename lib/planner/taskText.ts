@@ -63,7 +63,7 @@ export function taskInstruction(task: Pick<PlanTask, "kind" | "title" | "topic" 
 }
 
 export type ExplainInputs = {
-  /** Students' mood label from today's check-in ("Drained", "Good"), when there is one. */
+  /** The student's mood label from today's check-in ("Drained", "Good"), when there is one. */
   energyLabel?: string | null;
   /** The chapter in this plan with the weakest practice accuracy, when known. */
   weakChapter?: string | null;
@@ -87,7 +87,7 @@ export function explainPlan(day: Pick<PlanDay, "tasks" | "plan">, inputs: Explai
   const first = parts.length > 0 ? `Clearing ${parts.join(" and ")}.` : "Built from your weekly goals and your free hours today.";
 
   let second: string;
-  if (inputs.weakChapter) second = `${inputs.weakChapter} gets a block because practice accuracy there is below your average.`;
+  if (inputs.weakChapter) second = `${inputs.weakChapter} gets a block: your practice accuracy there is below average.`;
   else if (inputs.energyLabel && ["Drained", "Heavy"].includes(inputs.energyLabel)) second = "The load is lighter because you checked in with low energy.";
   else if (backlog > 0) second = `${plural(backlog, "backlog item", "backlog items")} fit in around your timetable.`;
   else second = "Subjects are spread to match your timetable and your best study hours.";

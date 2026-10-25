@@ -66,14 +66,14 @@ export function usePlanExplanation(day: PlanDay | null): { text: string | null; 
 }
 
 /** A compact card above the plan: a bold first line and two lines of why. Read-only. */
-export function PlanExplanation({ text, loading }: { text: string | null; loading?: boolean }) {
+export function PlanExplanation({ text, loading, narrow = false }: { text: string | null; loading?: boolean; /** In a narrow column (the side panel) there is room for four lines, so a sentence is never cut mid-way. */ narrow?: boolean }) {
   if (loading || !text) return <div className="h-[72px] animate-pulse rounded-2xl bg-tint-strong dark:bg-[#FAF7F214]" aria-hidden data-testid="plan-explanation-loading" />;
   return (
     <section aria-label="Why this plan" data-testid="plan-explanation" className="flex items-start gap-3 rounded-2xl bg-warning-bg px-4 py-3.5">
       <Sparkles className="mt-0.5 size-5 shrink-0 text-warning" aria-hidden />
       <div className="min-w-0">
         <p className="text-[14px] font-bold text-ink">Plan for today</p>
-        <p data-testid="plan-explanation-text" className="line-clamp-2 max-w-[90ch] text-[13px] leading-snug text-body-text dark:text-ink/85">
+        <p data-testid="plan-explanation-text" className={`${narrow ? "line-clamp-4" : "line-clamp-3 sm:line-clamp-2"} max-w-[90ch] text-[13px] leading-snug text-body-text dark:text-ink/85`}>
           {text}
         </p>
       </div>

@@ -56,11 +56,11 @@ export function TimelineRail({ tasks, bands, bandMode, nowMin, renderTask, highl
 
   return (
     <ol className="relative flex flex-col" aria-label="Your day" data-testid="timeline">
-      <span aria-hidden className="absolute bottom-2 left-[62px] top-2 w-px bg-brand/15" />
+      <span aria-hidden className="absolute bottom-2 left-[68px] top-2 w-px bg-brand/15" />
       {rows.map((row) => {
         if (row.type === "now") {
           return (
-            <li key="now" className="grid grid-cols-[56px_1fr] items-center gap-3 py-1.5" data-testid="now-marker">
+            <li key="now" className="grid grid-cols-[60px_1fr] items-center gap-4 py-1.5" data-testid="now-marker">
               <span className="text-right text-[11px] font-extrabold text-cta">Now</span>
               <span className="relative h-px bg-cta">
                 <span aria-hidden className="absolute -left-[5px] -top-[4px] size-2 rounded-full bg-cta" />
@@ -70,27 +70,27 @@ export function TimelineRail({ tasks, bands, bandMode, nowMin, renderTask, highl
         }
         if (row.type === "band") {
           return (
-            <li key={`band-${row.band.chip}-${row.band.startMin}`} className="grid grid-cols-[56px_1fr] items-center gap-3 py-1">
+            <li key={`band-${row.band.chip}-${row.band.startMin}`} className="grid grid-cols-[60px_1fr] items-center gap-4 py-1">
               <span className="text-right text-[11px] font-medium text-slate-500 dark:text-slate-400">{formatClock(row.band.startMin)}</span>
               <div className="relative">
-                <span aria-hidden className="absolute -left-[15px] top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-brand/25" />
+                <span aria-hidden className="absolute -left-[11px] top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-brand/25" />
                 <SlotBand band={row.band} />
               </div>
             </li>
           );
         }
         return (
-          <li key={row.task.id} className="grid grid-cols-[56px_1fr] items-start gap-3 py-2">
+          <li key={row.task.id} className="grid grid-cols-[60px_1fr] items-start gap-4 py-2">
             <span className="pt-5 text-right text-[11px] font-extrabold text-ink">{formatClock(row.task.startMin!)}</span>
             <div className={`relative min-w-0 ${highlightId === row.task.id ? "animate-pulse" : ""}`}>
-              <span aria-hidden className="absolute -left-[16px] top-6 size-2.5 rounded-full border-2 border-background bg-brand" />
+              <span aria-hidden className="absolute -left-[13px] top-6 size-2.5 rounded-full border-2 border-background bg-brand" />
               {renderTask(row.task)}
             </div>
           </li>
         );
       })}
       {floating.map((task) => (
-        <li key={task.id} className="grid grid-cols-[56px_1fr] items-start gap-3 py-2">
+        <li key={task.id} className="grid grid-cols-[60px_1fr] items-start gap-4 py-2">
           <span className="pt-5 text-right text-[11px] font-semibold text-muted">Any time</span>
           <div className="min-w-0">{renderTask(task)}</div>
         </li>
