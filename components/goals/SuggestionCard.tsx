@@ -29,7 +29,7 @@ export function SuggestionError({ problem, onRetry, onClose }: { problem: Sugges
       <p className="text-[14px] font-semibold text-ink">{problem.message}</p>
       <div className="flex flex-wrap gap-2">
         {problem.kind === "resting" && (
-          <button type="button" data-testid="suggest-retry" onClick={onRetry} className="min-h-11 rounded-lg border border-primary-button-border bg-cta px-4 text-[14px] font-semibold text-white hover:bg-[#E8623F]">
+          <button type="button" data-testid="suggest-retry" onClick={onRetry} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-border-strong bg-transparent px-[18px] py-2.5 text-[14px] font-medium text-ink transition-colors hover:bg-surface-elevated-2 disabled:cursor-not-allowed disabled:opacity-50">
             Try again
           </button>
         )}
@@ -114,7 +114,7 @@ export function SuggestionCard({ suggestion, busy, error, onAccept, onModify, on
               data-testid="suggest-save-modified"
               disabled={busy || parsed === null || !canGoal}
               onClick={() => parsed !== null && onModify(parsed)}
-              className="min-h-11 rounded-lg border border-primary-button-border bg-cta px-4 text-[14px] font-semibold text-white hover:bg-[#E8623F] disabled:cursor-not-allowed disabled:border-primary-button-disabled-bg disabled:bg-primary-button-disabled-bg disabled:text-primary-button-disabled-text"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-border-strong bg-transparent px-[18px] py-2.5 text-[14px] font-medium text-ink transition-colors hover:bg-surface-elevated-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {busy ? "Saving…" : "Save my version"}
             </button>
@@ -130,7 +130,7 @@ export function SuggestionCard({ suggestion, busy, error, onAccept, onModify, on
             data-testid="suggest-accept"
             disabled={busy || !canGoal}
             onClick={onAccept}
-            className="min-h-11 rounded-lg border border-primary-button-border bg-cta px-4 text-[14px] font-semibold text-white hover:bg-[#E8623F] disabled:cursor-not-allowed disabled:border-primary-button-disabled-bg disabled:bg-primary-button-disabled-bg disabled:text-primary-button-disabled-text"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-border-strong bg-transparent px-[18px] py-2.5 text-[14px] font-medium text-ink transition-colors hover:bg-surface-elevated-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {busy ? "Adding…" : "Accept"}
           </button>

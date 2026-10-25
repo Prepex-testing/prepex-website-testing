@@ -39,7 +39,7 @@ export function NewSuggestion({ subjects: ownClass, weekStartDate, targetRank, o
             );
           }
         }}
-        className="flex min-h-12 items-center justify-center gap-2 rounded-lg border-[1.5px] border-secondary-button-border bg-surface px-4 text-[15px] font-semibold text-body-text hover:bg-tint-strong"
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-border-strong bg-transparent px-[18px] py-2.5 text-[14px] font-medium text-ink transition-colors hover:bg-surface-elevated-2 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Sparkles className="size-4 shrink-0" aria-hidden />
         Suggest new goal
@@ -48,7 +48,7 @@ export function NewSuggestion({ subjects: ownClass, weekStartDate, targetRank, o
   }
 
   return (
-    <section aria-label="Suggest a goal" className="flex flex-col gap-3 rounded-2xl border border-brand/10 bg-surface p-4" data-testid="suggest-new-panel">
+    <section aria-label="Suggest a goal" className="flex w-full flex-col gap-3 rounded-2xl border border-border-subtle bg-surface-elevated p-4" data-testid="suggest-new-panel">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="flex items-center gap-1.5 text-[15px] font-bold text-ink">
@@ -81,7 +81,7 @@ export function NewSuggestion({ subjects: ownClass, weekStartDate, targetRank, o
               setChapterId(e.target.value);
               setAsked(null);
             }}
-            className="min-h-12 rounded-lg border border-brand/25 bg-surface px-3 text-[15px] font-medium text-ink"
+            className="h-11 rounded-[10px] border border-border-subtle bg-surface-elevated-2 px-3 text-[15px] font-medium text-ink"
           >
             <option value="">Choose a chapter…</option>
             {subjects.map((s) => (
@@ -100,7 +100,7 @@ export function NewSuggestion({ subjects: ownClass, weekStartDate, targetRank, o
           data-testid="suggest-go"
           disabled={chapterId === ""}
           onClick={() => setAsked((prev) => ({ id: chapterId, name: chapterName(chapterId), key: (prev?.key ?? 0) + 1 }))}
-          className="flex min-h-12 items-center gap-1.5 rounded-lg border border-primary-button-border bg-cta px-4 text-[15px] font-semibold text-white hover:bg-[#E8623F] disabled:cursor-not-allowed disabled:border-primary-button-disabled-bg disabled:bg-primary-button-disabled-bg disabled:text-primary-button-disabled-text"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-border-strong bg-transparent px-[18px] py-2.5 text-[14px] font-medium text-ink transition-colors hover:bg-surface-elevated-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Sparkles className="size-4 shrink-0" aria-hidden />
           Suggest

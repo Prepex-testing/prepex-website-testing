@@ -22,7 +22,7 @@ export function SmartSuggestion({ weekStart, subjectNames, chapterNames, onAccep
         type="button"
         data-testid="suggest-week"
         onClick={() => setOpen(true)}
-        className="flex min-h-11 items-center gap-1.5 rounded-full border border-secondary-button-border bg-transparent px-3.5 py-1.5 text-[13px] font-semibold text-ink transition-colors hover:bg-tint-strong"
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-border-strong bg-transparent px-[18px] py-2.5 text-[14px] font-medium text-ink transition-colors hover:bg-surface-elevated-2 disabled:cursor-not-allowed disabled:opacity-50 !rounded-full"
       >
         <Sparkles className="size-4" aria-hidden />
         Suggest this week&apos;s goals

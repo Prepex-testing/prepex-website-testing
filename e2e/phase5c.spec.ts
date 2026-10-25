@@ -55,6 +55,7 @@ test("5C: ✨ Suggest on a goal row → skeleton → card → Modify → goal; +
   // ── the row button: skeleton while the Brain thinks, then the suggestion ──────────────────────
   await page.goto("/goals");
   await expect(page.getByTestId("goal-card")).toHaveCount(1);
+  await page.getByTestId("goal-menu").click();
   await page.getByTestId("goal-suggest").click();
   await expect(page.getByTestId("suggest-skeleton")).toBeVisible();
   await shot("skeleton");
@@ -89,7 +90,7 @@ test("5C: ✨ Suggest on a goal row → skeleton → card → Modify → goal; +
   await expect(page.getByTestId("suggest-card")).toHaveCount(0);
   await expect(page.getByRole("status").filter({ hasText: "Added: 6.5 hours on Kinematics" })).toBeVisible();
   await expect(page.getByTestId("goal-card")).toHaveCount(2);
-  await expect(page.getByTestId("goal-list")).toContainText("Study 390 min");
+  await expect(page.getByTestId("goal-sections")).toContainText("6h 30m focused study");
   await shot("after-modify");
 
   // ── + Suggest new goal: pick a chapter, Accept ────────────────────────────────────────────────
@@ -101,7 +102,7 @@ test("5C: ✨ Suggest on a goal row → skeleton → card → Modify → goal; +
   await expect(page.getByTestId("suggest-card")).toContainText("Laws of Motion");
   await page.getByTestId("suggest-accept").click();
   await expect(page.getByTestId("suggest-card")).toHaveCount(0);
-  await expect(page.getByTestId("goal-list")).toContainText("Study 240 min");
+  await expect(page.getByTestId("goal-sections")).toContainText("4h focused study");
   await expect(page.getByTestId("goal-card")).toHaveCount(3);
 
   // ── the Brain is down: "AI is resting", nothing invented; Try again recovers ──────────────────
