@@ -220,3 +220,11 @@ export type WeekSuggestion = {
   usage: UsageState;
 };
 export const suggestWeek = (weekStart?: string) => req<WeekSuggestion>("/week/suggest", post(weekStart ? { weekStart } : {}));
+
+// ---- the plan's "why" ----
+/**
+ * Today's plan explained in two lines. The backend does not serve this yet (the call 404s), so callers fall back to a
+ * sentence built from the plan itself (lib/planner/taskText explainPlan).
+ * TODO(planner): wire /api/planner/today/explain once the backend window exposes it.
+ */
+export const getPlanExplanation = () => authenticatedRequest<{ success: true; data: { text: string } }>(`${CORE_API_BASE_URL}/api/planner/today/explain`);
