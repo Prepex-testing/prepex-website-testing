@@ -1,14 +1,19 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Plus } from "lucide-react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { GoalCard } from "@/components/goals/GoalCard";
-import { GoalComposer } from "@/components/goals/GoalComposer";
 import { NewSuggestion } from "@/components/goals/NewSuggestion";
+import { SmartSuggestion } from "@/components/goals/SmartSuggestion";
 import { SuggestPanel } from "@/components/goals/SuggestPanel";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
+import { CoralButton } from "@/components/ui/CoralButton";
+import { GhostButton } from "@/components/ui/GhostButton";
 import { PageLoader } from "@/components/ui/PageLoader";
+import { AddGoalPanel } from "@/components/weekly-goals/AddGoalPanel";
+import { SubjectSection } from "@/components/weekly-goals/SubjectSection";
+import { WeeklyCapacityHeader } from "@/components/weekly-goals/WeeklyCapacityHeader";
 import { ApiError } from "@/lib/api/http";
 import type { SubjectChapters } from "@/lib/api/dashboard";
 import { getStudentChapters } from "@/lib/api/onboarding";
@@ -24,13 +29,13 @@ import {
   type Goal,
   type NewGoal,
 } from "@/lib/api/goals";
-import { daysLeftText, describeGoal, formatWeekRange, scopeText } from "@/lib/goals/format";
-import { mondayAfterWeeks, weekLabel } from "@/lib/diagnosis/format";
-import { WEEKS_AHEAD, parsePrefill } from "@/lib/goals/prefill";
-import { readTargetRank } from "@/lib/insights/targetRank";
-import { SmartSuggestion } from "@/components/goals/SmartSuggestion";
 import { getGoalDefaults, getWeekSummary, type GoalDefaults, type WeekSummary } from "@/lib/api/plannerV2";
-import { forSave, hoursText } from "@/lib/goals/v2";
+import { groupGoals } from "@/lib/goals/display";
+import { daysLeftText, describeGoal, formatWeekRange } from "@/lib/goals/format";
+import { WEEKS_AHEAD, parsePrefill } from "@/lib/goals/prefill";
+import { MOCK_TYPES, forSave, goalMinutes, labelOf } from "@/lib/goals/v2";
+import { mondayAfterWeeks, weekLabel } from "@/lib/diagnosis/format";
+import { readTargetRank } from "@/lib/insights/targetRank";
 import { trackPlanner } from "@/lib/telemetry/planner";
 
 function messageOf(err: unknown, fallback: string): string {
@@ -56,6 +61,11 @@ function GoalsScreen() {
   const [summary, setSummary] = useState<WeekSummary | null>(null);
   const [defaults, setDefaults] = useState<GoalDefaults | null>(null);
   const [version, setVersion] = useState(0);
+  // The add-a-goal panel is shut until asked for (open straight away when the student is setting goals for the first time).
+  const [panelOpen, setPanelOpen] = useState(welcome);
+  const [seed, setSeed] = useState<NewGoal | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
 
   // A chapter handed over by a link (a diagnosis chip) may be from another class than the student's own (a class-12
   // student revising a class-11 chapter), so a link that names one loads every class's chapters.
@@ -81,7 +91,6 @@ function GoalsScreen() {
 
   const subjectNames = new Map(subjects.map((s) => [s.subjectId, s.subjectName]));
   const chapterNames = new Map(subjects.flatMap((s) => s.chapters.map((c) => [c.id, c.name] as const)));
-  const scopeOf = (g: Goal) => scopeText(g, subjectNames, chapterNames);
 
   async function run(id: string | null, action: () => Promise<unknown>, failure: string) {
     setBusyId(id);
@@ -98,10 +107,17 @@ function GoalsScreen() {
 
   // A goal handed over from elsewhere (a diagnosis chip): `?week=next&type=HOURS&unit=MINUTES&target=90&chapter=<id>`
   const prefill = parsePrefill(params, (chapterId) => subjects.find((s) => s.chapters.some((c) => c.id === chapterId))?.subjectId ?? null);
+  const hasPrefill = prefill !== null;
   const weeksAhead = prefill ? WEEKS_AHEAD[prefill.week] : 0;
   const targetWeekStart = weeksAhead > 0 && data ? mondayAfterWeeks(data.weekStart, weeksAhead) : undefined;
   const targetWeekName = weeksAhead === 1 ? "next week" : "the week of";
   const viewWeekStart = targetWeekStart ?? data?.weekStart;
+
+  // a link that hands over a goal opens the panel on it
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- open once the handed-over goal is known
+    if (hasPrefill) setPanelOpen(true);
+  }, [hasPrefill]);
 
   // The week's free hours for the week being planned.
   useEffect(() => {
@@ -116,16 +132,27 @@ function GoalsScreen() {
     };
   }, [viewWeekStart, version]);
 
+  useEffect(() => {
+    if (panelOpen) panelRef.current?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+  }, [panelOpen, seed]);
+
+  function openPanel(initial: NewGoal | null = null) {
+    setSeed(initial);
+    setPanelOpen(true);
+  }
+
   async function handleSave(goals: NewGoal[]) {
     setSaving(true);
     setSaveError(null);
     try {
-      await createGoals(goals, targetWeekStart);
+      await createGoals(goals.map(forSave), targetWeekStart);
       trackPlanner("weekly_goal_save", { count: goals.length, nextWeek: !!targetWeekStart });
       if (welcome) {
         router.push("/check-in");
         return;
       }
+      setPanelOpen(false);
+      setSeed(null);
       if (targetWeekStart) {
         router.replace("/goals");
         await load();
@@ -133,7 +160,7 @@ function GoalsScreen() {
         return;
       }
       await load();
-      setNotice("Goals saved — today's plan has been updated to match.");
+      setNotice("Goals saved. Today's plan has been updated to match.");
     } catch (err) {
       setSaveError(messageOf(err, "Couldn't save your goals. Please try again."));
     } finally {
@@ -166,6 +193,10 @@ function GoalsScreen() {
     setNotice(`${message} Today's plan has been updated to match.`);
   }
 
+  function jumpToIncomplete() {
+    pageRef.current?.querySelector('[data-testid="goal-card"][data-complete="false"]')?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+  }
+
   if (loadError) {
     return (
       <div className="p-4 sm:p-6 lg:p-8">
@@ -179,165 +210,172 @@ function GoalsScreen() {
 
   const live = data.goals.filter((g) => g.status !== "ABANDONED" && g.status !== "CARRIED_OVER");
   const candidates = data.carryOverCandidates;
+  const sections = groupGoals(live, subjects);
+  const allocatedMinutes = live.reduce((sum, g) => sum + goalMinutes(g, defaults ?? undefined), 0);
+
+  /** A goal's card title: its chapter, else "<Subject> general", else what kind of goal it is. */
+  const titleOf = (g: Goal): string => {
+    if (g.chapterId && chapterNames.get(g.chapterId)) return chapterNames.get(g.chapterId)!;
+    if (g.topic) return g.topic;
+    if (g.subjectId !== null) return `${subjectNames.get(g.subjectId) ?? "Subject"} general`;
+    if (g.type === "MOCKS") return labelOf(MOCK_TYPES, g.mockType) ?? "Mock test";
+    return describeGoal(g);
+  };
+
+  const suggestingGoal = suggestingId ? live.find((g) => g.id === suggestingId) : undefined;
 
   return (
-    <div className="flex flex-col gap-5 p-4 sm:p-6 lg:p-8" data-testid="goals-page">
-      <ProfileSubpageHeader title={welcome ? "Set your goals for this week" : "This week's goals"} backHref="/home" />
+    <div ref={pageRef} className="min-h-full bg-surface-base">
+      <div className="flex flex-col gap-5 p-4 sm:p-6 lg:p-8" data-testid="goals-page">
+        <ProfileSubpageHeader title={welcome ? "Set your goals for this week" : "This week's goals"} backHref="/home" />
 
-      {welcome && (
-        <p className="rounded-xl bg-tint-strong px-4 py-3 text-[14px] leading-snug text-body-text dark:bg-[#FAF7F214] dark:text-ink" data-testid="goals-welcome">
-          Tell Prepex what you want to get done this week. It turns your goals — and your timetable — into a plan for each day.
-          You can change them any time.
-        </p>
-      )}
-
-      <div className="flex flex-wrap items-center gap-2 text-[13px] font-semibold text-ink">
-        <span className="rounded-full bg-tint-strong px-3 py-1.5 dark:bg-[#FAF7F214]" data-testid="week-range">
-          {formatWeekRange(data.weekStart, data.weekEnd)}
-        </span>
-        <span className="rounded-full bg-tint-strong px-3 py-1.5 dark:bg-[#FAF7F214]" data-testid="days-left">
-          {daysLeftText(data.daysLeft)}
-        </span>
-        {live.length > 0 && (
-          <span className="rounded-full bg-tint-strong px-3 py-1.5 dark:bg-[#FAF7F214]" data-testid="week-summary">
-            {data.summary.done} of {data.summary.total} done · {data.summary.percent}%
-          </span>
+        {welcome && (
+          <p className="rounded-2xl border border-border-subtle bg-surface-elevated px-4 py-3 text-[14px] leading-snug text-body-text dark:text-ink" data-testid="goals-welcome">
+            Tell Prepex what you want to get done this week. It turns your goals and your timetable into a plan for each day.
+            You can change them any time.
+          </p>
         )}
-        <SmartSuggestion weekStart={viewWeekStart ?? data.weekStart} subjectNames={subjectNames} chapterNames={chapterNames} onAccept={handleWeekSuggestions} />
-      </div>
 
-      {summary && (
-        <p className="-mt-2 text-[12px] text-muted" data-testid="hours-available">
-          {hoursText(summary.availableMinutes)} available {targetWeekStart ? "that week" : "this week"}
-          {summary.perStudyDayMinutes > 0 ? ` · about ${hoursText(summary.perStudyDayMinutes)} a day` : ""}
-        </p>
-      )}
+        <WeeklyCapacityHeader
+          weekRange={formatWeekRange(data.weekStart, data.weekEnd)}
+          daysLeftLabel={daysLeftText(data.daysLeft)}
+          weekWord={targetWeekStart ? "that week" : "this week"}
+          availableMinutes={summary ? summary.availableMinutes : null}
+          allocatedMinutes={allocatedMinutes}
+          done={data.summary.done}
+          total={live.length > 0 ? data.summary.total : 0}
+          percent={data.summary.percent}
+          onJumpToIncomplete={jumpToIncomplete}
+          action={<SmartSuggestion weekStart={viewWeekStart ?? data.weekStart} subjectNames={subjectNames} chapterNames={chapterNames} onAccept={handleWeekSuggestions} />}
+        />
 
-      {notice && (
-        <p role="status" className="flex flex-wrap items-center gap-x-3 rounded-lg bg-[var(--success-bg)] px-3 py-2 text-[13px] font-semibold text-[var(--success)]">
-          {notice}
-          <Link href="/home" className="underline underline-offset-2">
-            See today&apos;s plan
-          </Link>
-        </p>
-      )}
+        {notice && (
+          <p role="status" className="flex flex-wrap items-center gap-x-3 rounded-[10px] bg-[var(--success-bg)] px-3 py-2 text-[13px] font-semibold text-[var(--success)]">
+            {notice}
+            <Link href="/home" className="underline underline-offset-2">
+              See today&apos;s plan
+            </Link>
+          </p>
+        )}
 
-      {candidates.length > 0 && (
-        <section aria-label="Carry over" className="flex flex-col gap-3 rounded-2xl border border-[var(--warning)]/40 bg-[var(--warning-bg)] p-4" data-testid="carry-over">
-          <div>
-            <p className="text-[15px] font-bold text-ink">Last week&apos;s unfinished goals</p>
-            <p className="mt-0.5 text-[12px] text-body-text dark:text-ink/80">
-              Carry them into this week — you&apos;ll only need to do what&apos;s left.
-            </p>
+        {candidates.length > 0 && (
+          <section aria-label="Carry over" className="flex flex-col gap-3 rounded-2xl border border-[var(--warning)]/40 bg-[var(--warning-bg)] p-4" data-testid="carry-over">
+            <div>
+              <p className="text-[15px] font-bold text-ink">Last week&apos;s unfinished goals</p>
+              <p className="mt-0.5 text-[12px] text-body-text dark:text-ink/80">Carry them into this week. You&apos;ll only need to do what&apos;s left.</p>
+            </div>
+            <ul className="flex flex-col gap-1.5">
+              {candidates.map((g) => (
+                <li key={g.id} className="text-[14px] font-semibold text-ink">
+                  {describeGoal(g)} <span className="font-normal text-muted">· {g.progress.current} of {g.target} done</span>
+                </li>
+              ))}
+            </ul>
+            <GhostButton data-testid="carry-over-all" className="self-start" disabled={busyId === "carry"} onClick={() => run("carry", () => carryOverGoals(), "Couldn't carry those over.")}>
+              {busyId === "carry" ? "Carrying over…" : `Carry over ${candidates.length} goal${candidates.length === 1 ? "" : "s"}`}
+            </GhostButton>
+          </section>
+        )}
+
+        {targetWeekStart && (
+          <p role="status" className="rounded-2xl border border-border-subtle bg-surface-elevated px-4 py-3 text-[14px] font-semibold leading-snug text-ink" data-testid="goals-next-week">
+            Setting a goal for {weeksAhead === 1 ? `next week (${weekLabel(targetWeekStart)})` : `${targetWeekName} ${weekLabel(targetWeekStart)}`}. It&apos;s ready below. Change it if you like, then save.
+          </p>
+        )}
+
+        {saveError && !saving && !panelOpen && (
+          <p role="alert" className="rounded-[10px] bg-danger-bg px-3 py-2 text-xs font-medium text-danger">
+            {saveError}
+          </p>
+        )}
+
+        {panelOpen ? (
+          <div ref={panelRef} className="flex flex-col gap-4">
+            <AddGoalPanel
+              key={seed ? `seed-${seed.subjectId ?? 0}` : prefill ? `prefill-${subjects.length}` : "plain"}
+              subjects={subjects}
+              existing={data.goals}
+              saving={saving}
+              error={saving ? null : saveError}
+              onSave={handleSave}
+              onCancel={() => {
+                setPanelOpen(false);
+                setSeed(null);
+              }}
+              defaults={defaults}
+              {...(viewWeekStart ? { weekStart: viewWeekStart } : {})}
+              {...(seed ? { initial: seed } : prefill ? { initial: prefill.goal, initialIsDraft: true } : {})}
+            />
           </div>
-          <ul className="flex flex-col gap-1.5">
-            {candidates.map((g) => (
-              <li key={g.id} className="text-[14px] font-semibold text-ink">
-                {describeGoal(g)} <span className="font-normal text-muted">· {g.progress.current} of {g.target} done</span>
-              </li>
+        ) : (
+          <div className="flex flex-wrap items-start gap-3" data-testid="add-row">
+            <NewSuggestion subjects={subjects} weekStartDate={targetWeekStart} targetRank={readTargetRank()} onAdded={handleSuggestionAdded} />
+            <CoralButton data-testid="open-add-goal" className="ml-auto" onClick={() => openPanel()}>
+              <Plus className="size-4" aria-hidden />
+              Add a goal
+            </CoralButton>
+          </div>
+        )}
+
+        {sections.length > 0 ? (
+          <div className="flex flex-col gap-8" data-testid="goal-sections">
+            {sections.map((section) => (
+              <SubjectSection
+                key={section.key}
+                section={section}
+                titleOf={titleOf}
+                busyId={busyId}
+                onWatched={(g, n) => run(g.id, () => reportGoalProgress(g.id, Math.max(0, n)), "Couldn't update that.")}
+                onToggleDone={(g) => run(g.id, () => updateGoal(g.id, { status: g.status === "DONE" ? "ACTIVE" : "DONE" }), "Couldn't update that.")}
+                onDelete={(g) => run(g.id, () => deleteGoal(g.id), "Couldn't remove that goal.")}
+                onEdit={(g, patch) => run(g.id, () => updateGoal(g.id, patch), "Couldn't change that goal.")}
+                onSuggest={(g) => (g.chapterId && g.type !== "HOURS" && g.source !== "PARTNER" ? () => setSuggestingId(suggestingId === g.id ? null : g.id) : undefined)}
+                onAddFor={(subjectId) => openPanel({ type: "QUESTIONS", unit: "COUNT", target: 100, subjectId })}
+                {...(suggestingGoal && suggestingGoal.chapterId && section.goals.some((g) => g.id === suggestingGoal.id)
+                  ? {
+                      suggestSlot: (
+                        <SuggestPanel
+                          chapterId={suggestingGoal.chapterId}
+                          chapterName={chapterNames.get(suggestingGoal.chapterId) ?? "this chapter"}
+                          weekStartDate={targetWeekStart}
+                          targetRank={readTargetRank()}
+                          onAdded={handleSuggestionAdded}
+                          onClose={() => setSuggestingId(null)}
+                        />
+                      ),
+                    }
+                  : {})}
+              />
             ))}
-          </ul>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-border-strong p-6 text-center" data-testid="goals-empty">
+            <p className="text-[16px] font-bold text-ink">No goals yet this week</p>
+            <p className="mt-1 text-[13px] text-muted">Add a few above. Until then Prepex suggests a plan from your chapter progress.</p>
+          </div>
+        )}
+
+        {hasTimetable === false && (
+          <section className="flex flex-col gap-2 rounded-2xl border border-border-subtle bg-surface-elevated p-4" data-testid="timetable-nudge">
+            <p className="text-[15px] font-bold text-ink">Tell Prepex when you&apos;re free</p>
+            <p className="text-[13px] text-muted">Add your weekly timetable and your tasks are placed in your real free slots, not guessed.</p>
+            <Link href="/timetable" className="inline-flex min-h-11 items-center justify-center self-start rounded-[10px] border border-border-strong px-[18px] py-2.5 text-[14px] font-medium text-ink hover:bg-surface-elevated-2">
+              Build my timetable
+            </Link>
+          </section>
+        )}
+
+        {welcome && (
           <button
             type="button"
-            data-testid="carry-over-all"
-            disabled={busyId === "carry"}
-            onClick={() => run("carry", () => carryOverGoals(), "Couldn't carry those over.")}
-            className="min-h-12 rounded-lg bg-cta px-4 text-[15px] font-semibold text-white hover:bg-[#E8623F] disabled:opacity-60"
+            data-testid="skip-goals"
+            onClick={() => router.push("/check-in")}
+            className="min-h-12 rounded-lg px-4 text-[14px] font-semibold text-muted underline-offset-2 hover:underline"
           >
-            {busyId === "carry" ? "Carrying over…" : `Carry over ${candidates.length} goal${candidates.length === 1 ? "" : "s"}`}
+            Skip for now
           </button>
-        </section>
-      )}
-
-      {live.length > 0 ? (
-        <ul className="flex flex-col gap-3" data-testid="goal-list">
-          {live.map((g) => (
-            <GoalCard
-              key={g.id}
-              goal={g}
-              scope={scopeOf(g)}
-              busy={busyId === g.id}
-              onWatched={(n) => run(g.id, () => reportGoalProgress(g.id, Math.max(0, n)), "Couldn't update that.")}
-              onToggleDone={() => run(g.id, () => updateGoal(g.id, { status: g.status === "DONE" ? "ACTIVE" : "DONE" }), "Couldn't update that.")}
-              onDelete={() => run(g.id, () => deleteGoal(g.id), "Couldn't remove that goal.")}
-              {...(g.chapterId && g.type !== "HOURS" && g.source !== "PARTNER" ? { onSuggest: () => setSuggestingId(suggestingId === g.id ? null : g.id) } : {})}
-              {...(suggestingId === g.id && g.chapterId
-                ? {
-                    suggestSlot: (
-                      <SuggestPanel
-                        chapterId={g.chapterId}
-                        chapterName={chapterNames.get(g.chapterId) ?? "this chapter"}
-                        weekStartDate={targetWeekStart}
-                        targetRank={readTargetRank()}
-                        onAdded={handleSuggestionAdded}
-                        onClose={() => setSuggestingId(null)}
-                      />
-                    ),
-                  }
-                : {})}
-            />
-          ))}
-        </ul>
-      ) : (
-        <div className="rounded-2xl border border-dashed border-brand/25 p-6 text-center" data-testid="goals-empty">
-          <p className="text-[16px] font-bold text-ink">No goals yet this week</p>
-          <p className="mt-1 text-[13px] text-muted">
-            Add a few below. Until then Prepex suggests a plan from your chapter progress.
-          </p>
-        </div>
-      )}
-
-      {saveError && !saving && (
-        <p role="alert" className="rounded-lg bg-danger-bg px-3 py-2 text-xs font-medium text-danger">
-          {saveError}
-        </p>
-      )}
-
-      {targetWeekStart && (
-        <p role="status" className="rounded-xl bg-tint-strong px-4 py-3 text-[14px] font-semibold leading-snug text-ink dark:bg-[#FAF7F214]" data-testid="goals-next-week">
-          Setting a goal for {weeksAhead === 1 ? `next week (${weekLabel(targetWeekStart)})` : `${targetWeekName} ${weekLabel(targetWeekStart)}`}. It&apos;s ready below. Change it if you like, then save.
-        </p>
-      )}
-
-      <NewSuggestion subjects={subjects} weekStartDate={targetWeekStart} targetRank={readTargetRank()} onAdded={handleSuggestionAdded} />
-
-      <GoalComposer
-        key={prefill ? `prefill-${subjects.length}` : "plain"}
-        subjects={subjects}
-        existing={data.goals}
-        saving={saving}
-        error={saving ? null : saveError}
-        onSave={handleSave}
-        defaults={defaults}
-        {...(viewWeekStart ? { weekStart: viewWeekStart } : {})}
-        {...(prefill ? { initial: prefill.goal } : {})}
-      />
-
-      {hasTimetable === false && (
-        <section className="flex flex-col gap-2 rounded-2xl border border-brand/10 bg-surface p-4" data-testid="timetable-nudge">
-          <p className="text-[15px] font-bold text-ink">Tell Prepex when you&apos;re free</p>
-          <p className="text-[13px] text-muted">
-            Add your weekly timetable and your tasks are placed in your real free slots, not guessed.
-          </p>
-          <Link
-            href="/timetable"
-            className="flex min-h-12 items-center justify-center rounded-lg border-[1.5px] border-secondary-button-border bg-surface px-4 text-[15px] font-semibold text-body-text hover:bg-tint-strong"
-          >
-            Build my timetable
-          </Link>
-        </section>
-      )}
-
-      {welcome && (
-        <button
-          type="button"
-          data-testid="skip-goals"
-          onClick={() => router.push("/check-in")}
-          className="min-h-12 rounded-lg px-4 text-[14px] font-semibold text-muted underline-offset-2 hover:underline"
-        >
-          Skip for now
-        </button>
-      )}
+        )}
+      </div>
     </div>
   );
 }
