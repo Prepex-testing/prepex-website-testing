@@ -58,6 +58,9 @@ const toCount = (raw: string): number => {
   return Number.isFinite(n) && n > 0 ? Math.min(1000, n) : 0;
 };
 
+/** A session this long (focused time) is probably a forgotten timer. Matches the server, which trims only above it. */
+const LONG_SESSION_SECONDS = 6 * 60 * 60;
+
 /** Planned vs actual, how it went, what was practised or how well it is remembered, "was this a win?", then save. */
 export function FocusSummaryModal({
   open,
@@ -73,6 +76,12 @@ export function FocusSummaryModal({
   onSave,
 }: Props) {
   const [choice, setChoice] = useState<boolean | null>(null);
+  // "Partly" and "Not finished" both end the session unfinished; the difference is only how the student sees it
+  const [partly, setPartly] = useState(false);
+  // a session this long is probably a forgotten timer: "keep all or trim?", and keeping all is the default
+  const longSession = elapsedSeconds > LONG_SESSION_SECONDS;
+  const [trim, setTrim] = useState(false);
+  const [trimMinutes, setTrimMinutes] = useState("");
   const [mood, setMood] = useState<number | null>(null);
   const [confidence, setConfidence] = useState<number | null>(null);
   const [attempted, setAttempted] = useState("");
@@ -93,6 +102,8 @@ export function FocusSummaryModal({
 
   const buildInput = (): StopFocusInput => {
     const input: StopFocusInput = { wasCompleted: win, moodRating: mood };
+    const keep = Math.floor(Number(trimMinutes));
+    if (longSession && trim && Number.isFinite(keep) && keep >= 0 && keep < Math.round(elapsedSeconds / 60)) input.trimToMinutes = keep;
     if (isRevision) input.confidenceRating = confidence;
     if (isPractice && attemptedN > 0) {
       const notes = FOCUS_FLAGS.mistakeAutofeed && wrongN > 0 ? wrongNotes.split("\n").map((l) => l.trim().slice(0, 300)).filter(Boolean).slice(0, 20) : [];
@@ -264,23 +275,45 @@ export function FocusSummaryModal({
           </fieldset>
         )}
 
+        {longSession && (
+          <fieldset className="flex flex-col gap-2 rounded-2xl border border-brand/20 bg-tint-strong p-3" data-testid="away-for-a-while">
+            <legend className="px-1 text-[15px] font-bold text-ink">You were away for a while</legend>
+            <p className="text-[13px] text-body-text dark:text-ink">{`This session ran ${Math.floor(elapsedSeconds / 3600)}h ${Math.floor((elapsedSeconds % 3600) / 60)}m. Keep all of it, or trim it to when you really studied?`}</p>
+            <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Keep all or trim">
+              <button type="button" role="radio" aria-checked={!trim} data-testid="keep-all" disabled={busy} onClick={() => setTrim(false)} className={`min-h-12 rounded-xl border px-3 text-[14px] font-bold ${!trim ? "border-[1.5px] border-brand bg-surface text-ink dark:border-[#FAF7F2]" : "border-brand/15 bg-surface text-body-text dark:text-ink"}`}>
+                Keep all
+              </button>
+              <button type="button" role="radio" aria-checked={trim} data-testid="trim" disabled={busy} onClick={() => setTrim(true)} className={`min-h-12 rounded-xl border px-3 text-[14px] font-bold ${trim ? "border-[1.5px] border-brand bg-surface text-ink dark:border-[#FAF7F2]" : "border-brand/15 bg-surface text-body-text dark:text-ink"}`}>
+                Trim
+              </button>
+            </div>
+            {trim && (
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-body-text dark:text-ink">
+                Minutes to keep
+                <input inputMode="numeric" data-testid="trim-minutes" value={trimMinutes} onChange={(e) => setTrimMinutes(e.target.value.replace(/[^\d]/g, ""))} className="h-11 rounded-xl border border-input-border bg-surface px-3 text-[16px] text-ink outline-none focus:border-brand" />
+              </label>
+            )}
+          </fieldset>
+        )}
+
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 text-[15px] font-bold text-ink">Was this a win?</legend>
-          <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Was this a win?">
+          <legend className="mb-1 text-[15px] font-bold text-ink">How did it go?</legend>
+          <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="How did it go?">
             {[
-              { value: true, label: "Yes, a win" },
-              { value: false, label: "Not really" },
+              { id: "win-yes", label: "Done", on: win === true, pick: () => { setChoice(true); setPartly(false); } },
+              { id: "win-partly", label: "Partly", on: win === false && partly, pick: () => { setChoice(false); setPartly(true); } },
+              { id: "win-no", label: "Not finished", on: win === false && !partly, pick: () => { setChoice(false); setPartly(false); } },
             ].map((o) => (
               <button
-                key={String(o.value)}
+                key={o.id}
                 type="button"
                 role="radio"
-                aria-checked={win === o.value}
-                data-testid={o.value ? "win-yes" : "win-no"}
+                aria-checked={o.on}
+                data-testid={o.id}
                 disabled={busy}
-                onClick={() => setChoice(o.value)}
-                className={`min-h-12 rounded-xl border px-3 text-[15px] font-bold transition-colors ${
-                  win === o.value ? "border-[1.5px] border-brand bg-tint-strong text-ink dark:border-[#FAF7F2]" : "border-brand/15 bg-surface text-body-text dark:text-ink"
+                onClick={o.pick}
+                className={`min-h-12 rounded-xl border px-2 text-[14px] font-bold transition-colors ${
+                  o.on ? "border-[1.5px] border-brand bg-tint-strong text-ink dark:border-[#FAF7F2]" : "border-brand/15 bg-surface text-body-text dark:text-ink"
                 }`}
               >
                 {o.label}

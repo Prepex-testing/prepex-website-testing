@@ -44,7 +44,6 @@ import {
   type StudyConsistencyDay,
   getStudyConsistency,
 } from "@/lib/api/planner";
-import { getJournalSettings, getLatestJournal, type JournalCard } from "@/lib/api/journal";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { FlameIcon, BackIcon, LoderIcon, DotIcon } from "@/assets/icons";
@@ -56,6 +55,8 @@ import {
   UsersIcon,
 } from "@/components/ui/icons";
 import { DailyInsightCard } from "@/components/home/DailyInsightCard";
+import { HomeTop } from "@/components/home/HomeTop";
+import { HomeRituals } from "@/components/rituals/HomeRituals";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -188,19 +189,6 @@ export default function HomePage() {
     getIsFridaySnapshot,
     getIsFridayServerSnapshot,
   );
-
-  // Section 7 — the Friday Win Journal card. `undefined` until loaded; null
-  // when the student has no card yet. Hidden if they've turned journals off.
-  const [weeklyJournal, setWeeklyJournal] = useState<JournalCard | null | undefined>(undefined);
-  const [isJournalEnabled, setJournalEnabled] = useState(true);
-
-  useEffect(() => {
-    if (!isFriday) return;
-    Promise.allSettled([getLatestJournal(), getJournalSettings()]).then(([latest, settings]) => {
-      setWeeklyJournal(latest.status === "fulfilled" ? latest.value.data : null);
-      if (settings.status === "fulfilled") setJournalEnabled(settings.value.data.winJournalEnabled);
-    });
-  }, [isFriday]);
 
   // The older payload: exam countdown, late-sign-up flag, plan id.
   const refetchLegacyPlan = () => {
@@ -433,27 +421,6 @@ export default function HomePage() {
   const completedMinutes = planDay ? planDay.summary.doneMinutes : summary ? summary.totalTimeCompletedSeconds / 60 : 0;
   const plannedMinutes = planDay ? planDay.summary.plannedMinutes : (summary?.totalPlannedMinutes ?? 0);
 
-  // Friday Win Journal card. The latest card may still be last week's until
-  // this week's is generated on Friday evening, so it's labelled by its week.
-  const isThisWeeksJournal = weeklyJournal?.weekStart?.slice(0, 10) === currentWeekStartIso();
-  // weekLabel reads "Week of Sep 7–13, 2026".
-  const journalSubtitle = !weeklyJournal
-    ? "Your first card is on its way"
-    : isThisWeeksJournal
-      ? (weeklyJournal.weekLabel ?? "Weekly progress reflection & insights")
-      : `Last card · ${weeklyJournal.weekLabel ?? "an earlier week"} · This week's is built on Friday evening`;
-  const journalAheadPercent =
-    weeklyJournal?.stats.paceDeltaPercent != null && weeklyJournal.stats.paceDeltaPercent > 0
-      ? Math.round(weeklyJournal.stats.paceDeltaPercent)
-      : null;
-  const journalStats = weeklyJournal
-    ? [
-        { value: String(weeklyJournal.stats.activeDays), label: "Active Days" },
-        { value: String(weeklyJournal.stats.tasksCompleted), label: "Tasks Completed" },
-        { value: weeklyJournal.stats.focusHoursLabel.replace(/h$/, ""), label: "Study Hours" },
-      ]
-    : [];
-
   // Hold the whole page until every initial fetch has settled, so no card
   // paints with placeholder values before its data arrives. Later refetches
   // (mood change, recovery toggle, …) keep the page mounted.
@@ -461,8 +428,7 @@ export default function HomePage() {
     (!planData && !planLoadFailed) ||
     todayPlan.status === "loading" ||
     !checkInLoaded ||
-    !consistencyLoaded ||
-    (isFriday && weeklyJournal === undefined);
+    !consistencyLoaded;
   if (isPageLoading) return <PageLoader label="Loading your day…" />;
 
   return (
@@ -492,6 +458,10 @@ export default function HomePage() {
           <UserMenu />
         </div>
       </div>
+
+      <HomeRituals />
+
+      <HomeTop />
 
       {(isInRecoveryMode || backlogRecovery?.active) && (
         <div className="flex items-center justify-between gap-3 rounded-2xl border border-warning/30 bg-warning/10 px-4 py-4 sm:px-5">
@@ -635,62 +605,6 @@ export default function HomePage() {
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[2.2fr_1.1fr]">
         <div className="flex min-w-0 flex-col gap-6">
-          {isFriday && isJournalEnabled && (
-            <Link
-              href="/home/journal"
-              className="block rounded-[24px] border border-brand/10 bg-surface p-6 shadow-[0px_2px_8px_rgba(0,0,0,0.06)] transition-colors hover:border-brand/30 dark:shadow-[0px_2px_8px_rgba(0,0,0,0.2)]"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-xl font-bold leading-7 text-[#0D0E2B] dark:text-[#FAF7F2]!">Weekly Win Journal</p>
-                  <p className="text-xs font-medium text-muted">{journalSubtitle}</p>
-                </div>
-                {journalAheadPercent !== null && (
-                  <span className="flex shrink-0 items-center gap-2 rounded-full border border-tint-strong bg-tint-strong px-3 py-1.5 text-xs font-bold text-ink shadow-[0px_1px_2px_0px_#0000000D] dark:border-[#242453]! dark:bg-[#242453]!">
-                    <CheckCircleIcon className="h-4 w-4 shrink-0 sm:h-[18px] sm:w-[18px] lg:h-5 lg:w-5" />
-                    {journalAheadPercent}% Ahead of Timeline
-                  </span>
-                )}
-              </div>
-
-              {weeklyJournal ? (
-                <>
-                  {weeklyJournal.hero.title && (
-                    <p className="mt-4 text-sm font-semibold text-ink">{weeklyJournal.hero.title}</p>
-                  )}
-                  <div className="mt-4 grid grid-cols-3 gap-6 divide-x divide-brand/10 text-center">
-                    {journalStats.map((stat) => (
-                      <div key={stat.label} className="flex flex-col items-center gap-2">
-                        <p className="text-3xl font-extrabold leading-none text-[#0D0E2B] dark:text-[#FAF7F2]!">
-                          {stat.value}
-                        </p>
-                        <p className="text-[10px] font-bold uppercase tracking-[1px] text-muted">{stat.label}</p>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <p className="mt-4 text-center text-sm text-muted">
-                  Win Journals are built every Friday evening from the week you just had. Study a couple of days
-                  this week and yours will be waiting.
-                </p>
-              )}
-
-              <div className="mt-3 flex items-center justify-between gap-2 border-t border-brand/10 pt-3 sm:mt-4">
-                <span className="min-w-0 truncate text-[13px] font-bold text-ink sm:text-sm">
-                  Explore Full Weekly Summary
-                </span>
-                <span className="flex shrink-0 items-center gap-1 text-[10px] font-medium text-[#333333] dark:text-[#FAF7F2]!">
-                  <span className="hidden sm:inline">Click to view details</span>
-                  {/* Wrapped: ArrowRightIcon doesn't forward className. */}
-                  <span className="flex shrink-0">
-                    <ArrowRightIcon />
-                  </span>
-                </span>
-              </div>
-            </Link>
-          )}
-
           <HomePlanSection plan={todayPlan} onChanged={refetchCheckInStatus} />
         </div>
 

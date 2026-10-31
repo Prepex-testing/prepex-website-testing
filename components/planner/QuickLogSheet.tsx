@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Sheet } from "@/components/planner/Sheet";
 import type { CompleteInput, PlanTask } from "@/lib/api/plannerV2";
+import { CountStepper, RecallPicker, type Recall } from "@/components/planner/tickParts";
 import { CONFIDENCE_LABELS } from "@/lib/planner/cta";
 import { EXAM_PATTERN_OPTIONS, MOCK_TYPE_OPTIONS, PRACTICE_SOURCE_OPTIONS, REVISION_TYPE_OPTIONS } from "@/lib/planner/format";
 
@@ -17,7 +18,7 @@ type Props = {
   error: string | null;
   onClose: () => void;
   /** The 15-second log. The caller adds the focus session id, if any, and completes the task. */
-  onSubmit: (log: Pick<CompleteInput, "actualMinutes" | "confidence" | "revision" | "practice" | "mock" | "log">) => void;
+  onSubmit: (log: Pick<CompleteInput, "actualMinutes" | "confidence" | "recall" | "revision" | "practice" | "mock" | "log">) => void;
 };
 
 const FIELD = "h-12 w-full rounded-xl border border-input-border bg-surface px-3 text-[16px] text-body-text outline-none focus:border-brand dark:text-ink";
@@ -38,8 +39,10 @@ export function QuickLogSheet({ open, task, origin, knownMinutes, busy, error, o
   const [confidence, setConfidence] = useState<number | null>(null);
   const [revisionType, setRevisionType] = useState("notes");
   const [source, setSource] = useState(task.contentSource && PRACTICE_SOURCE_OPTIONS.some((o) => o.value === task.contentSource) ? task.contentSource : "own_notebook");
-  const [attempted, setAttempted] = useState(String(task.questionCount ?? ""));
-  const [correct, setCorrect] = useState("");
+  // A planner tick (manual) starts from the task's own target: attempted = the target, correct = attempted, then the student adjusts down.
+  const tick = origin === "manual";
+  const [attempted, setAttempted] = useState(String(task.questionCount ?? (tick ? 10 : "")));
+  const [correct, setCorrect] = useState(tick ? String(task.questionCount ?? 10) : "");
   const [testType, setTestType] = useState("full_mock");
   const [pattern, setPattern] = useState("jee_main");
   const [marks, setMarks] = useState("");
@@ -47,12 +50,12 @@ export function QuickLogSheet({ open, task, origin, knownMinutes, busy, error, o
 
   const kind = task.kind;
   const title =
-    kind === "practice" ? "Log your practice" : kind === "revision" ? "How did the revision go?" : kind === "mock" ? "Log your mock score" : origin === "manual" ? "Add a quick log?" : "Log this session";
+    kind === "practice" ? "Log your practice" : kind === "revision" ? (tick ? "How well did you recall it?" : "How did the revision go?") : kind === "mock" ? "Log your mock score" : origin === "manual" ? "Add a quick log?" : "Log this session";
 
   function submit() {
     setLocalError(null);
     const base = { actualMinutes: Math.max(1, num(minutes) || startMinutes), log: true };
-    if (kind === "revision") {
+    if (kind === "revision" && !tick) {
       if (!confidence) return setLocalError("Pick how confident you feel, from 1 to 5.");
       return onSubmit({ ...base, confidence, revision: { revisionType } });
     }
@@ -88,9 +91,11 @@ export function QuickLogSheet({ open, task, origin, knownMinutes, busy, error, o
               {localError ?? error}
             </p>
           )}
+          {!(kind === "revision" && tick) && (
           <button type="button" data-testid="log-save" disabled={busy} onClick={submit} className="min-h-14 rounded-lg border border-primary-button-border bg-cta px-4 text-base font-semibold text-white hover:bg-[#E8623F] disabled:opacity-60">
-            {busy ? "Saving…" : "Save and finish"}
+            {busy ? "Saving…" : kind === "practice" && tick ? "Confirm" : "Save and finish"}
           </button>
+          )}
           {origin === "manual" && (
             <button type="button" data-testid="log-skip" disabled={busy} onClick={() => onSubmit({})} className="min-h-12 rounded-lg px-4 text-[14px] font-semibold text-muted hover:underline">
               No log, just mark it done
@@ -100,12 +105,21 @@ export function QuickLogSheet({ open, task, origin, knownMinutes, busy, error, o
       }
     >
       <div className="flex flex-col gap-4 pt-1">
-        <label className={LABEL}>
-          Minutes spent
-          <input data-autofocus inputMode="numeric" className={FIELD} value={minutes} onChange={(e) => setMinutes(e.target.value.replace(/[^\d]/g, ""))} aria-label="Minutes spent" />
-        </label>
+        {!(tick && (kind === "revision" || kind === "practice")) && (
+          <label className={LABEL}>
+            Minutes spent
+            <input data-autofocus inputMode="numeric" className={FIELD} value={minutes} onChange={(e) => setMinutes(e.target.value.replace(/[^\d]/g, ""))} aria-label="Minutes spent" />
+          </label>
+        )}
 
-        {kind === "revision" && (
+        {kind === "revision" && tick && (
+          <RecallPicker
+            busy={busy}
+            onPick={(recall: Recall) => onSubmit({ actualMinutes: Math.max(1, num(minutes) || startMinutes), log: true, recall, revision: { revisionType: "notes" } })}
+          />
+        )}
+
+        {kind === "revision" && !tick && (
           <>
             <fieldset className="flex flex-col gap-2">
               <legend className="mb-1 text-[14px] font-semibold text-body-text dark:text-ink">How confident do you feel about it now?</legend>
@@ -139,7 +153,28 @@ export function QuickLogSheet({ open, task, origin, knownMinutes, busy, error, o
           </>
         )}
 
-        {kind === "practice" && (
+        {kind === "practice" && tick && (
+          <>
+            <CountStepper label="Attempted" value={num(attempted)} min={1} testId="log-attempted" onChange={(n) => { setAttempted(String(n)); if (num(correct) > n) setCorrect(String(n)); }} />
+            <CountStepper label="Correct" value={Math.min(num(correct), num(attempted))} max={num(attempted)} testId="log-correct" onChange={(n) => setCorrect(String(n))}>
+              <p className="text-[12px] text-muted" data-testid="log-wrong">
+                {`${wrong} wrong. Add the tricky ones to your mistake notebook any time.`}
+              </p>
+            </CountStepper>
+            <label className={LABEL}>
+              Source
+              <select className={FIELD} value={source} onChange={(e) => setSource(e.target.value)} data-testid="log-source">
+                {PRACTICE_SOURCE_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </>
+        )}
+
+        {kind === "practice" && !tick && (
           <>
             <label className={LABEL}>
               Source

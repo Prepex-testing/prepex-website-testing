@@ -18,8 +18,10 @@ export type StreakInfo = {
   currentStreak: number;
   longestStreak: number;
   streakFreezeAvailable: boolean;
-  /** YYYY-MM-DD — the Sunday boundary when the next freeze is granted. */
-  streakFreezeResetsOn: string;
+  /** Freezes held (0 to 2). One is earned for every 7 days of streak and used automatically on a missed day. */
+  streakFreezesHeld: number;
+  /** Days of streak until the next freeze is earned; null when two are already held. */
+  daysToNextFreeze: number | null;
   noStudyProtectedToday: boolean;
 
   today: {
@@ -105,53 +107,7 @@ export type StreakCalendar = {
   summary: { qualified: number; freezeUsed: number; noStudy: number; missed: number };
 };
 
-/**
- * PRD 10.5.3 — only display name, aggregate score and streak count cross the
- * wire. The metrics that feed the score never do.
- */
-export type LeaderboardEntry = {
-  rank: number;
-  displayName: string;
-  streak: number;
-  /** Lifetime hours banked on NEW_LEARNING tasks. */
-  focusHours: number;
-  effortScore: number;
-  isFoundingMember: boolean;
-  isMe: boolean;
-};
-
-export type LeaderboardScope = "global" | "exam";
-
-export type Leaderboard = {
-  /** "launch" for the first 30 days post-launch — top 10 Founding Members. */
-  mode: "launch" | "standard";
-  scope: LeaderboardScope;
-  /** Everyone in scope, including those below the visible cap. */
-  totalRanked: number;
-  /** Rows reachable through pagination — the PRD 10.5.2 top-50 cap. */
-  visibleCount: number;
-  /** Server-clamped: may differ from what was requested. */
-  page: number;
-  limit: number;
-  totalPages: number;
-  /** 1-based inclusive range of this page, for "Showing X-Y of Z". */
-  rangeStart: number;
-  rangeEnd: number;
-  myRank: number | null;
-  /** Rank a day ago; null if the student wasn't ranked then (new signup). */
-  myPreviousRank: number | null;
-  /** Positions gained (+) or lost (-) since then; null when incomparable. */
-  myRankVelocity: number | null;
-  myScore: number;
-  myStreak: number;
-  myPercentile: number | null;
-  myDisplayName: string | null;
-  isFoundingMember: boolean;
-  entries: LeaderboardEntry[];
-};
-
 /** Page sizes offered by the rows-per-page control. */
-export const LEADERBOARD_PAGE_SIZES = [5, 10, 20, 50] as const;
 
 // -- Fetchers ---------------------------------------------------------------
 
@@ -169,52 +125,6 @@ export async function getStreakCalendar(year: number, month: number): Promise<St
   return data;
 }
 
-/** PRD 10.5 — logic-based leaderboard, one page at a time. */
-export async function getLeaderboard(
-  scope: LeaderboardScope,
-  page = 1,
-  limit = 20,
-): Promise<Leaderboard> {
-  const query = new URLSearchParams({ scope, page: String(page), limit: String(limit) });
-  const { data } = await authRequest<{ success: true; data: Leaderboard }>(
-    `/leaderboard?${query.toString()}`,
-  );
-  return data;
-}
-
-/**
- * Page numbers to render, with gaps collapsed to an ellipsis: always the first
- * and last page plus a window around the current one, e.g. 1 2 3 … 9.
- */
-export function paginationRange(current: number, total: number): (number | "ellipsis")[] {
-  if (total <= 1) return total === 1 ? [1] : [];
-  if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
-
-  const wanted = new Set<number>([1, total, current, current - 1, current + 1]);
-  const pages = [...wanted].filter((n) => n >= 1 && n <= total).sort((a, b) => a - b);
-
-  const out: (number | "ellipsis")[] = [];
-  let previous = 0;
-  for (const n of pages) {
-    // A gap of exactly one page shows that page rather than an ellipsis that
-    // would take up the same room.
-    if (previous > 0 && n - previous === 2) out.push(previous + 1);
-    else if (previous > 0 && n - previous > 2) out.push("ellipsis");
-    out.push(n);
-    previous = n;
-  }
-  return out;
-}
-
-/** The student-chosen name shown on the leaderboard (PRD 10.5.3). */
-export async function updateDisplayName(displayName: string): Promise<{ displayName: string }> {
-  const { data } = await authRequest<{ success: true; data: { displayName: string } }>(
-    "/display-name",
-    { method: "PATCH", body: JSON.stringify({ displayName }) },
-  );
-  return data;
-}
-
 // -- Display helpers --------------------------------------------------------
 
 /** "40m" / "1h 20m" — focus time in the shape the streak page reads it. */
@@ -224,19 +134,6 @@ export function formatFocus(seconds: number): string {
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
   return rest === 0 ? `${hours}h` : `${hours}h ${rest}m`;
-}
-
-/**
- * Bands the percentile for display. Purely a label on a number the student can
- * already see — it adds no information the leaderboard doesn't show.
- */
-export function tierFromPercentile(percentile: number | null): string | null {
-  if (percentile === null) return null;
-  if (percentile >= 95) return "Diamond";
-  if (percentile >= 85) return "Platinum";
-  if (percentile >= 70) return "Gold";
-  if (percentile >= 50) return "Silver";
-  return "Bronze";
 }
 
 const MONTH_NAMES = [

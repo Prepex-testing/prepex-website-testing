@@ -87,6 +87,8 @@ export type StopFocusInput = {
   /** Revision sessions: 1 (shaky) – 5 (solid). */
   confidenceRating?: number | null;
   practice?: PracticeSheet | null;
+  /** Only for a session over 6 hours: keep this many minutes. Leave out to keep all of it (the default). */
+  trimToMinutes?: number | null;
 };
 
 export type StreakInfo = {

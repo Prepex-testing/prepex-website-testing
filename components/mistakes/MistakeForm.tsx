@@ -12,6 +12,8 @@ type Props = {
   error: string | null;
   /** When editing, the mistake being changed. */
   initial?: Mistake;
+  /** A new mistake that starts with the subject, chapter and topic of what the student was just doing. */
+  prefill?: { subjectId?: number | null; chapterId?: string | null; topic?: string | null };
   submitLabel?: string;
   onSubmit: (input: NewMistake) => void;
   onCancel: () => void;
@@ -20,10 +22,10 @@ type Props = {
 const DIFFICULTY_LABELS = ["Easy", "Fairly easy", "Medium", "Hard", "Very hard"];
 
 /** Add (or edit) a mistake: the question, the right answer, what you wrote, and why. */
-export function MistakeForm({ subjects, busy, error, initial, submitLabel = "Save mistake", onSubmit, onCancel }: Props) {
-  const [subjectId, setSubjectId] = useState<number | null>(initial?.subjectId ?? null);
-  const [chapterId, setChapterId] = useState<string | null>(initial?.chapterId ?? null);
-  const [topic, setTopic] = useState(initial?.topic ?? "");
+export function MistakeForm({ subjects, busy, error, initial, prefill, submitLabel = "Save mistake", onSubmit, onCancel }: Props) {
+  const [subjectId, setSubjectId] = useState<number | null>(initial?.subjectId ?? prefill?.subjectId ?? null);
+  const [chapterId, setChapterId] = useState<string | null>(initial?.chapterId ?? prefill?.chapterId ?? null);
+  const [topic, setTopic] = useState(initial?.topic ?? prefill?.topic ?? "");
   const [questionText, setQuestionText] = useState(initial?.questionText ?? "");
   const [correctAnswer, setCorrectAnswer] = useState(initial?.correctAnswer ?? "");
   const [studentAnswer, setStudentAnswer] = useState(initial?.studentAnswer ?? "");

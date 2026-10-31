@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { SessionWrap } from "@/components/focus/SessionWrap";
 import { StreakChip } from "@/components/focus/StreakChip";
 import type { StopFocusResult } from "@/lib/api/focus";
 import { TASK_TYPE_LABELS, originBackHref, type OriginSource } from "@/lib/focus/intent";
@@ -95,6 +96,8 @@ export function SessionDone({ result, saving, subjectName, chapterName, originSo
           ))}
         </ul>
       )}
+
+      <SessionWrap focusSessionId={focusSession.id} subjectId={focusSession.subjectId} chapterId={focusSession.chapterId} topic={focusSession.topic} taskType={focusSession.taskType} />
 
       <div className="flex flex-col items-center gap-1.5">
         <StreakChip streak={extras.streak} />

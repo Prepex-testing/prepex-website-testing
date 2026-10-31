@@ -127,6 +127,8 @@ export type CompleteInput = {
   actualMinutes?: number;
   log?: boolean;
   confidence?: number;
+  /** Revision tick: how well it was recalled. Stored on the revision log. */
+  recall?: "easy" | "ok" | "hard";
   revision?: { revisionType?: string; questionsSolved?: number; questionsCorrect?: number; errors?: string };
   practice?: { source: string; sourceDetail?: string; questionsAttempted: number; questionsCorrect: number; questionsWrong: number; questionsSkipped?: number; difficulty?: string };
   mock?: {
@@ -148,6 +150,11 @@ export type CompleteInput = {
 
 export function completePlanTask(id: string, input: CompleteInput) {
   return req<{ task: PlanTask; alreadyDone: boolean }>(`/tasks/${id}/complete`, post(input));
+}
+
+/** Takes back a completion made moments ago (the planner offers it for 5 seconds). XP and the logs it wrote are reversed. */
+export function undoPlanTask(id: string) {
+  return req<{ task: PlanTask; undone: boolean }>(`/tasks/${id}/undo`, post({}));
 }
 
 export function getPracticeOptions(id: string) {

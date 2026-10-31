@@ -23,7 +23,7 @@ describe("Quick Access", () => {
 
   it("is exactly ten rows, in order, with no Partner and no Analytics", () => {
     const labels = quickAccessItems(counts).map((i) => i.label);
-    expect(labels).toEqual(["Focus", "Practice", "Revision", "Backlog", "Mistakes", "Mocks", "Where to focus next", "Leader Board", "Resource Library", "Weekly Win Journal"]);
+    expect(labels).toEqual(["Focus", "Practice", "Revision", "Backlog", "Mistakes", "Mocks", "Where to focus next", "Leader Board", "Resource Library", "Weekly review"]);
     expect(labels).not.toContain("Partner");
     expect(labels).not.toContain("Analytics");
     expect(quickAccessItems(counts).map((i) => i.href ?? "")).not.toContain("/analytics");

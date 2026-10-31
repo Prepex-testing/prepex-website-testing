@@ -28,6 +28,8 @@ export type GridBlock = {
   activityType: ActivityType;
   subjectId: number | null;
   label: string | null;
+  /** Coaching blocks only: offline or online. */
+  mode?: "offline" | "online" | null;
   /** Came from a starter template and has not been touched since — shown with a subtle marker. */
   fromTemplate?: boolean;
 };
@@ -348,6 +350,7 @@ export function fromApiBlocks(blocks: ApiBlock[]): GridBlock[] {
     activityType: b.activityType,
     subjectId: b.subjectId ?? null,
     label: b.label ?? null,
+    mode: b.mode ?? null,
   }));
 }
 
@@ -362,5 +365,6 @@ export function toApiBlocks(blocks: GridBlock[]): ApiBlock[] {
       activityType: b.activityType,
       subjectId: b.subjectId,
       label: b.label && b.label.trim() ? b.label.trim() : null,
+      ...(b.activityType === "COACHING" ? { mode: b.mode ?? null } : {}),
     }));
 }

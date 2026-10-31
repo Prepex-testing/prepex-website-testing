@@ -125,6 +125,28 @@ export function BlockEditor({ block, blocks, subjects, onChange, onDelete, onCop
           </label>
         )}
 
+        {block.activityType === "COACHING" && (
+          <fieldset className="flex flex-col gap-2" data-testid="coaching-mode">
+            <legend className="mb-1 text-[14px] font-semibold text-body-text dark:text-ink">How do you attend?</legend>
+            <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Offline or online">
+              {([["offline", "Offline"], ["online", "Online"]] as const).map(([value, text]) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="radio"
+                  aria-checked={block.mode === value}
+                  data-testid={`mode-${value}`}
+                  onClick={() => onChange({ ...block, mode: block.mode === value ? null : value })}
+                  className={`min-h-12 rounded-xl border px-3 text-[15px] font-bold ${block.mode === value ? "border-[1.5px] border-brand bg-tint-strong text-ink dark:border-[#FAF7F2]" : "border-brand/15 bg-surface text-body-text dark:text-ink"}`}
+                >
+                  {text}
+                </button>
+              ))}
+            </div>
+            <span className="text-[12px] font-normal text-muted">When this class ends, Prepex asks which chapter it covered.</span>
+          </fieldset>
+        )}
+
         <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-body-text dark:text-ink">
           Label (optional)
           <input

@@ -161,13 +161,16 @@ export default function StreakPage() {
       icon: <ShieldIcon />,
       iconClass: "bg-brand/10 text-ink",
       label: "Streak Freeze",
-      value: info.streakFreezeAvailable ? "1" : "0",
-      unit: "available",
+      value: String(info.streakFreezesHeld),
+      unit: info.streakFreezesHeld === 1 ? "held" : "held (max 2)",
       inline: true,
-      // Never loss-framed (PRD 10.8) — states what it does, not what you'd lose.
-      caption: info.streakFreezeAvailable
-        ? "Covers one below-threshold day automatically"
-        : `Used this week. A new one arrives ${info.streakFreezeResetsOn}`,
+      // Never loss-framed (PRD 10.8): says what it does and when the next one comes.
+      caption:
+        info.streakFreezesHeld > 0
+          ? "Covers a missed day automatically and tells you"
+          : info.daysToNextFreeze !== null
+            ? `You earn one every 7 days. ${info.daysToNextFreeze} more ${info.daysToNextFreeze === 1 ? "day" : "days"} to the next`
+            : "You earn one every 7 days",
     },
     {
       icon: <BoltIcon />,

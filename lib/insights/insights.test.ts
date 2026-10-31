@@ -177,8 +177,8 @@ describe("analytics wording", () => {
   });
 
   it("streak caption", () => {
-    expect(streakCaption({ current: 3, longest: 9, shields: { available: true, perWeek: 1 } })).toBe("best 9 · shield ready");
-    expect(streakCaption({ current: 9, longest: 9, shields: { available: false, perWeek: 1 } })).toBe("your best");
+    expect(streakCaption({ current: 3, longest: 9, shields: { available: true, held: 1, max: 2 } })).toBe("best 9 · shield ready");
+    expect(streakCaption({ current: 9, longest: 9, shields: { available: false, held: 0, max: 2 } })).toBe("your best");
   });
 });
 
