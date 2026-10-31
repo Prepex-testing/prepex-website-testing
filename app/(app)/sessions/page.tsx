@@ -206,7 +206,7 @@ export default function SessionsPage() {
           ]
             .filter((t): t is { id: string; label: string; minutes: number } => t !== false)
             .map((t) => (
-              <div key={t.id} className="flex items-baseline justify-between gap-3 rounded-2xl border border-border-subtle bg-surface-elevated px-5 py-4">
+              <div key={t.id} className="flex flex-1 items-center justify-between gap-3 rounded-2xl border border-border-subtle bg-surface-elevated px-5 py-4">
                 <p className="text-[13px] font-semibold uppercase tracking-wide text-muted">{t.label}</p>
                 <p className="text-[24px] font-extrabold leading-none text-ink">
                   <CountUp value={t.minutes} format={formatMinutes} testId={`session-stat-${t.id}`} />
@@ -214,7 +214,7 @@ export default function SessionsPage() {
               </div>
             ))}
           {stats.best && (
-            <div className="flex items-baseline justify-between gap-3 rounded-2xl border border-border-subtle bg-surface-elevated px-5 py-4" data-testid="session-stat-best">
+            <div className="flex flex-1 items-center justify-between gap-3 rounded-2xl border border-border-subtle bg-surface-elevated px-5 py-4" data-testid="session-stat-best">
               <p className="text-[13px] font-semibold uppercase tracking-wide text-muted">Best day</p>
               <p className="text-right text-[15px] font-bold text-ink">
                 {stats.best.label} <span className="font-semibold text-muted">· {formatMinutes(stats.best.minutes)}</span>

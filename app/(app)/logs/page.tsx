@@ -166,7 +166,7 @@ export default function LogsHubPage() {
           extras={
             practice && (
               <>
-                {practice.series.length >= 2 && <Sparkline points={practice.series} label="Accuracy by day this week" />}
+                {practice.series.length >= 2 && <Sparkline fit points={practice.series} label="Accuracy by day this week" />}
                 {practice.weakest && <Line label="Weakest chapter" value={`${practice.weakest.name} · ${Math.round(practice.weakest.accuracy)}%`} />}
               </>
             )
@@ -184,7 +184,7 @@ export default function LogsHubPage() {
             mocks && (
               <>
                 {mocks.last && <Line label="Last score" value={`${mocks.last.scorePercent}%${mocks.last.percentile !== null ? ` · ${mocks.last.percentile} percentile` : ""}`} />}
-                {mocks.series.length >= 2 && <Sparkline points={mocks.series} label="Your last mock scores" />}
+                {mocks.series.length >= 2 && <Sparkline fit points={mocks.series} label="Your last mock scores" />}
                 {mocks.exposing && <Line label="Keeps coming up" value={`${mocks.exposing.name} · ${plural(mocks.exposing.mocks, "mock", "mocks")}`} />}
               </>
             )

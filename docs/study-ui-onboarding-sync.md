@@ -8,11 +8,21 @@ Hard rule: show only data that exists in the backend or can be computed from it.
 | Step | State |
 |---|---|
 | Doc written | done |
-| Part 2 backend (onboarding manual flag, backfill, syllabus summary, tests) | todo |
-| Part 3 backend (`refreshFromNow`) | todo |
-| Part 3 website (entry points) | todo |
-| Part 1 website (Study screens) | todo |
-| Suites, screenshots, PRs | todo |
+| Part 2 backend (onboarding manual flag, backfill, syllabus summary, tests) | done, merged (backend PR #42) |
+| Part 3 backend (`refreshFromNow`) | done, merged (backend PR #42) |
+| Part 3 website (entry points, empty-day warning) | done |
+| Part 2 website (syllabus line on Home and Analytics) | done |
+| Part 1 website (Logs, Mistakes, Sessions) | done, screenshots in `docs/study-ui/screenshots` |
+| Suites, PRs, deploy | see the PR |
+
+## Left out because the data does not exist
+
+- **Weekly-goal hours vs hours studied** (Sessions stats): there is no weekly hours goal in the backend (goals carry `totalMinutes` per goal, not a weekly hours target).
+- **"Mastered" onboarding status**: onboarding captures only "completed" (no strong/confident/weak), and the syllabus theory model has no Mastered value. Done maps to Completed; nothing else is invented.
+- **Mistake reason/type counts**: the notebook has free tags, not a fixed reason field. The rail shows the student's own tags.
+- **Merged mistake source filter**: practice mistakes have a separate store, API shape and review flow, so they cannot be merged into this queue cleanly. A visible "My mistakes / From practice" switch replaces the faint link.
+- **Focus tab**: it is the full timer experience with its own chrome; only its tab link is in the shared strip.
+- Cards show nothing for a figure whose request failed (a dash for the headline, no extras).
 
 ## What exists today
 
