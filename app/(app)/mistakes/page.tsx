@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { MistakeForm } from "@/components/mistakes/MistakeForm";
 import { MistakeList } from "@/components/mistakes/MistakeList";
+import { MistakeRail } from "@/components/mistakes/MistakeRail";
 import { MistakeStatsPanel } from "@/components/mistakes/MistakeStatsPanel";
 import { ReviewCard } from "@/components/mistakes/ReviewCard";
-import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
-import { StudyTabs } from "@/components/study/StudyTabs";
+import { StudyShell } from "@/components/study/StudyShell";
 import { FIELD } from "@/components/study/SubjectChapterFields";
 import { useSubjects } from "@/components/study/useSubjects";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
@@ -64,6 +64,9 @@ export default function MistakesPage() {
 
   // Stats
   const [stats, setStats] = useState<MistakeStats | null>(null);
+  // the open mistakes behind the side rail (top chapters, tags)
+  const [railItems, setRailItems] = useState<Mistake[]>([]);
+  const [railMore, setRailMore] = useState(false);
 
   // Dialogs
   const [formFor, setFormFor] = useState<{ mode: "add" } | { mode: "edit"; mistake: Mistake } | null>(null);
@@ -83,10 +86,12 @@ export default function MistakesPage() {
   }, []);
 
   const loadStats = useCallback(async () => {
-    try {
-      setStats((await getMistakeStats()).data);
-    } catch {
-      /* stats are secondary */
+    // stats and the rail are secondary: a failure leaves them as they were
+    const [s, l] = await Promise.allSettled([getMistakeStats(), listMistakes({ status: "active", limit: 100 })]);
+    if (s.status === "fulfilled") setStats(s.value.data);
+    if (l.status === "fulfilled") {
+      setRailItems(l.value.data.items);
+      setRailMore(l.value.data.nextCursor !== null);
     }
   }, []);
 
@@ -214,9 +219,7 @@ export default function MistakesPage() {
   const current = queue[0];
 
   return (
-    <div className="flex flex-col gap-5 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl lg:p-8" data-testid="mistakes-page">
-      <ProfileSubpageHeader title="Mistakes" backHref="/home" />
-      <StudyTabs current="/mistakes" />
+    <StudyShell current="/mistakes" testId="mistakes-page">
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-1 border-b border-brand/10" role="tablist" aria-label="Mistake notebook views">
@@ -248,10 +251,21 @@ export default function MistakesPage() {
             setError(null);
             setFormFor({ mode: "add" });
           }}
-          className="min-h-12 rounded-lg border border-primary-button-border bg-cta px-4 text-[15px] font-semibold text-white hover:bg-[#E8623F]"
+          className="min-h-12 rounded-lg border border-primary-button-border bg-cta px-4 text-[15px] font-semibold text-white transition-colors hover:bg-[#E8623F] active:scale-[0.98] motion-reduce:transition-none"
         >
           + Add mistake
         </button>
+      </div>
+
+      {/* Practice mistakes live in their own notebook with their own review flow, so they cannot be merged into this
+          queue; this switch makes the second source visible instead of a faint link. */}
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Mistake source" data-testid="source-switch">
+        <span aria-current="true" className="inline-flex min-h-9 items-center rounded-full bg-surface-elevated-2 px-4 text-[13px] font-bold text-ink">
+          My mistakes
+        </span>
+        <Link href="/home/mistake-notebook" data-testid="source-practice" className="inline-flex min-h-9 items-center rounded-full border border-border-strong px-4 text-[13px] font-semibold text-ink transition-colors hover:bg-surface-elevated-2 motion-reduce:transition-none">
+          From practice →
+        </Link>
       </div>
 
       {notice && (
@@ -265,8 +279,10 @@ export default function MistakesPage() {
         </p>
       )}
 
+      <div className={tab === "stats" ? "" : "flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] lg:gap-6"}>
+      <div className="flex min-w-0 flex-col gap-5">
       {tab === "due" && (
-        <section id="panel-due" role="tabpanel" aria-labelledby="tab-due" className="flex flex-col gap-4">
+        <section id="panel-due" role="tabpanel" aria-labelledby="tab-due" className="study-fade-in flex flex-col gap-4">
           {current ? (
             <ReviewCard
               key={current.id}
@@ -288,9 +304,6 @@ export default function MistakesPage() {
               </p>
             </div>
           )}
-          <Link href="/home/mistake-notebook" className="text-center text-[13px] font-semibold text-muted underline underline-offset-2">
-            Mistakes from Prepex practice are in their own notebook →
-          </Link>
         </section>
       )}
 
@@ -354,6 +367,9 @@ export default function MistakesPage() {
           {stats ? <MistakeStatsPanel stats={stats} lookup={subjects.lookup} /> : <PageLoader label="Counting…" />}
         </section>
       )}
+      </div>
+      {tab !== "stats" && <MistakeRail stats={stats} items={railItems} more={railMore} left={totalDue} lookup={subjects.lookup} />}
+      </div>
 
       <Modal open={formFor !== null} onClose={() => (busy ? undefined : setFormFor(null))} ariaLabel={formFor?.mode === "edit" ? "Edit mistake" : "Add a mistake"} size="wide">
         {formFor && (
@@ -396,6 +412,6 @@ export default function MistakesPage() {
         busy={busy}
         error={deleting ? error : null}
       />
-    </div>
+    </StudyShell>
   );
 }
