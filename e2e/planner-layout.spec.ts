@@ -69,7 +69,7 @@ test.describe("Home", () => {
     const labels = await page.locator('[data-testid^="quick-"]').allTextContents();
     expect(labels).toHaveLength(9);
     const text = labels.join(" | ");
-    for (const want of ["Focus", "Practice", "Revision", "Mistakes", "Mocks", "Where to focus next", "Leader Board", "Resource Library", "Weekly Win Journal"]) expect(text).toContain(want);
+    for (const want of ["Focus", "Practice", "Revision", "Mistakes", "Mocks", "Where to focus next", "Leader Board", "Resource Library", "Weekly review"]) expect(text).toContain(want);
     expect(text).not.toContain("Partner");
     expect(text).not.toContain("Analytics");
     expect(text).toContain("15 unresolved");

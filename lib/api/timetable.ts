@@ -28,6 +28,8 @@ export type ApiBlock = {
   activityType: ActivityType;
   subjectId: number | null;
   label: string | null;
+  /** Coaching blocks only: attended offline or online. */
+  mode?: "offline" | "online" | null;
 };
 
 export type Timetable = {

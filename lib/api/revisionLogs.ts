@@ -36,6 +36,8 @@ export type NewRevision = {
   questionsCorrect?: number | null;
   errors?: string | null;
   revisionNumber?: number;
+  /** The Quick Log's Easy / OK / Hard. Stored on the log and used as its confidence. */
+  recall?: "easy" | "ok" | "hard";
   /** ISO instant; omit for "now". */
   loggedAt?: string;
 };

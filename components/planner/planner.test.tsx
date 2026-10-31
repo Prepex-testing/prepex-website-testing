@@ -58,15 +58,39 @@ describe("QuickLogSheet — G6 manual completion", () => {
     await userEvent.click(screen.getByTestId("log-skip"));
     expect(onSubmit).toHaveBeenCalledWith({});
   });
-  it("needs a confidence for a revision log", async () => {
+  it("a revision tick is three buttons: one tap on Easy / OK / Hard logs it with that recall", async () => {
     const onSubmit = vi.fn();
     render(<QuickLogSheet {...base} task={task({ kind: "revision" })} origin="manual" onSubmit={onSubmit} />);
+    expect(screen.queryByTestId("log-save")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByTestId("recall-hard"));
+    expect(onSubmit).toHaveBeenCalledWith({ actualMinutes: 60, log: true, recall: "hard", revision: { revisionType: "notes" } });
+  });
+  it("a practice tick starts from the task's target and one tap confirms it", async () => {
+    const onSubmit = vi.fn();
+    render(<QuickLogSheet {...base} task={task({ kind: "practice", questionCount: 20 })} origin="manual" onSubmit={onSubmit} />);
+    expect(screen.getByTestId("log-attempted")).toHaveValue("20");
+    expect(screen.getByTestId("log-correct")).toHaveValue("20");
+    await userEvent.click(screen.getByTestId("log-correct-dec"));
+    await userEvent.click(screen.getByTestId("log-correct-dec"));
+    expect(screen.getByTestId("log-wrong")).toHaveTextContent("2 wrong");
+    await userEvent.click(screen.getByTestId("log-save"));
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ log: true, practice: expect.objectContaining({ questionsAttempted: 20, questionsCorrect: 18, questionsWrong: 2 }) }));
+  });
+  it("lowering attempted keeps correct from going above it", async () => {
+    render(<QuickLogSheet {...base} task={task({ kind: "practice", questionCount: 5 })} origin="manual" onSubmit={vi.fn()} />);
+    await userEvent.click(screen.getByTestId("log-attempted-dec"));
+    expect(screen.getByTestId("log-attempted")).toHaveValue("4");
+    expect(screen.getByTestId("log-correct")).toHaveValue("4");
+  });
+  it("after a timer the older fields are unchanged: confidence 1-5 for a revision", async () => {
+    const onSubmit = vi.fn();
+    render(<QuickLogSheet {...base} task={task({ kind: "revision" })} origin="timer" onSubmit={onSubmit} />);
     await userEvent.click(screen.getByTestId("log-save"));
     expect(onSubmit).not.toHaveBeenCalled();
     expect(screen.getByRole("alert")).toHaveTextContent("Pick how confident you feel");
   });
-  it("works out wrong answers from attempted and correct", async () => {
-    render(<QuickLogSheet {...base} task={task({ kind: "practice" })} origin="manual" onSubmit={vi.fn()} />);
+  it("works out wrong answers from attempted and correct after a timer", async () => {
+    render(<QuickLogSheet {...base} task={task({ kind: "practice" })} origin="timer" onSubmit={vi.fn()} />);
     await userEvent.type(screen.getByTestId("log-attempted"), "30");
     await userEvent.type(screen.getByTestId("log-correct"), "21");
     expect(screen.getByTestId("log-wrong")).toHaveTextContent("9 wrong");

@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useState, type ReactNode } from "react";
+import { BacklogCleared, ChapterStatusBar, UndoBar } from "@/components/planner/TickFeedback";
+import { refreshXp } from "@/lib/rewards/events";
 import { useRouter } from "next/navigation";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { GhostButton } from "@/components/ui/GhostButton";
@@ -9,7 +11,7 @@ import { createBacklogItem } from "@/lib/api/backlogItems";
 import { PracticeChoiceSheet } from "@/components/planner/PracticeChoiceSheet";
 import { QuickLogSheet } from "@/components/planner/QuickLogSheet";
 import { ApiError } from "@/lib/api/http";
-import { completePlanTask, deletePlanTask, reschedulePlanTask, skipPlanTask, startPlanTask, type CompleteInput, type PlanTask } from "@/lib/api/plannerV2";
+import { completePlanTask, deletePlanTask, reschedulePlanTask, skipPlanTask, startPlanTask, undoPlanTask, type CompleteInput, type PlanTask } from "@/lib/api/plannerV2";
 import { startFocusSession } from "@/lib/focus/startFocusSession";
 import { mockUrl, plannerFocusIntent } from "@/lib/planner/cta";
 import { trackPlanner } from "@/lib/telemetry/planner";
@@ -32,6 +34,10 @@ export function useTaskActions(onChanged: () => void | Promise<void>, notify: (m
   const [backlogFor, setBacklogFor] = useState<PlanTask | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // what a tick shows afterwards: the 5 second undo, the backlog "cleared" moment, the chapter status chips
+  const [undoFor, setUndoFor] = useState<PlanTask | null>(null);
+  const [burst, setBurst] = useState(false);
+  const [chapterFor, setChapterFor] = useState<PlanTask | null>(null);
 
   const guarded = useCallback(
     async (work: () => Promise<void>, failure: string): Promise<boolean> => {
@@ -68,18 +74,38 @@ export function useTaskActions(onChanged: () => void | Promise<void>, notify: (m
   );
 
   const finishManually = useCallback(
-    async (task: PlanTask, log: Pick<CompleteInput, "actualMinutes" | "confidence" | "revision" | "practice" | "mock" | "log">) => {
+    async (task: PlanTask, log: Pick<CompleteInput, "actualMinutes" | "confidence" | "recall" | "revision" | "practice" | "mock" | "log">) => {
       const ok = await guarded(async () => {
         await completePlanTask(task.id, { via: "manual", ...log });
         trackPlanner("planner_task_complete", { kind: task.kind, via: "manual", logged: Boolean(log.log) });
       }, "Couldn't mark that done. Please try again.");
       if (ok) {
         setLogFor(null);
+        setUndoFor(task);
+        if (task.kind === "backlog") setBurst(true);
+        else if (task.kind === "lecture" && task.chapterId) setChapterFor(task);
         await onChanged();
+        void refreshXp();
       }
     },
     [guarded, onChanged],
   );
+
+  const undo = useCallback(async () => {
+    const task = undoFor;
+    if (!task) return;
+    setUndoFor(null);
+    setBurst(false);
+    setChapterFor(null);
+    try {
+      await undoPlanTask(task.id);
+      notify("Undone. Your XP was taken back.");
+    } catch (err) {
+      notify(messageOf(err, "That was too long ago to undo. Edit the log instead."));
+    }
+    await onChanged();
+    void refreshXp();
+  }, [notify, onChanged, undoFor]);
 
   const skip = useCallback(
     async (task: PlanTask) => {
@@ -132,6 +158,9 @@ export function useTaskActions(onChanged: () => void | Promise<void>, notify: (m
 
   const overlays: ReactNode = (
     <>
+      {undoFor && <UndoBar key={undoFor.id} title={undoFor.title} onUndo={() => void undo()} onExpire={() => setUndoFor(null)} />}
+      {burst && <BacklogCleared onDone={() => setBurst(false)} />}
+      {chapterFor?.chapterId && <ChapterStatusBar chapterId={chapterFor.chapterId} chapterName={chapterFor.chapterName} onDone={() => setChapterFor(null)} />}
       <PracticeChoiceSheet task={practiceFor} onClose={() => setPracticeFor(null)} />
       {logFor && (
         <QuickLogSheet
@@ -186,7 +215,9 @@ export function useTaskActions(onChanged: () => void | Promise<void>, notify: (m
     start,
     markDone: (task: PlanTask) => {
       setError(null);
-      setLogFor(task);
+      // a backlog item and a lecture finish in one tap (the sheet would only ask for what is already known)
+      if (task.kind === "backlog" || task.kind === "lecture") void finishManually(task, {});
+      else setLogFor(task);
     },
     skip,
     tomorrow,

@@ -225,6 +225,31 @@ describe("FocusSummaryModal", () => {
     expect(onSave).toHaveBeenCalledWith({ wasCompleted: true, moodRating: null });
   });
 
+  it("a session over 6 hours asks keep all or trim; keeping all is the default and sends no trim", async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(<FocusSummaryModal {...base} onSave={onSave} elapsedSeconds={8 * 3600} />);
+    expect(screen.getByTestId("away-for-a-while")).toHaveTextContent("You were away for a while");
+    expect(screen.getByTestId("keep-all")).toHaveAttribute("aria-checked", "true");
+    await user.click(screen.getByTestId("save-session"));
+    expect(onSave.mock.calls[0]![0]).not.toHaveProperty("trimToMinutes");
+  });
+
+  it("trimming sends the minutes the student says they really studied", async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(<FocusSummaryModal {...base} onSave={onSave} elapsedSeconds={8 * 3600} />);
+    await user.click(screen.getByTestId("trim"));
+    await user.type(screen.getByTestId("trim-minutes"), "90");
+    await user.click(screen.getByTestId("save-session"));
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ trimToMinutes: 90 }));
+  });
+
+  it("a normal session never shows the prompt", () => {
+    render(<FocusSummaryModal {...base} elapsedSeconds={2 * 3600} />);
+    expect(screen.queryByTestId("away-for-a-while")).not.toBeInTheDocument();
+  });
+
   it("defaults to no for a short session, and the student can overrule it", async () => {
     const user = userEvent.setup();
     const onSave = vi.fn();

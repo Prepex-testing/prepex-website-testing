@@ -96,7 +96,6 @@ export function quickAccessItems(counts: QuickAccessCounts): QuickAccessItem[] {
     { key: "focus-next", label: "Where to focus next", icon: <Compass className={ICON} aria-hidden />, href: "/home/focus-next" },
     { key: "leaderboard", label: "Leader Board", icon: <Trophy className={ICON} aria-hidden />, href: "/home/leaderboard" },
     { key: "library", label: "Resource Library", icon: <Library className={ICON} aria-hidden />, href: "/home/resource-library" },
-    // TODO(tile-wire): Weekly Win Journal shows a fixed line; show the latest card's week when the journal API has a cheap summary.
-    { key: "journal", label: "Weekly Win Journal", subtitle: "Reflect & celebrate wins", icon: <NotebookPen className={ICON} aria-hidden />, href: "/home/journal", coach: "quick-journal" },
+    { key: "journal", label: "Weekly review", subtitle: "Recap, goals and your past weeks", icon: <NotebookPen className={ICON} aria-hidden />, href: "/home/review", coach: "quick-journal" },
   ];
 }

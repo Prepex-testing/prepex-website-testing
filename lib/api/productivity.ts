@@ -62,12 +62,13 @@ export type EffortTab = {
   daysActive: number;
   totalDaysInWeek: number;
   effortScore: number;
+  /** This week's XP by where it came from; effortScore is their sum. */
   scoreComponents: {
-    streak: number;
-    completion: number;
+    studyTime: number;
     tasks: number;
-    focusMinutes: number;
-    practiceAccuracy: number;
+    practice: number;
+    mistakes: number;
+    rituals: number;
   };
 
   dailyBreakdown: EffortDay[];

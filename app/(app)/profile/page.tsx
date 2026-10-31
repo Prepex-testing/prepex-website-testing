@@ -1,5 +1,6 @@
 "use client";
 
+import { ProfileRewards } from "@/components/rewards/ProfileRewards";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -35,7 +36,7 @@ import { PageLoader } from "@/components/ui/PageLoader";
 import { ToggleRow } from "@/components/profile/ToggleRow";
 import { EditProfileModal } from "@/components/profile/EditProfileModal";
 import { StudyPreferencesModal } from "@/components/profile/StudyPreferencesModal";
-import { WinJournalSettingsModal } from "@/components/profile/WinJournalSettingsModal";
+import { ProfileSocialSettings } from "@/components/social/ProfileSocialSettings";
 import { TrophyIcons } from "@/components/ui/icons";
 import {
   ACADEMIC_LEVEL_LABEL,
@@ -110,7 +111,6 @@ export default function ProfilePage() {
   const fullName = storedFullName || "Student";
   const [isEditOpen, setEditOpen] = useState(false);
   const [isPrefsOpen, setPrefsOpen] = useState(false);
-  const [isJournalSettingsOpen, setJournalSettingsOpen] = useState(false);
   const [overview, setOverview] = useState<ProfileOverview | null>(null);
   const [overviewError, setOverviewError] = useState(false);
   const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
@@ -442,29 +442,6 @@ export default function ProfilePage() {
               <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />
             </button>
 
-            <button
-              type="button"
-              onClick={() => setJournalSettingsOpen(true)}
-              className="flex min-h-15 w-full items-center justify-between gap-2 rounded-xl border border-brand/10 px-3 py-3 transition-colors hover:bg-tint/30 sm:min-h-16.5"
-            >
-              <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-tint text-ink sm:h-10 sm:w-10">
-                  <TrophyIcons size={20} />
-                </div>
-
-                <div className="min-w-0 text-left">
-                  <p className="text-[13px] font-semibold leading-5 text-ink sm:text-[14px]">
-                    Win Journal Settings
-                  </p>
-
-                  <p className="mt-0.5 line-clamp-2 text-[11px] leading-4 text-muted sm:text-xs">
-                    Friday card, notification & parent reports
-                  </p>
-                </div>
-              </div>
-
-              <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />
-            </button>
 
           </div>
         </div>
@@ -591,6 +568,10 @@ export default function ProfilePage() {
       </div>
 
 
+      <ProfileSocialSettings />
+
+      <ProfileRewards />
+
       <div className="grid grid-cols-1 gap-4 rounded-2xl border border-brand/10 bg-surface p-6 sm:grid-cols-2">
         {[
           { href: "/timetable?from=profile", icon: <ClockIcon className={ROW_ICON} />, title: "Study timetable", subtitle: "Edit your weekly study slots" },
@@ -652,7 +633,6 @@ export default function ProfilePage() {
         preferences={prefs}
         onSaved={setOverview}
       />
-      <WinJournalSettingsModal open={isJournalSettingsOpen} onClose={() => setJournalSettingsOpen(false)} />
       <ConfirmModal
         open={isLogoutConfirmOpen}
         onClose={() => setLogoutConfirmOpen(false)}

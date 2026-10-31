@@ -10,6 +10,9 @@ import { OnboardingCoach } from "@/components/coach/OnboardingCoach";
 import { AccountRestoredNotice } from "@/components/auth/AccountRestoredNotice";
 import { ActiveFocusBanner } from "@/components/focus/ActiveFocusBanner";
 import { FocusLauncher } from "@/components/focus/FocusLauncher";
+import { Heartbeat } from "@/components/rewards/Heartbeat";
+import { QuickLogFab } from "@/components/rituals/QuickLogFab";
+import { RewardsLayer } from "@/components/rewards/RewardsLayer";
 
 // Immersive "focus" experiences: narrower sidebar, no check-in interruptions.
 // (The practice player also intercepts nav clicks to confirm leaving.)
@@ -66,6 +69,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-1 bg-background">
       <FocusLauncher />
+      {!isFocusMode && <Heartbeat />}
+      <RewardsLayer />
       <div
         className={`relative hidden shrink-0 transition-[width] duration-700 ease-in-out lg:block ${
           collapsedState ? "w-24.25" : "w-56"
@@ -101,6 +106,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </>
         ) : null}
       </div>
+      {!isFocusMode && <QuickLogFab />}
       <BottomNav />
     </div>
   );

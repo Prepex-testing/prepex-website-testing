@@ -13,7 +13,7 @@ export type MasterAnalytics = {
   minutes: { today: number; week: number; month: number; all: number };
   /** This month's study time by subject; sums to `minutes.month`. */
   bySubject: { subjectId: number | null; name: string; minutes: number; share: number }[];
-  streaks: { current: number; longest: number; shields: { available: boolean; perWeek: number } };
+  streaks: { current: number; longest: number; shields: { available: boolean; held: number; max: number } };
   weeklyGoalProgress: {
     weekStart: string;
     weekEnd: string;

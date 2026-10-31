@@ -69,7 +69,7 @@ export default function MistakesPage() {
   const [railMore, setRailMore] = useState(false);
 
   // Dialogs
-  const [formFor, setFormFor] = useState<{ mode: "add" } | { mode: "edit"; mistake: Mistake } | null>(null);
+  const [formFor, setFormFor] = useState<{ mode: "add"; prefill?: { subjectId: number | null; chapterId: string | null; topic: string | null } } | { mode: "edit"; mistake: Mistake } | null>(null);
   const [reviewing, setReviewing] = useState<Mistake | null>(null);
   const [deleting, setDeleting] = useState<Mistake | null>(null);
 
@@ -118,6 +118,15 @@ export default function MistakesPage() {
   );
 
   // First load: today's queue and the stats.
+  // "Save a mistake?" from a finished session or the quick log opens the form with the subject and chapter already filled
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("new") !== "1") return;
+    const subject = Number(q.get("subject"));
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- opening the form once from the link
+    setFormFor({ mode: "add", prefill: { subjectId: Number.isFinite(subject) && subject > 0 ? subject : null, chapterId: q.get("chapter"), topic: q.get("topic") } });
+  }, []);
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load (state is set after the awaits)
     void loadQueue();
@@ -380,6 +389,7 @@ export default function MistakesPage() {
               busy={busy}
               error={error}
               initial={formFor.mode === "edit" ? formFor.mistake : undefined}
+              prefill={formFor.mode === "add" ? formFor.prefill : undefined}
               submitLabel={formFor.mode === "edit" ? "Save changes" : "Save mistake"}
               onSubmit={(input) => void save(input)}
               onCancel={() => setFormFor(null)}
