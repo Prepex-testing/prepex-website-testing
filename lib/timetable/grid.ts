@@ -307,6 +307,15 @@ export function hasPlanningTime(blocks: GridBlock[]): boolean {
   return blocks.some((b) => b.activityType === "SELF_STUDY" || b.activityType === "PRACTICE");
 }
 
+/**
+ * Weekdays with no blocks at all, once the rest of the week has some. The planner plans nothing on a day the
+ * timetable leaves empty (it no longer falls back to a starter week), so the editor says so before the student saves.
+ */
+export function emptyDays(blocks: GridBlock[]): number[] {
+  if (blocks.length === 0) return [];
+  return Array.from({ length: DAY_COUNT }, (_, day) => day).filter((day) => blocksOnDay(blocks, day).length === 0);
+}
+
 export const MIN_SLEEP_MINUTES = 5 * 60;
 
 /** Days whose Sleep blocks add up to under five hours — a gentle warning, never a reason to stop. */

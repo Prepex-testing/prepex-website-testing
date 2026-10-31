@@ -593,6 +593,7 @@ export default function ProfilePage() {
 
       <div className="grid grid-cols-1 gap-4 rounded-2xl border border-brand/10 bg-surface p-6 sm:grid-cols-2">
         {[
+          { href: "/timetable?from=profile", icon: <ClockIcon className={ROW_ICON} />, title: "Study timetable", subtitle: "Edit your weekly study slots" },
           { href: "/profile/settings", icon: <UserIcon className={ROW_ICON} />, title: "Account Settings", subtitle: "Email, password and data" },
           { href: "/profile/help", icon: <QuickIcon className={ROW_ICON} />, title: "Help and Support", subtitle: "Contacts and Helpline" },
         ].map((row) => (

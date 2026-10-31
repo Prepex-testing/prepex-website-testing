@@ -2,15 +2,16 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
-import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
 import { QuickLogForm } from "@/components/sessions/QuickLogForm";
 import { StudyLogList } from "@/components/sessions/StudyLogList";
-import { StudyTabs } from "@/components/study/StudyTabs";
+import { CountUp } from "@/components/study/CountUp";
+import { StudyShell } from "@/components/study/StudyShell";
 import { FIELD } from "@/components/study/SubjectChapterFields";
 import { useSubjects } from "@/components/study/useSubjects";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Modal } from "@/components/ui/Modal";
 import { PageLoader } from "@/components/ui/PageLoader";
+import { Toast, useToast } from "@/components/ui/Toast";
 import type { StudyLogRow } from "@/lib/api/focus";
 import { ApiError } from "@/lib/api/http";
 import {
@@ -23,7 +24,9 @@ import {
   type StudyPeriod,
   type StudySummary,
 } from "@/lib/api/studyLog";
+import { dayKey } from "@/lib/logs/dates";
 import { formatMinutes } from "@/lib/study/format";
+import { sessionStats } from "@/lib/study/sessionStats";
 
 const WeekChart = dynamic(() => import("@/components/sessions/WeekChart"), {
   ssr: false,
@@ -45,7 +48,7 @@ export default function SessionsPage() {
 
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const toast = useToast();
   const [editing, setEditing] = useState<StudyLogRow | null>(null);
   const [deleting, setDeleting] = useState<StudyLogRow | null>(null);
   const [formVersion, setFormVersion] = useState(0);
@@ -84,12 +87,11 @@ export default function SessionsPage() {
   async function handleCreate(input: NewStudySession) {
     setBusy(true);
     setFormError(null);
-    setNotice(null);
     try {
       await createStudySession(input);
       await refresh();
       setFormVersion((v) => v + 1); // clears the form
-      setNotice("Logged. Nice work.");
+      toast.show("Logged. Nice work.");
     } catch (err) {
       setFormError(msg(err, "Couldn't save that. Please try again."));
     } finally {
@@ -152,10 +154,10 @@ export default function SessionsPage() {
 
   if (loading || subjects.status === "loading") return <PageLoader label="Loading your study log…" />;
 
+  const stats = summary ? sessionStats(summary, dayKey(new Date())) : null;
+
   return (
-    <div className="flex flex-col gap-5 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl lg:p-8" data-testid="sessions-page">
-      <ProfileSubpageHeader title="Study log" backHref="/home" />
-      <StudyTabs current="/sessions" />
+    <StudyShell current="/sessions" testId="sessions-page">
 
       {loadError && (
         <p role="alert" className="rounded-lg bg-danger-bg px-3 py-2 text-sm font-medium text-danger">
@@ -163,7 +165,10 @@ export default function SessionsPage() {
         </p>
       )}
 
-      <section aria-label="Study time chart" className="rounded-2xl border border-brand/10 bg-surface p-4">
+      {/* One column below 1024px (chart, form, history). From 1024px: chart and stats on top, history and the sticky
+          form below. The DOM order is the phone order; the desktop cells are placed explicitly. */}
+      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] lg:gap-6">
+      <section aria-label="Study time chart" className="study-fade-in rounded-2xl border border-brand/10 bg-surface p-4 lg:col-start-1 lg:row-start-1 lg:p-6">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
             <h2 className="text-[16px] font-extrabold text-ink">{period === "week" ? "This week" : "This month"}</h2>
@@ -192,17 +197,39 @@ export default function SessionsPage() {
         )}
       </section>
 
-      <section aria-label="Log study time" className="rounded-2xl border border-brand/10 bg-surface p-4 sm:p-6">
+      {stats && (
+        <section aria-label="Study time numbers" className="study-fade-in hidden flex-col gap-3 lg:col-start-2 lg:row-start-1 lg:flex" data-testid="session-stats">
+          {[
+            stats.today !== null && { id: "today", label: "Today", minutes: stats.today },
+            { id: "total", label: period === "week" ? "This week" : "This month", minutes: stats.total },
+            { id: "average", label: "Daily average", minutes: stats.dailyAverage },
+          ]
+            .filter((t): t is { id: string; label: string; minutes: number } => t !== false)
+            .map((t) => (
+              <div key={t.id} className="flex flex-1 items-center justify-between gap-3 rounded-2xl border border-border-subtle bg-surface-elevated px-5 py-4">
+                <p className="text-[13px] font-semibold uppercase tracking-wide text-muted">{t.label}</p>
+                <p className="text-[24px] font-extrabold leading-none text-ink">
+                  <CountUp value={t.minutes} format={formatMinutes} testId={`session-stat-${t.id}`} />
+                </p>
+              </div>
+            ))}
+          {stats.best && (
+            <div className="flex flex-1 items-center justify-between gap-3 rounded-2xl border border-border-subtle bg-surface-elevated px-5 py-4" data-testid="session-stat-best">
+              <p className="text-[13px] font-semibold uppercase tracking-wide text-muted">Best day</p>
+              <p className="text-right text-[15px] font-bold text-ink">
+                {stats.best.label} <span className="font-semibold text-muted">· {formatMinutes(stats.best.minutes)}</span>
+              </p>
+            </div>
+          )}
+        </section>
+      )}
+
+      <section aria-label="Log study time" className="study-fade-in rounded-2xl border border-brand/10 bg-surface p-4 sm:p-6 lg:col-start-2 lg:row-start-2 lg:sticky lg:top-6 lg:self-start">
         <h2 className="mb-3 text-[18px] font-extrabold text-ink">Log study time</h2>
-        {notice && (
-          <p role="status" className="mb-3 rounded-lg bg-[var(--success-bg)] px-3 py-2 text-[13px] font-semibold text-[var(--success)]">
-            {notice}
-          </p>
-        )}
         <QuickLogForm key={formVersion} subjects={subjects.subjects} busy={busy} error={editing ? null : formError} onSubmit={(input) => void handleCreate(input)} />
       </section>
 
-      <section aria-label="History" className="flex flex-col gap-3">
+      <section aria-label="History" className="flex flex-col gap-3 lg:col-start-1 lg:row-start-2 lg:min-w-0">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-[18px] font-extrabold text-ink">History</h2>
           <select
@@ -227,6 +254,7 @@ export default function SessionsPage() {
           </button>
         )}
       </section>
+      </div>
 
       <Modal open={editing !== null} onClose={() => (busy ? undefined : setEditing(null))} ariaLabel="Edit study entry">
         {editing && (
@@ -257,7 +285,8 @@ export default function SessionsPage() {
         busy={busy}
         error={deleting ? formError : null}
       />
-    </div>
+      <Toast state={toast} />
+    </StudyShell>
   );
 }
 

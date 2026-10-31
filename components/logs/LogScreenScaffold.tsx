@@ -146,10 +146,11 @@ export function BarRow({ label, value, max, text, color }: { label: string; valu
 }
 
 /** A tiny line for a trend: points are 0..max, drawn left to right. */
-export function Sparkline({ points, label }: { points: number[]; label: string }) {
+export function Sparkline({ points, label, fit = false }: { points: number[]; label: string; fit?: boolean }) {
   if (points.length < 2) return <p className="text-[13px] text-muted">Not enough data yet.</p>;
-  const max = Math.max(...points, 1);
-  const min = Math.min(...points, 0);
+  // `fit` scales the line to its own range, so a score moving between 55 and 66 reads as a trend, not a flat line near the top
+  const max = fit ? Math.max(...points) : Math.max(...points, 1);
+  const min = fit ? Math.min(...points) : Math.min(...points, 0);
   const span = max - min || 1;
   const w = 240;
   const h = 48;

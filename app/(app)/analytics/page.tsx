@@ -15,6 +15,7 @@ import { PageLoader } from "@/components/ui/PageLoader";
 import { ApiError } from "@/lib/api/http";
 import { listDiagnosisReports, type ReportLimit, type ReportListItem } from "@/lib/api/diagnosisReports";
 import { getMasterAnalytics, type MasterAnalytics } from "@/lib/api/masterAnalytics";
+import { syllabusHeadline } from "@/lib/syllabus/headline";
 import { useStartReport } from "@/lib/diagnosis/useStartReport";
 import { drillHref, goalUnitLabel, latestWeek, streakCaption } from "@/lib/insights/analyticsFormat";
 import { approxRank, rankLabel } from "@/lib/insights/mockMath";
@@ -62,10 +63,12 @@ export default function AnalyticsPage() {
     return (id: number) => names.get(id) ?? `Subject ${id}`;
   }, [data]);
 
+  const headline = data?.syllabus ? syllabusHeadline(data.syllabus.bySubject) : null;
+
   if (!data && !error) return <PageLoader label="Building your dashboard…" />;
 
   return (
-    <LogScreenScaffold name="analytics" title="Your dashboard" backHref="/home" tabBar={<InsightsTabs current="/analytics" />} sidePanelLabel="Last diagnosis and weakest chapter" sidePanel={data ? <DashboardSidePanel data={data} lastReport={lastReport} /> : undefined}>
+    <LogScreenScaffold name="analytics" title="Your dashboard" subtitle={headline ?? undefined} backHref="/home" tabBar={<InsightsTabs current="/analytics" />} sidePanelLabel="Last diagnosis and weakest chapter" sidePanel={data ? <DashboardSidePanel data={data} lastReport={lastReport} /> : undefined}>
 
       <DiagnoseNowCard limit={limit} starting={starting} error={startError} onStart={() => void start()} />
 

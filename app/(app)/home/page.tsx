@@ -30,6 +30,8 @@ import { WellnessResourceModal } from "@/components/home/WellnessResourceModal";
 import { HomePartnerMatchPrompt } from "@/components/home/HomePartnerMatchPrompt";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { formatFullDate } from "@/lib/utils/datetime";
+import { getSyllabus } from "@/lib/api/syllabus";
+import { syllabusHeadline } from "@/lib/syllabus/headline";
 import { useGreeting } from "@/lib/utils/greeting";
 import {
   regeneratePlanForMood,
@@ -130,6 +132,20 @@ export default function HomePage() {
   const storedFullName = useStoredFullName();
   const firstName = storedFullName.trim().split(/\s+/)[0] || "there";
   const greeting = useGreeting();
+
+  // One line about real syllabus progress under the greeting. Not part of the page's loading gate: it appears when it arrives.
+  const [syllabusLine, setSyllabusLine] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    getSyllabus()
+      .then((res) => {
+        if (alive) setSyllabusLine(syllabusHeadline(res.data.subjects.map((s) => ({ name: s.name, total: s.summary.chapters, completed: s.summary.studied }))));
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, []);
   const [isRegenerateOpen, setRegenerateOpen] = useState(false);
   const [isCheckInOpen, setCheckInOpen] = useState(false);
   const [energyMood, setEnergyMood] = useState<Mood | null>(null);
@@ -461,6 +477,11 @@ export default function HomePage() {
           >
             {examCountdown ?? " "}
           </p>
+          {syllabusLine && (
+            <p className="text-sm text-muted" data-testid="home-syllabus-line">
+              {syllabusLine}
+            </p>
+          )}
         </div>
         <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           <Link href="/home/partner" aria-label="Partner and pods" title="Partner (pods are coming)" data-testid="home-pods" data-coach="quick-partner" className="flex size-11 items-center justify-center rounded-full bg-surface text-ink hover:bg-tint-strong">
