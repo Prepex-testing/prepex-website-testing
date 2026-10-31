@@ -32,6 +32,13 @@ export type MasterAnalytics = {
     candidatePool: number | null;
     asOf: string | null;
   };
+  /** Chapters the student has completed (Syllabus "studied", including those marked done at onboarding). */
+  syllabus?: {
+    totalChapters: number;
+    completedChapters: number;
+    completionPercent: number | null;
+    bySubject: { subjectId: number; name: string; total: number; completed: number; percent: number }[];
+  };
   chapterStrengthGrid: {
     chapters: { chapterId: string; name: string; subjectId: number; label: GridLabel; hours: number; accuracy: number | null }[];
     counts: Record<GridLabel, number>;

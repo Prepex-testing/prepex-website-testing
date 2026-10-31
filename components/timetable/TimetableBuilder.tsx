@@ -20,6 +20,7 @@ import {
   clamp,
   collapseToUniform,
   copyDay,
+  emptyDays,
   formatDuration,
   formatRange,
   hasPlanningTime,
@@ -353,6 +354,7 @@ export function TimetableBuilder({
   const hasStudyTime = weeklyStudy > 0;
   const lacksPlanningTime = requirePlanningTime && !hasPlanningTime(blocks);
   const lowSleepDays = blocks.length > 0 ? shortSleepDays(blocks) : [];
+  const idleDays = showUniform ? [] : emptyDays(blocks);
   const split = weekdayWeekendStudy(blocks);
   const anyFromTemplate = blocks.some((b) => b.fromTemplate);
 
@@ -658,6 +660,11 @@ export function TimetableBuilder({
         {lacksPlanningTime && blocks.length > 0 && (
           <p role="alert" data-testid="planning-time-error" className="rounded-lg bg-danger-bg px-3 py-2 text-xs font-medium text-danger">
             Add at least one Self-Study or Practice block. Prepex plans your tasks in that time, so it needs somewhere to put them.
+          </p>
+        )}
+        {idleDays.length > 0 && (
+          <p role="status" data-testid="empty-day-warning" className="rounded-lg bg-warning-bg px-3 py-2 text-xs font-medium text-warning">
+            {`Nothing will be planned on ${idleDays.map((d) => DAY_LONG[d]).join(", ")}: ${idleDays.length === 1 ? "it has" : "they have"} no blocks. Add some, or copy another day onto ${idleDays.length === 1 ? "it" : "them"}.`}
           </p>
         )}
         {lowSleepDays.length > 0 && (

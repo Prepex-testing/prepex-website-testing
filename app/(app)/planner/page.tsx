@@ -14,9 +14,11 @@ import { usePlanDay } from "@/components/planner/usePlanDay";
 import { useTaskActions } from "@/components/planner/useTaskActions";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { Toast, useToast } from "@/components/ui/Toast";
+import { GHOST_CLASSES } from "@/components/ui/GhostButton";
 import { ApiError } from "@/lib/api/http";
 import { addPlanTask } from "@/lib/api/plannerV2";
 import { dateKey, daySummaryText, nowMinutes, shiftDate } from "@/lib/planner/format";
+import { warningAction } from "@/lib/planner/warningActions";
 import { trackPlanner } from "@/lib/telemetry/planner";
 
 const OUTLINE = "flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-[10px] border border-secondary-button-border bg-transparent px-5 py-2 text-[14px] font-medium text-ink transition-colors hover:bg-tint-strong disabled:opacity-60";
@@ -108,9 +110,14 @@ function PlannerScreen() {
           <h1 className="text-[26px] font-extrabold leading-tight text-ink" data-testid="plan-title">
             {titleFor(day.date, today)}
           </h1>
-          <p className="mt-1 text-[14px] text-muted" data-testid="day-summary">
-            {dateLabel} · {daySummaryText(day.summary.plannedMinutes, day.summary.doneMinutes).replace(" • ", " · ")}
-          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <p className="text-[14px] text-muted" data-testid="day-summary">
+              {dateLabel} · {daySummaryText(day.summary.plannedMinutes, day.summary.doneMinutes).replace(" • ", " · ")}
+            </p>
+            <Link href="/timetable?from=planner" className={GHOST_CLASSES} data-testid="edit-timetable">
+              Edit timetable
+            </Link>
+          </div>
           {day.date !== today && (
             <Link href="/planner" className="mt-1 inline-flex min-h-9 items-center text-[13px] font-semibold text-ink underline">
               Back to today
@@ -153,11 +160,22 @@ function PlannerScreen() {
 
           {warnings.length > 0 && (
             <ul className="flex flex-col gap-2" data-testid="plan-warnings">
-              {warnings.map((w) => (
-                <li key={`${w.code}-${w.message}`} className="rounded-xl bg-warning-bg px-4 py-3 text-[13px] font-semibold leading-snug text-ink">
-                  {w.message}
-                </li>
-              ))}
+              {warnings.map((w) => {
+                const fix = warningAction(w);
+                return (
+                  <li key={`${w.code}-${w.message}`} className="rounded-xl bg-warning-bg px-4 py-3 text-[13px] font-semibold leading-snug text-ink">
+                    {w.message}
+                    {fix && (
+                      <>
+                        {" "}
+                        <Link href={fix.href} className="font-bold underline" data-testid={`warning-fix-${w.code}`}>
+                          {fix.label}
+                        </Link>
+                      </>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
           {notes.length > 0 && (
@@ -212,7 +230,7 @@ function PlannerScreen() {
           {day.slotSource === "default" && (
             <p className="rounded-xl bg-tint-strong px-4 py-3 text-[13px] text-body-text dark:bg-[#FAF7F214] dark:text-ink">
               You have not built a timetable yet, so this uses a starter week.{" "}
-              <Link href="/timetable" className="font-bold underline">
+              <Link href="/timetable?from=planner" className="font-bold underline">
                 Build my timetable
               </Link>
             </p>
