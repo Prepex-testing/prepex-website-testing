@@ -1,7 +1,7 @@
 "use client";
 
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import {
   getNotifications,
@@ -26,7 +26,7 @@ import { BellIcon } from "@/assets/icons";
  * rather than by an error the student can do nothing about.
  */
 
-const POLL_INTERVAL_MS = 60_000;
+const POLL_INTERVAL_MS = 120_000;
 const FEED_LIMIT = 20;
 
 function relativeTime(iso: string): string {
@@ -60,7 +60,6 @@ const DEFAULT_TRIGGER_CLASS =
 
 export function NotificationBell({ className }: NotificationBellProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const [isOpen, setOpen] = useState(false);
   const [items, setItems] = useState<NotificationCard[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -90,7 +89,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
     [applyFeed],
   );
 
-  // On mount and on every navigation — the "check on each refresh" pass.
+  // On mount (the shell keeps the bell mounted across tabs).
   // Written as a promise chain rather than a call to `refresh` so the state
   // writes land in a callback, and so a navigation mid-flight can't apply a
   // feed to the next screen's bell.
@@ -104,7 +103,8 @@ export function NotificationBell({ className }: NotificationBellProps) {
         if (!controller.signal.aborted) setLoaded(true);
       });
     return () => controller.abort();
-  }, [applyFeed, pathname]);
+    // once per mount: the shell keeps the bell mounted across tabs, and the poll below and the return-to-tab check keep it fresh
+  }, [applyFeed]);
 
   // Back from another tab, plus a slow poll for a session parked on one screen.
   useEffect(() => {
@@ -114,7 +114,9 @@ export function NotificationBell({ className }: NotificationBellProps) {
 
     window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onFocus);
-    const timer = window.setInterval(() => void refresh(), POLL_INTERVAL_MS);
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") void refresh();
+    }, POLL_INTERVAL_MS);
 
     return () => {
       window.removeEventListener("focus", onFocus);

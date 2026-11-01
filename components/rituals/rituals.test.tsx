@@ -89,7 +89,7 @@ describe("reward events", () => {
 describe("heartbeat", () => {
   afterEach(() => vi.useRealTimers());
 
-  it("reports visible time every 30 seconds and nothing while the tab is hidden", async () => {
+  it("reports visible time once a minute (QA pass: was every 30 s) and nothing while the tab is hidden", async () => {
     vi.useFakeTimers();
     vi.mocked(sendHeartbeat).mockResolvedValue({ activeSeconds: 30, countsToday: false, thresholdSeconds: 120 });
     Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "visible" });
@@ -97,8 +97,9 @@ describe("heartbeat", () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(HEARTBEAT_EVERY_MS);
     });
+    expect(HEARTBEAT_EVERY_MS).toBe(60_000);
     expect(sendHeartbeat).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(sendHeartbeat).mock.calls[0]![0]).toBe(30);
+    expect(vi.mocked(sendHeartbeat).mock.calls[0]![0]).toBe(60);
 
     Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "hidden" });
     await act(async () => {
