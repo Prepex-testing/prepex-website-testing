@@ -26,7 +26,7 @@ import { BellIcon } from "@/assets/icons";
  * rather than by an error the student can do nothing about.
  */
 
-const POLL_INTERVAL_MS = 60_000;
+const POLL_INTERVAL_MS = 120_000;
 const FEED_LIMIT = 20;
 
 function relativeTime(iso: string): string {
