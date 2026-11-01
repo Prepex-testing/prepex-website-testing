@@ -212,7 +212,7 @@ function NotebookScreen() {
       {tab === "stats" ? (
         <StatsPanel notebookId={id} lookup={lookup} />
       ) : (
-        <div className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
           <aside className={`flex flex-col gap-2 ${readingOnPhone ? "hidden lg:flex" : ""}`} aria-label="Pages" data-testid="page-list">
             <GhostButton className="w-full" onClick={() => void addPage()} data-testid="add-page">
               <Plus className="size-5" aria-hidden /> {tab === "notes" ? "New note" : "New mistake"}

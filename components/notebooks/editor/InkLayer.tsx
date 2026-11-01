@@ -122,7 +122,7 @@ export function InkLayer({ strokes, height, onChange, tool = "hand", color = AUT
         aria-label={all.length > 0 ? `Handwriting, ${all.length} strokes` : "Empty drawing area"}
       >
         {all.map((s, i) => (
-          <path key={i} d={pathFor(s.points, s.width, s.tool === "highlighter")} fill={s.color === AUTO ? "currentColor" : s.color} opacity={s.tool === "highlighter" ? 0.35 : 1} />
+          <path key={i} d={pathFor(s.points, s.width, s.tool === "highlighter")} fill={s.color === AUTO ? (background ? "#1A1A2E" : "currentColor") : s.color} opacity={s.tool === "highlighter" ? 0.35 : 1} />
         ))}
       </svg>
     </div>
