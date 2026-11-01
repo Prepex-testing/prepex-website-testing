@@ -246,7 +246,7 @@ function GoalsScreen() {
           total={live.length > 0 ? data.summary.total : 0}
           percent={data.summary.percent}
           onJumpToIncomplete={jumpToIncomplete}
-          action={<SmartSuggestion weekStart={viewWeekStart ?? data.weekStart} subjectNames={subjectNames} chapterNames={chapterNames} onAccept={handleWeekSuggestions} />}
+          action={<SmartSuggestion weekStart={viewWeekStart ?? data.weekStart} onAccept={handleWeekSuggestions} />}
         />
 
         {notice && (

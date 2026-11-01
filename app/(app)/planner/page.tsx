@@ -4,7 +4,10 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { EndOfDay, isEndOfDay } from "@/components/planner/EndOfDay";
+import { LightDayPrompt } from "@/components/planner/LightDayPrompt";
 import { ModeToggle } from "@/components/planner/ModeToggle";
+import { NoGoalsModal } from "@/components/planner/NoGoalsPrompt";
+import { PlanLoadHeader } from "@/components/planner/PlanLoadHeader";
 import { PlanExplanation, usePlanExplanation } from "@/components/planner/PlanExplanation";
 import { PlanHeaderActions } from "@/components/planner/PlanHeaderActions";
 import { PlanSidePanel, useIsDesktop } from "@/components/planner/PlanSidePanel";
@@ -100,7 +103,6 @@ function PlannerScreen() {
   const rolling = day.tasks.filter((t) => t.status === "pending" || t.status === "in_progress");
   const ended = isEndOfDay({ isToday: day.isToday, nowMin, tasks: day.tasks, studyBlocks: day.studyBlocks });
   const warnings = day.plan?.warnings ?? [];
-  const notes = day.plan?.polishNotes ?? [];
   const dateLabel = new Date(`${day.date}T00:00:00`).toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
 
   return (
@@ -145,8 +147,11 @@ function PlannerScreen() {
         </div>
       </header>
 
+      <PlanLoadHeader day={day} />
+
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-4">
+          {day.isToday && <LightDayPrompt day={day} date={day.date} onChanged={plan.refresh} />}
           {!desktop && <PlanExplanation text={explanation.text} loading={explanation.loading} />}
 
           {plan.status === "error" && (
@@ -176,16 +181,6 @@ function PlannerScreen() {
                   </li>
                 );
               })}
-            </ul>
-          )}
-          {notes.length > 0 && (
-            <ul className="flex flex-col gap-2" data-testid="plan-notes">
-              {notes.map((n) => (
-                <li key={`${n.kind}-${n.message}`} className="rounded-xl border border-brand/10 bg-surface px-4 py-3 text-[13px] leading-snug text-body-text dark:text-ink">
-                  <span className="mr-2 rounded-full bg-tint-strong px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-ink dark:bg-[#FAF7F214]">{n.kind === "insight" ? "Insight" : "AI tweak"}</span>
-                  {n.message}
-                </li>
-              ))}
             </ul>
           )}
 
@@ -222,6 +217,7 @@ function PlannerScreen() {
                   onSkip={(t) => void actions.skip(t)}
                   onTomorrow={(t) => void actions.tomorrow(t)}
                   onDelete={actions.askDelete}
+                  onLock={(t) => void actions.lock(t)}
                 />
               )}
             />
@@ -243,6 +239,7 @@ function PlannerScreen() {
       </div>
 
       {actions.overlays}
+      {day.isToday && <NoGoalsModal today={today} />}
       <Toast state={toast} />
     </div>
   );

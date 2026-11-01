@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Goal, NewGoal } from "@/lib/api/goals";
-import type { Proposal } from "@/lib/api/plannerV2";
-import { chipLabel, fitFor, forSave, goalFocusIntent, goalMinutes, hoursText, mockMinutesFor, proposalToGoal, taskName, weekDays } from "@/lib/goals/v2";
+import { chipLabel, fitFor, forSave, goalFocusIntent, goalMinutes, hoursText, mockMinutesFor, taskName, weekDays } from "@/lib/goals/v2";
 
 const lectures = (over: Partial<NewGoal> = {}): NewGoal => ({ type: "LECTURES", unit: "COUNT", target: 4, subjectId: 1, minutesPerUnit: 60, ...over });
 
@@ -84,13 +83,6 @@ describe("forSave", () => {
     expect(out.fixedDate).toBe("2026-10-31");
     expect(out.fixedStartTime).toBe("14:00");
     expect(out.examPattern).toBe("jee_main");
-  });
-});
-
-describe("proposalToGoal", () => {
-  it("turns a suggestion into a goal the screen can save", () => {
-    const p: Proposal = { id: "p1", source: "weakness", label: "Revise Kinematics", totalMinutes: 90, reason: "r", goal: { type: "REVISIONS", unit: "COUNT", target: 3, subjectId: 1, chapterId: "c1", minutesPerUnit: 30, revisionType: "notes" } };
-    expect(proposalToGoal(p)).toMatchObject({ type: "REVISIONS", target: 3, chapterId: "c1", minutesPerUnit: 30, revisionType: "notes" });
   });
 });
 

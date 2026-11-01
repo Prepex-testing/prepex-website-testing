@@ -1,5 +1,5 @@
 import type { Goal, GoalType, NewGoal } from "@/lib/api/goals";
-import type { GoalDefaults, Proposal } from "@/lib/api/plannerV2";
+import type { GoalDefaults } from "@/lib/api/plannerV2";
 import type { FocusSessionIntent, TaskType } from "@/lib/focus/intent";
 import { formatDuration } from "@/lib/planner/format";
 
@@ -143,27 +143,6 @@ export function taskName(g: Pick<NewGoal, "type" | "target" | "unit" | "practice
     case "MOCKS":
       return `${n > 1 ? `${n} × ` : ""}${labelOf(MOCK_TYPES, g.mockType) ?? "Mock"}${g.examPattern ? ` (${labelOf(EXAM_PATTERNS, g.examPattern)})` : ""}`;
   }
-}
-
-/** A suggestion from the server as a goal the screen can save. */
-export function proposalToGoal(p: Proposal): NewGoal {
-  const g = p.goal;
-  return {
-    type: g.type,
-    unit: g.unit,
-    target: g.target,
-    subjectId: g.subjectId,
-    chapterId: g.chapterId ?? null,
-    topic: g.topic ?? null,
-    minutesPerUnit: g.minutesPerUnit ?? null,
-    practiceSource: g.practiceSource ?? null,
-    revisionType: g.revisionType ?? null,
-    mockType: g.mockType ?? null,
-    examPattern: g.examPattern ?? null,
-    fixedDate: g.fixedDate ?? null,
-    fixedStartTime: g.fixedStartTime ?? null,
-    backlogItemId: g.backlogItemId ?? null,
-  };
 }
 
 /** Drops the keys the server does not accept on a create (nulls are fine; undefined is dropped by JSON). */

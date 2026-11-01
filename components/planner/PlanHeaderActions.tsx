@@ -48,7 +48,7 @@ export function PlanHeaderActions({ plan, date, notify, onAdded }: Props) {
         {!manual && (
           <button type="button" data-testid="regenerate" title={`${regen.remaining} left today`} disabled={plan.building || regen.remaining === 0} onClick={() => setRegenOpen(true)} className={OUTLINE}>
             <RefreshCw className={`size-4 ${plan.building ? "animate-spin" : ""}`} aria-hidden />
-            Regenerate Plan
+            Replan
           </button>
         )}
         <button type="button" data-testid="add-task" onClick={() => setAddOpen(true)} className={OUTLINE}>

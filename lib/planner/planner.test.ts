@@ -13,7 +13,7 @@ const ID = "11111111-1111-4111-8111-111111111111";
 const task = (over: Partial<PlanTask> = {}): PlanTask => ({
   id: ID, planId: "p", kind: "lecture", title: "Kinematics lecture", description: null, subjectId: 1, subject: "physics", chapterId: "c1", chapterName: "Kinematics", topic: null,
   startMin: 600, endMin: 660, estimatedMinutes: 60, plannedUnits: 1, questionCount: null, status: "pending", origin: null, contentSource: null, contentSourceLabel: null, generatedBy: "engine",
-  fixedSlot: false, weeklyGoalId: null, backlogItemId: null, secondsCompleted: 0, actualMinutes: null, linkedSessionLogId: null, linkedPracticeLogId: null, linkedRevisionLogId: null, linkedMockLogId: null, warning: null,
+  fixedSlot: false, weeklyGoalId: null, backlogItemId: null, secondsCompleted: 0, actualMinutes: null, linkedSessionLogId: null, linkedPracticeLogId: null, linkedRevisionLogId: null, linkedMockLogId: null, warning: null, why: null, suggested: false, isProtected: false, locked: false,
   ...over,
 });
 

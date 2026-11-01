@@ -15,6 +15,7 @@ const base: Omit<PlanTask, "id" | "kind" | "title"> = {
   planId: "p", description: null, subjectId: 1, subject: "physics", chapterId: "22222222-2222-4222-8222-222222222222", chapterName: "Kinematics", topic: null, startMin: null, endMin: null,
   estimatedMinutes: 60, plannedUnits: 1, questionCount: null, status: "pending", origin: "goal", contentSource: null, contentSourceLabel: null, generatedBy: "engine", fixedSlot: false, weeklyGoalId: null,
   backlogItemId: null, secondsCompleted: 0, actualMinutes: null, linkedSessionLogId: null, linkedPracticeLogId: null, linkedRevisionLogId: null, linkedMockLogId: null, warning: null,
+  why: null, suggested: false, isProtected: false, locked: false,
 };
 
 let counter = 0;
@@ -48,13 +49,14 @@ export function planDay(over: Partial<PlanDay> = {}): PlanDay {
     date: iso(today),
     isToday: true,
     mode: "auto",
-    plan: { id: "p", version: 1, generatedBy: "engine", engineVersion: 2, budgetMinutes: 420, warnings: [], polishNotes: [], generatedAt: today.toISOString() },
+    plan: { id: "p", version: 1, generatedBy: "engine", engineVersion: 2, budgetMinutes: 420, warnings: [], generatedAt: today.toISOString() },
     tasks: TASKS,
     bands: BANDS,
     studyBlocks: [],
     slotSource: "timetable",
     summary: { plannedMinutes: 505, doneMinutes: 30, plannedCount: 6, doneCount: 1, percent: 6 },
     regenerate: { kind: "regenerate", used: 0, limit: 5, remaining: 5, resetsAt: "" },
+    lightDay: false, lightDayOffer: null, phase: { id: "build", label: "Build" }, daysToExam: 200, capacity: { slotMinutes: 420, factor: 0.85, plannedMinutes: 300 },
     suggestions: null,
     ...over,
   };

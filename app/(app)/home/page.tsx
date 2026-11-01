@@ -57,6 +57,7 @@ import {
 import { DailyInsightCard } from "@/components/home/DailyInsightCard";
 import { HomeTop } from "@/components/home/HomeTop";
 import { HomeRituals } from "@/components/rituals/HomeRituals";
+import { NoGoalsBanner } from "@/components/planner/NoGoalsPrompt";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -460,6 +461,8 @@ export default function HomePage() {
       </div>
 
       <HomeRituals />
+
+      <NoGoalsBanner />
 
       <HomeTop />
 

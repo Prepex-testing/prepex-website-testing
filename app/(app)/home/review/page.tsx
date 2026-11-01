@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { GoalAssistantBody } from "@/components/goals/GoalAssistant";
 import { ReviewShareCard } from "@/components/rituals/ReviewShareCard";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { CoralButton } from "@/components/ui/CoralButton";
 import { GhostButton } from "@/components/ui/GhostButton";
 import { ApiError } from "@/lib/api/http";
+import type { NewGoal } from "@/lib/api/goals";
 import { createMock } from "@/lib/api/mocks";
 import { completeSundayReview, getSundayHistory, getSundayReview, toGoalInput, type ProposedGoal, type ReviewHistoryRow, type SundayReviewState } from "@/lib/api/rituals";
 import { getXpSummary, type XpSummary } from "@/lib/api/xp";
@@ -38,6 +40,9 @@ export default function SundayReviewPage() {
   const [mockId, setMockId] = useState<string | undefined>();
   const [chosen, setChosen] = useState<Record<number, boolean>>({});
   const [targets, setTargets] = useState<Record<number, number>>({});
+  // the Goal Assistant's choices for next week; they replace the old proposed list
+  const [picked, setPicked] = useState<NewGoal[]>([]);
+  const onPicked = useCallback((g: NewGoal[]) => setPicked(g), []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -100,7 +105,7 @@ export default function SundayReviewPage() {
     setBusy(true);
     setError(null);
     try {
-      const goals = state.proposedGoals.map((g, i): ProposedGoal => ({ ...g, target: targets[i] ?? g.target })).filter((_, i) => chosen[i]).map(toGoalInput);
+      const goals = picked as unknown as ReturnType<typeof toGoalInput>[];
       await completeSundayReview({ weekStart: state.weekStart, ...(goals.length > 0 ? { goals } : {}), ...(mockId ? { mockId } : {}) });
       setDone(true);
       void refreshXp();
@@ -205,26 +210,12 @@ export default function SundayReviewPage() {
             <section className="flex flex-col gap-4" data-testid="step-goals">
               <div>
                 <h2 className="text-[18px] font-extrabold text-ink">Next week&apos;s goals</h2>
-                <p className="text-[13px] text-muted">Filled from last week&apos;s goals, the chapters class covered and your backlog. Change a number, untick what you don&apos;t want, or accept as is.</p>
+                <p className="text-[13px] text-muted">Suggested from your timetable, how much you really complete, the classes you have and your backlog. Change a number, untick what you don&apos;t want, or accept as is.</p>
               </div>
-              {state.proposedGoals.length === 0 && <p className="text-[14px] text-muted" data-testid="no-goals">Nothing to carry over yet. You can set goals any time from Weekly goals.</p>}
-              <ul className="flex flex-col gap-2">
-                {state.proposedGoals.map((g, i) => (
-                  <li key={`${g.type}-${i}`} className="flex items-center gap-3 rounded-xl border border-border-subtle bg-surface-elevated p-3" data-testid="proposed-goal">
-                    <input type="checkbox" aria-label={`Include ${goalLabel(g)}`} checked={chosen[i] ?? false} onChange={(e) => setChosen((c) => ({ ...c, [i]: e.target.checked }))} className="size-5" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[14px] font-semibold text-ink">{goalLabel(g)}</p>
-                      <p className="text-[12px] text-muted">{ORIGIN_LABELS[g.origin]}</p>
-                    </div>
-                    {g.type !== "BACKLOG" && (
-                      <input inputMode="numeric" aria-label={`Target for ${goalLabel(g)}`} className="h-10 w-20 rounded-lg border border-input-border bg-surface px-2 text-center text-[15px] font-bold text-ink" value={String(targets[i] ?? g.target)} onChange={(e) => setTargets((t) => ({ ...t, [i]: Math.max(1, Number(e.target.value.replace(/[^\d]/g, "")) || 1) }))} />
-                    )}
-                  </li>
-                ))}
-              </ul>
+              {state.nextWeekStart && <GoalAssistantBody weekStart={state.nextWeekStart} onChange={onPicked} />}
               {error && <p role="alert" className="rounded-lg bg-danger-bg px-3 py-2 text-[13px] font-medium text-danger">{error}</p>}
               <CoralButton data-testid="review-finish" disabled={busy} onClick={() => void finish()}>
-                {busy ? "Finishing…" : state.proposedGoals.length > 0 ? "Accept and finish" : "Finish the review"}
+                {busy ? "Finishing…" : picked.length > 0 ? "Accept and finish" : "Finish the review"}
               </CoralButton>
             </section>
           )}

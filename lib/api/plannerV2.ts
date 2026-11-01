@@ -42,10 +42,17 @@ export type PlanTask = {
   linkedRevisionLogId: string | null;
   linkedMockLogId: string | null;
   warning: string | null;
+  /** The one-line reason the planner put this task here ("Due for revision · 2 days late", "Today's class DPP"). */
+  why: string | null;
+  /** An optional extra the planner suggests when the day has room: shown dimmed, never counted in the day's totals. */
+  suggested: boolean;
+  /** Class work (a class's DPP and the same-day recall): placed first, never dropped. */
+  isProtected: boolean;
+  /** The student pinned it: a rebuild of the plan leaves it where it is. */
+  locked: boolean;
 };
 
 export type PlanWarning = { code: string; message: string };
-export type PolishNote = { kind: string; message: string };
 export type Band = { startMin: number; endMin: number; chip: string };
 
 export type UsageState = { kind: string; used: number; limit: number; remaining: number; resetsAt: string };
@@ -66,7 +73,6 @@ export type PlanDay = {
     engineVersion: number;
     budgetMinutes: number | null;
     warnings: PlanWarning[];
-    polishNotes: PolishNote[];
     generatedAt: string;
   };
   tasks: PlanTask[];
@@ -75,6 +81,14 @@ export type PlanDay = {
   slotSource: "timetable" | "gaps" | "default";
   summary: DaySummary;
   regenerate: UsageState;
+  /** A Light Day is 30% less, with the backlog paused. It is only ever switched on by the student. */
+  lightDay: boolean;
+  /** Why the app is asking "Switch to a Light Day?" (null when it is not asking). */
+  lightDayOffer: "low_checkin" | "falling_hours" | null;
+  phase: { id: string; label: string };
+  daysToExam: number;
+  /** Minutes the timetable gives the day, the share of it the student usually completes, and the minutes planned. */
+  capacity: { slotMinutes: number; factor: number; plannedMinutes: number };
   suggestions: null | { revisions: SuggestedRevision[]; backlog: SuggestedBacklog[] };
 };
 
@@ -119,6 +133,12 @@ export const startPlanTask = (id: string) => req<PlanTask>(`/tasks/${id}/start`,
 export const skipPlanTask = (id: string) => req<PlanTask>(`/tasks/${id}/skip`, post({}));
 export const deletePlanTask = (id: string) => req<{ deleted: true }>(`/tasks/${id}`, { method: "DELETE" });
 export const reschedulePlanTask = (id: string, input: { date?: string; startMin?: number } = {}) => req<PlanTask>(`/tasks/${id}/reschedule`, post(input));
+/** Answers "Switch to a Light Day?" (on) or turns the Light Day off. The plan is rebuilt for the day. */
+export function setLightDay(on: boolean, date?: string) {
+  return req<{ day: PlanDay | null }>("/light-day", post({ on, ...(date ? { date } : {}) }));
+}
+/** Pins a task where it is (or lets it go): a rebuild of the plan keeps a locked task in place. */
+export const lockPlanTask = (id: string, locked: boolean) => req<PlanTask>(`/tasks/${id}/lock`, post({ locked }));
 export const recordTaskProgress = (id: string, input: { focusSessionId?: string; minutes?: number }) => req<PlanTask>(`/tasks/${id}/progress`, post(input));
 
 export type CompleteInput = {
@@ -191,42 +211,6 @@ export type GoalDefaults = {
   selfStudyChunkMinutes: number;
 };
 export const getGoalDefaults = (subjectId?: number | null) => req<GoalDefaults>(`/goal-defaults${subjectId ? `?subjectId=${subjectId}` : ""}`);
-
-export type ProposalGoal = {
-  type: "LECTURES" | "QUESTIONS" | "REVISIONS" | "MOCKS" | "HOURS" | "BACKLOG";
-  unit: "COUNT" | "MINUTES" | "HOURS";
-  target: number;
-  subjectId: number | null;
-  chapterId?: string;
-  topic?: string;
-  minutesPerUnit?: number;
-  practiceSource?: string;
-  revisionType?: string;
-  mockType?: string;
-  examPattern?: string;
-  fixedDate?: string;
-  fixedStartTime?: string;
-  backlogItemId?: string;
-};
-export type Proposal = {
-  id: string;
-  source: "mock" | "spaced_repetition" | "weakness" | "backlog" | "pace" | "balance";
-  label: string;
-  totalMinutes: number;
-  reason: string;
-  goal: ProposalGoal;
-};
-export type WeekSuggestion = {
-  weekStart: string;
-  availableMinutes: number;
-  alreadyAllocatedMinutes: number;
-  budgetMinutes: number;
-  proposedMinutes: number;
-  basis: string[];
-  proposals: Proposal[];
-  usage: UsageState;
-};
-export const suggestWeek = (weekStart?: string) => req<WeekSuggestion>("/week/suggest", post(weekStart ? { weekStart } : {}));
 
 // ---- the plan's "why" ----
 /**

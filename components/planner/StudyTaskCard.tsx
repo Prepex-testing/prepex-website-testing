@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { BookOpen, CalendarClock, Check, Clock, MoreVertical, Moon, Sun, Sunset } from "lucide-react";
+import { BookOpen, CalendarClock, Check, Clock, Lock, MoreVertical, Moon, Sun, Sunset } from "lucide-react";
 import type { PlanTask } from "@/lib/api/plannerV2";
 import { chapterResourcesHref } from "@/lib/revision/resourceLinks";
 import { STATUS_LABEL, SUBJECT_STYLE, formatClock, formatDuration, meta, subjectStyle } from "@/lib/planner/format";
@@ -14,6 +14,8 @@ export type StudyTaskActions = {
   onSkip: (task: PlanTask) => void;
   onTomorrow: (task: PlanTask) => void;
   onDelete: (task: PlanTask) => void;
+  /** Pins the task where it is, or lets it go. Left out where locking makes no sense (Home). */
+  onLock?: (task: PlanTask) => void;
 };
 
 const ENERGY_ICON: Record<Energy, typeof Sun> = { Morning: Sun, Afternoon: Sun, Evening: Sunset, Night: Moon };
@@ -36,7 +38,7 @@ const CTA_RESUME = "border-warning/60 text-warning";
  * the chapter; exactly what to do; how long, when in the day and where the time falls; and the resource for the
  * chapter. Used on Home and on the full plan, so a change here shows up in both.
  */
-export function StudyTaskCard({ task, coachAnchor, onStart, onMarkDone, onSkip, onTomorrow, onDelete }: { task: PlanTask; /** data-coach anchor for the Start button (the first card on Home). */ coachAnchor?: string } & StudyTaskActions) {
+export function StudyTaskCard({ task, coachAnchor, onStart, onMarkDone, onSkip, onTomorrow, onDelete, onLock }: { task: PlanTask; /** data-coach anchor for the Start button (the first card on Home). */ coachAnchor?: string } & StudyTaskActions) {
   const [menu, setMenu] = useState(false);
   const root = useRef<HTMLElement>(null);
   const style = subjectStyle(task.subject);
@@ -66,6 +68,7 @@ export function StudyTaskCard({ task, coachAnchor, onStart, onMarkDone, onSkip, 
     { id: "done", label: "Mark done", run: onMarkDone },
     { id: "skip", label: "Skip", run: onSkip },
     ...(task.fixedSlot ? [] : [{ id: "tomorrow", label: "Reschedule to tomorrow", run: onTomorrow }]),
+    ...(onLock ? [{ id: "lock", label: task.locked ? "Unlock" : "Keep in place", run: onLock }] : []),
     { id: "delete", label: "Delete", run: onDelete },
   ];
 
@@ -76,7 +79,8 @@ export function StudyTaskCard({ task, coachAnchor, onStart, onMarkDone, onSkip, 
       data-task-id={task.id}
       data-status={task.status}
       aria-label={`${heading}, ${TYPE_CHIP[task.kind]}, ${formatDuration(task.estimatedMinutes)}, ${STATUS_LABEL[task.status]}`}
-      className={`flex flex-col gap-3 rounded-2xl border border-brand/10 bg-surface p-4 shadow-hover sm:p-5 ${open ? "" : "opacity-80"}`}
+      data-suggested={task.suggested}
+      className={`flex flex-col gap-3 rounded-2xl border bg-surface p-4 shadow-hover sm:p-5 ${task.suggested ? "border-dashed border-brand/25 opacity-70" : "border-brand/10"} ${open ? "" : "opacity-80"}`}
     >
       <div className="flex flex-wrap items-center gap-1.5">
         {subjectLabel && (
@@ -88,6 +92,21 @@ export function StudyTaskCard({ task, coachAnchor, onStart, onMarkDone, onSkip, 
         <span data-testid="chip-type" className="rounded-full border border-brand/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-body-text dark:text-ink">
           {TYPE_CHIP[task.kind]}
         </span>
+        {task.suggested && (
+          <span data-testid="chip-suggested" className="rounded-full border border-dashed border-brand/30 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
+            Suggested
+          </span>
+        )}
+        {task.isProtected && (
+          <span data-testid="chip-class-work" className="rounded-full bg-tint-strong px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-ink dark:bg-[#FAF7F214]">
+            Class work
+          </span>
+        )}
+        {task.locked && (
+          <span data-testid="chip-locked" className="flex items-center gap-1 rounded-full bg-tint-strong px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-ink dark:bg-[#FAF7F214]">
+            <Lock className="size-3" aria-hidden /> Kept in place
+          </span>
+        )}
         <span data-testid="chip-status" className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${STATUS_STYLE[task.status]}`}>
           {STATUS_LABEL[task.status]}
         </span>
@@ -101,6 +120,11 @@ export function StudyTaskCard({ task, coachAnchor, onStart, onMarkDone, onSkip, 
           <p data-testid="task-instruction" className="mt-1 break-words text-[13px] leading-snug text-body-text/85 dark:text-ink/75">
             {taskInstruction(task)}
           </p>
+          {task.why && (
+            <p data-testid="task-why" className="mt-1 text-[12px] font-semibold text-muted">
+              Why: {task.why}
+            </p>
+          )}
           {task.warning && <p className="mt-1 text-[12px] font-semibold text-warning">{task.warning}</p>}
 
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px] text-muted">

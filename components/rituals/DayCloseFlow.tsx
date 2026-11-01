@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { Sheet } from "@/components/planner/Sheet";
 import { ClassCoverageCard } from "@/components/rituals/ClassCoverageCard";
+import { TomorrowPreview } from "@/components/rituals/TomorrowPreview";
 import { CountUp } from "@/components/study/CountUp";
 import { CoralButton } from "@/components/ui/CoralButton";
 import { GhostButton } from "@/components/ui/GhostButton";
@@ -98,6 +99,7 @@ export function DayCloseFlow({ state, open, onClose, onDone }: { state: DayClose
               </div>
             ))}
           </dl>
+          <TomorrowPreview />
           {moved && <p className="text-[13px] text-muted" data-testid="reward-moved">{moved}</p>}
           {kept && <p role="status" className="rounded-xl bg-tint-strong px-3 py-2 text-[13px] font-medium text-ink" data-testid="reward-kept">{kept}</p>}
         </div>

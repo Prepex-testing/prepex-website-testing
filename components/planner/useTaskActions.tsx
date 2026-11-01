@@ -11,7 +11,7 @@ import { createBacklogItem } from "@/lib/api/backlogItems";
 import { PracticeChoiceSheet } from "@/components/planner/PracticeChoiceSheet";
 import { QuickLogSheet } from "@/components/planner/QuickLogSheet";
 import { ApiError } from "@/lib/api/http";
-import { completePlanTask, deletePlanTask, reschedulePlanTask, skipPlanTask, startPlanTask, undoPlanTask, type CompleteInput, type PlanTask } from "@/lib/api/plannerV2";
+import { completePlanTask, deletePlanTask, lockPlanTask, reschedulePlanTask, skipPlanTask, startPlanTask, undoPlanTask, type CompleteInput, type PlanTask } from "@/lib/api/plannerV2";
 import { startFocusSession } from "@/lib/focus/startFocusSession";
 import { mockUrl, plannerFocusIntent } from "@/lib/planner/cta";
 import { trackPlanner } from "@/lib/telemetry/planner";
@@ -132,6 +132,17 @@ export function useTaskActions(onChanged: () => void | Promise<void>, notify: (m
     if (ok) setBacklogFor(null);
   }, [backlogFor, guarded, notify]);
 
+  const lock = useCallback(
+    async (task: PlanTask) => {
+      const ok = await guarded(async () => {
+        await lockPlanTask(task.id, !task.locked);
+        notify(task.locked ? "Unlocked." : "Kept in place. A rebuild of your plan leaves it where it is.");
+      }, "Couldn't change that.");
+      if (ok) await onChanged();
+    },
+    [guarded, notify, onChanged],
+  );
+
   const tomorrow = useCallback(
     async (task: PlanTask) => {
       const ok = await guarded(async () => {
@@ -221,6 +232,7 @@ export function useTaskActions(onChanged: () => void | Promise<void>, notify: (m
     },
     skip,
     tomorrow,
+    lock,
     askDelete: (task: PlanTask) => {
       setError(null);
       setDeleteFor(task);
