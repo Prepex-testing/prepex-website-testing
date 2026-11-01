@@ -25,6 +25,8 @@ type Props = {
   busy: boolean;
   error: string | null;
   submitLabel?: string;
+  /** The submit is a ghost button (the form sits under another primary action). */
+  ghostSubmit?: boolean;
   initial?: BacklogFormInitial;
   idPrefix?: string;
   onSubmit: (input: NewBacklogItem) => void;
@@ -32,7 +34,7 @@ type Props = {
 };
 
 /** "I'm behind on X": subject, chapter, how long it will take, by when, and how urgent it is. */
-export function BacklogForm({ subjects, busy, error, submitLabel = "Add to backlog", initial, idPrefix = "bl", onSubmit, onCancel }: Props) {
+export function BacklogForm({ subjects, busy, error, submitLabel = "Add to backlog", ghostSubmit = false, initial, idPrefix = "bl", onSubmit, onCancel }: Props) {
   const [subjectId, setSubjectId] = useState<number | null>(initial?.subjectId ?? null);
   const [chapterId, setChapterId] = useState<string | null>(initial?.chapterId ?? null);
   const [topic, setTopic] = useState(initial?.topic ?? "");
@@ -157,7 +159,7 @@ export function BacklogForm({ subjects, busy, error, submitLabel = "Add to backl
           type="submit"
           data-testid={`${idPrefix}-submit`}
           disabled={busy}
-          className="min-h-14 flex-1 rounded-lg border border-primary-button-border bg-cta px-4 text-base font-semibold text-white transition-colors hover:bg-[#E8623F] disabled:opacity-60"
+          className={ghostSubmit ? "min-h-14 flex-1 rounded-lg border-[1.5px] border-secondary-button-border bg-surface px-4 text-base font-semibold text-body-text hover:bg-tint-strong disabled:opacity-60 dark:text-ink" : "min-h-14 flex-1 rounded-lg border border-primary-button-border bg-cta px-4 text-base font-semibold text-white transition-colors hover:bg-[#E8623F] disabled:opacity-60"}
         >
           {busy ? "Saving…" : submitLabel}
         </button>

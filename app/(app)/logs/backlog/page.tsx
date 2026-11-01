@@ -5,6 +5,8 @@ import { BacklogAnalyticsPanel } from "@/components/logs/BacklogAnalyticsPanel";
 import { BacklogSidePanel } from "@/components/logs/panels/BacklogSidePanel";
 import { LogScreenScaffold, type LogTab } from "@/components/logs/LogScreenScaffold";
 import { BacklogForm } from "@/components/logs/BacklogForm";
+import { BacklogHub } from "@/components/logs/BacklogHub";
+import { BacklogIntake } from "@/components/logs/BacklogIntake";
 import { BacklogHistory, BacklogOpenList, daysToClear, itemTitle } from "@/components/logs/BacklogLists";
 import { PlannerPickerModal, type PickedPlacement } from "@/components/logs/PlannerPickerModal";
 import { TabPanel } from "@/components/logs/SectionTabs";
@@ -21,12 +23,12 @@ import {
   getBacklogSuggestions,
   listBacklogItems,
   scheduleBacklogItem,
-  sweepBacklog,
   updateBacklogItem,
   type BacklogAnalytics,
   type BacklogItem,
   type NewBacklogItem,
 } from "@/lib/api/backlogItems";
+import { getBacklogHub, type BacklogHub as HubData } from "@/lib/api/backlogHub";
 import { ApiError } from "@/lib/api/http";
 
 type Tab = "open" | "add" | "analytics" | "history";
@@ -44,6 +46,7 @@ export default function BacklogPage() {
   const toast = useToast();
   const [tab, setTab] = useState<Tab>("open");
 
+  const [hub, setHub] = useState<HubData | null>(null);
   const [open, setOpen] = useState<BacklogItem[]>([]);
   const [openMore, setOpenMore] = useState<string | null>(null);
   const [scheduled, setScheduled] = useState<BacklogItem[]>([]);
@@ -75,6 +78,8 @@ export default function BacklogPage() {
       setOpenMore(o.data.nextCursor);
       setScheduled(s.data.items);
       setLoadError(null);
+      // the hub is the overview; if it fails the list below still works
+      void getBacklogHub().then(setHub).catch(() => undefined);
     } catch (err) {
       setLoadError(msg(err, "We couldn't load your backlog. Please refresh."));
     }
@@ -194,19 +199,6 @@ export default function BacklogPage() {
     }
   }
 
-  async function handleSweep() {
-    setBusy(true);
-    try {
-      const res = await sweepBacklog();
-      toast.show(res.data.created > 0 ? `Added ${res.data.created} missed item${res.data.created === 1 ? "" : "s"} from your goals.` : "Nothing new to add. You're caught up.");
-      await loadOpen();
-    } catch (err) {
-      toast.show(msg(err, "Couldn't check for missed work. Please try again."));
-    } finally {
-      setBusy(false);
-    }
-  }
-
   if (loading || subjects.status === "loading") return <PageLoader label="Loading your backlog…" />;
 
   const cleared = history.filter((h) => h.status === "cleared");
@@ -243,13 +235,11 @@ export default function BacklogPage() {
 
         {tab === "open" && (
           <>
+            {hub && <BacklogHub key={`${hub.totalMinutes}-${hub.target.date}-${hub.items.length}`} hub={hub} onChanged={() => void loadOpen()} />}
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-[18px] font-extrabold text-ink">
                 Open <span className="text-muted" data-testid="open-count">({open.length})</span>
               </h2>
-              <button type="button" data-testid="backlog-sweep" disabled={busy} onClick={() => void handleSweep()} className="min-h-11 rounded-lg border-[1.5px] border-secondary-button-border bg-surface px-3 text-[13px] font-bold text-body-text hover:bg-tint-strong disabled:opacity-60 dark:text-ink">
-                Find missed work
-              </button>
             </div>
             <BacklogOpenList
               items={open}
@@ -307,8 +297,15 @@ export default function BacklogPage() {
 
         {tab === "add" && (
           <section aria-label="Add to backlog" className="rounded-2xl border border-brand/10 bg-surface p-4 sm:p-6">
-            <h2 className="mb-3 text-[18px] font-extrabold text-ink">Add to your backlog</h2>
-            <BacklogForm key={formKey} subjects={subjects.subjects} busy={busy} error={editing ? null : formError} onSubmit={(input) => void handleCreate(input)} />
+            <h2 className="mb-1 text-[18px] font-extrabold text-ink">Add a chapter</h2>
+            <p className="mb-4 text-[13px] text-muted">Say what is left. The hours are worked out at your pace and the lane is chosen for you, with the reason.</p>
+            <BacklogIntake subjects={subjects.subjects} pace={hub?.pace ?? null} onAdded={() => void loadOpen()} />
+            <details className="mt-6 border-t border-border-subtle pt-4" data-testid="single-item">
+              <summary className="min-h-11 cursor-pointer text-[14px] font-semibold text-body-text dark:text-ink">Add one item with a deadline or priority</summary>
+              <div className="mt-3">
+                <BacklogForm key={formKey} ghostSubmit subjects={subjects.subjects} busy={busy} error={editing ? null : formError} onSubmit={(input) => void handleCreate(input)} />
+              </div>
+            </details>
           </section>
         )}
 

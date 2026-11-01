@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ClassCoverageCard } from "@/components/rituals/ClassCoverageCard";
 import { DayCloseFlow } from "@/components/rituals/DayCloseFlow";
+import { WelcomeBack } from "@/components/home/WelcomeBack";
 import { CountUp } from "@/components/study/CountUp";
 import { CoralButton } from "@/components/ui/CoralButton";
 import { GhostButton } from "@/components/ui/GhostButton";
@@ -53,6 +54,7 @@ export function HomeRituals() {
   const dayReady = day?.status === "ready";
   return (
     <div className="flex flex-col gap-4" data-testid="home-rituals">
+      <WelcomeBack onDone={() => window.location.reload()} />
       {dayReady && day && (
         <section className="flex flex-col gap-3 rounded-2xl border border-border-subtle bg-surface-elevated-2 p-4 sm:flex-row sm:items-center sm:justify-between" data-testid="day-close-card">
           <div className="min-w-0">
