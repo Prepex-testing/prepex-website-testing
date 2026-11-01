@@ -1,13 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { BacklogAnalytics, BacklogItem } from "@/lib/api/backlogItems";
 import type { MockAnalytics } from "@/lib/api/mocks";
-import type { Mistake, MistakeStats } from "@/lib/api/mistakes";
 import type { PracticeAnalytics } from "@/lib/api/practiceLogs";
 import type { RevisionOverview } from "@/lib/api/revision";
 import type { RevisionAnalytics } from "@/lib/api/revisionLogs";
 import type { StudySummary } from "@/lib/api/studyLog";
 import { backlogHub, mockHub, practiceHub, revisionHub, summaryStrip } from "@/lib/study/hub";
-import { todayProgress, topChapters, topTags } from "@/lib/study/mistakeRail";
 import { sessionStats } from "@/lib/study/sessionStats";
 
 const NOW = new Date("2026-10-07T06:00:00Z");
@@ -133,28 +131,5 @@ describe("sessionStats", () => {
     const s = sessionStats(summary([0, 0, 0, 0, 0, 0, 0]), "2026-10-20", NOW);
     expect(s.best).toBeNull();
     expect(s.today).toBeNull();
-  });
-});
-
-describe("mistake rail data", () => {
-  const m = (chapterId: string | null, tags: string[] = []): Mistake => ({ chapterId, tags }) as Mistake;
-  const names = (id: string | null) => ({ c1: "Kinematics", c2: "Optics" })[id ?? ""] ?? null;
-
-  it("ranks chapters by open mistakes and skips ones with no chapter or no name", () => {
-    expect(topChapters([m("c1"), m("c2"), m("c1"), m(null), m("zzz")], names)).toEqual([
-      { key: "c1", label: "Kinematics", count: 2 },
-      { key: "c2", label: "Optics", count: 1 },
-    ]);
-  });
-
-  it("counts the student's tags case-insensitively", () => {
-    expect(topTags([m(null, ["Silly", "units"]), m(null, ["silly"])])[0]).toEqual({ key: "silly", label: "silly", count: 2 });
-  });
-
-  it("'3 of 7 reviewed' is reviewed today out of reviewed plus waiting; nothing when there is nothing", () => {
-    const stats = { reviewedToday: 3 } as MistakeStats;
-    expect(todayProgress(stats, 4)).toEqual({ done: 3, total: 7 });
-    expect(todayProgress({ reviewedToday: 0 } as MistakeStats, 0)).toBeNull();
-    expect(todayProgress(null, 2)).toBeNull();
   });
 });

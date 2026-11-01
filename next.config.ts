@@ -16,6 +16,12 @@ const nextConfig: NextConfig = {
   output: "standalone",
   async redirects() {
     return [
+      // The three old notebooks are one: My Notebooks. Old bookmarks, push links and saved deep links land on the new hub.
+      { source: "/home/mistake-notebook", destination: "/notebooks", permanent: false },
+      { source: "/home/mistake-notebook/entry", destination: "/notebooks/capture", permanent: false },
+      { source: "/mistakes", destination: "/notebooks", permanent: false },
+      { source: "/practice/mistake-analysis", destination: "/notebooks", permanent: false },
+
       // The Stats tabs used to be separate routes. They're now one page at
       // /stats that switches tabs in place, so old links land there.
       {

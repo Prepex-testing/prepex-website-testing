@@ -34,7 +34,7 @@ export const NAV_ITEMS = [
     // syllabus screens all open from /logs. (Five tabs, not six: Plan and Practice moved in here.)
     href: "/logs",
     activeMatch: "/logs",
-    activeAny: ["/logs", "/sessions", "/mistakes", "/plan", "/planner", "/practice"],
+    activeAny: ["/logs", "/sessions", "/notebooks", "/plan", "/planner", "/practice"],
     label: "Study",
     icon: (
       <span className={ICON_BOX_CLASS}>

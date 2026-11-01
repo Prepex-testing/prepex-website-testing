@@ -105,7 +105,7 @@ test("focus: start → pause/resume → stop → the time lands in the study log
   await expect(page.getByTestId("chart-total")).toContainText("1m across 1 session");
 });
 
-test("mistakes: add → review now → mastered, with the stats following along", async ({ page }, info) => {
+test("notebooks: a mistake page lands in its chapter notebook, gets a reason, and comes back for review", async ({ page }, info) => {
   test.setTimeout(180_000);
   const mobile = info.project.name.startsWith("mobile");
   const shot = (name: string) => page.screenshot({ path: `e2e/.shots/${info.project.name}-2c-${name}.png` });
@@ -113,68 +113,32 @@ test("mistakes: add → review now → mastered, with the stats following along"
   resetStudent();
   await onboardAndEnterApp(page);
 
+  // Old addresses land on the one hub
   await page.goto("/mistakes");
-  await expect(page.getByTestId("mistakes-page")).toBeVisible();
-  await expect(page.getByTestId("queue-empty")).toBeVisible(); // nothing due yet
-  await shot("mistakes-empty");
-  if (mobile) {
-    await expectTapTargets(page, '[data-testid^="tab-"], [data-testid="add-mistake"]');
-    await noHorizontalScroll(page);
-  }
-
-  // Add
-  await page.getByTestId("add-mistake").click();
-  await page.getByTestId("mistake-subject").selectOption({ label: "Physics" });
-  await page.getByTestId("mistake-chapter").selectOption({ label: "Laws of Motion" });
-  await page.getByTestId("mistake-question").fill("A 2 kg block is pushed with 10 N on a frictionless floor. What is its acceleration?");
-  await page.getByTestId("mistake-correct").fill("5 m/s^2");
-  await page.getByTestId("mistake-mine").fill("20 m/s^2");
-  await page.getByTestId("mistake-tags").fill("silly, mechanics");
-  await page.getByTestId("mistake-submit").click();
-  await expect(page.getByTestId("mistakes-notice")).toContainText("comes up for review tomorrow");
-
-  // It is in the list, due tomorrow
-  await page.getByTestId("tab-all").click();
-  const row = page.getByTestId("mistake-row");
-  await expect(row).toHaveCount(1);
-  await expect(row.getByTestId("next-review")).toContainText("Next review tomorrow");
-  await expect(row).toContainText("silly");
-  await shot("mistakes-list");
+  await expect(page).toHaveURL(/\/notebooks$/);
+  await expect(page.getByTestId("notebooks-shelf")).toBeVisible();
+  await expect(page.getByTestId("shelf-empty")).toBeVisible();
+  await shot("notebooks-empty");
   if (mobile) await noHorizontalScroll(page);
 
-  // Search narrows the list
-  await page.getByTestId("mistake-search").fill("zzz-no-match");
-  await expect(page.getByTestId("mistakes-empty")).toBeVisible();
-  await page.getByTestId("mistake-search").fill("block");
-  await expect(row).toHaveCount(1);
+  // New notebook of the student's own, then a first mistake page in it
+  await page.getByTestId("new-notebook").click();
+  await page.getByTestId("new-notebook-title").fill("Formula sheet");
+  await page.getByTestId("new-notebook-save").click();
+  await expect(page.getByTestId("notebook-view")).toBeVisible();
+  await page.getByTestId("add-page").click();
+  await expect(page.getByTestId("entry-page")).toBeVisible();
 
-  // Review it now (practice early): answer hidden until revealed
-  await row.getByTestId("review-now").click();
-  await expect(page.getByTestId("review-card")).toBeVisible();
-  await expect(page.getByTestId("review-answer")).toHaveCount(0);
-  await page.getByTestId("reveal-answer").click();
-  await expect(page.getByTestId("review-answer")).toContainText("5 m/s^2");
-  await expect(page.getByTestId("review-answer")).toContainText("20 m/s^2");
-  await shot("mistakes-review");
-  await page.getByTestId("rate-good").click();
-  await expect(page.getByTestId("mistakes-notice")).toContainText("in 3 days");
-  await expect(row.getByTestId("next-review")).toContainText("Next review in 3 days");
-  await expect(row.getByTestId("next-review")).toContainText("reviewed 1 time");
+  // Header: reason chip, fix line, saved quietly
+  await page.getByTestId("reason-silly_calculation").click();
+  await page.getByTestId("entry-fix").fill("Check units before squaring");
+  await expect(page.getByTestId("save-state")).toHaveText("Saved");
+  await shot("notebooks-page");
 
-  // Master it
-  await row.getByTestId("master").click();
-  await expect(row).toHaveAttribute("data-mastered", "true");
-  await expect(row.getByTestId("reopen")).toBeVisible();
-
-  // Stats followed along
-  await page.getByTestId("tab-stats").click();
-  await expect(page.getByTestId("stat-total")).toHaveText("1");
-  await expect(page.getByTestId("stat-mastered-pct")).toHaveText("100%");
-  await expect(page.getByTestId("stat-streak")).toHaveText("1 day");
-  await shot("mistakes-stats");
-
-  // Reopen puts it back in the queue (due tomorrow, so not "due today" yet)
-  await page.getByTestId("tab-all").click();
-  await row.getByTestId("reopen").click();
-  await expect(row).toHaveAttribute("data-mastered", "false");
+  // The shelf shows it, and a search on the fix text finds it
+  await page.goto("/notebooks");
+  await expect(page.getByTestId("notebook-cover")).toHaveCount(1);
+  await page.getByTestId("shelf-search").fill("units before");
+  await expect(page.getByTestId("search-result")).toHaveCount(1);
+  await shot("notebooks-search");
 });

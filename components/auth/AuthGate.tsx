@@ -22,6 +22,8 @@ const PUBLIC_PATHS = [
   "/forgot-password",
   "/reset-password",
   "/auth/callback",
+  // Read-only notebook links a student chose to share: no sign-in needed to read them.
+  "/shared",
   // Sentry verification page: a 404 unless NEXT_PUBLIC_SENTRY_TEST_ENABLED=true, so it is inert in production.
   "/sentry-test",
 ];

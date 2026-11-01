@@ -4,9 +4,7 @@ import { Plus } from "lucide-react";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { NewSuggestion } from "@/components/goals/NewSuggestion";
 import { SmartSuggestion } from "@/components/goals/SmartSuggestion";
-import { SuggestPanel } from "@/components/goals/SuggestPanel";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
 import { CoralButton } from "@/components/ui/CoralButton";
 import { GhostButton } from "@/components/ui/GhostButton";
@@ -35,7 +33,6 @@ import { daysLeftText, describeGoal, formatWeekRange } from "@/lib/goals/format"
 import { WEEKS_AHEAD, parsePrefill } from "@/lib/goals/prefill";
 import { MOCK_TYPES, forSave, goalMinutes, labelOf } from "@/lib/goals/v2";
 import { mondayAfterWeeks, weekLabel } from "@/lib/diagnosis/format";
-import { readTargetRank } from "@/lib/insights/targetRank";
 import { trackPlanner } from "@/lib/telemetry/planner";
 
 function messageOf(err: unknown, fallback: string): string {
@@ -55,8 +52,6 @@ function GoalsScreen() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  // the goal whose Suggest panel is open
-  const [suggestingId, setSuggestingId] = useState<string | null>(null);
   // the hours the week holds (from the timetable) and the student's own typical minutes per lecture, practice and revision
   const [summary, setSummary] = useState<WeekSummary | null>(null);
   const [defaults, setDefaults] = useState<GoalDefaults | null>(null);
@@ -186,13 +181,6 @@ function GoalsScreen() {
     }
   }
 
-  // a goal was created from a suggestion: refresh the list and say so
-  async function handleSuggestionAdded(message: string) {
-    setSaveError(null);
-    await load();
-    setNotice(`${message} Today's plan has been updated to match.`);
-  }
-
   function jumpToIncomplete() {
     pageRef.current?.querySelector('[data-testid="goal-card"][data-complete="false"]')?.scrollIntoView?.({ behavior: "smooth", block: "center" });
   }
@@ -221,8 +209,6 @@ function GoalsScreen() {
     if (g.type === "MOCKS") return labelOf(MOCK_TYPES, g.mockType) ?? "Mock test";
     return describeGoal(g);
   };
-
-  const suggestingGoal = suggestingId ? live.find((g) => g.id === suggestingId) : undefined;
 
   return (
     <div ref={pageRef} className="min-h-full bg-surface-base">
@@ -309,7 +295,6 @@ function GoalsScreen() {
           </div>
         ) : (
           <div className="flex flex-wrap items-start gap-3" data-testid="add-row">
-            <NewSuggestion subjects={subjects} weekStartDate={targetWeekStart} targetRank={readTargetRank()} onAdded={handleSuggestionAdded} />
             <CoralButton data-testid="open-add-goal" className="ml-auto" onClick={() => openPanel()}>
               <Plus className="size-4" aria-hidden />
               Add a goal
@@ -329,22 +314,7 @@ function GoalsScreen() {
                 onToggleDone={(g) => run(g.id, () => updateGoal(g.id, { status: g.status === "DONE" ? "ACTIVE" : "DONE" }), "Couldn't update that.")}
                 onDelete={(g) => run(g.id, () => deleteGoal(g.id), "Couldn't remove that goal.")}
                 onEdit={(g, patch) => run(g.id, () => updateGoal(g.id, patch), "Couldn't change that goal.")}
-                onSuggest={(g) => (g.chapterId && g.type !== "HOURS" && g.source !== "PARTNER" ? () => setSuggestingId(suggestingId === g.id ? null : g.id) : undefined)}
                 onAddFor={(subjectId) => openPanel({ type: "QUESTIONS", unit: "COUNT", target: 100, subjectId })}
-                {...(suggestingGoal && suggestingGoal.chapterId && section.goals.some((g) => g.id === suggestingGoal.id)
-                  ? {
-                      suggestSlot: (
-                        <SuggestPanel
-                          chapterId={suggestingGoal.chapterId}
-                          chapterName={chapterNames.get(suggestingGoal.chapterId) ?? "this chapter"}
-                          weekStartDate={targetWeekStart}
-                          targetRank={readTargetRank()}
-                          onAdded={handleSuggestionAdded}
-                          onClose={() => setSuggestingId(null)}
-                        />
-                      ),
-                    }
-                  : {})}
               />
             ))}
           </div>

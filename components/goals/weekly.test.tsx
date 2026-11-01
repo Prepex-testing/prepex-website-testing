@@ -125,7 +125,7 @@ describe("Weekly goals keep the old restraint", () => {
   });
 
   it("ships no emoji in the goals screen or its components", () => {
-    const files = ["app/(app)/goals/page.tsx", "components/weekly-goals/AddGoalPanel.tsx", "components/weekly-goals/GoalCard.tsx", "components/weekly-goals/SubjectSection.tsx", "components/weekly-goals/WeeklyCapacityHeader.tsx", "components/goals/NewSuggestion.tsx", "components/goals/SuggestionCard.tsx", "components/goals/SuggestPanel.tsx", "components/goals/SmartSuggestion.tsx", "components/goals/GoalAssistant.tsx", "lib/goals/v2.ts", "lib/goals/format.ts", "lib/goalAssistant/model.ts"];
+    const files = ["app/(app)/goals/page.tsx", "components/weekly-goals/AddGoalPanel.tsx", "components/weekly-goals/GoalCard.tsx", "components/weekly-goals/SubjectSection.tsx", "components/weekly-goals/WeeklyCapacityHeader.tsx", "components/goals/SmartSuggestion.tsx", "components/goals/GoalAssistant.tsx", "lib/goals/v2.ts", "lib/goals/format.ts", "lib/goalAssistant/model.ts"];
     for (const f of files) {
       const hit = readFileSync(path.join(root, f), "utf8").split("\n").findIndex((line) => EMOJI.test(line));
       expect(hit, `${f} line ${hit + 1} has an emoji`).toBe(-1);

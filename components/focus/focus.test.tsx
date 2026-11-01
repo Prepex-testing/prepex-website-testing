@@ -500,8 +500,8 @@ describe("what the done screen says was saved", () => {
     const lines = loggedLines(
       result({ origin: { source: "planner", id: "t1", updated: "plan_task", status: "COMPLETED", progressPercent: null }, practiceLogId: "p1", mistakesCreated: 3 }, "practice"),
     );
-    expect(lines).toEqual(["Marked your planner task as done.", "Saved your practice log.", "3 questions were added to your mistake notebook."]);
-    expect(loggedLines(result({ mistakesCreated: 1 }))).toEqual(["1 question was added to your mistake notebook."]);
+    expect(lines).toEqual(["Marked your planner task as done.", "Saved your practice log.", "3 questions were added to your notebooks."]);
+    expect(loggedLines(result({ mistakesCreated: 1 }))).toEqual(["1 question was added to your notebooks."]);
   });
 
   it("revision: the next date in plain words", () => {

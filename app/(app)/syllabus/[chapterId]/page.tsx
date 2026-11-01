@@ -189,7 +189,7 @@ export default function ChapterPage() {
             <p className="text-[20px] font-extrabold text-ink" data-testid="linked-practice">{linked.practice.length}</p>
             <p className="text-[12px] font-semibold text-muted">practice logs</p>
           </Link>
-          <Link href="/mistakes" className="rounded-xl border border-brand/10 p-3 hover:bg-tint-strong">
+          <Link href="/notebooks" className="rounded-xl border border-brand/10 p-3 hover:bg-tint-strong">
             <p className="text-[20px] font-extrabold text-ink" data-testid="linked-mistakes">{linked.mistakes.active}</p>
             <p className="text-[12px] font-semibold text-muted">open mistakes{linked.mistakes.dueNow > 0 ? ` · ${linked.mistakes.dueNow} due` : ""}</p>
           </Link>

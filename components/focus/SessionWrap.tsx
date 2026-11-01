@@ -54,11 +54,10 @@ export function SessionWrap({ focusSessionId, subjectId, chapterId, topic, taskT
   }, []);
 
   const mistakeHref = useMemo(() => {
-    const q = new URLSearchParams({ new: "1", subject: String(subjectId) });
+    const q = new URLSearchParams();
     if (chapterId) q.set("chapter", chapterId);
-    if (topic) q.set("topic", topic);
-    return `/mistakes?${q.toString()}`;
-  }, [subjectId, chapterId, topic]);
+    return `/notebooks/capture${q.size > 0 ? `?${q.toString()}` : ""}`;
+  }, [chapterId]);
 
   const hours = today ? Math.floor(today.todayStudyMinutes / 60) : 0;
   const mins = today ? today.todayStudyMinutes % 60 : 0;
@@ -92,7 +91,7 @@ export function SessionWrap({ focusSessionId, subjectId, chapterId, topic, taskT
       </div>
 
       <Link href={mistakeHref} data-testid="wrap-mistake" className="flex min-h-12 items-center justify-center rounded-lg border-[1.5px] border-secondary-button-border bg-surface px-4 text-[15px] font-semibold text-body-text hover:bg-tint-strong dark:text-ink">
-        Save a mistake?
+        Add a mistake?
       </Link>
 
       {taskType === "lecture" && !covered && (
