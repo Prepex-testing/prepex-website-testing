@@ -32,7 +32,7 @@ const ID = "11111111-1111-4111-8111-111111111111";
 const task = (over: Partial<PlanTask> = {}): PlanTask => ({
   id: ID, planId: "p", kind: "lecture", title: "Watch lecture — Kinematics", description: null, subjectId: 1, subject: "physics", chapterId: "c1", chapterName: "Kinematics", topic: "Vectors and dimensions",
   startMin: 9 * 60, endMin: 10 * 60 + 30, estimatedMinutes: 90, plannedUnits: 2, questionCount: null, status: "pending", origin: "goal", contentSource: null, contentSourceLabel: null, generatedBy: "engine",
-  fixedSlot: false, weeklyGoalId: null, backlogItemId: null, secondsCompleted: 0, actualMinutes: null, linkedSessionLogId: null, linkedPracticeLogId: null, linkedRevisionLogId: null, linkedMockLogId: null, warning: null, ...over,
+  fixedSlot: false, weeklyGoalId: null, backlogItemId: null, secondsCompleted: 0, actualMinutes: null, linkedSessionLogId: null, linkedPracticeLogId: null, linkedRevisionLogId: null, linkedMockLogId: null, warning: null, why: null, suggested: false, isProtected: false, locked: false, ...over,
 });
 
 const noop = vi.fn();
@@ -252,15 +252,15 @@ describe("WeeklyProgressStrip", () => {
 describe("PlanHeaderActions", () => {
   type Plan = ReturnType<typeof usePlanDay>;
   const day = (over: Partial<PlanDay> = {}): PlanDay => ({
-    date: "2026-10-25", isToday: true, mode: "auto", plan: { id: "p", version: 1, generatedBy: "engine", engineVersion: 2, budgetMinutes: 300, warnings: [], polishNotes: [], generatedAt: "" },
+    date: "2026-10-25", isToday: true, mode: "auto", plan: { id: "p", version: 1, generatedBy: "engine", engineVersion: 2, budgetMinutes: 300, warnings: [], generatedAt: "" },
     tasks: [], bands: [], studyBlocks: [], slotSource: "timetable", summary: { plannedMinutes: 0, doneMinutes: 0, plannedCount: 0, doneCount: 0, percent: 0 },
-    regenerate: { kind: "regenerate", used: 0, limit: 5, remaining: 5, resetsAt: "" }, suggestions: null, ...over,
+    regenerate: { kind: "regenerate", used: 0, limit: 5, remaining: 5, resetsAt: "" }, lightDay: false, lightDayOffer: null, phase: { id: "build", label: "Build" }, daysToExam: 200, capacity: { slotMinutes: 420, factor: 0.85, plannedMinutes: 300 }, suggestions: null, ...over,
   });
   const plan = (d: PlanDay | null, over: Partial<Plan> = {}): Plan => ({ status: "ready", day: d, error: null, building: false, refresh: vi.fn().mockResolvedValue(undefined), build: vi.fn().mockResolvedValue(null), ...over }) as unknown as Plan;
 
   it("shows Regenerate and Add task inline, with the daily counter", () => {
     render(<PlanHeaderActions plan={plan(day())} notify={vi.fn()} />);
-    expect(screen.getByTestId("regenerate")).toHaveTextContent("Regenerate Plan");
+    expect(screen.getByTestId("regenerate")).toHaveTextContent("Replan");
     expect(screen.getByTestId("add-task")).toHaveTextContent("Add task");
     expect(screen.getByTestId("regen-counter")).toHaveTextContent("5 left today");
     for (const id of ["regenerate", "add-task"]) expect(screen.getByTestId(id).className).not.toMatch(/bg-cta/);
@@ -291,7 +291,7 @@ describe("PlanHeaderActions", () => {
 });
 
 describe("suggestionSections", () => {
-  const base = { date: "d", isToday: true, plan: null, bands: [], studyBlocks: [], slotSource: "timetable" as const, summary: { plannedMinutes: 0, doneMinutes: 0, plannedCount: 0, doneCount: 0, percent: 0 }, regenerate: { kind: "r", used: 0, limit: 5, remaining: 5, resetsAt: "" } };
+  const base = { date: "d", isToday: true, plan: null, bands: [], studyBlocks: [], slotSource: "timetable" as const, summary: { plannedMinutes: 0, doneMinutes: 0, plannedCount: 0, doneCount: 0, percent: 0 }, regenerate: { kind: "r", used: 0, limit: 5, remaining: 5, resetsAt: "" }, lightDay: false, lightDayOffer: null, phase: { id: "build", label: "Build" }, daysToExam: 200, capacity: { slotMinutes: 420, factor: 0.85, plannedMinutes: 300 } };
 
   it("in manual mode offers one-tap adds", async () => {
     const onAdd = vi.fn();

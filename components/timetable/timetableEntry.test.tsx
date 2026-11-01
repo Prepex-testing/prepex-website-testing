@@ -70,13 +70,14 @@ const day = (warnings: { code: string; message: string }[]): PlanDay => ({
   date: "2026-10-07",
   isToday: true,
   mode: "auto",
-  plan: { id: "p", version: 1, generatedBy: "deterministic", engineVersion: 2, budgetMinutes: 120, warnings, polishNotes: [], generatedAt: "2026-10-07T00:00:00Z" },
+  plan: { id: "p", version: 1, generatedBy: "deterministic", engineVersion: 2, budgetMinutes: 120, warnings, generatedAt: "2026-10-07T00:00:00Z" },
   tasks: [],
   bands: [],
   studyBlocks: [],
   slotSource: "timetable",
   summary: { plannedMinutes: 0, doneMinutes: 0, plannedCount: 0, doneCount: 0, percent: 0 },
   regenerate: { kind: "regenerate", used: 0, limit: 5, remaining: 5, resetsAt: "2026-10-08T00:00:00Z" },
+  lightDay: false, lightDayOffer: null, phase: { id: "build", label: "Build" }, daysToExam: 200, capacity: { slotMinutes: 420, factor: 0.85, plannedMinutes: 300 },
   suggestions: null,
 });
 

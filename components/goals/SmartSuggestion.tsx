@@ -2,19 +2,17 @@
 
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
-import { WeekSuggestSheet } from "@/components/goals/WeekSuggestSheet";
+import { GoalAssistantSheet } from "@/components/goals/GoalAssistant";
 import type { NewGoal } from "@/lib/api/goals";
 
 type Props = {
   weekStart: string;
-  subjectNames: Map<number, string>;
-  chapterNames: Map<string, string>;
   /** Goals the student accepted from the suggestions. The page saves them. */
   onAccept: (goals: NewGoal[]) => void | Promise<void>;
 };
 
-/** "Suggest this week's goals": a small outlined button in the header that opens the week's suggestions. */
-export function SmartSuggestion({ weekStart, subjectNames, chapterNames, onAccept }: Props) {
+/** "Suggest this week's goals": a small outlined button in the header that opens the Goal Assistant. */
+export function SmartSuggestion({ weekStart, onAccept }: Props) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -27,7 +25,7 @@ export function SmartSuggestion({ weekStart, subjectNames, chapterNames, onAccep
         <Sparkles className="size-4" aria-hidden />
         Suggest this week&apos;s goals
       </button>
-      <WeekSuggestSheet open={open} onClose={() => setOpen(false)} weekStart={weekStart} subjectNames={subjectNames} chapterNames={chapterNames} onAccept={onAccept} />
+      <GoalAssistantSheet open={open} onClose={() => setOpen(false)} weekStart={weekStart} onAccept={onAccept} />
     </>
   );
 }
