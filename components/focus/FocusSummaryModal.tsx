@@ -99,6 +99,8 @@ export function FocusSummaryModal({
   const wrongN = toCount(wrong);
   const sheetOverflows = attemptedN > 0 && correctN + wrongN > attemptedN;
   const skippedN = Math.max(0, attemptedN - correctN - wrongN);
+  // Questions attempted without saying how many were right would log a wrong accuracy: the sheet needs the number before it saves.
+  const needsCorrect = isPractice && attemptedN > 0 && correct.trim() === "";
 
   const buildInput = (): StopFocusInput => {
     const input: StopFocusInput = { wasCompleted: win, moodRating: mood };
@@ -233,6 +235,11 @@ export function FocusSummaryModal({
                 Correct and wrong can&apos;t add up to more than the questions you attempted.
               </p>
             )}
+            {needsCorrect && (
+              <p data-testid="sheet-needs-correct" className="text-[12px] font-medium text-muted">
+                Enter how many you got right to save.
+              </p>
+            )}
             {attemptedN > 0 && !sheetOverflows && skippedN > 0 && <p className="text-[12px] text-muted">{skippedN} skipped.</p>}
             <label className="flex flex-col gap-1 text-[12px] font-semibold text-muted" htmlFor="sheet-source">
               Where were the questions from?
@@ -332,7 +339,7 @@ export function FocusSummaryModal({
           <button
             type="button"
             data-testid="save-session"
-            disabled={busy || sheetOverflows}
+            disabled={busy || sheetOverflows || needsCorrect}
             onClick={() => onSave(buildInput())}
             className="min-h-14 rounded-lg border border-primary-button-border bg-cta px-4 text-base font-semibold text-white hover:bg-[#E8623F] disabled:opacity-60"
           >

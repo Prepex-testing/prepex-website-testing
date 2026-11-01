@@ -2,6 +2,7 @@
 
 import { ChevronDown } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { RevisionHub } from "@/components/logs/RevisionHub";
 import { CoralButton } from "@/components/ui/CoralButton";
 import { GhostButton } from "@/components/ui/GhostButton";
 import { WhiteModal } from "@/components/ui/WhiteModal";
@@ -152,9 +153,11 @@ export function SpacedRepetitionTab() {
 
   return (
     <div className="flex flex-col gap-5" data-testid="sr-tab">
+      <RevisionHub />
+
       <section className="rounded-2xl border border-border-subtle bg-surface-elevated p-5" data-testid="sr-summary">
         <p className="text-[18px] font-bold text-ink">
-          {queued} {queued === 1 ? "chapter" : "chapters"} in your queue · {due.length} due today
+          {queued} {queued === 1 ? "chapter" : "chapters"} in your queue · {due.length} planned today
         </p>
         <p className="mt-1 text-[13px] text-muted">
           {upcoming.length} coming up · {mastered.length} on long intervals. Chapters you rate Hard come back sooner; Easy ones wait longer.

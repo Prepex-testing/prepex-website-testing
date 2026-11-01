@@ -65,19 +65,33 @@ describe("QuickLogSheet — G6 manual completion", () => {
     await userEvent.click(screen.getByTestId("recall-hard"));
     expect(onSubmit).toHaveBeenCalledWith({ actualMinutes: 60, log: true, recall: "hard", revision: { revisionType: "notes" } });
   });
-  it("a practice tick starts from the task's target and one tap confirms it", async () => {
+  it("a practice tick prefills attempted from the task but leaves correct EMPTY, and cannot be confirmed until it is entered", async () => {
     const onSubmit = vi.fn();
     render(<QuickLogSheet {...base} task={task({ kind: "practice", questionCount: 20 })} origin="manual" onSubmit={onSubmit} />);
     expect(screen.getByTestId("log-attempted")).toHaveValue("20");
-    expect(screen.getByTestId("log-correct")).toHaveValue("20");
-    await userEvent.click(screen.getByTestId("log-correct-dec"));
-    await userEvent.click(screen.getByTestId("log-correct-dec"));
+    expect(screen.getByTestId("log-correct")).toHaveValue("");
+    expect(screen.getByTestId("log-save")).toBeDisabled();
+    expect(screen.getByTestId("log-wrong")).toHaveTextContent("Enter how many you got right");
+    await userEvent.click(screen.getByTestId("log-save"));
+    expect(onSubmit).not.toHaveBeenCalled();
+    // the plus button starts from zero, so a perfect score is a deliberate 20 taps or a typed number, never a default
+    await userEvent.type(screen.getByTestId("log-correct"), "18");
+    expect(screen.getByTestId("log-save")).toBeEnabled();
     expect(screen.getByTestId("log-wrong")).toHaveTextContent("2 wrong");
     await userEvent.click(screen.getByTestId("log-save"));
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ log: true, practice: expect.objectContaining({ questionsAttempted: 20, questionsCorrect: 18, questionsWrong: 2 }) }));
   });
+  it("an explicit zero correct is allowed", async () => {
+    const onSubmit = vi.fn();
+    render(<QuickLogSheet {...base} task={task({ kind: "practice", questionCount: 5 })} origin="manual" onSubmit={onSubmit} />);
+    await userEvent.click(screen.getByTestId("log-correct-dec"));
+    expect(screen.getByTestId("log-correct")).toHaveValue("0");
+    await userEvent.click(screen.getByTestId("log-save"));
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ practice: expect.objectContaining({ questionsAttempted: 5, questionsCorrect: 0, questionsWrong: 5 }) }));
+  });
   it("lowering attempted keeps correct from going above it", async () => {
     render(<QuickLogSheet {...base} task={task({ kind: "practice", questionCount: 5 })} origin="manual" onSubmit={vi.fn()} />);
+    await userEvent.type(screen.getByTestId("log-correct"), "5");
     await userEvent.click(screen.getByTestId("log-attempted-dec"));
     expect(screen.getByTestId("log-attempted")).toHaveValue("4");
     expect(screen.getByTestId("log-correct")).toHaveValue("4");

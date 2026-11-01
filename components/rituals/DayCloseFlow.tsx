@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sheet } from "@/components/planner/Sheet";
 import { ClassCoverageCard } from "@/components/rituals/ClassCoverageCard";
 import { CountUp } from "@/components/study/CountUp";
@@ -9,7 +9,8 @@ import { CoralButton } from "@/components/ui/CoralButton";
 import { GhostButton } from "@/components/ui/GhostButton";
 import { completeDayClose, type DayCloseReward, type DayCloseState } from "@/lib/api/rituals";
 import { ApiError } from "@/lib/api/http";
-import { canBacklog, defaultChoices, gapLine, MOODS, movedLine, summaryLine, toDecisions, type Choice } from "@/lib/rituals/dayClose";
+import { defaultChoices, gapLine, keptLine, MOODS, movedLine, needsChapterPick, summaryLine, toDecisions, type Choice } from "@/lib/rituals/dayClose";
+import { loadChapterIndex, type ChapterInfo } from "@/lib/syllabus/chapterIndex";
 import { refreshXp } from "@/lib/rewards/events";
 import { intensity } from "@/components/focus/SessionWrap";
 
@@ -35,6 +36,17 @@ function Flame({ lit }: { lit: boolean }) {
 export function DayCloseFlow({ state, open, onClose, onDone }: { state: DayCloseState; open: boolean; onClose: () => void; onDone: () => void }) {
   const reduce = useReducedMotion();
   const [choices, setChoices] = useState<Record<string, Choice>>(() => defaultChoices(state.unfinished));
+  // the chapter chip tapped for a task that has none of its own, and the names to show on the chips
+  const [picks, setPicks] = useState<Record<string, string>>({});
+  const [names, setNames] = useState<Map<string, ChapterInfo>>(new Map());
+  useEffect(() => {
+    if (!state.unfinished.some(needsChapterPick)) return;
+    let alive = true;
+    void loadChapterIndex().then((m) => alive && setNames(m)).catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [state.unfinished]);
   const [mood, setMood] = useState<number | null>(null);
   const [win, setWin] = useState("");
   const [busy, setBusy] = useState(false);
@@ -45,7 +57,7 @@ export function DayCloseFlow({ state, open, onClose, onDone }: { state: DayClose
     setBusy(true);
     setError(null);
     try {
-      const r = await completeDayClose({ decisions: toDecisions(choices), ...(mood ? { mood } : {}), ...(win.trim() ? { win: win.trim() } : {}) });
+      const r = await completeDayClose({ decisions: toDecisions(choices, picks), ...(mood ? { mood } : {}), ...(win.trim() ? { win: win.trim() } : {}) });
       setReward(r);
       void refreshXp();
     } catch (err) {
@@ -57,6 +69,7 @@ export function DayCloseFlow({ state, open, onClose, onDone }: { state: DayClose
 
   if (reward) {
     const moved = movedLine(reward.moved);
+    const kept = keptLine(reward.moved);
     return (
       <Sheet open={open} onClose={() => { onDone(); onClose(); }} title="Day closed" description={state.date} data-testid="day-close-reward" footer={<CoralButton data-testid="day-close-finish" onClick={() => { onDone(); onClose(); }}>Done</CoralButton>}>
         <div className="flex flex-col items-center gap-4 pt-2 text-center">
@@ -86,6 +99,7 @@ export function DayCloseFlow({ state, open, onClose, onDone }: { state: DayClose
             ))}
           </dl>
           {moved && <p className="text-[13px] text-muted" data-testid="reward-moved">{moved}</p>}
+          {kept && <p role="status" className="rounded-xl bg-tint-strong px-3 py-2 text-[13px] font-medium text-ink" data-testid="reward-kept">{kept}</p>}
         </div>
       </Sheet>
     );
@@ -132,14 +146,33 @@ export function DayCloseFlow({ state, open, onClose, onDone }: { state: DayClose
                 <p className="text-[14px] font-semibold text-ink">{t.title}</p>
                 <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label={`What to do with ${t.title}`}>
                   {CHOICES.map((c) => {
-                    const disabled = c.value === "backlog" && !canBacklog(t);
                     return (
-                      <button key={c.value} type="button" role="radio" aria-checked={choices[t.id] === c.value} disabled={disabled} data-testid={`choice-${c.value}`} onClick={() => setChoices((prev) => ({ ...prev, [t.id]: c.value }))} className={`min-h-11 rounded-lg border px-2 text-[13px] font-semibold disabled:opacity-40 ${choices[t.id] === c.value ? "border-[1.5px] border-brand bg-tint-strong text-ink" : "border-border-subtle bg-surface text-body-text dark:text-ink"}`}>
+                      <button key={c.value} type="button" role="radio" aria-checked={choices[t.id] === c.value} data-testid={`choice-${c.value}`} onClick={() => setChoices((prev) => ({ ...prev, [t.id]: c.value }))} className={`min-h-11 rounded-lg border px-2 text-[13px] font-semibold ${choices[t.id] === c.value ? "border-[1.5px] border-brand bg-tint-strong text-ink" : "border-border-subtle bg-surface text-body-text dark:text-ink"}`}>
                         {c.label}
                       </button>
                     );
                   })}
                 </div>
+                {choices[t.id] === "backlog" && needsChapterPick(t) && (
+                  <div className="flex flex-col gap-2" data-testid="backlog-chapter-pick">
+                    <p className="text-[12px] text-muted">{picks[t.id] ? "Goes to your backlog under this chapter." : "Pick the chapter it belongs to. Without one it stays on tomorrow."}</p>
+                    <div className="flex flex-wrap gap-2" role="group" aria-label="Chapter for the backlog">
+                      {t.candidateChapterIds.slice(0, 8).map((id) => (
+                        <button
+                          key={id}
+                          type="button"
+                          aria-pressed={picks[t.id] === id}
+                          data-testid="backlog-chip"
+                          onClick={() => setPicks((prev) => (prev[t.id] === id ? Object.fromEntries(Object.entries(prev).filter(([k]) => k !== t.id)) : { ...prev, [t.id]: id }))}
+                          className={`min-h-11 rounded-full border px-4 text-[13px] font-semibold ${picks[t.id] === id ? "border-[1.5px] border-brand bg-tint-strong text-ink" : "border-border-subtle bg-surface text-ink"}`}
+                        >
+                          {names.get(id)?.name ?? "Chapter"}
+                        </button>
+                      ))}
+                      {t.candidateChapterIds.length === 0 && <p className="text-[12px] text-muted">No chapters in progress yet, so this one stays on tomorrow.</p>}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </fieldset>

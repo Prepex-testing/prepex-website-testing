@@ -11,7 +11,7 @@ import { QuickLogFab, isTypingTarget } from "@/components/rituals/QuickLogFab";
 import { intensity } from "@/components/focus/SessionWrap";
 import type { DayCloseReward, DayCloseState } from "@/lib/api/rituals";
 import type { BadgeInfo, XpSummary } from "@/lib/api/xp";
-import { canBacklog, defaultChoices, gapLine, movedLine, summaryLine, toDecisions } from "@/lib/rituals/dayClose";
+import { defaultChoices, gapLine, keptLine, movedLine, needsChapterPick, summaryLine, toDecisions } from "@/lib/rituals/dayClose";
 import { goalLabel, historyLine } from "@/lib/rituals/review";
 import { readLast, writeLast } from "@/lib/quicklog/last";
 import { diffXp, emitReward, onReward, primeXp, refreshXp, resetRewardState, type RewardEvent } from "@/lib/rewards/events";
@@ -117,18 +117,21 @@ describe("Day Close", () => {
     triggerReason: "after_last_block",
     summary: { minutes: 190, tasksDone: 4, tasksTotal: 6, questions: 42, revisions: 1 },
     unfinished: [
-      { id: "t1", title: "Kinematics lecture", subjectId: 1, chapterId: "c1", taskType: "NEW_LEARNING" },
-      { id: "t2", title: "Custom reading", subjectId: null, chapterId: null, taskType: "CUSTOM" },
+      { id: "t1", title: "Kinematics lecture", subjectId: 1, chapterId: "c1", taskType: "NEW_LEARNING", candidateChapterIds: [] },
+      { id: "t2", title: "Custom reading", subjectId: null, chapterId: null, taskType: "CUSTOM", candidateChapterIds: ["c1", "c2"] },
     ],
     coverage: [],
   };
-  const reward: DayCloseReward = { alreadyClosed: false, xpEarned: 85, xp: xp({ todayStudyMinutes: 190 }), streak: { current: 12, countsToday: true }, rankToday: { xp: 85, rank: 8, total: 40, gapToNext: 38 }, rankMonth: { xp: 600, rank: 3, total: 40, gapToNext: 12 }, moved: { tomorrow: 1, backlog: 0, dropped: 1, failed: [] } };
+  const reward: DayCloseReward = { alreadyClosed: false, xpEarned: 85, xp: xp({ todayStudyMinutes: 190 }), streak: { current: 12, countsToday: true }, rankToday: { xp: 85, rank: 8, total: 40, gapToNext: 38 }, rankMonth: { xp: 600, rank: 3, total: 40, gapToNext: 12 }, moved: { tomorrow: 1, backlog: 0, dropped: 1, failed: [], keptForTomorrow: [] } };
 
   it("pure helpers: default choice, backlog needs a chapter, wording", () => {
     expect(defaultChoices(state.unfinished)).toEqual({ t1: "tomorrow", t2: "tomorrow" });
-    expect(canBacklog(state.unfinished[0]!)).toBe(true);
-    expect(canBacklog(state.unfinished[1]!)).toBe(false);
+    expect(needsChapterPick(state.unfinished[0]!)).toBe(false);
+    expect(needsChapterPick(state.unfinished[1]!)).toBe(true);
     expect(toDecisions({ t1: "backlog" })).toEqual([{ taskId: "t1", action: "backlog" }]);
+    expect(toDecisions({ t2: "backlog", t3: "drop" }, { t2: "c2", t3: "c1" })).toEqual([{ taskId: "t2", action: "backlog", chapterId: "c2" }, { taskId: "t3", action: "drop" }]);
+    expect(keptLine({ ...reward.moved, keptForTomorrow: ["t2"] })).toBe("1 task stays on tomorrow because no chapter was picked for the backlog.");
+    expect(keptLine(reward.moved)).toBeNull();
     expect(summaryLine(state.summary)).toBe("3h 10m · 4 of 6 tasks · 42 questions · 1 revision");
     expect(gapLine(reward.rankToday)).toBe("38 XP behind #7");
     expect(gapLine({ xp: 0, rank: null, total: 3, gapToNext: null })).toBeNull();
@@ -143,10 +146,11 @@ describe("Day Close", () => {
     render(<DayCloseFlow state={state} open onClose={vi.fn()} onDone={onDone} />);
 
     expect(screen.getByTestId("day-summary")).toHaveTextContent("3h 10m");
-    // a task with no chapter cannot go to the backlog
+    // every task can go to the backlog; a task with no chapter asks for one
     const backlogButtons = screen.getAllByTestId("choice-backlog");
     expect(backlogButtons[0]).toBeEnabled();
-    expect(backlogButtons[1]).toBeDisabled();
+    expect(backlogButtons[1]).toBeEnabled();
+    expect(screen.queryByTestId("backlog-chapter-pick")).not.toBeInTheDocument();
 
     await userEvent.click(backlogButtons[0]!);
     await userEvent.click(screen.getAllByTestId("choice-drop")[1]!);
@@ -161,6 +165,30 @@ describe("Day Close", () => {
     expect(screen.getByTestId("rank-month")).toHaveTextContent("#3");
     expect(screen.getByTestId("reward-streak")).toHaveTextContent("12 day streak");
     expect(screen.getByTestId("reward-moved")).toHaveTextContent("1 to tomorrow, 1 dropped");
+  });
+
+  it("a task with no chapter sent to Backlog shows the student's chapters as chips; one tap sends that chapter", async () => {
+    vi.mocked(completeDayClose).mockResolvedValue(reward);
+    vi.mocked(getXpSummary).mockResolvedValue(xp());
+    render(<DayCloseFlow state={state} open onClose={vi.fn()} onDone={vi.fn()} />);
+    await userEvent.click(screen.getAllByTestId("choice-backlog")[1]!);
+    const chips = await screen.findAllByTestId("backlog-chip");
+    expect(chips.map((c) => c.textContent)).toEqual(["Kinematics", "Laws of Motion"]);
+    await userEvent.click(chips[1]!);
+    expect(chips[1]).toHaveAttribute("aria-pressed", "true");
+    await userEvent.click(screen.getByTestId("day-close-submit"));
+    expect(completeDayClose).toHaveBeenCalledWith({ decisions: [{ taskId: "t1", action: "tomorrow" }, { taskId: "t2", action: "backlog", chapterId: "c2" }] });
+  });
+
+  it("with no chapter picked the task is kept for tomorrow and the student is told, never dropped silently", async () => {
+    vi.mocked(completeDayClose).mockResolvedValue({ ...reward, moved: { tomorrow: 2, backlog: 0, dropped: 0, failed: [], keptForTomorrow: ["t2"] } });
+    vi.mocked(getXpSummary).mockResolvedValue(xp());
+    render(<DayCloseFlow state={state} open onClose={vi.fn()} onDone={vi.fn()} />);
+    await userEvent.click(screen.getAllByTestId("choice-backlog")[1]!);
+    expect(screen.getByTestId("backlog-chapter-pick")).toHaveTextContent("Without one it stays on tomorrow");
+    await userEvent.click(screen.getByTestId("day-close-submit"));
+    expect(completeDayClose).toHaveBeenLastCalledWith({ decisions: [{ taskId: "t1", action: "tomorrow" }, { taskId: "t2", action: "backlog" }] });
+    expect(await screen.findByTestId("reward-kept")).toHaveTextContent("1 task stays on tomorrow");
   });
 
   it("shows the server's message when closing fails and keeps the sheet open", async () => {

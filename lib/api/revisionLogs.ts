@@ -110,3 +110,40 @@ export function planChapterRevision(input: AddToPlannerInput & { chapterId: stri
 }
 
 export type { PlannerWindow };
+
+// ---- Revision hub (launch P2): the chapter health map, today's due, the 7-day load -----------------------------
+
+export type Freshness = "overdue" | "due" | "soon" | "fresh";
+
+export type HealthTile = {
+  chapterId: string;
+  name: string;
+  subjectId: number;
+  subject: string;
+  status: "not_started" | "in_progress" | "completed" | "mastered";
+  freshness: Freshness;
+  nextDueOn: string;
+  lastRevisedOn: string | null;
+  daysOverdue: number;
+  revisionStep: number;
+  weightage: 1 | 2 | 3;
+  lastRecall: "easy" | "ok" | "hard" | null;
+};
+
+export type RevisionHub = {
+  today: string;
+  examDate: string;
+  daysToExam: number;
+  tiles: HealthTile[];
+  todayDue: { chapterId: string; name: string; subject: string; minutes: number; dueOn: string; plan: string; overdueDays: number }[];
+  load7: { date: string; due: number }[];
+  overdueCount: number;
+  dueTodayCount: number;
+  coverage: { onTime: number; total: number; percent: number | null };
+  /** Today's revision slot in minutes: 0 means the timetable has none, so nothing can be planned today. */
+  slotMinutesToday: number;
+};
+
+export function getRevisionHub() {
+  return request<{ success: true; data: RevisionHub }>("/hub");
+}

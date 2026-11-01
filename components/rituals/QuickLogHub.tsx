@@ -53,7 +53,8 @@ export function QuickLogHub({ open, onClose }: { open: boolean; onClose: () => v
   const [target, setTarget] = useState<LastTarget>({ subjectId: null, chapterId: null });
   const [minutes, setMinutes] = useState(30);
   const [attempted, setAttempted] = useState(10);
-  const [correct, setCorrect] = useState(10);
+  // empty until the student enters it: accuracy is never inferred from attempted
+  const [correct, setCorrect] = useState<number | null>(null);
   const [pattern, setPattern] = useState<(typeof PATTERNS)[number]["value"]>("jee_main");
   const [marks, setMarks] = useState("");
   const [classChapters, setClassChapters] = useState<string[]>([]);
@@ -103,10 +104,11 @@ export function QuickLogHub({ open, onClose }: { open: boolean; onClose: () => v
   const needsChapter = kind === "questions" || kind === "revised";
   const ready = useMemo(() => {
     if (kind === "studied") return target.subjectId !== null;
-    if (kind === "questions" || kind === "revised") return target.subjectId !== null && target.chapterId !== null;
+    if (kind === "questions") return target.subjectId !== null && target.chapterId !== null && correct !== null && correct <= attempted;
+    if (kind === "revised") return target.subjectId !== null && target.chapterId !== null;
     if (kind === "mock") return marks.trim() !== "" && Number.isFinite(Number(marks));
     return false;
-  }, [kind, target, marks]);
+  }, [kind, target, marks, correct, attempted]);
 
   async function run(work: () => Promise<unknown>, done: string) {
     setBusy(true);
@@ -127,7 +129,7 @@ export function QuickLogHub({ open, onClose }: { open: boolean; onClose: () => v
   const saveStudied = () => run(() => createStudySession({ subjectId: target.subjectId!, chapterId: target.chapterId, durationMinutes: minutes }), "Study time logged");
   const saveQuestions = () =>
     run(
-      () => createPracticeLog({ subjectId: target.subjectId!, chapterId: target.chapterId!, source: "own_notebook", questionsAttempted: attempted, questionsCorrect: Math.min(correct, attempted), questionsWrong: attempted - Math.min(correct, attempted), questionsSkipped: 0 }),
+      () => createPracticeLog({ subjectId: target.subjectId!, chapterId: target.chapterId!, source: "own_notebook", questionsAttempted: attempted, questionsCorrect: Math.min(correct ?? 0, attempted), questionsWrong: attempted - Math.min(correct ?? 0, attempted), questionsSkipped: 0 }),
       "Questions logged",
     );
   const saveRevision = (recall: Recall) => run(() => createRevision({ subjectId: target.subjectId!, chapterId: target.chapterId!, revisionType: "notes", durationMinutes: minutes, recall }), "Revision logged");
@@ -211,8 +213,8 @@ export function QuickLogHub({ open, onClose }: { open: boolean; onClose: () => v
 
           {kind === "questions" && (
             <>
-              <CountStepper label="Attempted" value={attempted} min={1} testId="quick-attempted" onChange={(n) => { setAttempted(n); if (correct > n) setCorrect(n); }} />
-              <CountStepper label="Correct" value={Math.min(correct, attempted)} max={attempted} testId="quick-correct" onChange={setCorrect} />
+              <CountStepper label="Attempted" value={attempted} min={1} testId="quick-attempted" onChange={(n) => { setAttempted(n); if (correct !== null && correct > n) setCorrect(n); }} />
+              <CountStepper label="Correct" value={correct === null ? null : Math.min(correct, attempted)} max={attempted} testId="quick-correct" onChange={setCorrect} />
             </>
           )}
 

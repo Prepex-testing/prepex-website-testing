@@ -20,6 +20,7 @@ import { examPatternOf, scorecardToForm } from "@/lib/logs/scorecard";
 import { makeSubjectLookup } from "@/lib/study/subjects";
 
 vi.mock("@/lib/api/revision", async (orig) => ({ ...(await orig<typeof import("@/lib/api/revision")>()), getRevisionOverview: vi.fn(), skipRevisionTask: vi.fn(), demoteRevisionChapter: vi.fn() }));
+vi.mock("@/components/logs/RevisionHub", () => ({ RevisionHub: () => null }));
 import { demoteRevisionChapter, getRevisionOverview } from "@/lib/api/revision";
 
 vi.mock("@/lib/focus/startFocusSession", () => ({ startFocusSession: vi.fn() }));
@@ -189,7 +190,7 @@ describe("Spaced Repetition tab", () => {
   it("summarises the queue, lists what is due, and has exactly one coral button: Start Revision on the first card", async () => {
     vi.mocked(getRevisionOverview).mockResolvedValue({ success: true, data: overview() });
     const { container } = render(<SpacedRepetitionTab />);
-    expect(await screen.findByTestId("sr-summary")).toHaveTextContent("4 chapters in your queue · 2 due today");
+    expect(await screen.findByTestId("sr-summary")).toHaveTextContent("4 chapters in your queue · 2 planned today");
     expect(screen.getAllByTestId("sr-due-card")).toHaveLength(2);
     expect(screen.getAllByTestId("sr-start")[0]!.className).toContain("bg-brand-coral");
     expect(screen.getAllByTestId("sr-start")[1]!.className).not.toContain("bg-brand-coral");

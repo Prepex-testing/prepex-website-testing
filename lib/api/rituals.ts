@@ -25,7 +25,8 @@ export const submitCoverage = (input: { blockKey: string; date?: string; chapter
 
 // ---- day close ----
 export type DaySummary = { minutes: number; tasksDone: number; tasksTotal: number; questions: number; revisions: number };
-export type UnfinishedTask = { id: string; title: string; subjectId: number | null; chapterId: string | null; taskType: string };
+/** `candidateChapterIds`: for a task with no chapter, the chapters the student is in the middle of (that subject first). */
+export type UnfinishedTask = { id: string; title: string; subjectId: number | null; chapterId: string | null; taskType: string; candidateChapterIds: string[] };
 export type DayCloseState = {
   date: string;
   status: "not_yet" | "ready" | "completed" | "dismissed";
@@ -43,9 +44,9 @@ export type DayCloseReward = {
   streak: { current: number; countsToday: boolean };
   rankToday: RankResult;
   rankMonth: RankResult;
-  moved: { tomorrow: number; backlog: number; dropped: number; failed: string[] };
+  moved: { tomorrow: number; backlog: number; dropped: number; failed: string[]; keptForTomorrow: string[] };
 };
-export type DayCloseDecision = { taskId: string; action: "tomorrow" | "backlog" | "drop" };
+export type DayCloseDecision = { taskId: string; action: "tomorrow" | "backlog" | "drop"; chapterId?: string };
 
 export const getDayClose = () => core<DayCloseState>("/day-close");
 export const completeDayClose = (input: { decisions: DayCloseDecision[]; mood?: number; win?: string }) => core<DayCloseReward>("/day-close/complete", post(input));

@@ -39,10 +39,11 @@ export function QuickLogSheet({ open, task, origin, knownMinutes, busy, error, o
   const [confidence, setConfidence] = useState<number | null>(null);
   const [revisionType, setRevisionType] = useState("notes");
   const [source, setSource] = useState(task.contentSource && PRACTICE_SOURCE_OPTIONS.some((o) => o.value === task.contentSource) ? task.contentSource : "own_notebook");
-  // A planner tick (manual) starts from the task's own target: attempted = the target, correct = attempted, then the student adjusts down.
+  // A planner tick (manual) starts attempted from the task's own target. Correct starts EMPTY and is required: accuracy feeds the
+  // chapter's state, revision and Rank GPS, so a one-tap confirm must never be able to claim a perfect score.
   const tick = origin === "manual";
   const [attempted, setAttempted] = useState(String(task.questionCount ?? (tick ? 10 : "")));
-  const [correct, setCorrect] = useState(tick ? String(task.questionCount ?? 10) : "");
+  const [correct, setCorrect] = useState("");
   const [testType, setTestType] = useState("full_mock");
   const [pattern, setPattern] = useState("jee_main");
   const [marks, setMarks] = useState("");
@@ -63,6 +64,8 @@ export function QuickLogSheet({ open, task, origin, knownMinutes, busy, error, o
       const tried = num(attempted);
       const right = Math.min(num(correct), tried);
       if (tried < 1) return setLocalError("Enter how many questions you attempted.");
+      if (correct.trim() === "") return setLocalError("Enter how many you got right.");
+      if (num(correct) > tried) return setLocalError("Correct can't be more than attempted.");
       return onSubmit({ ...base, practice: { source, questionsAttempted: tried, questionsCorrect: right, questionsWrong: tried - right, questionsSkipped: 0 } });
     }
     if (kind === "mock") {
@@ -92,7 +95,7 @@ export function QuickLogSheet({ open, task, origin, knownMinutes, busy, error, o
             </p>
           )}
           {!(kind === "revision" && tick) && (
-          <button type="button" data-testid="log-save" disabled={busy} onClick={submit} className="min-h-14 rounded-lg border border-primary-button-border bg-cta px-4 text-base font-semibold text-white hover:bg-[#E8623F] disabled:opacity-60">
+          <button type="button" data-testid="log-save" disabled={busy || (kind === "practice" && correct.trim() === "")} onClick={submit} className="min-h-14 rounded-lg border border-primary-button-border bg-cta px-4 text-base font-semibold text-white hover:bg-[#E8623F] disabled:opacity-60">
             {busy ? "Saving…" : kind === "practice" && tick ? "Confirm" : "Save and finish"}
           </button>
           )}
@@ -155,10 +158,10 @@ export function QuickLogSheet({ open, task, origin, knownMinutes, busy, error, o
 
         {kind === "practice" && tick && (
           <>
-            <CountStepper label="Attempted" value={num(attempted)} min={1} testId="log-attempted" onChange={(n) => { setAttempted(String(n)); if (num(correct) > n) setCorrect(String(n)); }} />
-            <CountStepper label="Correct" value={Math.min(num(correct), num(attempted))} max={num(attempted)} testId="log-correct" onChange={(n) => setCorrect(String(n))}>
+            <CountStepper label="Attempted" value={num(attempted)} min={1} testId="log-attempted" onChange={(n) => { setAttempted(String(n)); if (correct !== "" && num(correct) > n) setCorrect(String(n)); }} />
+            <CountStepper label="Correct" value={correct === "" ? null : Math.min(num(correct), num(attempted))} max={num(attempted)} testId="log-correct" onChange={(n) => setCorrect(String(n))}>
               <p className="text-[12px] text-muted" data-testid="log-wrong">
-                {`${wrong} wrong. Add the tricky ones to your mistake notebook any time.`}
+                {correct === "" ? "Enter how many you got right to confirm." : `${wrong} wrong. Add the tricky ones to your mistake notebook any time.`}
               </p>
             </CountStepper>
             <label className={LABEL}>
