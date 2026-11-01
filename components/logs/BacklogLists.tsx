@@ -54,7 +54,7 @@ export function BacklogOpenList({ items, lookup, hasMore, onLoadMore, onClear, o
   if (items.length === 0) {
     return (
       <p className="rounded-xl bg-tint-strong px-4 py-8 text-center text-[14px] text-muted dark:bg-[#FAF7F214]" data-testid="backlog-empty">
-        Nothing on your backlog. Add what you are behind on, or let the Sunday sweep find it.
+        Nothing on your backlog. Add what you are behind on, whenever you want to.
       </p>
     );
   }

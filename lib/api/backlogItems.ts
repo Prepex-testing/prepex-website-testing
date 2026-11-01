@@ -3,7 +3,7 @@ import { authenticatedRequest } from "@/lib/api/authRequest";
 import { query, type Page, type PlannerPlacement, type PlannerWindow } from "@/lib/api/logsCommon";
 
 /**
- * The student's own backlog — core-service /api/backlog-items/*. Deadlines, priorities, a weekly sweep.
+ * The student's own backlog — core-service /api/backlog-items/*. Deadlines, priorities and lanes.
  * (The planner's skipped-task pile, with recovery mode, is a different thing: lib/api/backlog.ts, /api/backlog.)
  */
 
@@ -68,7 +68,6 @@ export type SuggestedSlot = {
 
 export type Suggestions = { itemId: string; estimatedMinutes: number; usedTimetable: boolean; suggestions: SuggestedSlot[] };
 
-export type SweepResult = { sweptWeek: string; created: number; skipped: number; fromGoals: number; fromCoaching: number; fromPlan?: number; items: BacklogItem[] };
 
 export type BacklogTaskType = "NEW_LEARNING" | "REVISION" | "PRACTICE" | "CUSTOM";
 
@@ -106,8 +105,4 @@ export function getBacklogAnalytics() {
 
 export function getBacklogSuggestions(itemId: string, days = 3) {
   return request<{ success: true; data: Suggestions }>(`/suggestions${query({ itemId, days })}`);
-}
-
-export function sweepBacklog() {
-  return request<{ success: true; data: SweepResult }>("/auto-sweep", { method: "POST", body: "{}" });
 }

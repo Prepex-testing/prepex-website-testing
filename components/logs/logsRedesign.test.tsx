@@ -333,6 +333,8 @@ describe("one coral button per log screen state", () => {
     "app/(app)/logs/mocks/page.tsx",
     // the Log and Add tabs' forms: a form's submit is that tab's one coral button
     "components/logs/BacklogForm.tsx",
+    // the Add tab: the fast intake is its one coral button (the single-item form under it is a ghost)
+    "components/logs/BacklogIntake.tsx",
     "components/logs/PracticeForm.tsx",
     "components/logs/RevisionForm.tsx",
     "components/mocks/MockForm.tsx",
