@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { BookOpen, CalendarClock, Check, Clock, Lock, MoreVertical, Moon, Sun, Sunset } from "lucide-react";
+import { BookOpen, CalendarClock, Check, Clock, Lock, MoreVertical, Moon, NotebookPen, Sun, Sunset } from "lucide-react";
 import type { PlanTask } from "@/lib/api/plannerV2";
 import { chapterResourcesHref } from "@/lib/revision/resourceLinks";
 import { STATUS_LABEL, SUBJECT_STYLE, formatClock, formatDuration, meta, subjectStyle } from "@/lib/planner/format";
@@ -140,6 +140,11 @@ export function StudyTaskCard({ task, coachAnchor, onStart, onMarkDone, onSkip, 
               <span className="flex items-center gap-1.5" data-testid="meta-range">
                 <CalendarClock className="size-3.5" aria-hidden /> {formatClock(task.startMin)} – {formatClock(task.endMin)}
               </span>
+            )}
+            {task.kind === "revision" && task.chapterId && (
+              <Link href={`/notebooks/review?chapter=${task.chapterId}`} data-testid="meta-mistakes" className="flex items-center gap-1.5 font-semibold text-body-text hover:underline dark:text-ink">
+                <NotebookPen className="size-3.5" aria-hidden /> Review mistakes
+              </Link>
             )}
             {/* TODO(resources): wire to the resource-library window's chapter entry once it exposes an id. */}
             {resource && (

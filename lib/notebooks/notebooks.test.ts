@@ -136,3 +136,27 @@ describe("saving captured photos", () => {
     expect(progress).toEqual([1, 2]);
   });
 });
+
+describe("PDF export grouping", () => {
+  const blocks = [
+    { id: "a", type: "text", text: "Q" },
+    { id: "b", type: "image", assetId: "x" },
+    { id: "c", type: "solution", text: "Use $F=ma$" },
+    { id: "d", type: "solution", text: "  " },
+    { id: "e", type: "text", text: "after" },
+  ] as import("@/lib/api/notebooks").Block[];
+
+  it("keeps the question together, the solution on its own, and skips empty solutions", async () => {
+    const { segments } = await import("@/lib/notebooks/print");
+    const out = segments(blocks, false);
+    expect(out.map((s) => s.kind)).toEqual(["blocks", "solution", "blocks"]);
+    expect(out[0]!.blocks).toHaveLength(2);
+  });
+
+  it("'Hide solutions' removes every solution block", async () => {
+    const { segments } = await import("@/lib/notebooks/print");
+    const out = segments(blocks, true);
+    expect(out.every((s) => s.kind === "blocks")).toBe(true);
+    expect(out.flatMap((s) => s.blocks).some((b) => b.type === "solution")).toBe(false);
+  });
+});

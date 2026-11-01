@@ -1,10 +1,11 @@
 "use client";
 
-import { Camera, ChevronLeft, Plus, Share2, Star } from "lucide-react";
+import { Camera, ChevronLeft, FileDown, Plus, Share2, Star } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { EntryPage } from "@/components/notebooks/EntryPage";
+import { ShareModal } from "@/components/notebooks/ShareModal";
 import { StatsPanel } from "@/components/notebooks/StatsPanel";
 import { StorageBanner } from "@/components/notebooks/StorageBanner";
 import { StudyShell } from "@/components/study/StudyShell";
@@ -14,8 +15,9 @@ import { GhostButton } from "@/components/ui/GhostButton";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { ApiError } from "@/lib/api/http";
-import { createEntry, createShare, deleteNotebook, fileUrl, listEntries, listNotebooks, REASON_LABEL, renameNotebook, type ListedEntry, type Notebook, type Usage } from "@/lib/api/notebooks";
+import { createEntry, deleteNotebook, fileUrl, listEntries, listNotebooks, REASON_LABEL, renameNotebook, type ListedEntry, type Notebook, type Usage } from "@/lib/api/notebooks";
 import { dueLabel, titleOf } from "@/lib/notebooks/model";
+import { chapterResourcesHref } from "@/lib/revision/resourceLinks";
 
 type Tab = "mistakes" | "notes" | "stats";
 const TABS: { key: Tab; label: string }[] = [
@@ -60,6 +62,7 @@ function NotebookScreen() {
   const [tab, setTab] = useState<Tab>("mistakes");
   const [renaming, setRenaming] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const [version, setVersion] = useState(0);
   const page = search.get("page");
 
@@ -107,6 +110,10 @@ function NotebookScreen() {
   const refresh = useCallback(() => setVersion((v) => v + 1), []);
   const href = (entryId: string) => `/notebooks/${id}?page=${entryId}`;
   const subjectName = book?.subjectId != null ? lookup.subjectName(book.subjectId) : null;
+  const resourceHref = useMemo(() => {
+    const chapter = lookup.chapterName(book?.chapterId ?? null);
+    return book?.subjectId != null && chapter ? chapterResourcesHref(lookup.subjectName(book.subjectId), chapter) : null;
+  }, [book, lookup]);
   const selected = useMemo(() => items?.find((e) => e.id === page) ?? null, [items, page]);
 
   async function addPage() {
@@ -116,21 +123,6 @@ function NotebookScreen() {
       router.replace(href(e.id));
     } catch (err) {
       toast.show(err instanceof ApiError ? err.message : "Could not add a page.");
-    }
-  }
-
-  async function shareNotebook() {
-    try {
-      const s = await createShare({ notebookId: id });
-      const url = `${window.location.origin}${s.path}`;
-      try {
-        await navigator.clipboard.writeText(url);
-        toast.show("Link copied. Anyone with it can read this notebook, nothing else. You can turn it off in Settings.", 6000);
-      } catch {
-        toast.show(url, 9000);
-      }
-    } catch (err) {
-      toast.show(err instanceof ApiError ? err.message : "Could not make a link.");
     }
   }
 
@@ -200,7 +192,10 @@ function NotebookScreen() {
           <GhostButton className="!min-h-11" onClick={() => router.push(`/notebooks/capture${book.chapterId ? `?chapter=${book.chapterId}` : ""}`)} data-testid="notebook-capture">
             <Camera className="size-5" aria-hidden /> Add photo
           </GhostButton>
-          <button type="button" aria-label="Share this notebook" onClick={() => void shareNotebook()} className="flex size-11 items-center justify-center rounded-lg text-ink hover:bg-tint-strong" data-testid="share-notebook">
+          <Link href={`/print/${id}`} aria-label="Export as PDF" className="flex size-11 items-center justify-center rounded-lg text-ink hover:bg-tint-strong" data-testid="export-pdf">
+            <FileDown className="size-5" aria-hidden />
+          </Link>
+          <button type="button" aria-label="Share this notebook" onClick={() => setSharing(true)} className="flex size-11 items-center justify-center rounded-lg text-ink hover:bg-tint-strong" data-testid="share-notebook">
             <Share2 className="size-5" aria-hidden />
           </button>
         </div>
@@ -251,6 +246,7 @@ function NotebookScreen() {
                 entryId={page}
                 notebookId={id}
                 usage={usage}
+                resourceHref={resourceHref}
                 notify={(m) => toast.show(m, 5000)}
                 onChanged={refresh}
                 onDeleted={() => {
@@ -265,6 +261,7 @@ function NotebookScreen() {
         </div>
       )}
 
+      <ShareModal open={sharing} onClose={() => setSharing(false)} target={{ notebookId: id }} what="notebook" />
       <ConfirmModal open={confirmDelete} onClose={() => setConfirmDelete(false)} onConfirm={() => void removeBook()} title="Delete this notebook?" description="Its pages and photos go with it. This cannot be undone." confirmLabel="Delete" />
       <Toast state={toast} />
     </StudyShell>
