@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { InsightsTabs } from "@/components/insights/InsightsTabs";
-import { SuggestPanel } from "@/components/goals/SuggestPanel";
 import { SyllabusSidePanel } from "@/components/insights/panels/SyllabusSidePanel";
 import { LogScreenScaffold } from "@/components/logs/LogScreenScaffold";
 import { CoralButton } from "@/components/ui/CoralButton";
@@ -10,7 +9,6 @@ import { ChapterListRow } from "@/components/syllabus/ChapterListRow";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { ApiError } from "@/lib/api/http";
 import { getSyllabus, type SyllabusOverview, type Tally } from "@/lib/api/syllabus";
-import { nextChapterToSuggest } from "@/lib/insights/attention";
 import { hoursLabel, STRENGTH_STYLE } from "@/lib/insights/labels";
 import { readTargetRank } from "@/lib/insights/targetRank";
 
@@ -44,8 +42,6 @@ export default function SyllabusPage() {
   const [error, setError] = useState<string | null>(null);
   const [subjectId, setSubjectId] = useState<number | null>(null);
   const [klass, setKlass] = useState<ClassFilter>("all");
-  const [suggesting, setSuggesting] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -65,9 +61,6 @@ export default function SyllabusPage() {
 
   const subject = useMemo(() => data?.subjects.find((s) => s.subjectId === subjectId) ?? null, [data, subjectId]);
   const chapters = useMemo(() => (subject ? subject.chapters.filter((c) => klass === "all" || c.class === klass) : []), [subject, klass]);
-
-  // "Suggest next chapter" asks about the weakest chapter, else the stalest, else the first one not started
-  const next = useMemo(() => (data ? nextChapterToSuggest(data.subjects) : null), [data]);
 
   if (!data && !error) return <PageLoader label="Loading the syllabus…" />;
 
@@ -127,29 +120,7 @@ export default function SyllabusPage() {
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-[16px] font-bold text-ink">Chapters</h2>
-            <CoralButton data-testid="suggest-next-chapter" disabled={next === null || suggesting} onClick={() => setSuggesting(true)}>
-              Suggest next chapter
-            </CoralButton>
           </div>
-
-          {notice && (
-            <p role="status" className="rounded-[10px] bg-[var(--success-bg)] px-3 py-2 text-[13px] font-semibold text-[var(--success)]" data-testid="syllabus-notice">
-              {notice}
-            </p>
-          )}
-
-          {suggesting && next && (
-            <SuggestPanel
-              chapterId={next.chapterId}
-              chapterName={next.name}
-              targetRank={readTargetRank()}
-              onAdded={(message) => {
-                setSuggesting(false);
-                setNotice(message);
-              }}
-              onClose={() => setSuggesting(false)}
-            />
-          )}
 
           <ul className="flex flex-col gap-2" data-testid="syllabus-chapters" role="tabpanel">
             {chapters.map((c) => (

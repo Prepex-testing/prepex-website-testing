@@ -27,11 +27,3 @@ export function attentionChapters(subjects: SyllabusOverview["subjects"], now: D
     .map((c) => ({ ...c, reason: `${daysSince(c.chapter.progress.lastStudiedAt!, now)} days since you studied it` }));
   return { weak, stale };
 }
-
-/** The chapter "Suggest next chapter" asks about: the weakest, else the stalest, else the first one not started. */
-export function nextChapterToSuggest(subjects: SyllabusOverview["subjects"], now: Date = new Date()): ChapterRow | null {
-  const { weak, stale } = attentionChapters(subjects, now, 1);
-  if (weak[0]) return weak[0].chapter;
-  if (stale[0]) return stale[0].chapter;
-  return subjects.flatMap((s) => s.chapters).find((c) => c.progress.theoryStatus === "not_started") ?? null;
-}

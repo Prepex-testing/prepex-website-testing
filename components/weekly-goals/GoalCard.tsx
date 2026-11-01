@@ -21,7 +21,6 @@ type Props = {
   onDelete: () => void;
   onEdit: (patch: { target: number; minutesPerUnit?: number }) => void;
   /** Ask the assistant for hours on this goal's chapter (chapter goals only). */
-  onSuggest?: () => void;
 };
 
 /** What kind of session works towards each kind of goal. */
@@ -43,7 +42,7 @@ const FIELD = "h-11 rounded-[10px] border border-border-subtle bg-surface-elevat
  * One weekly goal: what it is, how far along, and a single quiet action. Everything else lives in the ⋮ menu so the
  * card stays clean.
  */
-export function GoalCard({ goal, title, busy, onWatched, onToggleDone, onDelete, onEdit, onSuggest }: Props) {
+export function GoalCard({ goal, title, busy, onWatched, onToggleDone, onDelete, onEdit }: Props) {
   const done = goal.status === "DONE";
   const percent = done ? 100 : goal.progress.percent;
   const isLectures = goal.type === "LECTURES";
@@ -132,11 +131,6 @@ export function GoalCard({ goal, title, busy, onWatched, onToggleDone, onDelete,
                 {isLectures && !fromPartner && goal.progressSelfReport > 0 && (
                   <button type="button" role="menuitem" data-testid="goal-reset" className={MENU_ITEM} onClick={pick(() => onWatched(0))}>
                     Reset progress
-                  </button>
-                )}
-                {onSuggest && (
-                  <button type="button" role="menuitem" data-testid="goal-suggest" className={MENU_ITEM} onClick={pick(onSuggest)}>
-                    Suggest for this chapter
                   </button>
                 )}
               </div>

@@ -10,14 +10,13 @@ import { WeekSidePanel } from "@/components/insights/panels/WeekSidePanel";
 import { ChapterListRow } from "@/components/syllabus/ChapterListRow";
 import type { MonthView } from "@/lib/api/calendarView";
 import type { ChapterRow, SyllabusOverview } from "@/lib/api/syllabus";
-import { attentionChapters, nextChapterToSuggest } from "@/lib/insights/attention";
+import { attentionChapters } from "@/lib/insights/attention";
 
 vi.mock("@/components/profile/ProfileSubpageHeader", () => ({ ProfileSubpageHeader: ({ title }: { title: string }) => <h1>{title}</h1> }));
 vi.mock("@/lib/focus/startFocusSession", () => ({ startFocusSession: vi.fn() }));
 vi.mock("@/lib/api/syllabus", async (orig) => ({ ...(await orig<typeof import("@/lib/api/syllabus")>()), getSyllabus: vi.fn() }));
 vi.mock("@/lib/api/masterAnalytics", () => ({ getMasterAnalytics: vi.fn() }));
 vi.mock("@/lib/api/mocks", () => ({ getMockAnalytics: vi.fn() }));
-vi.mock("@/components/goals/SuggestPanel", () => ({ SuggestPanel: ({ chapterName }: { chapterName: string }) => <p data-testid="suggest-panel">suggesting {chapterName}</p> }));
 import { getSyllabus } from "@/lib/api/syllabus";
 import { getMasterAnalytics } from "@/lib/api/masterAnalytics";
 import SyllabusPage from "@/app/(app)/syllabus/page";
@@ -50,14 +49,6 @@ describe("what needs attention", () => {
     const { weak, stale } = attentionChapters(subjects, NOW);
     expect(weak.map((w) => [w.chapter.name, w.reason])).toEqual([["Kinematics", "41% accuracy"], ["Laws of Motion", "55% accuracy"]]);
     expect(stale.map((s) => [s.chapter.name, s.reason])).toEqual([["Work and Energy", "36 days since you studied it"]]);
-  });
-
-  it("suggests the weakest chapter, else the stalest, else the first one not started", () => {
-    expect(nextChapterToSuggest(subjects, NOW)?.name).toBe("Kinematics");
-    const noWeak = [{ ...subjects[0]!, chapters: subjects[0]!.chapters.map((c) => ({ ...c, progress: { ...c.progress, strengthLabel: c.progress.strengthLabel === "weak" ? ("medium" as const) : c.progress.strengthLabel } })) }];
-    expect(nextChapterToSuggest(noWeak, NOW)?.name).toBe("Work and Energy");
-    expect(nextChapterToSuggest([{ ...subjects[0]!, chapters: [subjects[0]!.chapters[3]!] }], NOW)?.name).toBe("Rotation");
-    expect(nextChapterToSuggest([], NOW)).toBeNull();
   });
 
   it("picks the weakest chapter in the dashboard's strength grid", () => {
@@ -108,18 +99,14 @@ describe("Syllabus", () => {
     expect(coralCount(container)).toBe(0);
   });
 
-  it("the page has exactly one coral button, Suggest next chapter, which opens the suggestion for the weakest chapter", async () => {
+  it("the page has no filled coral button and lists every chapter with its attention and progress panels", async () => {
     vi.mocked(getSyllabus).mockResolvedValue({ success: true, data: { subjects, totals: tally } });
     const { container } = render(<SyllabusPage />);
-    const suggest = await screen.findByTestId("suggest-next-chapter");
-    expect(coralCount(container)).toBe(1);
-    expect(suggest.className).toContain("bg-brand-coral");
+    await screen.findAllByTestId(/^study-chapter-/);
+    expect(coralCount(container)).toBe(0);
     expect(screen.getAllByTestId(/^study-chapter-/)).toHaveLength(4);
     expect(screen.getByTestId("syl-attention")).toBeInTheDocument();
     expect(screen.getByTestId("syl-progress")).toBeInTheDocument();
-    await userEvent.click(suggest);
-    expect(await screen.findByTestId("suggest-panel")).toHaveTextContent("suggesting Kinematics");
-    expect(coralCount(container)).toBe(1);
   });
 });
 
@@ -146,10 +133,10 @@ describe("the four tabs use the scaffold; Details is untouched", () => {
     expect(src).toContain('<InsightsTabs current="/stats" />');
   });
 
-  it("no filled coral on the analytics pages outside the diagnosis card, the week run button and Suggest next chapter", () => {
+  it("no filled coral on the analytics pages outside the diagnosis card and the week run button", () => {
     const files = ["app/(app)/analytics/page.tsx", "app/(app)/analytics/week/page.tsx", "app/(app)/calendar/page.tsx", "components/insights/panels/DashboardSidePanel.tsx", "components/insights/panels/WeekSidePanel.tsx", "components/insights/panels/CalendarSidePanel.tsx", "components/insights/panels/SyllabusSidePanel.tsx", "components/syllabus/ChapterListRow.tsx"];
     for (const f of files) expect(readFileSync(path.join(root, f), "utf8"), f).not.toMatch(/bg-cta|bg-brand-coral|CoralButton/);
-    expect(readFileSync(path.join(root, "app/(app)/syllabus/page.tsx"), "utf8").match(/<CoralButton/g)).toHaveLength(1);
+    expect(readFileSync(path.join(root, "app/(app)/syllabus/page.tsx"), "utf8")).not.toMatch(/<CoralButton/);
   });
 });
 

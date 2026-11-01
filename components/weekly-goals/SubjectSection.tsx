@@ -16,15 +16,12 @@ type Props = {
   onDelete: (goal: Goal) => void;
   onEdit: (goal: Goal, patch: { target: number; minutesPerUnit?: number }) => void;
   /** Set when the goal has a chapter the assistant can look at. */
-  onSuggest: (goal: Goal) => (() => void) | undefined;
   /** Opens the add-a-goal panel for this subject (the empty-state tile). */
   onAddFor: (subjectId: number) => void;
-  /** The open Suggest panel, shown under the grid when it belongs to this section. */
-  suggestSlot?: ReactNode;
 };
 
 /** One subject's goals: a coloured heading with its count, then a two-column grid of cards (one column on a phone). */
-export function SubjectSection({ section, titleOf, busyId, onWatched, onToggleDone, onDelete, onEdit, onSuggest, onAddFor, suggestSlot }: Props) {
+export function SubjectSection({ section, titleOf, busyId, onWatched, onToggleDone, onDelete, onEdit, onAddFor }: Props) {
   const done = section.goals.filter((g) => g.status === "DONE" || g.progress.complete).length;
   return (
     <section aria-label={section.label} className="flex flex-col gap-3" data-testid="subject-section" data-section={section.key}>
@@ -50,7 +47,6 @@ export function SubjectSection({ section, titleOf, busyId, onWatched, onToggleDo
               onToggleDone={() => onToggleDone(g)}
               onDelete={() => onDelete(g)}
               onEdit={(patch) => onEdit(g, patch)}
-              {...(onSuggest(g) ? { onSuggest: onSuggest(g)! } : {})}
             />
           ))}
         </ul>
@@ -69,7 +65,6 @@ export function SubjectSection({ section, titleOf, busyId, onWatched, onToggleDo
           </div>
         )
       )}
-      {suggestSlot}
     </section>
   );
 }
