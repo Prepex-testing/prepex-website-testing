@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { getCheckInStatus } from "@/lib/api/checkin";
 import { getAccessToken } from "@/lib/auth/session";
+import { isCheckedInTodayRemembered, rememberCheckedInToday } from "@/lib/auth/gateMemory";
 
 const BAD_DAY_PATH = "/home/bad-day";
 
@@ -25,7 +26,9 @@ function isWelcomeGoalsScreen(pathname: string | null): boolean {
 export function useCheckInGate(enabled: boolean) {
   const router = useRouter();
   const pathname = usePathname();
-  const [hasVerifiedOnce, setVerifiedOnce] = useState(!enabled);
+  // A student already seen checked in today (in this browser) gets the page at once; the check below still runs and
+  // still redirects if the server disagrees. Only the first open of the day waits on it.
+  const [hasVerifiedOnce, setVerifiedOnce] = useState(() => !enabled || isCheckedInTodayRemembered());
 
   useEffect(() => {
     if (!enabled) return;
@@ -38,6 +41,7 @@ export function useCheckInGate(enabled: boolean) {
 
       getCheckInStatus()
         .then(({ data }) => {
+          if (data.exists) rememberCheckedInToday();
           if (!data.exists) {
             // The first-run goals screen comes before the first check-in: saving (or skipping)
             // there continues to /check-in, so bouncing here would skip goal-setting entirely.

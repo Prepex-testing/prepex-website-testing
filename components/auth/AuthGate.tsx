@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { usePathname, useRouter } from "next/navigation";
 import { getAccessToken } from "@/lib/auth/session";
 import {
@@ -129,6 +130,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   const authorized = state.pathname === pathname && state.authorized;
 
-  if (!authorized) return null;
+  // A quiet loading screen rather than nothing: the first paint never waits on the network.
+  if (!authorized) return <PageLoader />;
   return <>{children}</>;
 }

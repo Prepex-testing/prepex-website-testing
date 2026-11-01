@@ -5,6 +5,7 @@ import { useSyncExternalStore, type ReactNode } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { FocusSidebar } from "@/components/layout/FocusSidebar";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { BusyNotice } from "@/components/layout/BusyNotice";
 import { useCheckInGate } from "@/components/check-in/CheckInGate";
 import { OnboardingCoach } from "@/components/coach/OnboardingCoach";
 import { AccountRestoredNotice } from "@/components/auth/AccountRestoredNotice";
@@ -71,6 +72,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <FocusLauncher />
       {!isFocusMode && <Heartbeat />}
       <RewardsLayer />
+      <BusyNotice />
       <div
         className={`relative hidden shrink-0 transition-[width] duration-700 ease-in-out lg:block ${
           collapsedState ? "w-24.25" : "w-56"

@@ -1,5 +1,6 @@
 import { getCheckInStatus } from "@/lib/api/checkin";
 import { getOnboardingProgress, getOnboardingStepPath } from "@/lib/api/onboarding";
+import { forgetGateMemory, isOnboardedRemembered, rememberOnboarded } from "@/lib/auth/gateMemory";
 
 /**
  * Where a signed-in student belongs right now.
@@ -19,15 +20,19 @@ import { getOnboardingProgress, getOnboardingStepPath } from "@/lib/api/onboardi
 let knownComplete = false;
 
 export function isOnboardingKnownComplete(): boolean {
+  // also remembered across visits in this browser, so a fresh open does not hold a blank screen on this round trip
+  if (!knownComplete && isOnboardedRemembered()) knownComplete = true;
   return knownComplete;
 }
 
 export function markOnboardingComplete(): void {
   knownComplete = true;
+  rememberOnboarded();
 }
 
 export function forgetOnboardingStatus(): void {
   knownComplete = false;
+  forgetGateMemory();
 }
 
 /**
@@ -38,11 +43,11 @@ export function forgetOnboardingStatus(): void {
  * re-check their own progress anyway.
  */
 export async function pendingOnboardingPath(): Promise<string | null> {
-  if (knownComplete) return null;
+  if (isOnboardingKnownComplete()) return null;
   try {
     const { data } = await getOnboardingProgress();
     if (data.progress.isCompleted) {
-      knownComplete = true;
+      markOnboardingComplete();
       return null;
     }
     return getOnboardingStepPath(data.progress.currentStep);

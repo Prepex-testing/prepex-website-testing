@@ -39,11 +39,13 @@ export function HomeTop() {
     void getRewards().then(setRewards).catch(() => undefined);
   }, []);
 
-  // sync with the server's timer every 30 s; between syncs the number is computed from the server's elapsed seconds
+  // sync with the server's timer every minute while the tab is visible; between syncs the number is computed from the server's elapsed seconds
   useEffect(() => {
     let alive = true;
     const sync = () =>
-      void getActiveFocusSession()
+      document.visibilityState === "hidden"
+        ? undefined
+        : void getActiveFocusSession()
         .then((r) => {
           if (!alive) return;
           const s = r.data.session;
@@ -51,7 +53,7 @@ export function HomeTop() {
         })
         .catch(() => undefined);
     sync();
-    const t = setInterval(sync, 30_000);
+    const t = setInterval(sync, 60_000);
     return () => {
       alive = false;
       clearInterval(t);

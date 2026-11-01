@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { sendHeartbeat } from "@/lib/api/xp";
 
 /** How often the app reports that it is open and in use. The server also clamps what it credits. */
-export const HEARTBEAT_EVERY_MS = 30_000;
+export const HEARTBEAT_EVERY_MS = 60_000;
 
 /**
  * Streak 2.0: the day counts after 2 minutes of the app being open AND visible. A hidden tab, a locked phone or another

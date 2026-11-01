@@ -292,33 +292,43 @@ export function useFocusSession() {
     [adopt, leaveFullscreen],
   );
 
+  // Pause and Resume answer the tap at once: the clock freezes (or restarts) locally, the request goes out, and the
+  // server's answer replaces the guess (or the guess is undone with a message if it was refused). The server treats a
+  // repeated pause or resume as a no-op and the request layer has a time limit, so a slow or retried request can never
+  // leave the buttons stuck.
   const pause = useCallback(async () => {
     const current = sessionRef.current;
     if (!current || busy) return;
     setBusy(true);
     setError(null);
+    const at = Date.now();
+    adopt({ ...current, status: "PAUSED", elapsedSeconds: liveElapsedSeconds(current, receivedAt, at) });
     try {
       const res = await pauseFocusSession(current.id);
       adopt(res.data);
       trackFocusEvent("focus_session_pause", { sessionId: current.id, taskType: current.taskType, mode: current.mode });
     } catch (err) {
+      adopt(current);
+      setReceivedAt(receivedAt);
       setError(messageOf(err, "Couldn't pause. Please try again."));
     } finally {
       setBusy(false);
     }
-  }, [adopt, busy]);
+  }, [adopt, busy, receivedAt]);
 
   const resume = useCallback(async () => {
     const current = sessionRef.current;
     if (!current || busy) return;
     setBusy(true);
     setError(null);
+    adopt({ ...current, status: "ACTIVE" });
     try {
       const res = await resumeFocusSession(current.id);
       adopt(res.data);
       setAway(null);
       trackFocusEvent("focus_session_resume", { sessionId: current.id, taskType: current.taskType, mode: current.mode });
     } catch (err) {
+      adopt(current);
       setError(messageOf(err, "Couldn't resume. Please try again."));
     } finally {
       setBusy(false);
