@@ -35,24 +35,27 @@ export function RecallPicker({ busy, onPick }: { busy: boolean; onPick: (recall:
 }
 
 /** A number with minus and plus buttons; the number is also a real input so a long count can be typed. */
-export function CountStepper({ label, value, min = 0, max = 1000, onChange, testId, children }: { label: string; value: number; min?: number; max?: number; onChange: (n: number) => void; testId: string; children?: ReactNode }) {
+/** `value` null is an empty field (shown as a dash): the student has not entered it yet, and the buttons start from there. */
+export function CountStepper({ label, value, min = 0, max = 1000, onChange, testId, children }: { label: string; value: number | null; min?: number; max?: number; onChange: (n: number) => void; testId: string; children?: ReactNode }) {
   const clamp = (n: number) => Math.min(max, Math.max(min, Math.round(n)));
+  const current = value ?? 0;
   return (
     <div className="flex flex-col gap-1.5">
       <span className="text-[14px] font-semibold text-body-text dark:text-ink">{label}</span>
       <div className="flex items-center gap-2">
-        <button type="button" aria-label={`Less ${label.toLowerCase()}`} data-testid={`${testId}-dec`} onClick={() => onChange(clamp(value - 1))} className="size-12 rounded-xl border border-border-subtle bg-surface-elevated text-[22px] font-bold text-ink">
+        <button type="button" aria-label={`Less ${label.toLowerCase()}`} data-testid={`${testId}-dec`} onClick={() => onChange(clamp(current - 1))} className="size-12 rounded-xl border border-border-subtle bg-surface-elevated text-[22px] font-bold text-ink">
           −
         </button>
         <input
           inputMode="numeric"
           aria-label={label}
           data-testid={testId}
-          value={String(value)}
+          value={value === null ? "" : String(value)}
+          placeholder="-"
           onChange={(e) => onChange(clamp(Number(e.target.value.replace(/[^\d]/g, "")) || 0))}
           className="h-12 min-w-0 flex-1 rounded-xl border border-input-border bg-surface px-3 text-center text-[20px] font-extrabold text-ink outline-none focus:border-brand"
         />
-        <button type="button" aria-label={`More ${label.toLowerCase()}`} data-testid={`${testId}-inc`} onClick={() => onChange(clamp(value + 1))} className="size-12 rounded-xl border border-border-subtle bg-surface-elevated text-[22px] font-bold text-ink">
+        <button type="button" aria-label={`More ${label.toLowerCase()}`} data-testid={`${testId}-inc`} onClick={() => onChange(clamp(current + 1))} className="size-12 rounded-xl border border-border-subtle bg-surface-elevated text-[22px] font-bold text-ink">
           +
         </button>
       </div>
