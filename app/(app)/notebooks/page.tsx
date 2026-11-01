@@ -200,7 +200,10 @@ export default function NotebooksPage() {
           <GhostButton onClick={() => setCreating(true)} data-testid="new-notebook">
             <Plus className="size-5" aria-hidden /> New notebook
           </GhostButton>
-          <GhostButton className="sm:ml-auto" onClick={() => router.push("/notebooks/stats")} data-testid="shelf-stats">
+          <GhostButton className="sm:ml-auto" onClick={() => router.push("/notebooks/review?test=1")} data-testid="shelf-test">
+            Mistake Test
+          </GhostButton>
+          <GhostButton onClick={() => router.push("/notebooks/stats")} data-testid="shelf-stats">
             Stats
           </GhostButton>
         </div>

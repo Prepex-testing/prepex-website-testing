@@ -5,11 +5,12 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BlockEditor, type AssetMap } from "@/components/notebooks/editor/BlockEditor";
 import { useAutosave } from "@/components/notebooks/editor/useAutosave";
+import { ShareModal } from "@/components/notebooks/ShareModal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { GhostButton } from "@/components/ui/GhostButton";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { ApiError } from "@/lib/api/http";
-import { REASONS, REASON_LABEL, SOURCES, SOURCE_LABEL, createShare, deleteEntry, getEntry, reopenEntry, updateEntry, type Block, type EntryWithAssets, type Reason, type Source, type Usage } from "@/lib/api/notebooks";
+import { REASONS, REASON_LABEL, SOURCES, SOURCE_LABEL, deleteEntry, getEntry, reopenEntry, updateEntry, type Block, type EntryWithAssets, type Reason, type Source, type Usage } from "@/lib/api/notebooks";
 import { dueLabel, SAVE_TEXT } from "@/lib/notebooks/model";
 
 type Draft = {
@@ -38,17 +39,20 @@ type Props = {
   notify: (message: string) => void;
   /** The notebook this page sits in, for the share link. */
   notebookId?: string;
+  /** The chapter's page in the Resource Library, shown on notes so a note and its source material sit one tap apart. */
+  resourceHref?: string | null;
 };
 
 /**
  * One page of a notebook: the mistake header (where it came from, why it was missed, the fix) above a paper page the student writes
  * on. Everything saves itself a moment after the last change.
  */
-export function EntryPage({ entryId, usage, onChanged, onDeleted, notify, notebookId }: Props) {
+export function EntryPage({ entryId, usage, onChanged, onDeleted, notify, notebookId, resourceHref }: Props) {
   const [entry, setEntry] = useState<EntryWithAssets | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const [tagText, setTagText] = useState("");
   const fixRef = useRef<HTMLInputElement>(null);
   const reasonRef = useRef<HTMLDivElement>(null);
@@ -113,21 +117,6 @@ export function EntryPage({ entryId, usage, onChanged, onDeleted, notify, notebo
     }
   }
 
-  async function share() {
-    try {
-      const s = await createShare({ entryId });
-      const url = `${window.location.origin}${s.path}`;
-      try {
-        await navigator.clipboard.writeText(url);
-        notify("Link copied. Anyone with it can read this page, nothing else.");
-      } catch {
-        notify(url);
-      }
-    } catch (err) {
-      notify(err instanceof ApiError ? err.message : "Could not make a link.");
-    }
-  }
-
   return (
     <article className="flex flex-col gap-4" data-testid="entry-page" data-entry-type={entry.entryType}>
       <header className="flex flex-col gap-3">
@@ -136,7 +125,7 @@ export function EntryPage({ entryId, usage, onChanged, onDeleted, notify, notebo
           <button type="button" aria-pressed={draft.starred} aria-label={draft.starred ? "Remove the star" : "Star this page"} onClick={() => set({ starred: !draft.starred })} data-testid="entry-star" className="flex size-11 shrink-0 items-center justify-center rounded-lg text-ink hover:bg-tint-strong">
             <Star className={`size-5 ${draft.starred ? "fill-current" : ""}`} aria-hidden />
           </button>
-          <button type="button" aria-label="Share this page" onClick={() => void share()} data-testid="entry-share" className="flex size-11 shrink-0 items-center justify-center rounded-lg text-ink hover:bg-tint-strong">
+          <button type="button" aria-label="Share this page" onClick={() => setSharing(true)} data-testid="entry-share" className="flex size-11 shrink-0 items-center justify-center rounded-lg text-ink hover:bg-tint-strong">
             <Share2 className="size-5" aria-hidden />
           </button>
           <button type="button" aria-label="Delete this page" onClick={() => setConfirm(true)} data-testid="entry-delete" className="flex size-11 shrink-0 items-center justify-center rounded-lg text-muted hover:text-danger">
@@ -192,6 +181,12 @@ export function EntryPage({ entryId, usage, onChanged, onDeleted, notify, notebo
           </div>
         )}
 
+        {!mistake && resourceHref && (
+          <Link href={resourceHref} className="w-fit text-[13px] font-semibold text-ink underline" data-testid="note-resource-link">
+            Open this chapter in the Resource Library
+          </Link>
+        )}
+
         <div className="flex flex-wrap items-center gap-1.5">
           {draft.tags.map((t) => (
             <button key={t} type="button" onClick={() => set({ tags: draft.tags.filter((x) => x !== t) })} aria-label={`Remove the tag ${t}`} className={`${CHIP} border-border-subtle text-ink`}>
@@ -241,6 +236,7 @@ export function EntryPage({ entryId, usage, onChanged, onDeleted, notify, notebo
         </Link>
       )}
 
+      <ShareModal open={sharing} onClose={() => setSharing(false)} target={{ entryId }} what="page" />
       <ConfirmModal open={confirm} onClose={() => setConfirm(false)} onConfirm={() => void remove()} title="Delete this page?" description="It goes from your notebook along with its photos and re-solve history." confirmLabel="Delete" />
     </article>
   );

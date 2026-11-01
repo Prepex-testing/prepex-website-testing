@@ -71,11 +71,14 @@ describe("StudyTaskCard", () => {
     const { rerender } = render(<StudyTaskCard task={task({ kind: "revision", chapterName: "Limits", topic: null, contentSourceLabel: "Short notes", plannedUnits: 1, estimatedMinutes: 30 })} {...actions} />);
     expect(screen.getByTestId("task-instruction")).toHaveTextContent("Short notes revision · 30-min slot");
     expect(screen.getByTestId("task-cta")).toHaveTextContent("Start Revision");
+    // a revision task links to that chapter's due mistakes in the notebook; other kinds do not
+    expect(screen.getByTestId("meta-mistakes")).toHaveAttribute("href", "/notebooks/review?chapter=c1");
     rerender(<StudyTaskCard task={task({ kind: "mock", subject: null, chapterName: null, chapterId: null, title: "Full mock (JEE Main)", estimatedMinutes: 180, topic: null, plannedUnits: 1 })} {...actions} />);
     expect(screen.getByTestId("task-chapter")).toHaveTextContent("Full mock (JEE Main)");
     expect(screen.getByTestId("task-instruction")).toHaveTextContent("Full mock (JEE Main) · 3h");
     expect(screen.getByTestId("task-cta")).toHaveTextContent("Start Mock");
     expect(screen.queryByTestId("meta-resource")).toBeNull();
+    expect(screen.queryByTestId("meta-mistakes")).toBeNull();
   });
 
   it("a task in progress resumes, with a saffron outline and still no fill", () => {
