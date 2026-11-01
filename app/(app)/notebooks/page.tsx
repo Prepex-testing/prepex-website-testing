@@ -191,7 +191,7 @@ export default function NotebooksPage() {
           <GhostButton onClick={() => camera.current?.click()} data-testid="shelf-camera">
             <Camera className="size-5" aria-hidden /> Camera
           </GhostButton>
-          <GhostButton className="hidden sm:inline-flex" onClick={() => void pasteFromClipboard()} data-testid="shelf-paste">
+          <GhostButton className="max-sm:!hidden" onClick={() => void pasteFromClipboard()} data-testid="shelf-paste">
             <ClipboardPaste className="size-5" aria-hidden /> Paste
           </GhostButton>
           <GhostButton onClick={() => upload.current?.click()} data-testid="shelf-upload">

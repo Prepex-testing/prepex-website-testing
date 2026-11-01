@@ -133,7 +133,7 @@ function CaptureScreen() {
   }
 
   return (
-    <div className="flex flex-col gap-5 p-4 pb-28 sm:p-6 lg:mx-auto lg:w-full lg:max-w-[880px] lg:p-8" data-testid="capture-screen">
+    <div className="flex flex-col gap-5 p-4 pb-44 sm:p-6 lg:mx-auto lg:w-full lg:max-w-[880px] lg:p-8" data-testid="capture-screen">
       <ProfileSubpageHeader title="Add mistakes" backHref="/notebooks" />
 
       <input ref={camera} type="file" accept="image/*" capture="environment" hidden onChange={(e) => (add(pickFiles(e.target.files)), (e.target.value = ""))} data-testid="capture-camera-input" />
@@ -210,7 +210,7 @@ function CaptureScreen() {
       )}
 
       {photos.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border-subtle bg-surface p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:static lg:border-0 lg:bg-transparent lg:p-0">
+        <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-border-subtle bg-surface p-3 lg:static lg:border-0 lg:bg-transparent lg:p-0">
           <CoralButton className="w-full lg:w-auto" disabled={saving !== null} onClick={() => void save()} data-testid="capture-save">
             {saving ? `Saving ${saving.done} of ${saving.total}…` : photos.length === 1 ? "Save mistake" : `Save ${photos.length} mistakes`}
           </CoralButton>
