@@ -12,18 +12,18 @@ const counts: QuickAccessCounts = { sessionsToday: 2, questionsThisWeek: 140, re
 
 describe("Quick Access", () => {
   it("shows live counts on the six rows that have one", () => {
-    expect(quickAccessSubtitles(counts)).toEqual({ focus: "2 sessions today", practice: "140 questions this week", revision: "3 due today", backlog: "4 open", mistakes: "15 unresolved", mocks: "1 this week" });
+    expect(quickAccessSubtitles(counts)).toEqual({ focus: "2 sessions today", practice: "140 questions this week", revision: "3 due today", backlog: "4 open", mistakes: "15 due", mocks: "1 this week" });
   });
 
   it("falls back to what the row does when a count is missing", () => {
     const s = quickAccessSubtitles({ sessionsToday: null, questionsThisWeek: null, revisionsDue: null, backlogOpen: null, mistakesOpen: null, mocksThisWeek: null });
     expect(s.focus).toBe("Start a session");
-    expect(s.mistakes).toBe("Review mistakes");
+    expect(s.mistakes).toBe("Open notebooks");
   });
 
   it("is exactly ten rows, in order, with no Partner and no Analytics", () => {
     const labels = quickAccessItems(counts).map((i) => i.label);
-    expect(labels).toEqual(["Focus", "Practice", "Revision", "Backlog", "Mistakes", "Mocks", "Where to focus next", "Leader Board", "Resource Library", "Weekly review"]);
+    expect(labels).toEqual(["Focus", "Practice", "Revision", "Backlog", "Notebooks", "Mocks", "Where to focus next", "Leader Board", "Resource Library", "Weekly review"]);
     expect(labels).not.toContain("Partner");
     expect(labels).not.toContain("Analytics");
     expect(quickAccessItems(counts).map((i) => i.href ?? "")).not.toContain("/analytics");

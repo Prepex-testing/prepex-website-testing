@@ -284,7 +284,7 @@ function PracticeCompleteContent() {
           </Button>
 
           <Button
-            href="/home/mistake-notebook"
+            href="/notebooks"
             variant="secondary"
             className="h-14 w-full whitespace-nowrap rounded-xl bg-transparent px-3 text-[13px] font-bold leading-[1] text-ink hover:bg-tint-strong dark:border-[var(--text-primary,#FAF7F2)] sm:h-[72px] sm:rounded-2xl sm:px-4 sm:text-[18px]"
           >

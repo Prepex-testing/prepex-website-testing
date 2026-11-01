@@ -144,11 +144,10 @@ export function QuickLogHub({ open, onClose }: { open: boolean; onClose: () => v
 
   function choose(next: QuickKind) {
     if (next === "mistake") {
-      const q = new URLSearchParams({ new: "1" });
-      if (target.subjectId) q.set("subject", String(target.subjectId));
+      const q = new URLSearchParams();
       if (target.chapterId) q.set("chapter", target.chapterId);
       onClose();
-      router.push(`/mistakes?${q.toString()}`);
+      router.push(`/notebooks/capture${q.size > 0 ? `?${q.toString()}` : ""}`);
       return;
     }
     setKind(next);

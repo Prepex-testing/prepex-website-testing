@@ -194,7 +194,7 @@ export default function LogsHubPage() {
       <h2 className="text-[13px] font-bold uppercase tracking-wide text-muted">Also here</h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="hub-links">
         <HubLink testId="hub-sessions" href="/sessions" title="Study sessions" blurb="Everything you've studied, by day." />
-        <HubLink testId="hub-mistakes" href="/mistakes" title="Mistake notebook" blurb="Review what you got wrong." />
+        <HubLink testId="hub-mistakes" href="/notebooks" title="My Notebooks" blurb="Review what you got wrong." />
         <HubLink testId="hub-practice-sessions" href="/practice/sessions" title="Practice questions" blurb="Solve questions in Prepex." />
         <HubLink testId="hub-plan" href="/plan" title="Plan" blurb="Your planner and calendar of tasks." />
         <HubLink testId="hub-calendar" href="/calendar" title="Calendar" blurb="Study heatmap, day by day." />

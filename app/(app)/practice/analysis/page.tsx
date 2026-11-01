@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -8,44 +8,17 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/Button";
 import { PageLoader } from "@/components/ui/PageLoader";
-import {
-  ArrowLeftIcons,
-  BookmarkIcon,
-  CheckIcon,
-  XIcon,
-  ConceptualGapIcon,
-  SillyErrorIcon,
-  TimePressureIcon,
-  WildGuessIcon,
-} from "@/components/ui/icons";
+import { ArrowLeftIcons, BookmarkIcon, CheckIcon, XIcon } from "@/components/ui/icons";
 import {
   answerToText,
   getPracticeSession,
-  MISTAKE_TAG_LABELS,
   optionEntries,
   prettyDifficulty,
-  tagMistake,
-  type MistakeTag,
   type PracticeSessionDetail,
   type PracticeSessionQuestion,
 } from "@/lib/api/practice";
-import { ArrowLeftIcon, ConceptualIcon, DiceIcon, Open, TimeIcon, VectorIcon } from "@/assets/icons";
-
-const ALL_TAGS = Object.keys(MISTAKE_TAG_LABELS) as MistakeTag[];
-
-const TAG_ICONS: Record<MistakeTag, ReactNode> = {
-  SILLY_ERROR: <VectorIcon />,
-  CONCEPTUAL_GAP: <ConceptualIcon />,
-  TIME_PRESSURE: <TimeIcon />,
-  WILD_GUESS: <DiceIcon />,
-};
-
-const TAG_DESCRIPTIONS: Record<MistakeTag, string> = {
-  CONCEPTUAL_GAP: "You struggled with understanding the concept.",
-  SILLY_ERROR: "A careless slip — the concept was understood.",
-  TIME_PRESSURE: "You ran short on time on this one.",
-  WILD_GUESS: "Answered without a confident method.",
-};
+import { ArrowLeftIcon, Open } from "@/assets/icons";
+import { REASONS, REASON_LABEL, setReasons, updateEntry, type Reason } from "@/lib/api/notebooks";
 
 function relativeDay(iso: string): string {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
@@ -83,9 +56,8 @@ function QuestionAnalysisContent() {
   const [filter, setFilter] = useState<AnalysisFilter>("all");
   // One question shown at a time — this is the position within the filtered set.
   const [index, setIndex] = useState(0);
-  // Live tag edits, layered over each mistake's server-side tags. Keyed by
-  // practiceSessionQuestionId.
-  const [tagOverrides, setTagOverrides] = useState<Record<string, MistakeTag[]>>({});
+  // Live reason edits, layered over each page's saved reason. Keyed by practiceSessionQuestionId.
+  const [reasonOverrides, setReasonOverrides] = useState<Record<string, Reason | null>>({});
   const error = fetchError ?? (sessionId ? null : "No session specified.");
 
   const selectFilter = (id: AnalysisFilter) => {
@@ -142,14 +114,13 @@ function QuestionAnalysisContent() {
   const currentIndex = visible.length ? Math.min(index, visible.length - 1) : 0;
   const currentQuestion = visible[currentIndex];
 
-  const tagsFor = (sq: PracticeSessionQuestion): MistakeTag[] =>
-    tagOverrides[sq.practiceSessionQuestionId] ?? sq.mistakeEntry?.mistakeTags ?? [];
+  const reasonFor = (sq: PracticeSessionQuestion): Reason | null =>
+    sq.practiceSessionQuestionId in reasonOverrides ? reasonOverrides[sq.practiceSessionQuestionId]! : (sq.mistakeEntry?.reason ?? null);
 
-  // Every wrong answer needs at least one tag before the pattern analysis is
-  // meaningful. Count how many are still untagged and only unlock the button
-  // once none remain.
+  // Wrong answers land in the notebook by themselves; the student only says why. Reasons are optional, but they are what
+  // lets the notebook spot a pattern, so the screen counts how many are still open.
   const wrongToTag = withQuestion.filter((q) => q.result === "WRONG" && q.mistakeEntry?.id);
-  const untaggedCount = wrongToTag.filter((q) => tagsFor(q).length === 0).length;
+  const untaggedCount = wrongToTag.filter((q) => reasonFor(q) === null).length;
   const allTagged = wrongToTag.length > 0 && untaggedCount === 0;
 
   if (error) {
@@ -226,10 +197,8 @@ function QuestionAnalysisContent() {
               key={sq.practiceSessionQuestionId}
               sq={sq}
               openSolution
-              tags={tagsFor(sq)}
-              onTagsChange={(next) =>
-                setTagOverrides((m) => ({ ...m, [sq.practiceSessionQuestionId]: next }))
-              }
+              reason={reasonFor(sq)}
+              onReasonChange={(next) => setReasonOverrides((m) => ({ ...m, [sq.practiceSessionQuestionId]: next }))}
             />
           ))}
         </div>
@@ -275,37 +244,21 @@ function QuestionAnalysisContent() {
             key={currentQuestion!.practiceSessionQuestionId}
             sq={currentQuestion!}
             openSolution={false}
-            tags={tagsFor(currentQuestion!)}
-            onTagsChange={(next) =>
-              setTagOverrides((m) => ({
-                ...m,
-                [currentQuestion!.practiceSessionQuestionId]: next,
-              }))
-            }
+            reason={reasonFor(currentQuestion!)}
+            onReasonChange={(next) => setReasonOverrides((m) => ({ ...m, [currentQuestion!.practiceSessionQuestionId]: next }))}
           />
         </div>
       )}
 
       {wrongToTag.length > 0 && (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-brand/10 bg-surface p-6 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-brand/10 bg-surface p-6 text-center" data-testid="reasons-footer">
           <p className="text-sm text-muted">
             {allTagged
-              ? "All wrong answers tagged — see how they add up."
-              : `Tag every wrong answer to analyse the mistake pattern — ${untaggedCount} of ${wrongToTag.length} left.`}
+              ? "Every wrong answer is in your notebook with a reason. Prepex will bring them back at the right time."
+              : `Your wrong answers are in your notebook. Say why you missed each one — ${untaggedCount} of ${wrongToTag.length} left.`}
           </p>
-          <Button
-            variant="primary"
-            size="sm"
-            disabled={!allTagged}
-            onClick={() =>
-              router.push(
-                sessionId
-                  ? `/practice/mistake-analysis?sessionId=${sessionId}`
-                  : "/home/mistake-notebook",
-              )
-            }
-          >
-            Analyse mistake pattern
+          <Button variant="primary" size="sm" onClick={() => router.push("/notebooks")}>
+            Open my notebooks
           </Button>
         </div>
       )}
@@ -316,14 +269,14 @@ function QuestionAnalysisContent() {
 function QuestionCard({
   sq,
   openSolution,
-  tags,
-  onTagsChange,
+  reason,
+  onReasonChange,
 }: {
   sq: PracticeSessionQuestion;
   openSolution: boolean;
-  /** Controlled by the page so it can tell when every mistake is tagged. */
-  tags: MistakeTag[];
-  onTagsChange: (tags: MistakeTag[]) => void;
+  /** Controlled by the page so it can tell when every wrong answer has a reason. */
+  reason: Reason | null;
+  onReasonChange: (reason: Reason | null) => void;
 }) {
   const q = sq.question!;
   const correctKey = answerToText(sq.correctAnswer ?? q.correctAnswer);
@@ -332,64 +285,36 @@ function QuestionCard({
   const options = optionEntries(q.options);
 
   const [showSolution, setShowSolution] = useState(openSolution);
-  const [note, setNote] = useState(sq.mistakeEntry?.studentNote ?? "");
-  const [savedNote, setSavedNote] = useState(sq.mistakeEntry?.studentNote ?? "");
+  const [fix, setFix] = useState(sq.mistakeEntry?.fix ?? "");
+  const [savedFix, setSavedFix] = useState(sq.mistakeEntry?.fix ?? "");
   const [busy, setBusy] = useState(false);
-  const [pendingTag, setPendingTag] = useState<MistakeTag | null>(null);
   const mistakeId = sq.mistakeEntry?.id ?? null;
+  const reviewCount = sq.mistakeEntry?.reviewCount ?? 0;
+  const lastReviewedAt = sq.mistakeEntry?.lastReviewedAt ?? null;
+  // A page already re-solved from the notebook: its history shows above the reason chips.
+  const isReviewedMistake = !!sq.mistakeEntry && (!!sq.mistakeEntry.reason || reviewCount > 0 || !!lastReviewedAt);
 
-  // Review stats mirrored locally so a re-tag on this screen updates the panel
-  // without a refetch.
-  const [reviewCount, setReviewCount] = useState(sq.mistakeEntry?.reviewCount ?? 0);
-  const [lastReviewedAt, setLastReviewedAt] = useState<string | null>(
-    sq.mistakeEntry?.lastReviewedAt ?? null,
-  );
-  // Only the first edit in a visit counts as one re-review.
-  const reReviewedRef = useRef(false);
-
-  // "Reviewed before" — a notebook question already tagged / reviewed, i.e. one
-  // being re-practised from the Mistake Notebook. Those also get the read-only
-  // context panels above the tag editor. Decided from the server value, not the
-  // live-edited `tags`, so tagging here doesn't flip the card mid-use.
-  const isReviewedMistake =
-    !!sq.mistakeEntry &&
-    (sq.mistakeEntry.mistakeTags.length > 0 ||
-      sq.mistakeEntry.reviewCount > 0 ||
-      !!sq.mistakeEntry.lastReviewedAt);
-
-  // A change to an already-tagged mistake is a re-review: bump the count once.
-  const reReviewFlag = () => {
-    if (!isReviewedMistake || reReviewedRef.current) return false;
-    reReviewedRef.current = true;
-    setReviewCount((c) => c + 1);
-    setLastReviewedAt(new Date().toISOString());
-    return true;
-  };
-
-  const toggleTag = async (tag: MistakeTag) => {
-    if (!mistakeId || busy || pendingTag) return;
-    const next = tags.includes(tag) ? tags.filter((t) => t !== tag) : [...tags, tag];
-    onTagsChange(next);
-    setPendingTag(tag);
+  const pickReason = async (r: Reason) => {
+    if (!mistakeId || busy) return;
+    const next = reason === r ? null : r;
+    onReasonChange(next);
     setBusy(true);
-    const reReview = reReviewFlag();
     try {
-      await tagMistake(mistakeId, { mistakeTags: next, ...(reReview && { reReview: true }) });
+      if (next) await setReasons([{ entryId: mistakeId, reason: next }]);
+      else await updateEntry(mistakeId, { reason: null });
     } catch {
-      onTagsChange(tags); // revert on failure
+      onReasonChange(reason); // revert on failure
     } finally {
       setBusy(false);
-      setPendingTag(null);
     }
   };
 
-  const saveNote = async () => {
-    if (!mistakeId || busy || note === savedNote) return;
+  const saveFix = async () => {
+    if (!mistakeId || busy || fix === savedFix) return;
     setBusy(true);
-    const reReview = reReviewFlag();
     try {
-      await tagMistake(mistakeId, { studentNote: note, ...(reReview && { reReview: true }) });
-      setSavedNote(note);
+      await updateEntry(mistakeId, { fix: fix.trim() || null });
+      setSavedFix(fix);
     } finally {
       setBusy(false);
     }
@@ -573,182 +498,64 @@ function QuestionCard({
         )}
       </div>
 
-      {/* Mistake-notebook context — for a question re-practised from the Mistake
-        Notebook (already tagged / reviewed). Reflects the live-edited values. */}
+      {/* A page already in the notebook: what it has been through so far. */}
       {isReviewedMistake && sq.mistakeEntry && (
-        <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
-          {/* Mistake Tag */}
-          <div className="flex min-h-[139px] w-full flex-col gap-4 rounded-2xl border border-brand/10 bg-surface p-5 sm:p-6">
-            <p className="text-[12px] font-semibold uppercase leading-[18px] tracking-[0.5px] text-muted sm:text-[14px] sm:leading-[18px]">
-              Mistake Tag
-            </p>
-
-            <div className="flex flex-wrap items-center gap-2">
-              {tags.length ? (
-                tags.map((t) => (
-                  <span
-                    key={t}
-                    className="flex h-[23px] items-center gap-1 rounded-[6px] bg-tint px-[10px] py-1 text-[12px] font-semibold leading-[15px] tracking-normal text-ink"
-                  >
-                    <span className="flex h-3 w-3 shrink-0 items-center justify-center [&>svg]:h-3 [&>svg]:w-3">
-                      {TAG_ICONS[t]}
-                    </span>
-
-                    <span className="whitespace-nowrap">
-                      {MISTAKE_TAG_LABELS[t]}
-                    </span>
-                  </span>
-                ))
-              ) : (
-                <span className="text-[13px] font-normal leading-[18px] text-muted">
-                  Not tagged yet
-                </span>
-              )}
-            </div>
-
-            {tags[0] && (
-              <p className="text-[13px] font-normal leading-[18px] tracking-normal text-muted sm:text-[14px] sm:leading-[18px]">
-                {TAG_DESCRIPTIONS[tags[0]]}
-              </p>
-            )}
+        <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5" data-testid="reviewed-context">
+          <div className="flex w-full flex-col gap-3 rounded-2xl border border-brand/10 bg-surface p-5 sm:p-6">
+            <p className="text-[12px] font-semibold uppercase leading-[18px] tracking-[0.5px] text-muted sm:text-[14px]">Why you missed it</p>
+            <p className="text-[14px] font-semibold text-ink">{reason ? REASON_LABEL[reason] : "No reason yet"}</p>
+            {savedFix && <p className="break-words text-[13px] text-body-text sm:text-[14px]">Fix: {savedFix}</p>}
           </div>
-
-          {/* Student Note */}
-          <div className="flex min-h-[139px] w-full flex-col gap-4 rounded-2xl border border-brand/10 bg-surface p-5 sm:p-6">
-            <p className="text-[12px] font-semibold uppercase leading-[18px] tracking-[0.5px] text-muted sm:text-[14px] sm:leading-[18px]">
-              Student Note
+          <div className="flex w-full flex-col gap-3 rounded-2xl border border-brand/10 bg-surface p-5 sm:p-6">
+            <p className="text-[12px] font-semibold uppercase leading-[18px] tracking-[0.5px] text-muted sm:text-[14px]">Re-solved</p>
+            <p className="text-[20px] font-extrabold text-ink">
+              {reviewCount} <span className="text-[12px] font-normal text-muted">{reviewCount === 1 ? "time" : "times"}</span>
             </p>
-
-            <p className="break-words text-[13px] font-medium leading-[18px] tracking-normal text-body-text sm:text-[14px] sm:leading-[18px]">
-              {savedNote ? `“${savedNote}”` : "No note added."}
+            <p className="text-[13px] text-muted">
+              {lastReviewedAt ? `Last on ${new Date(lastReviewedAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })} (${relativeDay(lastReviewedAt)})` : "Not re-solved yet"}
             </p>
-          </div>
-
-          {/* Review Information - Full Width */}
-          <div className="flex min-h-[102px] w-full flex-wrap items-center gap-10 rounded-2xl border border-brand/10 bg-surface p-5 sm:col-span-2 sm:gap-16 sm:p-6">
-            {/* Review Count */}
-            <div className="flex min-w-[120px] flex-col gap-1.5">
-              <p className="text-[12px] font-semibold uppercase leading-[18px] tracking-[0.5px] text-brand sm:text-[14px] sm:leading-[18px]">
-                Review Count
-              </p>
-
-              <div className="flex h-[30px] items-center gap-1.5">
-                <p className="text-[20px] font-extrabold leading-[30px] text-ink sm:text-[22px]">
-                  {reviewCount}
-                </p>
-
-                <p className="text-[12px] font-normal leading-[18px] text-muted">
-                  Times reviewed
-                </p>
-              </div>
-            </div>
-
-            {/* Last Reviewed */}
-            <div className="flex min-w-[120px] flex-col gap-1.5">
-              <p className="text-[12px] font-semibold uppercase leading-[18px] tracking-[0.5px] text-muted sm:text-[14px] sm:leading-[18px]">
-                Last Reviewed
-              </p>
-
-              <div className="flex min-h-[30px] items-center">
-                <p className="text-[13px] font-medium leading-[18px] text-ink sm:text-[14px] sm:leading-[18px]">
-                  {lastReviewedAt ? (
-                    <>
-                      {new Date(lastReviewedAt).toLocaleDateString(undefined, {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}{" "}
-                      <span className="font-medium text-muted">
-                        ({relativeDay(lastReviewedAt)})
-                      </span>
-                    </>
-                  ) : (
-                    "Not reviewed yet"
-                  )}
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       )}
 
-      {/* Tag this mistake (PRD 5.5.2 / 5.5.3) — shown only for a wrong answer
-        (re-practising from the Mistake Notebook and getting it right this
-        time still carries a mistakeEntry, but there's nothing to re-tag).
-        Re-tagging one already reviewed counts as a re-review. */}
+      {/* "Why did you miss it?" — only for a wrong answer; the page itself is already in the notebook. */}
       {mistakeId && sq.result === "WRONG" && (
-        <div className="w-full rounded-2xl border border-brand/10 bg-surface p-4 sm:p-6 lg:p-8">
-          {/* Header */}
-          <p className="text-[12px] font-semibold uppercase leading-[18px] tracking-[0.5px] text-muted sm:text-[14px] sm:leading-[18px]">
-            {isReviewedMistake ? "Re-tag this mistake" : "Tag this mistake"}
-          </p>
-
-          {/* Tags */}
-          <div className="mt-6 grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {ALL_TAGS.map((tag) => {
-              const active = tags.includes(tag);
-
-              const stateColor = active
-                ? "text-[#1A1A4E] dark:text-white"
-                : "text-[#333333] dark:text-muted";
-
-              return (
-                <button
-                  key={tag}
-                  type="button"
-                  disabled={busy && pendingTag === tag}
-                  onClick={() => toggleTag(tag)}
-                  aria-pressed={active}
-                  className={`flex h-[100px] w-full flex-col items-center justify-center rounded-2xl border px-3 py-3 transition-colors ${active
-                    ? "border-[#1A1A4E] bg-[#EEF0F8] dark:border-white dark:bg-transparent"
-                    : "border-[#E5E7EB] bg-white hover:border-[#1A1A4E]/20 dark:border-[#FAF7F214] dark:bg-[#FAF7F214] dark:hover:bg-[#FAF7F21A]"
-                    } disabled:opacity-50`}
-                >
-                  {/* Icon */}
-                  <span
-                    className={`flex items-center justify-center [&>svg]:h-9 [&>svg]:w-9 ${stateColor}`}
-                  >
-                    {TAG_ICONS[tag]}
-                  </span>
-
-                  {/* Label */}
-                  <span
-                    className={`mt-2 text-center font-['Plus_Jakarta_Sans'] text-[11px] font-bold leading-4 tracking-normal ${stateColor}`}
-                  >
-                    {MISTAKE_TAG_LABELS[tag]}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Personal Note */}
-          <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            onBlur={saveNote}
-            placeholder='Add a personal note (e.g. “forgot the sign convention”)'
-            rows={1}
-            className="mt-6 h-[50px] w-full resize-none overflow-hidden rounded-xl border border-brand/20 bg-transparent px-3 py-3 text-[13px] font-normal leading-[18px] tracking-normal text-ink outline-none placeholder:text-muted focus:border-ink/40 sm:px-4 sm:py-4 sm:text-[14px]"
-          />
-
-          {/* Notebook Status */}
-          <div className="mt-6 flex min-h-[16px] w-full flex-wrap items-center justify-between gap-3">
-            <span className="flex min-h-[16px] items-center gap-1.5 text-[12px] font-semibold leading-4 tracking-normal text-success sm:text-[13px]">
-              <span aria-hidden="true">✓</span>
-              <span>Added to Mistake Notebook</span>
-            </span>
-
-            {note !== savedNote && (
+        <div className="w-full rounded-2xl border border-brand/10 bg-surface p-4 sm:p-6 lg:p-8" data-testid="reason-editor">
+          <p className="text-[12px] font-semibold uppercase leading-[18px] tracking-[0.5px] text-muted sm:text-[14px]">Why did you miss it?</p>
+          <div role="radiogroup" aria-label="Why did you miss it?" className="mt-4 flex flex-wrap gap-2">
+            {REASONS.map((r) => (
               <button
+                key={r}
                 type="button"
-                onClick={saveNote}
+                role="radio"
+                aria-checked={reason === r}
                 disabled={busy}
-                className="text-[12px] font-bold leading-4 text-ink underline disabled:opacity-50 sm:text-[13px]"
+                onClick={() => void pickReason(r)}
+                data-testid={`reason-${r}`}
+                className={`min-h-11 rounded-full border px-4 text-[13px] font-semibold transition-colors disabled:opacity-50 ${reason === r ? "border-[1.5px] border-brand bg-tint-strong text-ink" : "border-border-subtle text-body-text dark:text-ink"}`}
               >
-                Save note
+                {REASON_LABEL[r]}
               </button>
-            )}
+            ))}
+          </div>
+          <input
+            value={fix}
+            maxLength={500}
+            onChange={(e) => setFix(e.target.value)}
+            onBlur={() => void saveFix()}
+            placeholder="What will you do differently? One line (optional)"
+            aria-label="What will you do differently"
+            className="mt-5 h-12 w-full rounded-xl border border-brand/20 bg-transparent px-3 text-[14px] text-ink outline-none placeholder:text-muted focus:border-ink/40"
+            data-testid="reason-fix"
+          />
+          <div className="mt-4 flex min-h-[16px] flex-wrap items-center justify-between gap-3">
+            <span className="flex items-center gap-1.5 text-[12px] font-semibold text-success sm:text-[13px]">
+              <span aria-hidden="true">✓</span>
+              <span>Saved in your notebook</span>
+            </span>
+            <Link href="/notebooks" className="text-[12px] font-bold text-ink underline sm:text-[13px]">
+              Open it
+            </Link>
           </div>
         </div>
       )}

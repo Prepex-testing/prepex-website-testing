@@ -20,7 +20,7 @@ export function loggedLines(result: StopFocusResult): string[] {
 
   if (completion.practiceLogId) lines.push("Saved your practice log.");
   if (completion.mistakesCreated > 0) {
-    lines.push(`${completion.mistakesCreated} ${completion.mistakesCreated === 1 ? "question was" : "questions were"} added to your mistake notebook.`);
+    lines.push(`${completion.mistakesCreated} ${completion.mistakesCreated === 1 ? "question was" : "questions were"} added to your notebooks.`);
   }
   if (completion.mistakesSkipped > 0) lines.push(`Your mistake notebook is full, so ${completion.mistakesSkipped} could not be added.`);
 

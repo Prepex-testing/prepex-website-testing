@@ -253,12 +253,12 @@ describe("Quick Log", () => {
     expect(readLast()).toEqual({ subjectId: 1, chapterId: "c1" });
   });
 
-  it("Mistake opens the existing mistake form with the subject and chapter filled", async () => {
+  it("Mistake opens the capture screen with the chapter filled", async () => {
     writeLast({ subjectId: 1, chapterId: "c1" });
     render(<QuickLogFab />);
     await userEvent.click(screen.getByTestId("quick-log-fab"));
     await userEvent.click(await screen.findByTestId("quick-mistake"));
-    expect(push).toHaveBeenCalledWith("/mistakes?new=1&subject=1&chapter=c1");
+    expect(push).toHaveBeenCalledWith("/notebooks/capture?chapter=c1");
   });
 
   it("Coaching class files the chapter against a once-a-day-per-subject key", async () => {

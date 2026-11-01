@@ -110,7 +110,7 @@ function Dashboard({ data, subjectNames }: { data: MasterAnalytics; subjectNames
         <StatTile testId="tile-revision" label="Revision ready" value={readiness.readinessPercent !== null ? `${readiness.readinessPercent}%` : "—"} caption={readiness.studiedChapters > 0 ? `${readiness.stale} of ${readiness.studiedChapters} chapters stale` : "no chapters studied yet"} href={drillHref("revisions", "quarter")} />
         <StatTile testId="tile-rank" label="Projected rank" value={approxRank(projection.projectedRank)} caption={projection.latestPercentile !== null ? `${projection.latestPercentile} percentile${projection.targetGap !== null ? ` · ${projection.targetGap > 0 ? `${rankLabel(projection.targetGap)} to go` : "inside your target"}` : ""}` : "add a mock percentile"} href="/logs/mocks" />
         <StatTile testId="tile-backlog" label="Backlog" value={data.backlogSize.total} caption={data.backlogSize.overdue > 0 ? `${data.backlogSize.overdue} overdue` : "nothing overdue"} href="/logs/backlog" />
-        <StatTile testId="tile-mistakes" label="Mistakes due" value={data.dueMistakesCount} caption="to review now" href="/mistakes" />
+        <StatTile testId="tile-mistakes" label="Mistakes due" value={data.dueMistakesCount} caption="to review now" href="/notebooks/review" />
         <StatTile testId="tile-exam" label="Exam in" value={data.exam.daysToExam !== null ? `${data.exam.daysToExam}d` : "—"} caption={data.exam.examDate ?? "set your exam date in your profile"} />
       </section>
 

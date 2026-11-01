@@ -94,7 +94,7 @@ export function originBackHref(source: OriginSource): string {
     case "practice_tab":
       return "/logs/practice";
     case "mistake_notebook":
-      return "/mistakes";
+      return "/notebooks";
     case "syllabus_overview":
       return "/syllabus";
     default:

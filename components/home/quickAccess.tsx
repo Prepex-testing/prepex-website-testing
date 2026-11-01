@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { AlertCircle, BookOpen, Compass, FileCheck, Library, ListChecks, NotebookPen, RotateCw, Target, Trophy } from "lucide-react";
 import { getRevisionOverview } from "@/lib/api/revision";
 import { getBacklogAnalytics } from "@/lib/api/backlogItems";
-import { getMistakeStats } from "@/lib/api/mistakes";
+import { listNotebooks } from "@/lib/api/notebooks";
 import { getPracticeAnalytics } from "@/lib/api/practiceLogs";
 import { listMocks } from "@/lib/api/mocks";
 import { getStudySummary } from "@/lib/api/studyLog";
@@ -31,7 +31,7 @@ export function quickAccessSubtitles(c: QuickAccessCounts): Record<QuickAccessKe
     practice: c.questionsThisWeek === null ? "Solve questions" : plural(c.questionsThisWeek, "question this week", "questions this week"),
     revision: c.revisionsDue === null ? "Revise chapters" : `${c.revisionsDue} due today`,
     backlog: c.backlogOpen === null ? "Clear what you owe" : `${c.backlogOpen} open`,
-    mistakes: c.mistakesOpen === null ? "Review mistakes" : `${c.mistakesOpen} unresolved`,
+    mistakes: c.mistakesOpen === null ? "Open notebooks" : c.mistakesOpen === 0 ? "Nothing due" : `${c.mistakesOpen} due`,
     mocks: c.mocksThisWeek === null ? "Analyze and improve" : `${c.mocksThisWeek} this week`,
   };
 }
@@ -59,7 +59,7 @@ export function useQuickAccessCounts(): QuickAccessCounts {
     getPracticeAnalytics({ period: "week" }).then((r) => set({ questionsThisWeek: r.data.totals.attempted }), () => undefined);
     getRevisionOverview().then((r) => set({ revisionsDue: r.data.todaysRevisionTasks.count }), () => undefined);
     getBacklogAnalytics().then((r) => set({ backlogOpen: r.data.totals.open + r.data.totals.scheduled }), () => undefined);
-    getMistakeStats().then((r) => set({ mistakesOpen: r.data.active }), () => undefined);
+    listNotebooks().then((r) => set({ mistakesOpen: r.dueTotal }), () => undefined);
     listMocks({ from: week.from, to: week.to, limit: 100 }).then((r) => set({ mocksThisWeek: r.data.items.length }), () => undefined);
     return () => {
       live = false;
@@ -90,7 +90,7 @@ export function quickAccessItems(counts: QuickAccessCounts): QuickAccessItem[] {
     { key: "practice", label: "Practice", subtitle: s.practice, icon: <BookOpen className={ICON} aria-hidden />, href: "/logs/practice", coach: "nav-practice" },
     { key: "revision", label: "Revision", subtitle: s.revision, icon: <RotateCw className={ICON} aria-hidden />, href: "/logs/revision", coach: "quick-revision" },
     { key: "backlog", label: "Backlog", subtitle: s.backlog, icon: <ListChecks className={ICON} aria-hidden />, href: "/logs/backlog", coach: "quick-backlog" },
-    { key: "mistakes", label: "Mistakes", subtitle: s.mistakes, icon: <AlertCircle className={ICON} aria-hidden />, href: "/home/mistake-notebook", coach: "quick-mistakes" },
+    { key: "mistakes", label: "Notebooks", subtitle: s.mistakes, icon: <AlertCircle className={ICON} aria-hidden />, href: "/notebooks", coach: "quick-mistakes" },
     { key: "mocks", label: "Mocks", subtitle: s.mocks, icon: <FileCheck className={ICON} aria-hidden />, href: "/logs/mocks", coach: "quick-mock" },
     // TODO(tile-wire): Where to focus next, Leader Board and Resource Library have no count yet; add one when their windows expose it.
     { key: "focus-next", label: "Where to focus next", icon: <Compass className={ICON} aria-hidden />, href: "/home/focus-next" },

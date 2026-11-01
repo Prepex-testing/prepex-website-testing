@@ -1,11 +1,8 @@
 // @vitest-environment jsdom
 import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MistakeRail } from "@/components/mistakes/MistakeRail";
 import { CountUp } from "@/components/study/CountUp";
 import { StudyShell } from "@/components/study/StudyShell";
-import type { Mistake, MistakeStats } from "@/lib/api/mistakes";
-import { makeSubjectLookup } from "@/lib/study/subjects";
 
 // The real header pulls in an SVG asset the test runner cannot load; a heading stand-in is enough here.
 vi.mock("@/components/profile/ProfileSubpageHeader", () => ({ ProfileSubpageHeader: ({ title }: { title: string }) => <h1>{title}</h1> }));
@@ -92,7 +89,7 @@ describe("Logs hub", () => {
 describe("StudyShell", () => {
   it("is titled Study on every tab", () => {
     render(
-      <StudyShell current="/mistakes">
+      <StudyShell current="/notebooks">
         <p>content</p>
       </StudyShell>,
     );
@@ -106,25 +103,5 @@ describe("CountUp", () => {
     window.matchMedia = ((q: string) => ({ matches: q.includes("reduce"), media: q, addEventListener: () => {}, removeEventListener: () => {} })) as unknown as typeof window.matchMedia;
     render(<CountUp value={42} testId="n" />);
     expect(screen.getByTestId("n")).toHaveTextContent("42");
-  });
-});
-
-describe("MistakeRail", () => {
-  const lookup = makeSubjectLookup([{ subjectId: 1, subjectName: "Physics", chapters: [{ id: "c1", name: "Kinematics" }] }] as never);
-  const stats = { reviewedToday: 3, dueNext7Days: 9, bySubject: [{ subjectId: 1, total: 5, mastered: 1 }, { subjectId: 2, total: 0, mastered: 0 }] } as MistakeStats;
-  const items = [{ chapterId: "c1", tags: ["silly"] }, { chapterId: "c1", tags: [] }] as Mistake[];
-
-  it("shows progress, upcoming, subjects, chapters and tags from real data", () => {
-    render(<MistakeRail stats={stats} items={items} more={false} left={4} lookup={lookup} />);
-    expect(screen.getByTestId("rail-progress")).toHaveTextContent("3 of 7");
-    expect(screen.getByTestId("rail-upcoming")).toHaveTextContent("9 due in the next 7 days");
-    expect(screen.getByTestId("rail-subjects")).toHaveTextContent("Physics");
-    expect(screen.getByTestId("rail-chapters")).toHaveTextContent("Kinematics");
-    expect(screen.getByTestId("rail-tags")).toHaveTextContent("silly");
-  });
-
-  it("leaves out sections with no data", () => {
-    render(<MistakeRail stats={null} items={[]} more={false} left={0} lookup={lookup} />);
-    for (const id of ["rail-progress", "rail-upcoming", "rail-subjects", "rail-chapters", "rail-tags"]) expect(screen.queryByTestId(id)).not.toBeInTheDocument();
   });
 });

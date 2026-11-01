@@ -4,7 +4,7 @@ import { focusSessionHref } from "@/lib/focus/startFocusSession";
 const TABS = [
   { href: focusSessionHref({ originSource: "standalone" }), label: "Focus" },
   { href: "/sessions", label: "Sessions" },
-  { href: "/mistakes", label: "Mistakes" },
+  { href: "/notebooks", label: "Notebooks" },
   { href: "/logs", label: "Logs" },
 ] as const;
 

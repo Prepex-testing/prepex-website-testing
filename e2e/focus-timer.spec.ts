@@ -225,12 +225,12 @@ test("practice (own content): the 15-second sheet logs the practice and feeds th
 
   await expect(page.getByTestId("focus-done")).toBeVisible();
   await expect(page.getByTestId("logged-list")).toContainText("Saved your practice log.");
-  await expect(page.getByTestId("logged-list")).toContainText("2 questions were added to your mistake notebook.");
+  await expect(page.getByTestId("logged-list")).toContainText("2 questions were added to your notebooks.");
 
   const practice = await api<{ data: { items: { chapterId: string; questionsAttempted: number; questionsCorrect: number; questionsWrong: number; questionsSkipped: number; source: string }[] } }>(page, "GET", "/api/practice?limit=5");
   expect(practice.body.data.items[0]).toMatchObject({ chapterId: kinematics, questionsAttempted: 10, questionsCorrect: 6, questionsWrong: 3, questionsSkipped: 1, source: "hcv" });
-  const mistakes = await api<{ data: { items: { chapterId: string; questionText: string; tags: string[] }[] } }>(page, "GET", "/api/mistakes?limit=10");
-  expect(mistakes.body.data.items.map((m) => m.questionText).sort()).toEqual(["Q3 sign error", "Q7 used the wrong formula"]);
+  const mistakes = await api<{ data: { items: { chapterId: string; blocks: { text?: string }[]; tags: string[] }[] } }>(page, "GET", "/api/notebooks/entries?entryType=mistake&limit=10");
+  expect(mistakes.body.data.items.map((m) => m.blocks[0]?.text).sort()).toEqual(["Q3 sign error", "Q7 used the wrong formula"]);
   expect(mistakes.body.data.items.every((m) => m.chapterId === kinematics && m.tags.includes("focus-session"))).toBe(true);
 });
 

@@ -221,7 +221,7 @@ export function AccuracyStats() {
           titleClassName="text-[14px] leading-6 sm:text-[16px]"
           right={
             <Link
-              href="/home/mistake-notebook"
+              href="/notebooks"
               className="flex shrink-0 items-center gap-1 text-xs font-semibold text-ink"
             >
               Detailed view
@@ -393,7 +393,7 @@ export function AccuracyStats() {
                   id: pattern.tag,
                   // Every mistake row opens the notebook, where the logged
                   // mistakes behind these counts live.
-                  href: "/home/mistake-notebook",
+                  href: "/notebooks",
                   title: pattern.label,
                   subtitle: pattern.subtitle,
                   value: String(pattern.count),
