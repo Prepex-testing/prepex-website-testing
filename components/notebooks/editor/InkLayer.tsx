@@ -12,6 +12,24 @@ export const INK_COLORS = ["auto", "#2563EB", "#DC2626", "#16A34A", "#FACC15"] a
 export const AUTO = "auto";
 
 /** perfect-freehand outline -> an SVG path. */
+/** The server takes at most this many points in one stroke. */
+export const MAX_POINTS = 6000;
+
+/**
+ * What is saved for a stroke: positions to 0.1 px and pressure to 0.01 (the raw pointer events carry 15 digits, which made a
+ * page of handwriting several times larger than it needs to be), and never more points than the server accepts.
+ */
+export function compactStroke(s: Stroke): Stroke {
+  const r = (n: number, d: number) => Math.round(n * d) / d;
+  let points = s.points.map(([x, y, p]) => [r(x, 10), r(y, 10), r(p, 100)] as [number, number, number]);
+  if (points.length > MAX_POINTS) {
+    const step = points.length / MAX_POINTS;
+    points = Array.from({ length: MAX_POINTS }, (_, i) => points[Math.min(points.length - 1, Math.floor(i * step))]!);
+    points[MAX_POINTS - 1] = s.points.at(-1)!.map((n, i) => r(n, i === 2 ? 100 : 10)) as [number, number, number];
+  }
+  return { ...s, points };
+}
+
 function pathFor(points: [number, number, number][], size: number, highlighter: boolean): string {
   const outline = getStroke(points, { size, thinning: highlighter ? 0 : 0.55, smoothing: 0.5, streamline: 0.45, simulatePressure: false, last: true });
   if (outline.length < 2) return "";
@@ -99,7 +117,7 @@ export function InkLayer({ strokes, height, onChange, tool = "hand", color = AUT
     if (!cur || tool === "eraser" || cur.points.length === 0) return;
     // a tap leaves a dot
     const stroke: Stroke = cur.points.length === 1 ? { ...cur, points: [cur.points[0]!, [cur.points[0]![0] + 0.1, cur.points[0]![1] + 0.1, cur.points[0]![2]]] } : cur;
-    onChange?.([...strokes, stroke]);
+    onChange?.([...strokes, compactStroke(stroke)]);
   }
 
   const all = live ? [...strokes, live] : strokes;

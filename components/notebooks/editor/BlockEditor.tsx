@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Camera, ChevronDown, ClipboardPaste, Eraser, Highlighter, Hand, Image as ImageIcon, Paperclip, PenLine, Redo2, Tag, Trash2, Type, Undo2, Wrench, EyeOff, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Camera, Plus, ChevronDown, ClipboardPaste, Eraser, Highlighter, Hand, Image as ImageIcon, Paperclip, PenLine, Redo2, Tag, Trash2, Type, Undo2, Wrench, EyeOff, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ClipboardEvent, type DragEvent } from "react";
 import { INK_COLORS, INK_WIDTH, InkLayer, AUTO, type InkTool } from "@/components/notebooks/editor/InkLayer";
 import { MathText } from "@/components/ui/MathText";
@@ -24,13 +24,15 @@ type Props = {
   onTag?: () => void;
   onFix?: () => void;
   notify: (message: string) => void;
+  /** What an empty page says; the default is written for a mistake. */
+  emptyHint?: string;
 };
 
 const BTN = "flex min-h-11 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-semibold text-ink hover:bg-tint-strong disabled:opacity-40";
 const ICON = "size-4 shrink-0";
 const AREA = "w-full resize-none bg-transparent text-[15px] leading-relaxed text-ink outline-none placeholder:text-muted";
 
-function AutoArea({ value, onChange, placeholder, className = "", mono = false, testId }: { value: string; onChange: (v: string) => void; placeholder?: string; className?: string; mono?: boolean; testId?: string }) {
+function AutoArea({ value, onChange, placeholder, className = "", mono = false, testId, autoFocus = false }: { value: string; onChange: (v: string) => void; placeholder?: string; className?: string; mono?: boolean; testId?: string; autoFocus?: boolean }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     const el = ref.current;
@@ -38,6 +40,9 @@ function AutoArea({ value, onChange, placeholder, className = "", mono = false, 
     el.style.height = "0px";
     el.style.height = `${el.scrollHeight}px`;
   }, [value]);
+  useEffect(() => {
+    if (autoFocus) ref.current?.focus();
+  }, [autoFocus]);
   return <textarea ref={ref} rows={1} value={value} placeholder={placeholder} data-testid={testId} onChange={(e) => onChange(e.target.value)} className={`${AREA} ${mono ? "font-mono text-[14px]" : ""} ${className}`} />;
 }
 
@@ -45,7 +50,7 @@ function AutoArea({ value, onChange, placeholder, className = "", mono = false, 
  * The page editor, shared by mistakes and notes. A page is a list of blocks: text, headings, checklists, photos, handwriting
  * (stored as strokes, never flattened), a hidden solution and formulas. Paste a screenshot anywhere, drop files, or use the camera.
  */
-export function BlockEditor({ entryId, blocks, onChange, assets, onAssetsChanged, readOnly = false, storageFull = false, onTag, onFix, notify }: Props) {
+export function BlockEditor({ entryId, blocks, onChange, assets, onAssetsChanged, readOnly = false, storageFull = false, onTag, onFix, notify, emptyHint = "Start with a photo of the question, paste a screenshot, or write it down." }: Props) {
   const camera = useRef<HTMLInputElement>(null);
   const gallery = useRef<HTMLInputElement>(null);
   const root = useRef<HTMLDivElement>(null);
@@ -55,6 +60,9 @@ export function BlockEditor({ entryId, blocks, onChange, assets, onAssetsChanged
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [viewer, setViewer] = useState<string | null>(null);
+  /** The "+" under the page: open shows the same choices as the toolbar, added at the end, where the student is. */
+  const [adding, setAdding] = useState(false);
+  const [focusId, setFocusId] = useState<string | null>(null);
   const history = useRef<Record<string, { undo: Stroke[][]; redo: Stroke[][] }>>({});
   const latest = useRef(blocks);
   useEffect(() => {
@@ -198,7 +206,7 @@ export function BlockEditor({ entryId, blocks, onChange, assets, onAssetsChanged
           <button type="button" className={BTN} onClick={() => void pasteButton()} disabled={busy} data-testid="add-paste">
             <ClipboardPaste className={ICON} aria-hidden /> Paste
           </button>
-          <button type="button" className={BTN} onClick={() => append(blank("text"))} data-testid="add-text">
+          <button type="button" className={BTN} onClick={() => { const b = blank("text"); append(b); setFocusId(b.id); }} data-testid="add-text">
             <Type className={ICON} aria-hidden /> Text
           </button>
           <button type="button" className={BTN} onClick={() => startInk()} data-testid="add-pen">
@@ -227,7 +235,7 @@ export function BlockEditor({ entryId, blocks, onChange, assets, onAssetsChanged
         </p>
       )}
 
-      {!hasBlocks && !readOnly && <p className="rounded-xl border border-dashed border-brand/25 px-4 py-6 text-center text-[14px] text-muted">Start with a photo of the question, paste a screenshot, or write it down.</p>}
+      {!hasBlocks && !readOnly && <p className="rounded-xl border border-dashed border-brand/25 px-4 py-6 text-center text-[14px] text-muted">{emptyHint}</p>}
 
       {blocks.map((b, i) => {
         const asset = b.assetId ? assets[b.assetId] : undefined;
@@ -249,7 +257,7 @@ export function BlockEditor({ entryId, blocks, onChange, assets, onAssetsChanged
             )}
 
             {b.type === "text" &&
-              (readOnly ? <MathText source={b.text ?? ""} className="whitespace-pre-wrap text-[15px] leading-relaxed text-ink" /> : <AutoArea value={b.text ?? ""} onChange={(v) => patch(b.id, { text: v })} placeholder="Write here. Use $x^2$ for a formula." />)}
+              (readOnly ? <MathText source={b.text ?? ""} className="whitespace-pre-wrap text-[15px] leading-relaxed text-ink" /> : <AutoArea value={b.text ?? ""} onChange={(v) => patch(b.id, { text: v })} placeholder="Write here. Use $x^2$ for a formula." autoFocus={focusId === b.id} />)}
 
             {b.type === "heading" && (readOnly ? <h3 className="text-[19px] font-extrabold text-ink">{b.text}</h3> : <input value={b.text ?? ""} onChange={(e) => patch(b.id, { text: e.target.value })} placeholder="Heading" className="w-full bg-transparent text-[19px] font-extrabold text-ink outline-none placeholder:text-muted" />)}
 
@@ -343,6 +351,42 @@ export function BlockEditor({ entryId, blocks, onChange, assets, onAssetsChanged
           </section>
         );
       })}
+
+      {!readOnly && hasBlocks && (
+        <div className="flex flex-col items-center gap-2 pt-1" data-testid="add-below">
+          {adding ? (
+            <div className="flex flex-wrap items-center justify-center gap-0.5 rounded-xl border border-brand/10 bg-surface p-1" role="toolbar" aria-label="Add below">
+              <button type="button" className={BTN} onClick={() => {
+                  const b = blank("text");
+                  append(b);
+                  setFocusId(b.id);
+                  setAdding(false);
+                }} data-testid="below-text">
+                <Type className={ICON} aria-hidden /> Text
+              </button>
+              <button type="button" className={BTN} onClick={() => (gallery.current?.click(), setAdding(false))} disabled={busy} data-testid="below-image">
+                <ImageIcon className={ICON} aria-hidden /> Image
+              </button>
+              <button type="button" className={BTN} onClick={() => (camera.current?.click(), setAdding(false))} disabled={busy || storageFull} data-testid="below-camera">
+                <Camera className={ICON} aria-hidden /> Camera
+              </button>
+              <button type="button" className={BTN} onClick={() => (startInk(), setAdding(false))} data-testid="below-pen">
+                <PenLine className={ICON} aria-hidden /> Pen
+              </button>
+              <button type="button" className={BTN} onClick={() => (append(blank("solution")), setAdding(false))} data-testid="below-solution">
+                <EyeOff className={ICON} aria-hidden /> Solution
+              </button>
+              <button type="button" aria-label="Close" className="flex size-11 items-center justify-center rounded-lg text-muted hover:text-ink" onClick={() => setAdding(false)}>
+                <X className="size-4" aria-hidden />
+              </button>
+            </div>
+          ) : (
+            <button type="button" aria-label="Add below" title="Add below" onClick={() => setAdding(true)} className="flex size-11 items-center justify-center rounded-full border border-brand/20 bg-surface text-ink shadow-sm hover:bg-tint-strong" data-testid="add-below-open">
+              <Plus className="size-5" aria-hidden />
+            </button>
+          )}
+        </div>
+      )}
 
       {viewer && (
         <div role="dialog" aria-modal="true" aria-label="Photo" className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4" onClick={() => setViewer(null)} data-testid="image-viewer">

@@ -34,9 +34,13 @@ export function useAutosave<T>(value: T, save: (v: T) => Promise<void>, opts: { 
       saved.current = sending;
       setState(Object.is(latest.current, sending) ? "saved" : "dirty");
     } catch (err) {
-      setState("error");
-      if (err instanceof ApiError && err.status >= 400 && err.status < 500 && err.status !== 408 && err.status !== 429) refused.current = sending;
-      else timer.current = setTimeout(() => ((timer.current = null), void runRef.current()), 3000);
+      if (err instanceof ApiError && err.status >= 400 && err.status < 500 && err.status !== 408 && err.status !== 429) {
+        refused.current = sending;
+        setState("refused");
+      } else {
+        setState("error");
+        timer.current = setTimeout(() => ((timer.current = null), void runRef.current()), 3000);
+      }
     } finally {
       running.current = false;
     }

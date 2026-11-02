@@ -106,6 +106,11 @@ export function EntryPage({ entryId, usage, onChanged, onDeleted, notify, notebo
   if (!entry || !draft) return <PageLoader label="Opening the page…" />;
   const mistake = entry.entryType === "mistake";
   const set = (p: Partial<Draft>) => setDraft((d) => (d ? { ...d, ...p } : d));
+  function addTag() {
+    const t = tagText.trim().toLowerCase();
+    if (draft && t && !draft.tags.includes(t) && draft.tags.length < 12) set({ tags: [...draft.tags, t] });
+    setTagText("");
+  }
 
   async function remove() {
     try {
@@ -202,11 +207,11 @@ export function EntryPage({ entryId, usage, onChanged, onDeleted, notify, notebo
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === ",") {
                 e.preventDefault();
-                const t = tagText.trim().toLowerCase();
-                if (t && !draft.tags.includes(t) && draft.tags.length < 12) set({ tags: [...draft.tags, t] });
-                setTagText("");
+                addTag();
               }
             }}
+            // a tag typed and left (no Enter) was silently dropped
+            onBlur={addTag}
             className="h-9 w-24 rounded-full border border-dashed border-border-subtle bg-transparent px-3 text-[12px] text-ink outline-none"
             data-testid="entry-tag-input"
           />
@@ -225,6 +230,7 @@ export function EntryPage({ entryId, usage, onChanged, onDeleted, notify, notebo
           onAssetsChanged={refreshAssets}
           storageFull={usage?.full ?? false}
           notify={notify}
+          emptyHint={mistake ? undefined : "Write your notes here, paste text from anywhere, or add a photo."}
           onTag={() => document.querySelector<HTMLInputElement>('[data-testid="entry-tag-input"]')?.focus()}
           {...(mistake ? { onFix: () => fixRef.current?.focus() } : {})}
         />
