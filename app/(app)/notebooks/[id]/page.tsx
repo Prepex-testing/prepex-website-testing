@@ -86,7 +86,7 @@ function NotebookScreen() {
   useEffect(() => {
     if (tab === "stats") return;
     let alive = true;
-    listEntries({ notebookId: id, entryType: kind, limit: 200 })
+    listEntries({ notebookId: id, entryType: kind, limit: 100 })
       .then((r) => alive && setItems(r.items))
       .catch(() => alive && setItems([]));
     return () => {
@@ -98,7 +98,7 @@ function NotebookScreen() {
   useEffect(() => {
     if (!page || !items) return;
      
-    if (!items.some((e) => e.id === page)) listEntries({ notebookId: id, limit: 200 }).then((r) => { const hit = r.items.find((e) => e.id === page); if (hit) setTab(hit.entryType === "note" ? "notes" : "mistakes"); }).catch(() => undefined);
+    if (!items.some((e) => e.id === page)) listEntries({ notebookId: id, limit: 100 }).then((r) => { const hit = r.items.find((e) => e.id === page); if (hit) setTab(hit.entryType === "note" ? "notes" : "mistakes"); }).catch(() => undefined);
   }, [page, items, id]);
 
   // on a computer the first page opens by itself, so the right side is never blank

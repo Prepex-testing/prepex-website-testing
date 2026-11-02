@@ -48,8 +48,19 @@ export function RevisionSidePanel({ lookup, onSeeAll, onAddTask }: Props) {
     let alive = true;
     const from = new Date();
     from.setDate(from.getDate() - 30);
-    listRevisions({ from: from.toISOString(), limit: 100 }).then(
-      (r) => alive && setRows(r.data.items),
+    // the list API returns at most 50 a page, so a busy month is read page by page (bounded at 4 pages)
+    void (async () => {
+      const all: RevisionLog[] = [];
+      let cursor: string | null = null;
+      for (let page = 0; page < 4; page += 1) {
+        const r = await listRevisions({ from: from.toISOString(), limit: 50, cursor });
+        all.push(...r.data.items);
+        cursor = r.data.nextCursor;
+        if (!cursor) break;
+      }
+      return all;
+    })().then(
+      (items) => alive && setRows(items),
       () => alive && setRows([]),
     );
     getRevisionAnalytics("all").then(
