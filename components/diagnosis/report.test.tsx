@@ -126,10 +126,10 @@ describe("ReportView", () => {
 describe("DiagnoseNowCard", () => {
   const limit = (remaining: number) => ({ used: 3 - remaining, limit: 3, remaining, resetsAt: "2026-10-19T18:30:00.000Z" });
 
-  it("Diagnose me now, with how many are left today and a link to the past ones", async () => {
+  it("Diagnose me now, with how many are left this week and a link to the past ones", async () => {
     const onStart = vi.fn();
     render(<DiagnoseNowCard limit={limit(2)} starting={false} error={null} onStart={onStart} />);
-    expect(screen.getByTestId("diagnose-remaining")).toHaveTextContent("2 diagnoses left today, resets at midnight IST");
+    expect(screen.getByTestId("diagnose-remaining")).toHaveTextContent("2 of 3 diagnoses left this week, resets on Monday at midnight IST");
     expect(screen.getByTestId("past-diagnoses")).toHaveAttribute("href", "/diagnosis");
     await userEvent.click(screen.getByTestId("diagnose-now"));
     expect(onStart).toHaveBeenCalledTimes(1);
@@ -138,7 +138,7 @@ describe("DiagnoseNowCard", () => {
   it("none left: the button is off and the reset time is stated", () => {
     render(<DiagnoseNowCard limit={limit(0)} starting={false} error={null} onStart={vi.fn()} />);
     expect(screen.getByTestId("diagnose-now")).toBeDisabled();
-    expect(screen.getByTestId("diagnose-remaining")).toHaveTextContent("reset at midnight IST");
+    expect(screen.getByTestId("diagnose-remaining")).toHaveTextContent("reset on Monday at midnight IST");
   });
 
   it("while starting, and when the count could not be loaded, the button still works unless starting; the server's error is shown", () => {

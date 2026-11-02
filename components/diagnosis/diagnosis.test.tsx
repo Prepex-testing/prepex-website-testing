@@ -97,10 +97,10 @@ describe("WeeklyDiagnosisCard", () => {
     expect(screen.queryByTestId("weekly-empty")).not.toBeInTheDocument();
   });
 
-  it("when the day's runs are used up the button is disabled and says when it frees up", () => {
+  it("when the week's 3 runs are used up the button is disabled and says they reset on Monday", () => {
     card(overview({ limits: { diagnosis: { used: 3, limit: 3, retryAfterSeconds: 7200 }, answer: { used: 3, limit: 10, retryAfterSeconds: 0 } } }));
     expect(screen.getByTestId("weekly-run")).toBeDisabled();
-    expect(screen.getByTestId("weekly-limit")).toHaveTextContent("about 2 hours");
+    expect(screen.getByTestId("weekly-limit")).toHaveTextContent("reset on Monday at midnight IST");
   });
 
   it("shows the server's reason when Run now was refused", () => {
