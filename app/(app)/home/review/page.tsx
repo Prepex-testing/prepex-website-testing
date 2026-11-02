@@ -32,6 +32,15 @@ const PATTERNS = [
 
 const FIELD = "h-12 w-full rounded-xl border border-input-border bg-surface px-3 text-[16px] text-ink outline-none focus:border-brand";
 
+/** "26 Oct – 1 Nov" for the week that starts on a Monday "YYYY-MM-DD". */
+function weekRange(weekStart: string): string {
+  const [y, m, d] = weekStart.split("-").map(Number) as [number, number, number];
+  const start = new Date(Date.UTC(y, m - 1, d));
+  const end = new Date(Date.UTC(y, m - 1, d + 6));
+  const f = (x: Date) => x.toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "UTC" });
+  return `${f(start)} – ${f(end)}`;
+}
+
 export default function SundayReviewPage() {
   const [state, setState] = useState<SundayReviewState | null>(null);
   const [history, setHistory] = useState<ReviewHistoryRow[]>([]);
@@ -125,19 +134,36 @@ export default function SundayReviewPage() {
   const figures = { hours: stats?.hours ?? 0, questions: stats?.questions ?? 0, streak: stats?.streak ?? 0, level: xp?.level ?? stats?.level ?? 1, title: xp?.title ?? "Aspirant", week: state.weekStart ?? "" };
 
   return (
-    <div className="mx-auto flex w-full max-w-[720px] flex-col gap-5 p-4 sm:p-6" data-testid="sunday-review">
+    <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-5 p-4 sm:p-6 lg:p-8" data-testid="sunday-review">
       <ProfileSubpageHeader title="Weekly review" backHref="/home" />
 
+      {/* Laptop: the review on the left, past reviews in a column on the right. */}
+      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-8">
+      <div className="flex min-w-0 flex-col gap-5">
+
       {state.status === "none" && (
-        <p className="rounded-2xl border border-border-subtle bg-surface-elevated p-4 text-[14px] text-muted" data-testid="review-closed">
+        <p className="rounded-[20px] border border-border-subtle/70 bg-surface-elevated p-5 text-[14px] text-muted shadow-sm" data-testid="review-closed">
           Your review opens on Sunday at 6 pm. If you miss it, you can still do it on Monday.
         </p>
       )}
 
       {state.status === "completed" && !done && (
-        <p className="rounded-2xl border border-border-subtle bg-surface-elevated p-4 text-[14px] text-ink" data-testid="review-already">
-          You finished this week&apos;s review. See you next Sunday.
-        </p>
+        <>
+          <p className="rounded-[20px] border border-border-subtle/70 bg-surface-elevated p-5 text-[14px] text-ink shadow-sm" data-testid="review-already">
+            You finished this week&apos;s review{state.weekStart ? ` (${weekRange(state.weekStart)})` : ""}. See you next Sunday.
+          </p>
+          {state.cards.length > 0 && (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3" data-testid="completed-cards">
+              {state.cards.map((c) => (
+                <article key={c.key} className="rounded-[20px] border border-border-subtle/70 bg-surface-elevated-2 p-5 shadow-sm">
+                  <p className="text-[12px] font-semibold uppercase tracking-wide text-muted">{c.title}</p>
+                  <p className="mt-2 text-[36px] font-extrabold leading-none tabular-nums text-ink">{c.value}</p>
+                  {c.detail && <p className="mt-2 text-[13px] text-body-text dark:text-ink">{c.detail}</p>}
+                </article>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {(state.status === "ready" || done) && (
@@ -152,9 +178,9 @@ export default function SundayReviewPage() {
 
           {step === "recap" && (
             <section className="flex flex-col gap-4" data-testid="step-recap">
-              <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2" data-testid="recap-cards" tabIndex={0} aria-label="Your week, swipe through the cards">
+              <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 lg:grid lg:grid-cols-2 lg:overflow-visible xl:grid-cols-3" data-testid="recap-cards" tabIndex={0} aria-label="Your week, swipe through the cards">
                 {state.cards.map((c) => (
-                  <article key={c.key} data-testid={`recap-${c.key}`} className="min-h-[200px] min-w-[85%] snap-center rounded-3xl border border-border-subtle bg-surface-elevated-2 p-6 sm:min-w-[60%]">
+                  <article key={c.key} data-testid={`recap-${c.key}`} className="min-h-[200px] min-w-[85%] snap-center rounded-3xl border border-border-subtle bg-surface-elevated-2 p-6 shadow-sm sm:min-w-[60%] lg:min-w-0">
                     <p className="text-[13px] font-semibold uppercase tracking-wide text-muted">{c.title}</p>
                     <p className="mt-3 text-[56px] font-extrabold leading-none text-ink">{c.value}</p>
                     {c.detail && <p className="mt-3 text-[14px] text-body-text dark:text-ink">{c.detail}</p>}
@@ -247,19 +273,28 @@ export default function SundayReviewPage() {
         <ReviewShareCard ref={card} figures={figures} />
       </div>
 
+      </div>
+
       {history.length > 0 && (
-        <section className="flex flex-col gap-2" data-testid="review-history">
+        <section className="flex flex-col gap-2 lg:sticky lg:top-6" data-testid="review-history">
           <h2 className="text-[13px] font-bold uppercase tracking-wide text-muted">Past reviews</h2>
           <ul className="flex flex-col gap-2">
             {history.map((h) => (
-              <li key={h.id} className="rounded-xl border border-border-subtle bg-surface-elevated px-4 py-3 text-[14px] text-ink" data-testid="history-row">
-                <span className="font-semibold">Week of {h.weekStart}</span>
-                <span className="block text-[13px] text-muted">{historyLine(h)}</span>
+              <li key={h.id} className="rounded-2xl border border-border-subtle/70 bg-surface-elevated px-4 py-3 text-[14px] text-ink shadow-sm transition hover:-translate-y-px" data-testid="history-row">
+                <span className="flex items-baseline justify-between gap-2">
+                  <span className="font-semibold">Week of {h.weekStart}</span>
+                  <span className="shrink-0 text-[12px] text-muted">{weekRange(h.weekStart)}</span>
+                </span>
+                <span className="block text-[13px] text-muted">
+                  {historyLine(h)}
+                  {h.source === "win_journal" ? " · Weekly Win Journal" : ""}
+                </span>
               </li>
             ))}
           </ul>
         </section>
       )}
+      </div>
     </div>
   );
 }

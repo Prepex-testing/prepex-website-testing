@@ -8,7 +8,6 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import { startFocusSession } from "@/lib/focus/startFocusSession";
 import { quickAccessItems, useQuickAccessCounts } from "@/components/home/quickAccess";
-import { getFocusStats } from "@/lib/api/focus";
 import { RegeneratePlanModal } from "@/components/home/RegeneratePlanModal";
 import { AddCustomTaskModal } from "@/components/plan/AddCustomTaskModal";
 import { HomePlanSection } from "@/components/home/HomePlanSection";
@@ -30,8 +29,6 @@ import { WellnessResourceModal } from "@/components/home/WellnessResourceModal";
 import { HomePartnerMatchPrompt } from "@/components/home/HomePartnerMatchPrompt";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { formatFullDate } from "@/lib/utils/datetime";
-import { getSyllabus } from "@/lib/api/syllabus";
-import { syllabusHeadline } from "@/lib/syllabus/headline";
 import { useGreeting } from "@/lib/utils/greeting";
 import {
   regeneratePlanForMood,
@@ -46,7 +43,7 @@ import {
 } from "@/lib/api/planner";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
-import { FlameIcon, BackIcon, LoderIcon, DotIcon } from "@/assets/icons";
+import { BackIcon, LoderIcon, DotIcon } from "@/assets/icons";
 import {
   CheckCircleIcon,
   ArrowRightIcon,
@@ -135,19 +132,6 @@ export default function HomePage() {
   const firstName = storedFullName.trim().split(/\s+/)[0] || "there";
   const greeting = useGreeting();
 
-  // One line about real syllabus progress under the greeting. Not part of the page's loading gate: it appears when it arrives.
-  const [syllabusLine, setSyllabusLine] = useState<string | null>(null);
-  useEffect(() => {
-    let alive = true;
-    getSyllabus()
-      .then((res) => {
-        if (alive) setSyllabusLine(syllabusHeadline(res.data.subjects.map((s) => ({ name: s.name, total: s.summary.chapters, completed: s.summary.studied }))));
-      })
-      .catch(() => undefined);
-    return () => {
-      alive = false;
-    };
-  }, []);
   const [isRegenerateOpen, setRegenerateOpen] = useState(false);
   const [isCheckInOpen, setCheckInOpen] = useState(false);
   const [energyMood, setEnergyMood] = useState<Mood | null>(null);
@@ -155,13 +139,11 @@ export default function HomePage() {
   const [planLoadFailed, setPlanLoadFailed] = useState(false);
   // Today's plan comes from the planner v2 hook, which also rebuilds it; the older payload above still supplies the exam countdown and late-sign-up flag.
   const todayPlan = usePlanDay(undefined);
-  const [focusStreak, setFocusStreak] = useState<number | null>(null);
   const quickCounts = useQuickAccessCounts();
   // First-paint gates — the page renders once all three initial fetches settle.
   const [checkInLoaded, setCheckInLoaded] = useState(false);
   const [consistencyLoaded, setConsistencyLoaded] = useState(false);
   const [isGeneratingPlan, setGeneratingPlan] = useState(false);
-  const [streakCount, setStreakCount] = useState<number | null>(null);
   const [isInRecoveryMode, setInRecoveryMode] = useState(false);
   const [recoveryWeekDay, setRecoveryWeekDay] = useState(0);
   const [isEndRecoveryOpen, setEndRecoveryOpen] = useState(false);
@@ -224,7 +206,6 @@ export default function HomePage() {
   const refetchCheckInStatus = () => {
     getCheckInStatus()
       .then(({ data }) => {
-        setStreakCount(data.checkin?.streakCount ?? null);
         const bs = data.burnoutStatus ?? null;
         setBurnout(bs);
         setInRecoveryMode(
@@ -324,12 +305,6 @@ export default function HomePage() {
     // "plan_strategy_review" / "none" — nothing more to show; response is saved.
   };
 
-  useEffect(() => {
-    getFocusStats()
-      .then(({ data }) => setFocusStreak(data.currentStreak))
-      .catch(() => undefined);
-  }, []);
-
   useEffect(refetchLegacyPlan, []);
   useEffect(refetchCheckInStatus, []);
 
@@ -414,10 +389,6 @@ export default function HomePage() {
   const plan = planData?.plan;
   const summary = planData?.summary;
   const planDay = todayPlan.day;
-  const examCountdown =
-    plan?.targetedExam && plan?.dayRemainingForExam != null
-      ? `${plan.targetedExam} in ${plan.dayRemainingForExam} days`
-      : null;
   const completionPercent = planDay?.summary.percent ?? summary?.completionPercentage ?? 0;
   const completedMinutes = planDay ? planDay.summary.doneMinutes : summary ? summary.totalTimeCompletedSeconds / 60 : 0;
   const plannedMinutes = planDay ? planDay.summary.plannedMinutes : (summary?.totalPlannedMinutes ?? 0);
@@ -439,16 +410,7 @@ export default function HomePage() {
           <h1 className="text-2xl font-bold text-ink lg:text-h1">
             {greeting}, {firstName}
           </h1>
-          <p
-            className={`text-sm text-muted transition-opacity duration-300 ${examCountdown ? "opacity-100" : "opacity-0"}`}
-          >
-            {examCountdown ?? " "}
-          </p>
-          {syllabusLine && (
-            <p className="text-sm text-muted" data-testid="home-syllabus-line">
-              {syllabusLine}
-            </p>
-          )}
+          <p className="text-sm text-muted" data-testid="home-date">{formatFullDate(new Date())}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           <Link href="/home/partner" aria-label="Partner and pods" title="Partner (pods are coming)" data-testid="home-pods" data-coach="quick-partner" className="flex size-11 items-center justify-center rounded-full bg-surface text-ink hover:bg-tint-strong">
@@ -502,7 +464,7 @@ export default function HomePage() {
       <DailyInsightCard />
 
       <div className="@container">
-        <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-2">
 
           {/* Today's Energy Card */}
           <div
@@ -544,45 +506,10 @@ export default function HomePage() {
           </div>
 
 
-          {/* Streak Card */}
-          <Link
-            href="/home/streak"
-            data-coach="streak-card"
-            className="block rounded-2xl border border-brand/10 bg-surface p-3 transition-colors hover:border-brand/30 @4xl:p-6"
-          >
-            <div className="flex min-w-0 flex-row items-center justify-between gap-2 @4xl:gap-4">
-
-              <div className="flex min-w-0 flex-1 flex-row items-center gap-2 @4xl:gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#FFF5F3] text-cta dark:bg-[#13133D] @4xl:h-16 @4xl:w-16">
-                  <FlameIcon className="h-6 w-[22px] @4xl:h-7.5 @4xl:w-[26.67px]" />
-                </div>
-
-                <div className="min-w-0 flex flex-col items-start gap-0.5 @4xl:gap-1">
-                  <h3 className="truncate text-[14px] font-bold leading-5 text-ink @4xl:text-[18px] @4xl:leading-7">
-                    {(focusStreak ?? streakCount) !== null ? `${focusStreak ?? streakCount} Day Streak` : "—"}
-                  </h3>
-
-                  <p className="truncate text-[10px] font-semibold leading-4 tracking-normal text-muted @4xl:text-[14px] @4xl:leading-5">
-                    Keep going.
-                  </p>
-                </div>
-              </div>
-
-              <BackIcon className="h-[12px] w-[7.4px] shrink-0 text-muted" />
-            </div>
-          </Link>
-
-
           {/* Today's Progress Card */}
           <div className="rounded-2xl border border-brand/10 bg-surface px-3 pt-3 pb-3 @4xl:px-6 @4xl:pt-4 @4xl:pb-6">
 
-            <div className="flex justify-end">
-              <span className="whitespace-nowrap text-[8px] leading-none text-muted @4xl:text-[11px]">
-                {formatFullDate(new Date())}
-              </span>
-            </div>
-
-            <div className="-mt-1 flex min-w-0 flex-row items-center gap-2 @4xl:gap-4">
+            <div className="flex min-w-0 flex-row items-center gap-2 @4xl:gap-4">
 
               <div className="shrink-0">
                 <CircularProgress

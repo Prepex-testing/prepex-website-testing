@@ -682,3 +682,97 @@ input:is(
     animation: none;
   }
 }
+
+/* ---- Home: XP that catches the eye (P6). Built from the existing level blue (#3B6BFF) and coral; animates only
+   opacity and transform, and stops entirely for reduced motion. ---- */
+.xp-glow {
+  text-shadow: 0 0 18px rgb(59 107 255 / 0.35), 0 0 2px rgb(59 107 255 / 0.25);
+}
+:root[data-theme="dark"] .xp-glow {
+  text-shadow: 0 0 22px rgb(59 107 255 / 0.6), 0 0 3px rgb(59 107 255 / 0.4);
+}
+.xp-halo {
+  position: relative;
+  isolation: isolate;
+}
+.xp-halo::before {
+  content: "";
+  position: absolute;
+  inset: -12px -16px;
+  z-index: -1;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, rgb(59 107 255 / 0.18), transparent);
+  animation: xp-breathe 3.2s ease-in-out infinite;
+}
+@keyframes xp-breathe {
+  0%, 100% { opacity: 0.55; transform: scale(0.96); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+.xp-bar {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgb(59 107 255 / 0.45);
+}
+.xp-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.55), transparent);
+  transform: translateX(-120%);
+  animation: xp-sheen 2.8s ease-in-out 0.6s infinite;
+}
+@keyframes xp-sheen {
+  0% { transform: translateX(-120%); }
+  60%, 100% { transform: translateX(320%); }
+}
+
+/* ---- Quick log button: coral in both themes, answers hover and press. ---- */
+.fab-coral {
+  background: var(--cta);
+  color: #fff;
+  box-shadow: 0 8px 24px -6px color-mix(in srgb, var(--cta) 70%, transparent);
+  transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1), filter 150ms ease-out;
+}
+.fab-coral:hover {
+  transform: translateY(-2px) scale(1.06);
+  filter: brightness(1.05);
+}
+.fab-coral:active {
+  transform: scale(0.94);
+}
+.fab-coral .fab-icon {
+  transition: transform 350ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.fab-coral:hover .fab-icon,
+.fab-coral[aria-expanded="true"] .fab-icon {
+  transform: rotate(90deg);
+}
+.fab-coral::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--cta);
+  opacity: 0;
+  z-index: -1;
+}
+.fab-coral:hover::before {
+  animation: fab-ping 1.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+@keyframes fab-ping {
+  0% { opacity: 0.45; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xp-halo::before,
+  .xp-bar::after,
+  .fab-coral:hover::before {
+    animation: none;
+  }
+  .fab-coral:hover,
+  .fab-coral:hover .fab-icon {
+    transform: none;
+  }
+}

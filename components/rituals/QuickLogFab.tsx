@@ -12,8 +12,8 @@ export function isTypingTarget(el: EventTarget | null): boolean {
 }
 
 /**
- * The floating "+" on the main screens, and the L key on a desktop. Neutral on purpose: the screen's one coral action
- * stays the only coral thing on it.
+ * The floating "+" on the main screens, and the L key on a desktop. Coral in both themes (owner's call, P6): it lifts and
+ * turns its "+" on hover, pulses softly, and presses in on tap; reduced motion keeps it still.
  */
 export function QuickLogFab() {
   const pathname = usePathname();
@@ -39,11 +39,13 @@ export function QuickLogFab() {
       <button
         type="button"
         aria-label="Quick log"
+        aria-expanded={open}
+        title="Quick log (L)"
         data-testid="quick-log-fab"
         onClick={toggle}
-        className="fixed bottom-[calc(72px+env(safe-area-inset-bottom))] right-4 z-40 flex size-14 items-center justify-center rounded-full border border-border-subtle bg-surface-elevated-2 text-ink shadow-lg transition active:scale-95 lg:bottom-6 lg:right-6"
+        className="fab-coral fixed bottom-[calc(72px+env(safe-area-inset-bottom))] right-4 z-40 flex size-14 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cta)] lg:bottom-6 lg:right-6"
       >
-        <Plus className="size-7" aria-hidden />
+        <Plus className="fab-icon size-7" strokeWidth={2.5} aria-hidden />
         <span className="sr-only">Press L on a desktop</span>
       </button>
       )}
