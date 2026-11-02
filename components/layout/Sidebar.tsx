@@ -14,6 +14,7 @@ import {
   // UserIcon,
 } from "@/components/ui/icons";
 import { UserIcons, StatsIcon, BookIcon } from "@/assets/icons";
+import { prefetchProps } from "@/lib/prefetch/navData";
 
 // Figma: 20x20 icon slot containing a 16x16 glyph (1.78px stroke).
 const ICON_BOX_CLASS = "flex h-5 w-5 shrink-0 items-center justify-center";
@@ -126,6 +127,7 @@ export function Sidebar({ onCollapse }: SidebarProps) {
               key={item.label}
               href={item.href}
               data-coach={NAV_COACH_ANCHOR[item.label]}
+              {...prefetchProps(item.href)}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                 active
                   ? "bg-sidebar-active-bg text-sidebar-active-fg"

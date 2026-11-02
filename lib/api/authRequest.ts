@@ -122,6 +122,37 @@ const LONG_TTL: { match: RegExp; ms: number }[] = [
 ];
 let ttlEnabled = typeof process === "undefined" || !process.env.VITEST;
 
+/**
+ * Stale-while-revalidate (P6): a copy older than its TTL but younger than this is answered at once and refreshed in the
+ * background, so going back to a screen is instant. Writes still forget everything, so what the student just changed
+ * is never served stale.
+ */
+const MAX_STALE_MS = 2 * 60_000;
+/** Answers that must always be current when read again: the running timer, the gates, the bell, who is studying now. */
+const ALWAYS_FRESH: RegExp[] = [/\/focus-sessions\/active/, /\/checkin/, /\/onboarding/, /\/notifications/, /\/social\/studying-now/];
+/** Writes that change only a few answers: the minute heartbeat adds study time, so only time and XP views are forgotten. */
+const NARROW_WRITES: { match: RegExp; forget: RegExp }[] = [{ match: /\/xp\/heartbeat/, forget: /\/xp\/|leaderboard|study-sessions|focus-sessions|productivity|day-close|sunday-review/ }];
+
+/**
+ * Who the cache belongs to: the student id inside the access token (it stays the same when the token is refreshed every
+ * few minutes, unlike the token itself), so a different student on this browser never sees the last one's answers.
+ */
+let ownerCache: { token: string; owner: string } | null = null;
+function cacheOwner(): string {
+  const token = getAccessToken() ?? "";
+  if (ownerCache?.token === token) return ownerCache.owner;
+  let owner = token;
+  try {
+    const payload = JSON.parse(atob((token.split(".")[1] ?? "").replace(/-/g, "+").replace(/_/g, "/"))) as Record<string, unknown>;
+    const id = payload.sub ?? payload.userId ?? payload.id;
+    if (typeof id === "string" && id) owner = id;
+  } catch {
+    /* not a JWT: the token itself keys the cache */
+  }
+  ownerCache = { token, owner };
+  return owner;
+}
+
 type Remembered = { at: number; value: unknown };
 const remembered = new Map<string, Remembered>();
 const inflight = new Map<string, Promise<unknown>>();
@@ -156,6 +187,14 @@ export async function authenticatedRequest<T>(url: string, options: RequestInit 
 
   if (method !== "GET" || options.signal) {
     if (method === "GET") return send<T>(url, options, true);
+    const narrow = NARROW_WRITES.find((w) => w.match.test(url));
+    if (narrow) {
+      try {
+        return await send<T>(url, options, true);
+      } finally {
+        for (const key of [...remembered.keys()]) if (narrow.forget.test(key)) remembered.delete(key);
+      }
+    }
     clearRequestCache();
     try {
       return await send<T>(url, options, true);
@@ -165,14 +204,23 @@ export async function authenticatedRequest<T>(url: string, options: RequestInit 
   }
 
   const ttl = ttlFor(url);
-  // keyed by the signed-in session too, so a different student signing in on this browser never sees the last one's data
-  const key = `${getAccessToken() ?? ""}|${url}`;
+  // keyed by the signed-in student too, so a different student signing in on this browser never sees the last one's data
+  const key = `${cacheOwner()}|${url}`;
   const copy = remembered.get(key);
-  if (copy && ttl > 0 && Date.now() - copy.at < ttl) return copy.value as T;
+  const age = copy ? Date.now() - copy.at : Infinity;
+  if (copy && ttl > 0 && age < ttl) return copy.value as T;
 
   const running = inflight.get(key);
+  // stale but recent: answer now, refresh behind the scenes for the next read
+  if (copy && ttl > 0 && age < MAX_STALE_MS && !ALWAYS_FRESH.some((r) => r.test(url))) {
+    if (!running) void fetchInto<T>(key, url, options, copy).catch(() => undefined);
+    return copy.value as T;
+  }
   if (running) return running as Promise<T>;
+  return fetchInto<T>(key, url, options, copy);
+}
 
+function fetchInto<T>(key: string, url: string, options: RequestInit, copy: Remembered | undefined): Promise<T> {
   const startedIn = generation;
   const request = send<T>(url, options, !copy)
     .then((value) => {

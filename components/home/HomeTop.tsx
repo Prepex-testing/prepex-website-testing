@@ -80,7 +80,7 @@ export function HomeTop() {
     <section className="flex flex-col gap-4" aria-label="Today" data-testid="home-top">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         {/* Hero: today's study. A soft tint from the existing coral instead of a hard box. */}
-        <div className="flex flex-col gap-5 rounded-[20px] border border-border-subtle/70 bg-surface-elevated bg-[linear-gradient(135deg,color-mix(in_srgb,var(--cta)_7%,transparent),transparent_55%)] p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col justify-between gap-5 rounded-[20px] border border-border-subtle/70 bg-surface-elevated bg-[linear-gradient(135deg,color-mix(in_srgb,var(--cta)_7%,transparent),transparent_55%)] p-5 shadow-sm sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[12px] font-semibold uppercase tracking-wide text-muted">Studied today</p>

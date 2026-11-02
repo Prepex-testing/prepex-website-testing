@@ -4,6 +4,7 @@ import { RegisterServiceWorker } from "@/components/pwa/RegisterServiceWorker";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { InlineThemeScript } from "@/components/theme/InlineThemeScript";
 import { AuthGate } from "@/components/auth/AuthGate";
+import { BootSplash } from "@/components/boot/BootSplash";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -59,6 +60,7 @@ export default function RootLayout({
         <InlineThemeScript />
       </head>
       <body className="min-h-full flex flex-col">
+        <BootSplash />
         <ThemeProvider>
           <AuthGate>{children}</AuthGate>
           <RegisterServiceWorker />

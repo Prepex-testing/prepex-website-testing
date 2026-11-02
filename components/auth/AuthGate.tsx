@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { dismissBootSplash } from "@/components/boot/dismissBootSplash";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { usePathname, useRouter } from "next/navigation";
 import { getAccessToken } from "@/lib/auth/session";
@@ -129,6 +130,10 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   }, [pathname, isPublic, router]);
 
   const authorized = state.pathname === pathname && state.authorized;
+  // the boot splash (cold start only) fades out once the first screen is allowed to render
+  useEffect(() => {
+    if (authorized) dismissBootSplash();
+  }, [authorized]);
 
   // A quiet loading screen rather than nothing: the first paint never waits on the network.
   if (!authorized) return <PageLoader />;
