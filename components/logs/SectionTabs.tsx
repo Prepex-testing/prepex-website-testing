@@ -1,6 +1,7 @@
 "use client";
 
 import type { KeyboardEvent } from "react";
+import { GlidePill } from "@/components/motion/GlidePill";
 
 export interface TabDef<T extends string> {
   id: T;
@@ -41,9 +42,10 @@ export function SectionTabs<T extends string>({ tabs, current, onChange, name }:
             data-testid={`${name}-tab-${tab.id}`}
             onClick={() => onChange(tab.id)}
             onKeyDown={(e) => onKey(e, i)}
-            className={`flex min-h-11 items-center justify-center rounded-lg px-1 text-[13px] font-bold transition-colors sm:text-[14px] ${active ? "bg-surface text-ink shadow-sm" : "text-muted hover:text-ink"}`}
+            className={`relative flex min-h-11 items-center justify-center rounded-lg px-1 text-[13px] font-bold transition-colors sm:text-[14px] ${active ? "text-ink" : "text-muted hover:text-ink"}`}
           >
-            {tab.label}
+            {active && <GlidePill id={`${name}-tabs`} className="rounded-lg bg-surface shadow-sm" />}
+            <span className="relative">{tab.label}</span>
           </button>
         );
       })}

@@ -18,6 +18,7 @@ import { ApiError } from "@/lib/api/http";
 import { createEntry, deleteNotebook, fileUrl, listEntries, listNotebooks, REASON_LABEL, renameNotebook, type ListedEntry, type Notebook, type Usage } from "@/lib/api/notebooks";
 import { dueLabel, titleOf } from "@/lib/notebooks/model";
 import { chapterResourcesHref } from "@/lib/revision/resourceLinks";
+import { GlidePill } from "@/components/motion/GlidePill";
 
 type Tab = "mistakes" | "notes" | "stats";
 const TABS: { key: Tab; label: string }[] = [
@@ -202,8 +203,9 @@ function NotebookScreen() {
 
         <nav aria-label="Notebook sections" className="grid grid-cols-3 gap-1 rounded-xl bg-tint-strong p-1 dark:bg-[#FAF7F214]">
           {TABS.map((t) => (
-            <button key={t.key} type="button" aria-current={tab === t.key ? "page" : undefined} onClick={() => (setTab(t.key), router.replace(`/notebooks/${id}`))} className={`min-h-11 rounded-lg text-[14px] font-bold transition-colors ${tab === t.key ? "bg-surface text-ink shadow-sm" : "text-muted hover:text-ink"}`} data-testid={`tab-${t.key}`}>
-              {t.label}
+            <button key={t.key} type="button" aria-current={tab === t.key ? "page" : undefined} onClick={() => (setTab(t.key), router.replace(`/notebooks/${id}`))} className={`relative min-h-11 rounded-lg text-[14px] font-bold transition-colors ${tab === t.key ? "text-ink" : "text-muted hover:text-ink"}`} data-testid={`tab-${t.key}`}>
+              {tab === t.key && <GlidePill id="notebook-sections" className="rounded-lg bg-surface shadow-sm" />}
+              <span className="relative">{t.label}</span>
             </button>
           ))}
         </nav>

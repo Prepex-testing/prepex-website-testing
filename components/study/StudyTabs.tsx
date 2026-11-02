@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { focusSessionHref } from "@/lib/focus/startFocusSession";
+import { GlidePill } from "@/components/motion/GlidePill";
 
 const TABS = [
   { href: focusSessionHref({ originSource: "standalone" }), label: "Focus" },
@@ -19,11 +20,12 @@ export function StudyTabs({ current }: { current: (typeof TABS)[number]["href"] 
             key={tab.href}
             href={tab.href}
             aria-current={active ? "page" : undefined}
-            className={`flex min-h-11 items-center justify-center rounded-lg px-1 text-[13px] font-bold transition-colors sm:px-3 sm:text-[14px] ${
-              active ? "bg-surface text-ink shadow-sm" : "text-muted hover:text-ink"
+            className={`relative flex min-h-11 items-center justify-center rounded-lg px-1 text-[13px] font-bold transition-colors sm:px-3 sm:text-[14px] ${
+              active ? "text-ink" : "text-muted hover:text-ink"
             }`}
           >
-            {tab.label}
+            {active && <GlidePill id="study-tabs" className="rounded-lg bg-surface shadow-sm" />}
+            <span className="relative">{tab.label}</span>
           </Link>
         );
       })}

@@ -30,7 +30,7 @@ function Cover({ nb, subjectName }: { nb: Notebook; subjectName: string | null }
   const color = nb.subjectId !== null ? subjectColor(nb.subjectId) : "#8B5CF6";
   const total = nb.mistakes + nb.notes;
   return (
-    <Link href={`/notebooks/${nb.id}`} className="group flex overflow-hidden rounded-2xl border border-brand/10 bg-surface shadow-sm transition hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand" data-testid="notebook-cover" data-due={nb.due}>
+    <Link href={`/notebooks/${nb.id}`} className="lift group flex overflow-hidden rounded-2xl border border-brand/10 bg-surface shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand" data-testid="notebook-cover" data-due={nb.due}>
       <span aria-hidden className="w-3 shrink-0" style={{ background: color }} />
       <span className="flex min-w-0 flex-1 flex-col gap-2 p-4">
         <span className="flex items-start justify-between gap-2 pr-8">
@@ -337,7 +337,7 @@ export default function NotebooksPage() {
           <CoralButton onClick={() => camera.current?.click()}>Add a mistake</CoralButton>
         </div>
       ) : (
-        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3" data-testid="shelf-grid">
+        <ul className="stagger grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3" data-testid="shelf-grid">
           {shelf.map((nb) => (
             <li key={nb.id} className="relative">
               <Cover nb={nb} subjectName={name(nb.subjectId)} />

@@ -65,7 +65,9 @@ describe("LogScreenScaffold", () => {
     );
     expect(screen.getAllByRole("tab").map((t) => t.textContent)).toEqual(["Alpha", "Beta", "Gamma"]);
     expect(screen.getByTestId("demo-tab-b")).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByTestId("demo-tab-b").className).toContain("border-saffron");
+    // the saffron underline is on the highlight that glides to the active tab (P6)
+    expect(screen.getByTestId("demo-tab-b").querySelector(".border-saffron")).not.toBeNull();
+    expect(screen.getByTestId("demo-tab-a").querySelector(".border-saffron")).toBeNull();
     await userEvent.click(screen.getByTestId("demo-tab-c"));
     expect(onTab).toHaveBeenLastCalledWith("c");
     screen.getByTestId("demo-tab-b").focus();

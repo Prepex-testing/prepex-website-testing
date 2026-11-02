@@ -10,6 +10,7 @@ import { PageLoader } from "@/components/ui/PageLoader";
 import { Switch } from "@/components/ui/Switch";
 import { getBoard, getBoardRules, getHall, getSocialSettings, profileHref, searchStudents, updateSocialSettings, type BoardFilter, type BoardKind, type BoardResult, type BoardRules, type Hall, type Identity, type SocialSettings } from "@/lib/api/social";
 import { BOARDS, boardCaption, FILTERS, formatHours, gapText } from "@/lib/social/board";
+import { GlidePill } from "@/components/motion/GlidePill";
 
 /** The XP leaderboards: Today, This Month and Most Improved, each filtered to the people who matter. */
 export default function LeaderboardPage() {
@@ -76,8 +77,9 @@ export default function LeaderboardPage() {
         <div className="flex flex-wrap items-center gap-3">
           <div role="tablist" aria-label="Board" className="flex gap-1 overflow-x-auto rounded-full border border-border-subtle bg-surface-elevated p-1">
             {BOARDS.map((b) => (
-              <button key={b.id} id={`board-${b.id}`} role="tab" type="button" aria-selected={board === b.id} data-testid={`board-${b.id}`} onClick={() => setBoard(b.id)} className={`min-h-11 shrink-0 whitespace-nowrap rounded-full px-4 text-[14px] font-semibold transition ${board === b.id ? "bg-surface-elevated-2 text-ink shadow-sm" : "text-muted hover:text-ink"}`}>
-                {b.label}
+              <button key={b.id} id={`board-${b.id}`} role="tab" type="button" aria-selected={board === b.id} data-testid={`board-${b.id}`} onClick={() => setBoard(b.id)} className={`relative min-h-11 shrink-0 whitespace-nowrap rounded-full px-4 text-[14px] font-semibold transition ${board === b.id ? "text-ink" : "text-muted hover:text-ink"}`}>
+                {board === b.id && <GlidePill id="leaderboard-boards" className="rounded-full bg-surface-elevated-2 shadow-sm" />}
+                <span className="relative">{b.label}</span>
               </button>
             ))}
           </div>
@@ -139,7 +141,7 @@ export default function LeaderboardPage() {
           )}
 
           {data && data.rows.length > 0 && (
-            <ol className="flex flex-col gap-2" data-testid="board-rows">
+            <ol className="stagger flex flex-col gap-2" data-testid="board-rows">
               {data.rows.map((r) => {
                 const top = r.rank !== null && r.rank <= 3;
                 return (

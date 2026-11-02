@@ -5,6 +5,9 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { QuickLogHub } from "@/components/rituals/QuickLogHub";
 
+/** Fired to open the Quick Log hub from anywhere (the command palette). */
+export const QUICK_LOG_EVENT = "prepex:quick-log";
+
 /** True while the student is typing, so a letter shortcut never steals a keystroke. */
 export function isTypingTarget(el: EventTarget | null): boolean {
   if (!(el instanceof HTMLElement)) return false;
@@ -27,8 +30,13 @@ export function QuickLogFab() {
       e.preventDefault();
       toggle();
     };
+    const fromPalette = () => setOpen(true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener(QUICK_LOG_EVENT, fromPalette);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener(QUICK_LOG_EVENT, fromPalette);
+    };
   }, [toggle]);
 
   // the weekly review has its own buttons at the bottom edge

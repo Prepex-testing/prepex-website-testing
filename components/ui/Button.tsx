@@ -5,7 +5,7 @@ type Variant = "primary" | "secondary" | "task" | "outline" | "danger" | "active
 type Size = "sm" | "md";
 
 const BASE_CLASSES =
-  "flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors disabled:cursor-not-allowed";
+  "btn-lift flex items-center justify-center gap-2 rounded-lg font-semibold transition disabled:cursor-not-allowed";
 
 const SIZE_CLASSES: Record<Size, string> = {
   md: "h-14 w-full text-base",
