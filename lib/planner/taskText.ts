@@ -72,7 +72,7 @@ export type ExplainInputs = {
 /**
  * A short, honest "why this plan today" for when the backend's explain endpoint is not there. It only states what the plan
  * itself shows: carry-overs, spaced revisions, backlog, the student's energy and the weakest chapter in the plan.
- * TODO(planner): wire /api/planner/today/explain once the backend window exposes it.
+ * (The backend has no plan-explanation endpoint; this sentence is the whole explanation.)
  */
 export function explainPlan(day: Pick<PlanDay, "tasks" | "plan">, inputs: ExplainInputs = {}): string {
   const live = day.tasks.filter((t) => t.status !== "skipped" && t.status !== "rolled_over");

@@ -60,7 +60,7 @@ export function useQuickAccessCounts(): QuickAccessCounts {
     getRevisionOverview().then((r) => set({ revisionsDue: r.data.todaysRevisionTasks.count }), () => undefined);
     getBacklogAnalytics().then((r) => set({ backlogOpen: r.data.totals.open + r.data.totals.scheduled }), () => undefined);
     listNotebooks().then((r) => set({ mistakesOpen: r.dueTotal }), () => undefined);
-    listMocks({ from: week.from, to: week.to, limit: 100 }).then((r) => set({ mocksThisWeek: r.data.items.length }), () => undefined);
+    listMocks({ from: week.from, to: week.to, limit: 50 }).then((r) => set({ mocksThisWeek: r.data.items.length }), () => undefined);
     return () => {
       live = false;
     };
