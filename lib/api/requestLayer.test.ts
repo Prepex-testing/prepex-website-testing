@@ -66,6 +66,41 @@ describe("request layer", () => {
     expect(fetchMock.mock.calls.filter(([u]) => u === "https://api/plan")).toHaveLength(2);
   });
 
+  it("P6: going back to a screen answers at once from a copy under two minutes old and refreshes it behind the scenes", async () => {
+    vi.useFakeTimers();
+    let n = 0;
+    fetchMock.mockImplementation(async () => json(200, { success: true, data: ++n }));
+    await authenticatedRequest("https://api/plan");
+    await vi.advanceTimersByTimeAsync(30_000);
+    await expect(authenticatedRequest("https://api/plan")).resolves.toMatchObject({ data: 1 });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    await expect(authenticatedRequest("https://api/plan")).resolves.toMatchObject({ data: 2 });
+    // older than two minutes: wait for the server
+    await vi.advanceTimersByTimeAsync(3 * 60_000);
+    await expect(authenticatedRequest("https://api/plan")).resolves.toMatchObject({ data: 3 });
+  });
+
+  it("P6: the running timer and the gates are never answered from a stale copy", async () => {
+    vi.useFakeTimers();
+    let n = 0;
+    fetchMock.mockImplementation(async () => json(200, { success: true, data: ++n }));
+    await authenticatedRequest("https://api/focus-sessions/active");
+    await vi.advanceTimersByTimeAsync(30_000);
+    await expect(authenticatedRequest("https://api/focus-sessions/active")).resolves.toMatchObject({ data: 2 });
+  });
+
+  it("P6: the minute heartbeat forgets only time and XP answers, not every screen", async () => {
+    fetchMock.mockImplementation(async () => json(200, { success: true, data: 1 }));
+    await authenticatedRequest("https://api/core/api/notebooks");
+    await authenticatedRequest("https://api/core/api/xp/summary");
+    await authenticatedRequest("https://api/core/api/xp/heartbeat", { method: "POST" });
+    await authenticatedRequest("https://api/core/api/notebooks");
+    await authenticatedRequest("https://api/core/api/xp/summary");
+    expect(fetchMock.mock.calls.filter(([u]) => String(u).endsWith("/notebooks"))).toHaveLength(1);
+    expect(fetchMock.mock.calls.filter(([u]) => String(u).endsWith("/xp/summary"))).toHaveLength(2);
+  });
+
   it("a read refused with 429 keeps showing the last copy instead of an error screen", async () => {
     vi.useFakeTimers();
     fetchMock.mockResolvedValueOnce(json(200, { success: true, data: "old" })).mockResolvedValue(json(429, { message: "Too many requests, please try again later." }, { "Retry-After": "60" }));

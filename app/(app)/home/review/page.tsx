@@ -138,7 +138,7 @@ export default function SundayReviewPage() {
       <ProfileSubpageHeader title="Weekly review" backHref="/home" />
 
       {/* Laptop: the review on the left, past reviews in a column on the right. */}
-      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-8">
+      <div className={`flex flex-col gap-5 ${history.length > 0 ? "lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-8" : ""}`}>
       <div className="flex min-w-0 flex-col gap-5">
 
       {state.status === "none" && (
