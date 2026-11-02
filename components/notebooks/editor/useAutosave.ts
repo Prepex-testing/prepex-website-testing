@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ApiError } from "@/lib/api/http";
 import type { SaveState } from "@/lib/notebooks/model";
 
 /**
@@ -14,6 +15,8 @@ export function useAutosave<T>(value: T, save: (v: T) => Promise<void>, opts: { 
   const saved = useRef(value);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const running = useRef(false);
+  /** A value the server refused (4xx): sending it again fails the same way, so wait for the next edit. */
+  const refused = useRef<unknown>(undefined);
   const saveRef = useRef(save);
   const runRef = useRef<() => Promise<void>>(async () => undefined);
   useEffect(() => {
@@ -22,7 +25,7 @@ export function useAutosave<T>(value: T, save: (v: T) => Promise<void>, opts: { 
 
   const run = useCallback(async () => {
     if (running.current) return;
-    if (Object.is(latest.current, saved.current)) return;
+    if (Object.is(latest.current, saved.current) || Object.is(latest.current, refused.current)) return;
     running.current = true;
     const sending = latest.current;
     setState("saving");
@@ -30,9 +33,10 @@ export function useAutosave<T>(value: T, save: (v: T) => Promise<void>, opts: { 
       await saveRef.current(sending);
       saved.current = sending;
       setState(Object.is(latest.current, sending) ? "saved" : "dirty");
-    } catch {
+    } catch (err) {
       setState("error");
-      timer.current = setTimeout(() => ((timer.current = null), void runRef.current()), 3000);
+      if (err instanceof ApiError && err.status >= 400 && err.status < 500 && err.status !== 408 && err.status !== 429) refused.current = sending;
+      else timer.current = setTimeout(() => ((timer.current = null), void runRef.current()), 3000);
     } finally {
       running.current = false;
     }
