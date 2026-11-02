@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { BOOTED_KEY } from "@/components/boot/BootSplash";
+import { BOOTED_KEY, BootSplash } from "@/components/boot/BootSplash";
 import { BOOT_MIN_MS, dismissBootSplash } from "@/components/boot/dismissBootSplash";
 import { PageLoader, SKELETON_DELAY_MS } from "@/components/ui/PageLoader";
 
@@ -40,7 +40,27 @@ describe("P6 instant", () => {
     act(() => vi.advanceTimersByTime(100));
     expect(el.hasAttribute("data-leaving")).toBe(true);
     act(() => vi.advanceTimersByTime(400));
-    expect(document.getElementById("boot-splash")).toBeNull();
+    expect(el.hasAttribute("data-gone")).toBe(true);
+    el.remove();
+  });
+
+  it("dismissing never takes the splash out of the page React owns (the crash on every screen change, 2 Nov)", () => {
+    function Shell({ splash, page }: { splash: boolean; page: string }) {
+      return (
+        <div>
+          {splash && <BootSplash />}
+          <p key={page}>{page}</p>
+        </div>
+      );
+    }
+    const { rerender } = render(<Shell splash page="home" />);
+    dismissBootSplash();
+    act(() => vi.advanceTimersByTime(2_000));
+    expect(document.getElementById("boot-splash")).not.toBeNull();
+    // React then changes the page and drops the splash: this threw NotFoundError when the splash had been removed by hand
+    expect(() => rerender(<Shell splash page="logs" />)).not.toThrow();
+    expect(() => rerender(<Shell splash={false} page="analytics" />)).not.toThrow();
+    expect(screen.getByText("analytics")).toBeInTheDocument();
   });
 
   it("hovering a nav item fetches that screen's data once, not on every hover", () => {

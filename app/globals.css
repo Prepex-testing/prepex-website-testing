@@ -860,6 +860,10 @@ html[data-motion="lite"] {
   opacity: 0;
   pointer-events: none;
 }
+/* hidden, never removed: React owns this node (removing it crashed every screen change) */
+#boot-splash[data-gone] {
+  display: none;
+}
 #boot-splash svg {
   width: 112px;
   height: auto;
