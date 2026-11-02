@@ -6,7 +6,8 @@
  */
 export const BOOTED_KEY = "prepex.booted";
 
-const SCRIPT = `(function(){try{var e=document.getElementById("boot-splash");if(!e)return;if(sessionStorage.getItem("${BOOTED_KEY}")){e.remove();return;}window.__prepexBootAt=Date.now();setTimeout(function(){var x=document.getElementById("boot-splash");if(x)x.remove();},12000);}catch(err){var y=document.getElementById("boot-splash");if(y)y.remove();}})()`;
+// Never removes the element (React owns it): it hides it with an attribute, see dismissBootSplash.
+const SCRIPT = `(function(){try{var e=document.getElementById("boot-splash");if(!e)return;if(sessionStorage.getItem("${BOOTED_KEY}")){e.setAttribute("data-gone","");return;}window.__prepexBootAt=Date.now();setTimeout(function(){e.setAttribute("data-gone","");},12000);}catch(err){var y=document.getElementById("boot-splash");if(y)y.setAttribute("data-gone","");}})()`;
 
 export function BootSplash() {
   return (
