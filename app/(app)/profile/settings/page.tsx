@@ -19,6 +19,7 @@ import {
   GoogleIcon,
 } from "@/components/ui/icons";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
+import { AppearanceSettings } from "@/components/settings/AppearanceSettings";
 import {UserIcons,EmailIcon,LockIcon,LinkIcon,TrashIcon, ConfirmIcon} from "@/assets/icons";
 
 
@@ -77,6 +78,8 @@ export default function AccountSettingsPage() {
   return (
     <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-6 lg:p-8">
       <ProfileSubpageHeader title="Account Settings" />
+
+      <AppearanceSettings />
 
       <div className="overflow-hidden rounded-2xl border border-brand/10 bg-surface shadow-sm">
 

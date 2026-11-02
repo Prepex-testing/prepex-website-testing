@@ -54,3 +54,21 @@ look back. Every P6 change is in shared files, so reverting one PR undoes one pa
 | B7 command palette | done: Ctrl/Cmd+K or `/`; screens + actions (focus, quick log, theme); fuzzy; keyboard; blur backdrop (lite: dim). Keys: F focus, N notebooks, L quick log | `components/command/CommandPalette.tsx` |
 | B8 sound | not done (optional, off by default in the spec) | — |
 | B9 tests | palette, shortcuts, fuzzy, token guard, splash, skeleton, prefetch, SWR | `components/command/p6Alive.test.tsx`, `components/boot/p6Instant.test.tsx` |
+
+## Part C: surfaces and theme
+
+| Item | Status | Where |
+|---|---|---|
+| C1 light default | done: a new device paints light (even with a dark OS); a choice is remembered on the device; "System" follows the OS only when picked. Remembering the theme on the account (server side) is not done | `components/theme/constants.ts`, `ThemeProvider` |
+| C1 Settings → Appearance | done: Theme (Light / Dark / System), Motion (Auto / Full / Lite). Sound toggle not added (no sounds exist) | `components/settings/AppearanceSettings.tsx` |
+| C2 colour tokens | unchanged: `git diff pre-p6-ui -- app/globals.css` removes 0 lines, adds only new tokens and classes | `globals.css` |
+| C2 shadow / radius tokens | added (`--shadow-sm/md/lg` tuned per theme, `--radius-card/button/sheet`); used by the redesigned Home, leaderboard, weekly review, palette | `globals.css` |
+| C2 fewer borders on every card | not done app-wide: there is no shared card component, so it means editing every screen; the redesigned screens use softer borders plus shadow | — |
+| C2 typography / icons | tabular numbers on the redesigned stats; one icon set (lucide + the existing icon file) unchanged | — |
+| C3/C4 route walk | every app route loaded at 390 and 1440 px in light and dark on testing, checking for page errors and sideways overflow (see the PR) | — |
+
+## Not done in P6 (for a later pass)
+
+Sound; animated empty states; compressing large headers and pull-to-refresh; a transform-based sidebar; persisting the
+data cache across reloads (needs a query library); an optimistic-UI sweep of every mutation; card hover on every screen;
+theme saved to the account; recorded GIFs of each interaction.

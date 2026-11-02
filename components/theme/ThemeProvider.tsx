@@ -26,13 +26,14 @@ function getStoredThemeSnapshot(): Theme {
       return stored;
     }
   } catch {
-    // localStorage unavailable (privacy mode, etc.) — fall back to system.
+    // localStorage unavailable (privacy mode, etc.) — fall back to the default.
   }
-  return "system";
+  // P6: light is the default until the student picks a theme
+  return "light";
 }
 
 function getStoredThemeServerSnapshot(): Theme {
-  return "system";
+  return "light";
 }
 
 function subscribeToStoredTheme(onChange: () => void) {
