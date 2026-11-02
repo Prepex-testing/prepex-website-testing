@@ -21,11 +21,11 @@ export function LifetimeCounters({ lifetime }: { lifetime: RewardsSummary["lifet
     { id: "chapters", label: "Chapters completed", value: lifetime.chaptersCompleted, format: (n: number) => String(n) },
   ];
   return (
-    <section aria-label="Lifetime" className="grid grid-cols-3 gap-3" data-testid="lifetime-counters">
+    <section aria-label="Lifetime" className="grid grid-cols-3 divide-x divide-border-subtle rounded-2xl bg-surface-elevated/60 py-3" data-testid="lifetime-counters">
       {tiles.map((t) => (
-        <div key={t.id} className="rounded-2xl border border-border-subtle bg-surface-elevated p-3">
+        <div key={t.id} className="px-4">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">{t.label}</p>
-          <p className="mt-1 text-[22px] font-extrabold leading-none text-ink">
+          <p className="mt-1 text-[22px] font-extrabold leading-none tabular-nums text-ink">
             <CountUp value={t.value} format={t.format} testId={`lifetime-${t.id}`} />
           </p>
         </div>
