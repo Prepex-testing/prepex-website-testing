@@ -40,9 +40,9 @@ describe("createSseParser", () => {
 
 describe("wording", () => {
   it("remainingText", () => {
-    expect(remainingText({ remaining: 2 })).toBe("2 diagnoses left today, resets at midnight IST");
-    expect(remainingText({ remaining: 1 })).toBe("1 diagnosis left today, resets at midnight IST");
-    expect(remainingText({ remaining: 0 })).toBe("No diagnoses left today. They reset at midnight IST.");
+    expect(remainingText({ remaining: 2 })).toBe("2 of 3 diagnoses left this week, resets on Monday at midnight IST");
+    expect(remainingText({ remaining: 1 })).toBe("1 of 3 diagnoses left this week, resets on Monday at midnight IST");
+    expect(remainingText({ remaining: 0 })).toBe("No diagnoses left this week. 3 a week, reset on Monday at midnight IST.");
   });
 
   it("formatWhen is IST whatever the device zone", () => {

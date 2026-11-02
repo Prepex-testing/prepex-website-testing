@@ -64,7 +64,7 @@ export function DiagnosisReport({ diagnosis, label }: { diagnosis: WeeklyDiagnos
 
 /**
  * The "This Week" card: whichever of — AI is resting / nothing yet / working on it / the report — applies, plus the
- * Run now button (disabled while a run is under way or the day's limit is used).
+ * Run now button (disabled while a run is under way or the week's 3 runs are used).
  */
 export function WeeklyDiagnosisCard({ overview, starting, runError, gaveUp, onRun }: Props) {
   const { current, latest, brainConfigured, limits } = overview;
@@ -140,9 +140,15 @@ export function WeeklyDiagnosisCard({ overview, starting, runError, gaveUp, onRu
 
       <div className="flex flex-col gap-2">
         {runButton(shown ? "Run again now" : "Run now")}
-        {limitUsed && (
+        {limitUsed ? (
           <p className="text-[12px] text-muted" data-testid="weekly-limit">
-            You&apos;ve used your AI runs for now. Try again in {waitText(limitWait)}.
+            {limits.diagnosis.used >= limits.diagnosis.limit
+              ? `You've used all ${limits.diagnosis.limit} runs for this week. They reset on Monday at midnight IST.`
+              : `You've used your AI runs for now. Try again in ${waitText(limitWait)}.`}
+          </p>
+        ) : (
+          <p className="text-[12px] text-muted" data-testid="weekly-runs-left">
+            {Math.max(0, limits.diagnosis.limit - limits.diagnosis.used)} of {limits.diagnosis.limit} runs left this week, resets on Monday at midnight IST
           </p>
         )}
       </div>

@@ -5,8 +5,8 @@ import type { PrefillWeek } from "@/lib/goals/prefill";
 
 /** "2 diagnoses left today, resets at midnight IST". */
 export function remainingText(limit: Pick<ReportLimit, "remaining">): string {
-  if (limit.remaining <= 0) return "No diagnoses left today. They reset at midnight IST.";
-  return `${limit.remaining} diagnos${limit.remaining === 1 ? "is" : "es"} left today, resets at midnight IST`;
+  if (limit.remaining <= 0) return "No diagnoses left this week. 3 a week, reset on Monday at midnight IST.";
+  return `${limit.remaining} of 3 diagnoses left this week, resets on Monday at midnight IST`;
 }
 
 /** "19 Oct, 3:40 pm" in IST, whatever the device's own zone. */
