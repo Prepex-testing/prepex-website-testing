@@ -3,7 +3,7 @@
 import { Camera, ChevronLeft, FileDown, Plus, Share2, Star } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EntryPage } from "@/components/notebooks/EntryPage";
 import { ShareModal } from "@/components/notebooks/ShareModal";
 import { StatsPanel } from "@/components/notebooks/StatsPanel";
@@ -95,9 +95,16 @@ function NotebookScreen() {
     };
   }, [id, kind, tab, version]);
 
-  // the page being read decides which tab shows (a link to a note opens the Notes tab)
+  // the page being read decides which tab shows (a link to a note opens the Notes tab). A tab tap clears the page from
+  // the URL, but the URL updates a moment later: until then `page` is the page being LEFT, and treating it as the one
+  // being read pulled the student straight back to the other tab (Mistakes ↔ Notes, 2 Nov). That page is ignored.
+  const leftPage = useRef<string | null>(null);
   useEffect(() => {
-    if (!page || !items) return;
+    // once the URL has moved on, the page that was left is an ordinary page again
+    if (page !== leftPage.current) leftPage.current = null;
+  }, [page]);
+  useEffect(() => {
+    if (!page || !items || page === leftPage.current) return;
      
     if (!items.some((e) => e.id === page)) listEntries({ notebookId: id, limit: 100 }).then((r) => { const hit = r.items.find((e) => e.id === page); if (hit) setTab(hit.entryType === "note" ? "notes" : "mistakes"); }).catch(() => undefined);
   }, [page, items, id]);
@@ -109,6 +116,14 @@ function NotebookScreen() {
   }, [page, items, id, router, tab]);
 
   const refresh = useCallback(() => setVersion((v) => v + 1), []);
+  function pickTab(next: Tab) {
+    if (next === tab) return;
+    leftPage.current = page;
+    // the old tab's list must not open a page on the new tab (the desktop auto-open below)
+    setItems(null);
+    setTab(next);
+    router.replace(`/notebooks/${id}`);
+  }
   const href = (entryId: string) => `/notebooks/${id}?page=${entryId}`;
   const subjectName = book?.subjectId != null ? lookup.subjectName(book.subjectId) : null;
   const resourceHref = useMemo(() => {
@@ -203,7 +218,7 @@ function NotebookScreen() {
 
         <nav aria-label="Notebook sections" className="grid grid-cols-3 gap-1 rounded-xl bg-tint-strong p-1 dark:bg-[#FAF7F214]">
           {TABS.map((t) => (
-            <button key={t.key} type="button" aria-current={tab === t.key ? "page" : undefined} onClick={() => (setTab(t.key), router.replace(`/notebooks/${id}`))} className={`relative min-h-11 rounded-lg text-[14px] font-bold transition-colors ${tab === t.key ? "text-ink" : "text-muted hover:text-ink"}`} data-testid={`tab-${t.key}`}>
+            <button key={t.key} type="button" aria-current={tab === t.key ? "page" : undefined} onClick={() => pickTab(t.key)} className={`relative min-h-11 rounded-lg text-[14px] font-bold transition-colors ${tab === t.key ? "text-ink" : "text-muted hover:text-ink"}`} data-testid={`tab-${t.key}`}>
               {tab === t.key && <GlidePill id="notebook-sections" className="rounded-lg bg-surface shadow-sm" />}
               <span className="relative">{t.label}</span>
             </button>

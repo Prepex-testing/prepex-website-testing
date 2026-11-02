@@ -674,7 +674,9 @@ input:is(
 }
 
 .study-fade-in {
-  animation: study-fade-in 280ms ease-out both;
+  /* backwards, not both: a finished transform animation that stays in effect turns the card into the containing block
+     for position: fixed children, so popups opened inside it were placed relative to the card, not the screen */
+  animation: study-fade-in 280ms ease-out backwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -831,7 +833,7 @@ html[data-motion="lite"] {
   to { opacity: 1; transform: none; }
 }
 .motion-fade-in {
-  animation: motion-rise var(--dur-standard) var(--ease-out) both;
+  animation: motion-rise var(--dur-standard) var(--ease-out) backwards;
 }
 
 /* the logo, waiting */
@@ -950,14 +952,16 @@ html[data-motion="reduce"] #boot-splash .bs-dot {
   scale: 0.98;
 }
 
-/* route content enters */
+/* route content enters. Opacity only, never a transform: this wraps every screen, and any transform on it (even a
+   finished animation held in effect) makes it the containing block for position: fixed. The focus timer (fixed,
+   full screen) then collapsed to nothing and every popup was centred on the whole page instead of the screen (2 Nov). */
 .motion-page {
-  animation: motion-rise var(--dur-standard) var(--ease-out) both;
+  animation: motion-fade var(--dur-standard) var(--ease-out) backwards;
 }
 
 /* lists: the first 8 items arrive 30 ms apart; the rest appear at once */
 .stagger > * {
-  animation: motion-rise var(--dur-standard) var(--ease-out) both;
+  animation: motion-rise var(--dur-standard) var(--ease-out) backwards;
 }
 .stagger > *:nth-child(2) { animation-delay: 30ms; }
 .stagger > *:nth-child(3) { animation-delay: 60ms; }
@@ -974,11 +978,11 @@ html[data-motion="reduce"] #boot-splash .bs-dot {
 @keyframes motion-pop-in { from { transform: scale(0.96) translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes motion-toast-in { from { transform: translateY(16px) scale(0.98); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes nav-pop { 0% { transform: scale(0.85); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
-.motion-backdrop { animation: motion-fade var(--dur-standard) var(--ease-out) both; }
-.motion-sheet { animation: motion-sheet-up var(--dur-emphasis) var(--ease-spring) both; }
-.motion-pop { animation: motion-pop-in var(--dur-standard) var(--ease-out) both; }
-.motion-toast { animation: motion-toast-in var(--dur-standard) var(--ease-spring) both; }
-.nav-pop { display: inline-flex; animation: nav-pop var(--dur-emphasis) var(--ease-spring) both; }
+.motion-backdrop { animation: motion-fade var(--dur-standard) var(--ease-out) backwards; }
+.motion-sheet { animation: motion-sheet-up var(--dur-emphasis) var(--ease-spring) backwards; }
+.motion-pop { animation: motion-pop-in var(--dur-standard) var(--ease-out) backwards; }
+.motion-toast { animation: motion-toast-in var(--dur-standard) var(--ease-spring) backwards; }
+.nav-pop { display: inline-flex; animation: nav-pop var(--dur-emphasis) var(--ease-spring) backwards; }
 .palette-backdrop { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 
 /* lite: shorter, no blur, no stagger past 3 items */
