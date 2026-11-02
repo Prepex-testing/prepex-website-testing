@@ -1,19 +1,20 @@
 "use client";
 
-import { Camera, ClipboardPaste, Plus, Search, Upload } from "lucide-react";
+import { Camera, ClipboardPaste, MoreVertical, Plus, Search, Trash2, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StorageBanner } from "@/components/notebooks/StorageBanner";
 import { StudyShell } from "@/components/study/StudyShell";
 import { useSubjects } from "@/components/study/useSubjects";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { CoralButton } from "@/components/ui/CoralButton";
 import { GhostButton } from "@/components/ui/GhostButton";
 import { Modal } from "@/components/ui/Modal";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { ApiError } from "@/lib/api/http";
-import { createNotebook, fileUrl, listEntries, listNotebooks, REASONS, REASON_LABEL, SOURCES, SOURCE_LABEL, STATUS_LABEL, type ListedEntry, type Notebook, type Reason, type Source, type Status, type Usage } from "@/lib/api/notebooks";
+import { createNotebook, deleteNotebook, fileUrl, listEntries, listNotebooks, REASONS, REASON_LABEL, SOURCES, SOURCE_LABEL, STATUS_LABEL, type ListedEntry, type Notebook, type Reason, type Source, type Status, type Usage } from "@/lib/api/notebooks";
 import { pickFiles } from "@/lib/notebooks/compress";
 import { dueLabel, sortNotebooks, titleOf } from "@/lib/notebooks/model";
 import { setPending } from "@/lib/notebooks/pendingCapture";
@@ -32,7 +33,7 @@ function Cover({ nb, subjectName }: { nb: Notebook; subjectName: string | null }
     <Link href={`/notebooks/${nb.id}`} className="group flex overflow-hidden rounded-2xl border border-brand/10 bg-surface shadow-sm transition hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand" data-testid="notebook-cover" data-due={nb.due}>
       <span aria-hidden className="w-3 shrink-0" style={{ background: color }} />
       <span className="flex min-w-0 flex-1 flex-col gap-2 p-4">
-        <span className="flex items-start justify-between gap-2">
+        <span className="flex items-start justify-between gap-2 pr-8">
           <span className="min-w-0">
             <span className="block truncate text-[16px] font-extrabold text-ink">{nb.title}</span>
             <span className="block truncate text-[12px] text-muted">{subjectName ?? (nb.kind === "custom" ? "Notebook" : "Chapter")}</span>
@@ -62,6 +63,37 @@ function Cover({ nb, subjectName }: { nb: Notebook; subjectName: string | null }
   );
 }
 
+/** The three-dot menu on a notebook cover. It sits beside the cover link, not inside it, so a tap never opens the notebook. */
+function CoverMenu({ nb, onDelete }: { nb: Notebook; onDelete: (nb: Notebook) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: PointerEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", esc);
+    };
+  }, [open]);
+  return (
+    <div ref={ref} className="absolute right-2 top-2 z-10">
+      <button type="button" aria-label={`More for ${nb.title}`} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="flex size-9 items-center justify-center rounded-lg text-muted hover:bg-tint-strong hover:text-ink" data-testid="cover-menu">
+        <MoreVertical className="size-4" aria-hidden />
+      </button>
+      {open && (
+        <div role="menu" className="absolute right-0 top-10 min-w-44 rounded-xl border border-brand/10 bg-surface p-1 shadow-lg">
+          <button type="button" role="menuitem" onClick={() => (setOpen(false), onDelete(nb))} className="flex min-h-11 w-full items-center gap-2 rounded-lg px-3 text-left text-[14px] font-semibold text-danger hover:bg-danger-bg" data-testid="cover-delete">
+            <Trash2 className="size-4" aria-hidden /> Delete notebook
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function NotebooksPage() {
   const router = useRouter();
   const toast = useToast();
@@ -76,6 +108,7 @@ export default function NotebooksPage() {
   const [newTitle, setNewTitle] = useState("");
   const [newSubject, setNewSubject] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  const [deleting, setDeleting] = useState<Notebook | null>(null);
   const camera = useRef<HTMLInputElement>(null);
   const upload = useRef<HTMLInputElement>(null);
 
@@ -151,6 +184,17 @@ export default function NotebooksPage() {
       hand(files);
     } catch {
       toast.show("Your browser blocked the clipboard. Press Ctrl+V (or Cmd+V) on this page instead.");
+    }
+  }
+
+  async function removeBook(nb: Notebook) {
+    setDeleting(null);
+    try {
+      await deleteNotebook(nb.id);
+      setBooks((prev) => (prev ?? []).filter((b) => b.id !== nb.id));
+      toast.show("Notebook deleted.");
+    } catch (err) {
+      toast.show(err instanceof ApiError ? err.message : "Could not delete it.");
     }
   }
 
@@ -295,8 +339,9 @@ export default function NotebooksPage() {
       ) : (
         <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3" data-testid="shelf-grid">
           {shelf.map((nb) => (
-            <li key={nb.id}>
+            <li key={nb.id} className="relative">
               <Cover nb={nb} subjectName={name(nb.subjectId)} />
+              <CoverMenu nb={nb} onDelete={setDeleting} />
             </li>
           ))}
         </ul>
@@ -337,6 +382,14 @@ export default function NotebooksPage() {
           </div>
         </form>
       </Modal>
+      <ConfirmModal
+        open={deleting !== null}
+        onClose={() => setDeleting(null)}
+        onConfirm={() => deleting && void removeBook(deleting)}
+        title={`Delete "${deleting?.title ?? ""}"?`}
+        description={deleting && deleting.mistakes + deleting.notes > 0 ? `Its ${deleting.mistakes + deleting.notes} ${deleting.mistakes + deleting.notes === 1 ? "page" : "pages"} and their photos go with it. This cannot be undone.` : "It is empty. This cannot be undone."}
+        confirmLabel="Delete"
+      />
       <Toast state={toast} />
     </StudyShell>
   );

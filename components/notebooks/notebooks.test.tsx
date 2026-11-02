@@ -9,6 +9,16 @@ import type { Insights, Notebook, Usage } from "@/lib/api/notebooks";
 
 // The real header pulls in an SVG asset the test runner cannot load; a heading stand-in is enough here.
 vi.mock("@/components/profile/ProfileSubpageHeader", () => ({ ProfileSubpageHeader: ({ title }: { title: string }) => <h1>{title}</h1> }));
+vi.mock("@/components/ui/ConfirmModal", () => ({
+  ConfirmModal: ({ open, title, description, confirmLabel, onConfirm }: { open: boolean; title: string; description: string; confirmLabel: string; onConfirm: () => void }) =>
+    open ? (
+      <div role="dialog">
+        <h2>{title}</h2>
+        <p>{description}</p>
+        <button onClick={onConfirm}>{confirmLabel}</button>
+      </div>
+    ) : null,
+}));
 const push = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace: push }), usePathname: () => "/notebooks", useSearchParams: () => new URLSearchParams(), useParams: () => ({}) }));
 vi.mock("@/components/study/useSubjects", () => ({
@@ -18,8 +28,8 @@ vi.mock("@/components/study/useSubjects", () => ({
     subjects: [{ subjectId: 1, subjectName: "Physics", chapters: [{ id: "c1", name: "Kinematics", sequenceOrder: 1 }] }],
   }),
 }));
-vi.mock("@/lib/api/notebooks", async (orig) => ({ ...(await orig<typeof import("@/lib/api/notebooks")>()), listNotebooks: vi.fn(), listEntries: vi.fn(), createNotebook: vi.fn(), getInsights: vi.fn() }));
-import { createNotebook, getInsights, listEntries, listNotebooks } from "@/lib/api/notebooks";
+vi.mock("@/lib/api/notebooks", async (orig) => ({ ...(await orig<typeof import("@/lib/api/notebooks")>()), listNotebooks: vi.fn(), listEntries: vi.fn(), createNotebook: vi.fn(), getInsights: vi.fn(), deleteNotebook: vi.fn() }));
+import { createNotebook, deleteNotebook, getInsights, listEntries, listNotebooks } from "@/lib/api/notebooks";
 
 const usage = (over: Partial<Usage> = {}): Usage => ({ images: 3, bytes: 1_000_000, maxImages: 500, maxBytes: 1_073_741_824, share: 0.01, warn: false, full: false, ...over });
 const nb = (over: Partial<Notebook> = {}): Notebook => ({ id: "n1", title: "Kinematics", subjectId: 1, chapterId: "c1", kind: "chapter", mistakes: 12, notes: 2, due: 3, mastered: 3, masteredPercent: 25, needSolution: 2, createdAt: "2026-10-01T00:00:00Z", ...over });
@@ -53,6 +63,22 @@ describe("My Notebooks shelf", () => {
     expect(covers[0]).toHaveTextContent("2 pages need a solution");
     expect(screen.getByTestId("due-for-review")).toHaveTextContent("Due for review: 3");
     expect(screen.getByTestId("due-for-review")).toHaveAttribute("href", "/notebooks/review");
+  });
+
+  it("deletes a notebook from the three-dot menu on its cover, after a confirmation", async () => {
+    const user = userEvent.setup();
+    vi.mocked(listNotebooks).mockResolvedValue({ notebooks: [nb(), nb({ id: "n2", title: "Optics", mistakes: 0, notes: 0, due: 0 })], dueTotal: 3, usage: usage() });
+    vi.mocked(deleteNotebook).mockResolvedValue({ success: true, data: { deleted: true } } as never);
+    render(<NotebooksPage />);
+    await screen.findAllByTestId("notebook-cover");
+    await user.click(screen.getByRole("button", { name: "More for Optics" }));
+    await user.click(screen.getByTestId("cover-delete"));
+    expect(screen.getByText('Delete "Optics"?')).toBeInTheDocument();
+    expect(screen.getByText("It is empty. This cannot be undone.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Delete" }));
+    await waitFor(() => expect(deleteNotebook).toHaveBeenCalledWith("n2"));
+    await waitFor(() => expect(screen.getAllByTestId("notebook-cover")).toHaveLength(1));
+    expect(push).not.toHaveBeenCalled();
   });
 
   it("puts the notebook with due pages first and leaves out the due button when nothing is due", async () => {

@@ -50,8 +50,9 @@ export function strokeCount(blocks: Block[]): number {
 }
 
 /** "Saved 3 minutes ago" style helpers for the quiet save indicator. */
-export type SaveState = "saved" | "saving" | "dirty" | "error";
-export const SAVE_TEXT: Record<SaveState, string> = { saved: "Saved", saving: "Saving…", dirty: "Unsaved changes", error: "Could not save. Retrying" };
+/** `error`: the network failed, the page retries by itself. `refused`: the server said no; sending it again would fail the same way. */
+export type SaveState = "saved" | "saving" | "dirty" | "error" | "refused";
+export const SAVE_TEXT: Record<SaveState, string> = { saved: "Saved", saving: "Saving…", dirty: "Unsaved changes", error: "Could not save. Retrying", refused: "Not saved. Change something to try again" };
 
 // ---- storage notice ----
 export type StorageNotice = { level: "none" | "warn" | "full"; text: string };

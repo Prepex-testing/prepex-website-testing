@@ -15,7 +15,7 @@ describe("useAutosave after a failed save", () => {
     rerender({ v: { n: 1 } });
     await act(async () => vi.advanceTimersByTimeAsync(15_000));
     expect(save).toHaveBeenCalledTimes(1);
-    expect(result.current.state).toBe("error");
+    expect(result.current.state).toBe("refused");
     rerender({ v: { n: 2 } });
     await act(async () => vi.advanceTimersByTimeAsync(1_000));
     expect(save).toHaveBeenCalledTimes(2);
