@@ -7,13 +7,14 @@ import type { RevisionAnalytics } from "@/lib/api/revisionLogs";
 import type { StudySummary } from "@/lib/api/studyLog";
 import { backlogHub, mockHub, practiceHub, revisionHub, summaryStrip } from "@/lib/study/hub";
 import { sessionStats } from "@/lib/study/sessionStats";
+import { masterSubjectNames } from "@/lib/study/subjects";
 
 const NOW = new Date("2026-10-07T06:00:00Z");
 
 describe("revisionHub", () => {
   const overview = (tasks: number, chapters: { nextRevisionAt: string | null }[]): RevisionOverview =>
     ({
-      todaysRevisionTasks: { count: tasks, tasks: [] },
+      todaysRevisionTasks: { count: tasks, tasks: Array.from({ length: tasks }, () => ({ status: "PENDING" })) },
       upcomingRevisions: { count: chapters.length, chapters },
       masteredChapters: { count: 0, chapters: [] },
     }) as unknown as RevisionOverview;
@@ -29,6 +30,17 @@ describe("revisionHub", () => {
     const hub = revisionHub(overview(0, [{ nextRevisionAt: "2026-10-05T00:00:00Z" }, { nextRevisionAt: "2026-10-07T00:00:00Z" }, { nextRevisionAt: null }]), null, NOW)!;
     expect(hub.overdue).toBe(1);
     expect(hub.doneThisWeek).toBeNull();
+  });
+
+  it("counts only revision tasks still to do as due today, not done, skipped, removed or rolled-over ones", () => {
+    const tasks = ["PENDING", "IN_PROGRESS", "COMPLETED", "SKIPPED", "REMOVED", "ROLLED_OVER"].map((status) => ({ status }));
+    const o = { ...overview(6, []), todaysRevisionTasks: { count: 6, tasks } } as unknown as RevisionOverview;
+    expect(revisionHub(o, null, NOW)!.dueToday).toBe(2);
+  });
+
+  it("does not count a chapter due today as overdue when the server stored it as local midnight (UTC the day before)", () => {
+    const todayMidnight = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate()).toISOString();
+    expect(revisionHub(overview(0, [{ nextRevisionAt: todayMidnight }]), null, NOW)!.overdue).toBe(0);
   });
 
   it("lists the three stalest chapters and nothing when the overview did not load", () => {
@@ -131,5 +143,16 @@ describe("sessionStats", () => {
     const s = sessionStats(summary([0, 0, 0, 0, 0, 0, 0]), "2026-10-20", NOW);
     expect(s.best).toBeNull();
     expect(s.today).toBeNull();
+  });
+});
+
+describe("masterSubjectNames", () => {
+  it("names a subject with no study time this month from the syllabus, not as 'Subject 2' (QA pass)", () => {
+    const name = masterSubjectNames({
+      bySubject: [{ subjectId: 1, name: "Physics", minutes: 60, share: 100 }],
+      syllabus: { bySubject: [{ subjectId: 1, name: "Physics", total: 1, completed: 0, percent: 0 }, { subjectId: 2, name: "Chemistry", total: 1, completed: 0, percent: 0 }] },
+    } as never);
+    expect(name(1)).toBe("Physics");
+    expect(name(2)).toBe("Chemistry");
   });
 });

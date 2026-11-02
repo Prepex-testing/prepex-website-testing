@@ -63,7 +63,7 @@ export function PracticeSidePanel({ onLog }: Props) {
 
       <PanelSection title="Weakest chapters" testId="pr-weakest">
         {weakest.length === 0 ? (
-          <p className="text-[13px] text-muted">{data ? "No weak chapters yet." : "Loading"}</p>
+          <p className="text-[13px] text-muted">{data ? "No weak chapters yet." : failed ? "Couldn't load this." : "Loading"}</p>
         ) : (
           <ul className="flex flex-col gap-1.5">
             {weakest.map((c) => (

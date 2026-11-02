@@ -58,6 +58,11 @@ export type RevisionOverview = {
   masteredChapters: { count: number; chapters: RevisionChapterProgress[] };
 };
 
+/** Revision tasks on today's plan still to do. The API's `count` also includes done, skipped, removed and rolled-over tasks. */
+export function openRevisionTasks(overview: RevisionOverview): RevisionTask[] {
+  return overview.todaysRevisionTasks.tasks.filter((t) => t.status === "PENDING" || t.status === "IN_PROGRESS");
+}
+
 export function getRevisionOverview(filters: { subjectId?: number; status?: TaskStatus } = {}) {
   const params = new URLSearchParams();
   if (filters.subjectId !== undefined) params.set("subjectId", String(filters.subjectId));

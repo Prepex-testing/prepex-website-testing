@@ -248,9 +248,13 @@ export default function BacklogPage() {
               busyId={busyId}
               onLoadMore={async () => {
                 if (!openMore) return;
-                const res = await listBacklogItems({ status: "open", cursor: openMore, limit: 50 });
-                setOpen((prev) => [...prev, ...res.data.items]);
-                setOpenMore(res.data.nextCursor);
+                try {
+                  const res = await listBacklogItems({ status: "open", cursor: openMore, limit: 50 });
+                  setOpen((prev) => [...prev, ...res.data.items]);
+                  setOpenMore(res.data.nextCursor);
+                } catch (err) {
+                  toast.show(msg(err, "We couldn't load more. Please try again."));
+                }
               }}
               onClear={(item) => void run(item, async () => (await clearBacklogItem(item.id), "Cleared. Nice work."))}
               onSchedule={(item) => {

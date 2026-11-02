@@ -6,7 +6,7 @@ import { RevisionHub } from "@/components/logs/RevisionHub";
 import { CoralButton } from "@/components/ui/CoralButton";
 import { GhostButton } from "@/components/ui/GhostButton";
 import { WhiteModal } from "@/components/ui/WhiteModal";
-import { demoteRevisionChapter, getRevisionOverview, skipRevisionTask, type RevisionChapterProgress, type RevisionOverview, type RevisionTask } from "@/lib/api/revision";
+import { demoteRevisionChapter, getRevisionOverview, openRevisionTasks, skipRevisionTask, type RevisionChapterProgress, type RevisionOverview, type RevisionTask } from "@/lib/api/revision";
 import { startFocusSession } from "@/lib/focus/startFocusSession";
 import { formatMinutes } from "@/lib/study/format";
 
@@ -105,7 +105,7 @@ export function SpacedRepetitionTab() {
   }
   if (!overview) return <div className="h-40 animate-pulse rounded-2xl bg-surface-elevated" aria-hidden />;
 
-  const due = overview.todaysRevisionTasks.tasks.filter((t) => t.status !== "SKIPPED" && t.status !== "COMPLETED");
+  const due = openRevisionTasks(overview);
   const upcoming = overview.upcomingRevisions.chapters;
   const mastered = overview.masteredChapters.chapters;
   const queued = overview.todaysRevisionTasks.count + overview.upcomingRevisions.count + overview.masteredChapters.count;

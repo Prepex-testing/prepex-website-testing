@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { BarRow, PanelSection } from "@/components/logs/LogScreenScaffold";
 import { GhostButton } from "@/components/ui/GhostButton";
 import { getBacklogAnalytics, listBacklogItems, scheduleBacklogItem, type BacklogAnalytics, type BacklogItem } from "@/lib/api/backlogItems";
+import { ApiError } from "@/lib/api/http";
 import { currentWindow, dayKey } from "@/lib/logs/dates";
 import type { SubjectLookup } from "@/lib/study/subjects";
 
@@ -52,17 +53,27 @@ export function BacklogSidePanel({ lookup, onPlanned }: Props) {
     if (next.length === 0) return;
     setBusy(true);
     setError(null);
-    try {
-      const today = dayKey(new Date());
-      const slot = currentWindow();
-      for (const item of next) await scheduleBacklogItem(item.id, { date: today, timeSlot: slot });
-      onPlanned(next.length);
-      setItems((prev) => (prev ?? []).filter((i) => !next.some((n) => n.id === i.id)));
-    } catch {
-      setError("Couldn't add those to today's plan. Please try again.");
-    } finally {
-      setBusy(false);
+    const today = dayKey(new Date());
+    const slot = currentWindow();
+    // Each item on its own: one failure must not hide the ones already added, and an item that is no longer open (409,
+    // planned or cleared elsewhere) leaves the list instead of blocking the button on every later tap.
+    const gone: string[] = [];
+    let planned = 0;
+    let failed = false;
+    for (const item of next) {
+      try {
+        await scheduleBacklogItem(item.id, { date: today, timeSlot: slot });
+        gone.push(item.id);
+        planned += 1;
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 409) gone.push(item.id);
+        else failed = true;
+      }
     }
+    setItems((prev) => (prev ?? []).filter((i) => !gone.includes(i.id)));
+    if (planned > 0) onPlanned(planned);
+    if (failed) setError("Couldn't add those to today's plan. Please try again.");
+    setBusy(false);
   }
 
   return (
