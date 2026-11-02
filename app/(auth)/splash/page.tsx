@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Logo, Logo1 } from "@/components/ui/Logo";
-import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 
 const REDIRECT_DELAY_MS = 2000;
 
@@ -20,8 +19,8 @@ export default function SplashPage() {
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-[25px] bg-background px-6">
+      {/* One logo only: the loading mark is itself the logo (P6), so showing it here as well drew two logos. */}
       <Logo1 />
-      <LoadingIndicator />
     </main>
   );
 }
