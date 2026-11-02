@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
 import { CommandPalette } from "@/components/command/CommandPalette";
 import { MotionProvider } from "@/components/motion/GlidePill";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { FocusSidebar } from "@/components/layout/FocusSidebar";
 import { BottomNav } from "@/components/layout/BottomNav";
@@ -122,7 +123,10 @@ export function AppShell({ children }: { children: ReactNode }) {
               {children}
             </div>
           </>
-        ) : null}
+        ) : (
+          // the daily check-in check is still in flight: a skeleton, not a blank screen
+          <PageLoader />
+        )}
       </div>
       {!isFocusMode && <QuickLogFab />}
       <CommandPalette />
