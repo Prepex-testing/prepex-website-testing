@@ -15,6 +15,7 @@ import { PageLoader } from "@/components/ui/PageLoader";
 import { ApiError } from "@/lib/api/http";
 import { listDiagnosisReports, type ReportLimit, type ReportListItem } from "@/lib/api/diagnosisReports";
 import { getMasterAnalytics, type MasterAnalytics } from "@/lib/api/masterAnalytics";
+import { masterSubjectNames } from "@/lib/study/subjects";
 import { syllabusHeadline } from "@/lib/syllabus/headline";
 import { useStartReport } from "@/lib/diagnosis/useStartReport";
 import { drillHref, goalUnitLabel, latestWeek, streakCaption } from "@/lib/insights/analyticsFormat";
@@ -57,11 +58,7 @@ export default function AnalyticsPage() {
     );
   }, []);
 
-  const subjectNames = useMemo(() => {
-    const names = new Map<number, string>();
-    for (const s of data?.bySubject ?? []) if (s.subjectId !== null) names.set(s.subjectId, s.name);
-    return (id: number) => names.get(id) ?? `Subject ${id}`;
-  }, [data]);
+  const subjectNames = useMemo(() => masterSubjectNames(data), [data]);
 
   const headline = data?.syllabus ? syllabusHeadline(data.syllabus.bySubject) : null;
 

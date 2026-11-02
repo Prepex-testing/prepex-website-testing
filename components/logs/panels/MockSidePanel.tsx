@@ -51,7 +51,7 @@ export function MockSidePanel({ onLog }: Props) {
 
       <PanelSection title="Subject averages" testId="mk-subjects">
         {subjects.length === 0 ? (
-          <p className="text-[13px] text-muted">{data ? "Log a mock with subject marks to see this." : "Loading"}</p>
+          <p className="text-[13px] text-muted">{data ? "Log a mock with subject marks to see this." : failed ? "Couldn't load this." : "Loading"}</p>
         ) : (
           <div className="flex flex-col gap-2">
             {subjects.map((s) => (

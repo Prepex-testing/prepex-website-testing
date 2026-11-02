@@ -7,7 +7,7 @@ import { StudyShell } from "@/components/study/StudyShell";
 // The real header pulls in an SVG asset the test runner cannot load; a heading stand-in is enough here.
 vi.mock("@/components/profile/ProfileSubpageHeader", () => ({ ProfileSubpageHeader: ({ title }: { title: string }) => <h1>{title}</h1> }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), back: vi.fn() }), usePathname: () => "/logs" }));
-vi.mock("@/lib/api/revision", () => ({ getRevisionOverview: vi.fn() }));
+vi.mock("@/lib/api/revision", async (orig) => ({ ...(await orig<typeof import("@/lib/api/revision")>()), getRevisionOverview: vi.fn() }));
 vi.mock("@/lib/api/revisionLogs", () => ({ getRevisionAnalytics: vi.fn() }));
 vi.mock("@/lib/api/backlogItems", () => ({ getBacklogAnalytics: vi.fn(), listBacklogItems: vi.fn() }));
 vi.mock("@/lib/api/practiceLogs", () => ({ getPracticeAnalytics: vi.fn() }));
@@ -29,7 +29,7 @@ const ok = <T,>(data: T) => Promise.resolve({ success: true as const, data });
 beforeEach(() => {
   vi.clearAllMocks();
   // The planner has 3 revision tasks today, while the student has logged no revision at all today.
-  vi.mocked(getRevisionOverview).mockReturnValue(ok({ todaysRevisionTasks: { count: 3, tasks: [] }, upcomingRevisions: { count: 1, chapters: [{ nextRevisionAt: "2020-01-01T00:00:00Z" }] }, masteredChapters: { count: 0, chapters: [] } }) as never);
+  vi.mocked(getRevisionOverview).mockReturnValue(ok({ todaysRevisionTasks: { count: 3, tasks: [{ status: "PENDING" }, { status: "PENDING" }, { status: "IN_PROGRESS" }] }, upcomingRevisions: { count: 1, chapters: [{ nextRevisionAt: "2020-01-01T00:00:00Z" }] }, masteredChapters: { count: 0, chapters: [] } }) as never);
   vi.mocked(getRevisionAnalytics).mockReturnValue(ok({ totals: { revisions: 2 }, stale: [{ chapterName: "Optics", daysAgo: 12 }] }) as never);
   vi.mocked(getBacklogAnalytics).mockReturnValue(ok({ totals: { open: 2, scheduled: 0 }, redFlags: [] }) as never);
   vi.mocked(listBacklogItems).mockReturnValue(ok({ items: [{ id: "b", topic: "Vectors", deadline: "2999-01-01", isOverdue: false, chapterId: null }], nextCursor: null }) as never);

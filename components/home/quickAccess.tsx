@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { AlertCircle, BookOpen, Compass, FileCheck, Library, ListChecks, NotebookPen, RotateCw, Target, Trophy } from "lucide-react";
-import { getRevisionOverview } from "@/lib/api/revision";
+import { getRevisionOverview, openRevisionTasks } from "@/lib/api/revision";
 import { getBacklogAnalytics } from "@/lib/api/backlogItems";
 import { listNotebooks } from "@/lib/api/notebooks";
 import { getPracticeAnalytics } from "@/lib/api/practiceLogs";
@@ -57,7 +57,7 @@ export function useQuickAccessCounts(): QuickAccessCounts {
     const set = (patch: Partial<QuickAccessCounts>) => live && setCounts((c) => ({ ...c, ...patch }));
     getStudySummary("day").then((r) => set({ sessionsToday: r.data.sessionCount }), () => undefined);
     getPracticeAnalytics({ period: "week" }).then((r) => set({ questionsThisWeek: r.data.totals.attempted }), () => undefined);
-    getRevisionOverview().then((r) => set({ revisionsDue: r.data.todaysRevisionTasks.count }), () => undefined);
+    getRevisionOverview().then((r) => set({ revisionsDue: openRevisionTasks(r.data).length }), () => undefined);
     getBacklogAnalytics().then((r) => set({ backlogOpen: r.data.totals.open + r.data.totals.scheduled }), () => undefined);
     listNotebooks().then((r) => set({ mistakesOpen: r.dueTotal }), () => undefined);
     listMocks({ from: week.from, to: week.to, limit: 50 }).then((r) => set({ mocksThisWeek: r.data.items.length }), () => undefined);

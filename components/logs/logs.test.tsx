@@ -288,6 +288,17 @@ describe("PlannerPickerModal", () => {
     expect(onConfirm).toHaveBeenCalledWith({ date: "2026-10-10", timeSlot: "EVENING" });
   });
 
+  it("brings a log's own length into the planner's 10 to 480 minutes before sending it (QA pass)", async () => {
+    const user = userEvent.setup();
+    for (const [given, sent] of [[5, 10], [600, 480]] as const) {
+      const onConfirm = vi.fn();
+      const { unmount } = render(<PlannerPickerModal open onClose={vi.fn()} title="Add" defaultMinutes={given} busy={false} error={null} onConfirm={onConfirm} />);
+      await user.click(screen.getByTestId("picker-confirm"));
+      expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ estimatedMinutes: sent }));
+      unmount();
+    }
+  });
+
   it("lets the student pick another day, slot and length", async () => {
     const user = userEvent.setup();
     const onConfirm = vi.fn();

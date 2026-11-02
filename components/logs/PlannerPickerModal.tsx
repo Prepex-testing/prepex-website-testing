@@ -10,6 +10,11 @@ import { Modal } from "@/components/ui/Modal";
 export const MAX_DAYS_AHEAD = 28;
 export const MINUTE_CHOICES = [20, 30, 45, 60, 90] as const;
 
+/** A planner task takes 10 to 480 minutes; a log's own length (say 5 or 600) is brought into that range. */
+export function plannable(minutes: number | null | undefined): number | null {
+  return minutes == null ? null : Math.min(480, Math.max(10, Math.round(minutes)));
+}
+
 export interface PickedPlacement {
   date: string;
   timeSlot: PlannerWindow;
@@ -39,7 +44,7 @@ export function PlannerPickerModal({ open, onClose, title, subject, defaultMinut
   const days = useMemo(() => nextDays(7), [open]); // eslint-disable-line react-hooks/exhaustive-deps -- recomputed each time it opens
   const [date, setDate] = useState(() => dayKey(new Date()));
   const [timeSlot, setTimeSlot] = useState<PlannerWindow>(() => currentWindow());
-  const [minutes, setMinutes] = useState<number | null>(defaultMinutes ?? null);
+  const [minutes, setMinutes] = useState<number | null>(plannable(defaultMinutes));
   const [suggestions, setSuggestions] = useState<SuggestedSlot[] | null>(null);
 
   useEffect(() => {
@@ -47,7 +52,7 @@ export function PlannerPickerModal({ open, onClose, title, subject, defaultMinut
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reset the picker each time it opens
     setDate(dayKey(new Date()));
     setTimeSlot(currentWindow());
-    setMinutes(defaultMinutes ?? null);
+    setMinutes(plannable(defaultMinutes));
     setSuggestions(null);
     if (!loadSuggestions) return;
     let alive = true;

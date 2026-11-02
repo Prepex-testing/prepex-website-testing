@@ -80,8 +80,10 @@ export default function SessionsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function refresh() {
-    await Promise.all([loadRows(filterSubject, null, false), loadSummary(period)]);
+  /** Reload after a write. The write already succeeded, so a failed reload only leaves the list as it was: it must
+   * not be reported as a failed save (the student would retry and log the session twice). */
+  function refresh() {
+    Promise.all([loadRows(filterSubject, null, false), loadSummary(period)]).catch(() => undefined);
   }
 
   async function handleCreate(input: NewStudySession) {
@@ -89,7 +91,7 @@ export default function SessionsPage() {
     setFormError(null);
     try {
       await createStudySession(input);
-      await refresh();
+      refresh();
       setFormVersion((v) => v + 1); // clears the form
       toast.show("Logged. Nice work.");
     } catch (err) {
@@ -106,7 +108,7 @@ export default function SessionsPage() {
     try {
       await updateStudySession(editing.id, input);
       setEditing(null);
-      await refresh();
+      refresh();
     } catch (err) {
       setFormError(msg(err, "Couldn't save that. Please try again."));
     } finally {
@@ -121,7 +123,7 @@ export default function SessionsPage() {
     try {
       await deleteStudySession(deleting.id);
       setDeleting(null);
-      await refresh();
+      refresh();
     } catch (err) {
       setFormError(msg(err, "Couldn't delete that. Please try again."));
     } finally {

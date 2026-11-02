@@ -1,7 +1,7 @@
 import type { BacklogAnalytics, BacklogItem } from "@/lib/api/backlogItems";
 import type { MockAnalytics } from "@/lib/api/mocks";
 import type { PracticeAnalytics } from "@/lib/api/practiceLogs";
-import type { RevisionOverview } from "@/lib/api/revision";
+import { openRevisionTasks, type RevisionOverview } from "@/lib/api/revision";
 import type { RevisionAnalytics } from "@/lib/api/revisionLogs";
 import { agoLabel, dayKey, dayLabel } from "@/lib/logs/dates";
 
@@ -22,9 +22,10 @@ export type RevisionHub = {
 export function revisionHub(overview: RevisionOverview | null, analytics: RevisionAnalytics | null, now: Date = new Date()): RevisionHub | null {
   if (!overview) return null;
   const today = dayKey(now);
-  const overdue = overview.upcomingRevisions.chapters.filter((c) => c.nextRevisionAt !== null && c.nextRevisionAt.slice(0, 10) < today).length;
+  // the server stores a due day as that day's midnight in India (18:30 UTC the day before), so compare local days
+  const overdue = overview.upcomingRevisions.chapters.filter((c) => c.nextRevisionAt !== null && dayKey(new Date(c.nextRevisionAt)) < today).length;
   return {
-    dueToday: overview.todaysRevisionTasks.count,
+    dueToday: openRevisionTasks(overview).length,
     overdue,
     doneThisWeek: analytics ? analytics.totals.revisions : null,
     stale: (analytics?.stale ?? []).slice(0, 3).map((s) => ({ name: s.chapterName ?? "A chapter", ago: agoLabel(s.daysAgo) })),
