@@ -32,3 +32,25 @@ look back. Every P6 change is in shared files, so reverting one PR undoes one pa
 | A6 lite / reduced motion | done: `html[data-motion]` set before first paint (`full`, `lite` on ≤4 GB or ≤4 cores or by setting, `reduce` from the OS) | `components/theme/constants.ts`, `globals.css` |
 | A7 code splitting | existing (Next route splitting; charts and editor already `dynamic`) | — |
 | A8 budgets | measured on testing, see the PR | — |
+
+## Part B: alive
+
+| Item | Status | Where |
+|---|---|---|
+| B1 motion tokens | done: CSS `--dur-micro/standard/emphasis`, `--ease-out/in/spring`; JS `lib/motion/tokens.ts`; guarded by a test on the shared motion files | `globals.css`, `lib/motion/tokens.ts` |
+| B2 buttons | done app-wide: every button presses in (scale 0.97, zero-specificity rule so component classes still win); shared `Button`, `CoralButton` (plus coral glow), `GhostButton` lift 1px on hover | `globals.css`, `components/ui/*Button.tsx` |
+| B2 cards | `.lift` utility (hover lift + shadow, press 0.98) applied to notebook covers and Home tiles; not yet applied to every card on every screen | `globals.css` |
+| B2 links / inputs | not changed (an app-wide underline or focus animation risks restyling content) | — |
+| B3 sidebar | active highlight glides between items (Motion `layoutId`); labels nudge on hover; collapse is 350 ms with ease-out (was 700 ms). Still animates width (a transform rewrite of the sidebar was judged too risky) | `Sidebar`, `AppShell` |
+| B3 tab bars | indicator glides on: Study tabs, section tabs (Revision/Backlog/Practice), Logs/Analytics scaffold tabs, notebook sections, leaderboard boards | `components/motion/GlidePill.tsx` |
+| B3 bottom nav | active icon pops, highlight glides | `BottomNav` |
+| B4 page enter | every route's content fades in with an 8 px rise, without remounting (class re-applied per path) | `AppShell` |
+| B4 list stagger | `.stagger` (30 ms per item, first 8; lite: first 3): leaderboard rows, notebook shelf | `globals.css` |
+| B5 overlays | `Modal`, `Sheet` slide up with a spring; `WhiteModal`/`ConfirmModal` pop; backdrops fade; Esc and focus handling were already there | shared overlays |
+| B5 toasts | slide in with a spring | `Toast` |
+| B5 numbers / ticks | existing: `CountUp`, `TickFeedback` (task tick + XP pop) | — |
+| B5 empty states | not changed | — |
+| B6 scrolling | native scrolling kept; no hijacking. Compressing headers and pull-to-refresh not done | — |
+| B7 command palette | done: Ctrl/Cmd+K or `/`; screens + actions (focus, quick log, theme); fuzzy; keyboard; blur backdrop (lite: dim). Keys: F focus, N notebooks, L quick log | `components/command/CommandPalette.tsx` |
+| B8 sound | not done (optional, off by default in the spec) | — |
+| B9 tests | palette, shortcuts, fuzzy, token guard, splash, skeleton, prefetch, SWR | `components/command/p6Alive.test.tsx`, `components/boot/p6Instant.test.tsx` |

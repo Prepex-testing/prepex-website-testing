@@ -908,3 +908,94 @@ html[data-motion="reduce"] #boot-splash .bs-dot {
   opacity: 1;
   transform: none;
 }
+
+/* ---- P6 part B: interaction states (shared classes, used by the shared components) ---- */
+
+/* every button and button-like control answers a press (scale, a separate property from Tailwind's translate) */
+/* :where() keeps these at zero specificity, so a component's own transition or scale classes always win */
+:where(button:not(:disabled), [role="button"]:not([aria-disabled="true"])) {
+  transition-property: color, background-color, border-color, opacity, box-shadow, scale, translate, filter;
+  transition-duration: var(--dur-micro);
+  transition-timing-function: var(--ease-out);
+}
+:where(button:not(:disabled):active, [role="button"]:not([aria-disabled="true"]):active) {
+  scale: 0.97;
+}
+
+/* shared buttons lift a pixel on hover */
+@media (hover: hover) {
+  .btn-lift:not(:disabled):hover {
+    translate: 0 -1px;
+  }
+  .btn-coral-glow:not(:disabled):hover {
+    box-shadow: 0 8px 22px -8px color-mix(in srgb, var(--cta) 75%, transparent);
+  }
+}
+
+/* cards that open something: lift on hover, press in on touch */
+.lift {
+  transition: translate var(--dur-standard) var(--ease-out), box-shadow var(--dur-standard) var(--ease-out), scale var(--dur-micro) var(--ease-out);
+}
+@media (hover: hover) {
+  .lift:hover {
+    translate: 0 -2px;
+    box-shadow: var(--shadow-md);
+  }
+}
+.lift:active {
+  scale: 0.98;
+}
+
+/* route content enters */
+.motion-page {
+  animation: motion-rise var(--dur-standard) var(--ease-out) both;
+}
+
+/* lists: the first 8 items arrive 30 ms apart; the rest appear at once */
+.stagger > * {
+  animation: motion-rise var(--dur-standard) var(--ease-out) both;
+}
+.stagger > *:nth-child(2) { animation-delay: 30ms; }
+.stagger > *:nth-child(3) { animation-delay: 60ms; }
+.stagger > *:nth-child(4) { animation-delay: 90ms; }
+.stagger > *:nth-child(5) { animation-delay: 120ms; }
+.stagger > *:nth-child(6) { animation-delay: 150ms; }
+.stagger > *:nth-child(7) { animation-delay: 180ms; }
+.stagger > *:nth-child(8) { animation-delay: 210ms; }
+.stagger > *:nth-child(n + 9) { animation: none; }
+
+/* overlays: the dim fades in (with a blur behind the palette), sheets rise with a spring, dialogs pop */
+@keyframes motion-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes motion-sheet-up { from { transform: translateY(32px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes motion-pop-in { from { transform: scale(0.96) translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes motion-toast-in { from { transform: translateY(16px) scale(0.98); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes nav-pop { 0% { transform: scale(0.85); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+.motion-backdrop { animation: motion-fade var(--dur-standard) var(--ease-out) both; }
+.motion-sheet { animation: motion-sheet-up var(--dur-emphasis) var(--ease-spring) both; }
+.motion-pop { animation: motion-pop-in var(--dur-standard) var(--ease-out) both; }
+.motion-toast { animation: motion-toast-in var(--dur-standard) var(--ease-spring) both; }
+.nav-pop { display: inline-flex; animation: nav-pop var(--dur-emphasis) var(--ease-spring) both; }
+.palette-backdrop { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+
+/* lite: shorter, no blur, no stagger past 3 items */
+html[data-motion="lite"] .palette-backdrop { backdrop-filter: none; -webkit-backdrop-filter: none; }
+html[data-motion="lite"] .stagger > *:nth-child(n + 4) { animation: none; }
+
+/* reduced motion: nothing moves */
+html[data-motion="reduce"] .motion-page,
+html[data-motion="reduce"] .stagger > *,
+html[data-motion="reduce"] .motion-backdrop,
+html[data-motion="reduce"] .motion-sheet,
+html[data-motion="reduce"] .motion-pop,
+html[data-motion="reduce"] .motion-toast,
+html[data-motion="reduce"] .nav-pop {
+  animation: none;
+}
+html[data-motion="reduce"] button:active,
+html[data-motion="reduce"] [role="button"]:active,
+html[data-motion="reduce"] .lift:active,
+html[data-motion="reduce"] .lift:hover,
+html[data-motion="reduce"] .btn-lift:hover {
+  scale: none;
+  translate: none;
+}

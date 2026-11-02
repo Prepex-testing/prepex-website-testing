@@ -8,7 +8,7 @@ export function CoralButton({ className = "", type = "button", ...props }: Butto
   return (
     <button
       type={type}
-      className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-[10px] bg-brand-coral px-6 py-3 text-[15px] font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-[10px] bg-brand-coral px-6 py-3 text-[15px] font-semibold text-white btn-lift btn-coral-glow transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
       {...props}
     />
   );

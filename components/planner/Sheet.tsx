@@ -62,7 +62,7 @@ export function Sheet({ open, onClose, title, description, children, footer, "da
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center sm:px-6" onClick={onClose}>
+    <div className="motion-backdrop fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center sm:px-6" onClick={onClose}>
       <div
         ref={panel}
         role="dialog"
@@ -70,7 +70,7 @@ export function Sheet({ open, onClose, title, description, children, footer, "da
         aria-labelledby={titleId}
         data-testid={testId}
         onClick={(event) => event.stopPropagation()}
-        className="flex max-h-[88vh] w-full flex-col rounded-t-3xl bg-background shadow-modal sm:max-w-lg sm:rounded-3xl"
+        className="motion-sheet flex max-h-[88vh] w-full flex-col rounded-t-3xl bg-background shadow-modal sm:max-w-lg sm:rounded-3xl"
       >
         <div className="flex justify-center pt-2 sm:hidden" aria-hidden>
           <span className="h-1 w-10 rounded-full bg-brand/20" />

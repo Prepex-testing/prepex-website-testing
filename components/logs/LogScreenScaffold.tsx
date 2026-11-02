@@ -3,6 +3,7 @@
 import { ChevronDown } from "lucide-react";
 import { useState, type KeyboardEvent, type ReactNode } from "react";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
+import { GlidePill } from "@/components/motion/GlidePill";
 
 export type LogTab<T extends string> = { id: T; label: string; icon?: ReactNode };
 
@@ -72,12 +73,15 @@ export function LogScreenScaffold<T extends string>({ name, title, subtitle, bac
                 data-testid={`${name}-tab-${tab.id}`}
                 onClick={() => onTabChange?.(tab.id)}
                 onKeyDown={(e) => onKey(e, i)}
-                className={`flex min-h-11 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border-b-2 px-4 text-[14px] font-semibold transition-colors ${
-                  active ? "border-saffron bg-surface-elevated-2 text-ink" : "border-transparent text-muted hover:text-ink"
+                className={`relative flex min-h-11 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 text-[14px] font-semibold transition-colors ${
+                  active ? "text-ink" : "text-muted hover:text-ink"
                 }`}
               >
-                {tab.icon}
-                {tab.label}
+                {active && <GlidePill id={`${name}-tabs`} className="rounded-full border-b-2 border-saffron bg-surface-elevated-2" />}
+                <span className="relative flex items-center gap-1.5">
+                  {tab.icon}
+                  {tab.label}
+                </span>
               </button>
             );
           })}

@@ -54,11 +54,11 @@ export function WhiteModal({
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 sm:items-center sm:px-6"
+      className="motion-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/50 sm:items-center sm:px-6"
       onClick={onClose}
     >
       <div
-        className={`white-modal-scroll-panel w-[calc(100vw-2rem)] max-h-[85vh] overflow-y-auto rounded-2xl bg-surface p-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-modal sm:w-full ${panelClassName ?? `sm:p-8 sm:pb-10 ${SIZE_CLASSES[size]}`}`}
+        className={`motion-pop white-modal-scroll-panel w-[calc(100vw-2rem)] max-h-[85vh] overflow-y-auto rounded-2xl bg-surface p-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-modal sm:w-full ${panelClassName ?? `sm:p-8 sm:pb-10 ${SIZE_CLASSES[size]}`}`}
         onClick={(event) => event.stopPropagation()}
       >
         {children}

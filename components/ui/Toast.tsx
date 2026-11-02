@@ -42,7 +42,7 @@ export function Toast({ state }: { state: ToastState }) {
       {state.message && (
         <div
           data-testid="toast"
-          className="pointer-events-auto flex max-w-md items-center gap-3 rounded-xl bg-ink px-4 py-3 text-[14px] font-semibold text-background shadow-modal dark:bg-[#FAF7F2] dark:text-[#1A1A4E]"
+          className="motion-toast pointer-events-auto flex max-w-md items-center gap-3 rounded-xl bg-ink px-4 py-3 text-[14px] font-semibold text-background shadow-modal dark:bg-[#FAF7F2] dark:text-[#1A1A4E]"
         >
           <span>{state.message}</span>
           <button type="button" onClick={state.dismiss} aria-label="Dismiss" className="-mr-1 flex size-8 items-center justify-center rounded-lg text-[18px] leading-none opacity-80 hover:opacity-100">
