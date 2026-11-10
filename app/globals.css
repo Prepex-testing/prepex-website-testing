@@ -1007,3 +1007,32 @@ html[data-motion="reduce"] .btn-lift:hover {
   scale: none;
   translate: none;
 }
+
+/* ---- Pexo, the companion. Everything that moves is scoped to full motion: lite and reduced motion get the same
+   expressions as static swaps (guide, section 4). Only transform and opacity animate, so there is no layout work. ---- */
+.pexo { overflow: visible; }
+html[data-motion="full"] .pexo [data-part] { transition: transform var(--dur-standard) var(--ease-out), opacity var(--dur-standard) var(--ease-out); }
+html[data-motion="full"] .pexo [data-part="pupil"] { transition: transform var(--dur-micro) var(--ease-out); }
+html[data-motion="full"] .pexo [data-part="lid"] { transition: transform 90ms linear; }
+html[data-motion="full"] .pexo .pexo-breathe { animation: pexo-breathe 3s ease-in-out infinite; }
+html[data-motion="full"] .pexo .pexo-breathe-slow { animation: pexo-breathe 4.5s ease-in-out infinite; }
+html[data-motion="full"] .pexo .pexo-bounce { animation: pexo-bounce 2.4s ease-in-out infinite; }
+html[data-motion="full"] .pexo .pexo-hop { animation: pexo-hop 0.9s var(--ease-out) infinite; }
+html[data-motion="full"] .pexo .pexo-sway { animation: pexo-sway 4s ease-in-out infinite; }
+html[data-motion="full"] .pexo .pexo-jump { animation: pexo-jump 1.2s var(--ease-out) 1, pexo-breathe 3s ease-in-out 1.2s infinite; }
+html[data-motion="full"] .pexo .pexo-wiggle { animation: pexo-wiggle 0.6s var(--ease-out) 1; }
+html[data-motion="full"] .pexo .pexo-wave { animation: pexo-wave 0.5s ease-in-out 3; }
+html[data-motion="full"] .pexo .pexo-talk { animation: pexo-talk 0.26s ease-in-out 4; }
+@keyframes pexo-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+@keyframes pexo-bounce { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-3px) scale(1.02, 0.99); } }
+@keyframes pexo-hop { 0%, 100% { transform: translateY(0) scale(1.03, 0.97); } 45% { transform: translateY(-7px) scale(0.98, 1.03); } }
+@keyframes pexo-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes pexo-jump {
+  0% { transform: translateY(0) scale(1.08, 0.9); }
+  35% { transform: translateY(-20px) rotate(180deg) scale(0.96, 1.05); }
+  70% { transform: translateY(-6px) rotate(360deg); }
+  100% { transform: translateY(0) rotate(360deg); }
+}
+@keyframes pexo-wiggle { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } 80% { transform: rotate(-4deg); } }
+@keyframes pexo-wave { 0%, 100% { rotate: 0deg; } 50% { rotate: 20deg; } }
+@keyframes pexo-talk { 0%, 100% { scale: 1 1; } 50% { scale: 1 0.6; } }

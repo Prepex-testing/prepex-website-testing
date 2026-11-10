@@ -1,0 +1,1829 @@
+{
+ "version": 1,
+ "name": "Pexo line library",
+ "languages": [
+  "en",
+  "hi"
+ ],
+ "note": "hi = natural Hinglish in Roman script. Placeholders in {braces} must be filled; never show a line with an unfilled placeholder. Moods map to Pexo expressions.",
+ "moods": [
+  "calm",
+  "celebrating",
+  "cheering",
+  "curious",
+  "focused",
+  "happy",
+  "proud",
+  "sleepy",
+  "thinking",
+  "waving"
+ ],
+ "lines": [
+  {
+   "id": "onb.hello.1#1",
+   "trigger": "onb.hello.1",
+   "mood": "waving",
+   "en": "Hi, I'm Pexo. That orange dot on top of the Prepex logo? That's me.",
+   "hi": "Hi, main Pexo hoon. Prepex logo ke upar wala orange dot? Wahi main hoon."
+  },
+  {
+   "id": "onb.hello.2#1",
+   "trigger": "onb.hello.2",
+   "mood": "curious",
+   "en": "Most JEE aspirants don't fail for lack of content. They lose track. I keep track for you.",
+   "hi": "Zyada tar aspirants content ki kami se nahi, track kho dene se peeche reh jaate hain. Track main rakhunga."
+  },
+  {
+   "id": "onb.hello.3#1",
+   "trigger": "onb.hello.3",
+   "mood": "happy",
+   "en": "Answer a few quick things and I'll build your climb to JEE day.",
+   "hi": "Bas kuch quick sawaal, phir main tumhara JEE tak ka climb bana deta hoon."
+  },
+  {
+   "id": "onb.class#1",
+   "trigger": "onb.class",
+   "mood": "curious",
+   "en": "First, which class are you in?",
+   "hi": "Pehle batao, kaunsi class mein ho?"
+  },
+  {
+   "id": "onb.class.dropper#1",
+   "trigger": "onb.class.dropper",
+   "mood": "proud",
+   "en": "Drop year. Respect. This time we do it with a system.",
+   "hi": "Drop year. Respect. Is baar system ke saath karenge."
+  },
+  {
+   "id": "onb.class.11#1",
+   "trigger": "onb.class.11",
+   "mood": "happy",
+   "en": "Class 11. Best time to start. We have time on our side.",
+   "hi": "Class 11. Shuru karne ka best time. Time hamare saath hai."
+  },
+  {
+   "id": "onb.class.12#1",
+   "trigger": "onb.class.12",
+   "mood": "focused",
+   "en": "Class 12. Boards and JEE together. I'll keep both in balance.",
+   "hi": "Class 12. Boards aur JEE saath mein. Dono ka balance main rakhunga."
+  },
+  {
+   "id": "onb.coaching#1",
+   "trigger": "onb.coaching",
+   "mood": "curious",
+   "en": "Do you study with a coaching? Online or offline, both work.",
+   "hi": "Coaching join ki hai? Online ho ya offline, dono chalega."
+  },
+  {
+   "id": "onb.timetable#1",
+   "trigger": "onb.timetable",
+   "mood": "thinking",
+   "en": "Now your day. Mark when you're in class and when you self-study. I only plan the self-study part.",
+   "hi": "Ab tumhara din. Class kab hai aur self-study kab, bas mark kar do. Main sirf self-study plan karta hoon."
+  },
+  {
+   "id": "onb.chapters#1",
+   "trigger": "onb.chapters",
+   "mood": "curious",
+   "en": "Tap the chapters you've finished. Tap twice if you're confident in them.",
+   "hi": "Jo chapters ho gaye unpe tap karo. Pakka aate hain toh double tap."
+  },
+  {
+   "id": "onb.chapters.after#1",
+   "trigger": "onb.chapters.after",
+   "mood": "proud",
+   "en": "{n} chapters done already. That's {n} steps climbed before we even started.",
+   "hi": "{n} chapters already ho gaye. Shuru karne se pehle hi {n} steps chadh chuke ho."
+  },
+  {
+   "id": "onb.chapters.none#1",
+   "trigger": "onb.chapters.none",
+   "mood": "calm",
+   "en": "Starting fresh is fine. Every topper started at chapter one.",
+   "hi": "Zero se shuru karna bilkul theek hai. Har topper chapter one se hi shuru hua tha."
+  },
+  {
+   "id": "onb.goals#1",
+   "trigger": "onb.goals",
+   "mood": "thinking",
+   "en": "Last one. What do you want to finish this week? I'll suggest, you decide.",
+   "hi": "Last step. Is hafte kya khatam karna hai? Main suggest karunga, decide tum karoge."
+  },
+  {
+   "id": "onb.finale#1",
+   "trigger": "onb.finale",
+   "mood": "celebrating",
+   "en": "Your climb is ready. {days} days to JEE, and we start today.",
+   "hi": "Tumhara climb ready hai. JEE tak {days} din, aur shuruaat aaj se."
+  },
+  {
+   "id": "onb.first_session#1",
+   "trigger": "onb.first_session",
+   "mood": "cheering",
+   "en": "Let's take step one right now. One 15-minute focus session?",
+   "hi": "Step one abhi lete hain. Ek 15 minute ka focus session?"
+  },
+  {
+   "id": "onb.first_session.done#1",
+   "trigger": "onb.first_session.done",
+   "mood": "celebrating",
+   "en": "That's step one. You'll remember this day.",
+   "hi": "Ye raha step one. Ye din yaad rahega."
+  },
+  {
+   "id": "onb.first_session.skip#1",
+   "trigger": "onb.first_session.skip",
+   "mood": "calm",
+   "en": "No problem. Your plan is ready whenever you are.",
+   "hi": "Koi baat nahi. Jab tum ready, plan ready hai."
+  },
+  {
+   "id": "tour.plan#1",
+   "trigger": "tour.plan",
+   "mood": "thinking",
+   "en": "I build your day around your timetable and your goals.",
+   "hi": "Tumhare timetable aur goals ke hisaab se main tumhara din plan karta hoon."
+  },
+  {
+   "id": "tour.focus#1",
+   "trigger": "tour.focus",
+   "mood": "focused",
+   "en": "Every minute you focus counts. Every day you study, we climb a step.",
+   "hi": "Har focused minute count hota hai. Har din padhoge, ek step upar chadhenge."
+  },
+  {
+   "id": "tour.revise#1",
+   "trigger": "tour.revise",
+   "mood": "curious",
+   "en": "I remind you to revise a chapter right before you'd forget it.",
+   "hi": "Chapter bhoolne se pehle hi main revision yaad dila dunga."
+  },
+  {
+   "id": "tour.backlog#1",
+   "trigger": "tour.backlog",
+   "mood": "cheering",
+   "en": "Pending chapters? We clear them rock by rock, without touching today's class work.",
+   "hi": "Backlog pending hai? Ek ek rock karke clear karenge, aaj ki class ka kaam chhede bina."
+  },
+  {
+   "id": "tour.mistakes#1",
+   "trigger": "tour.mistakes",
+   "mood": "proud",
+   "en": "Snap a question you got wrong. I'll bring it back until you've mastered it.",
+   "hi": "Galat hua question click karo. Jab tak master nahi hota, main wapas laata rahunga."
+  },
+  {
+   "id": "tour.gps#1",
+   "trigger": "tour.gps",
+   "mood": "thinking",
+   "en": "Every Sunday: where you stand, where you'll land, and which moves gain the most marks.",
+   "hi": "Har Sunday: tum kahan ho, kahan pahunchoge, aur kaunse moves se sabse zyada marks badhenge."
+  },
+  {
+   "id": "tour.end#1",
+   "trigger": "tour.end",
+   "mood": "happy",
+   "en": "That's all of Prepex. Now let's take step one.",
+   "hi": "Yahi hai poora Prepex. Chalo, step one lete hain."
+  },
+  {
+   "id": "quest.focus.recommend#1",
+   "trigger": "quest.focus.recommend",
+   "mood": "curious",
+   "en": "Today's quest: finish one focus session.",
+   "hi": "Aaj ka quest: ek focus session poora karo."
+  },
+  {
+   "id": "quest.focus.done#1",
+   "trigger": "quest.focus.done",
+   "mood": "celebrating",
+   "en": "Quest done. Your first focus session is in the books.",
+   "hi": "Quest done. Pehla focus session record ho gaya."
+  },
+  {
+   "id": "quest.dayclose.recommend#1",
+   "trigger": "quest.dayclose.recommend",
+   "mood": "curious",
+   "en": "Today's quest: close your day with me tonight. It takes 45 seconds.",
+   "hi": "Aaj ka quest: raat ko mere saath din close karo. 45 second lagenge."
+  },
+  {
+   "id": "quest.dayclose.done#1",
+   "trigger": "quest.dayclose.done",
+   "mood": "celebrating",
+   "en": "Day closed. This is the habit toppers swear by.",
+   "hi": "Din close. Toppers isi habit ki kasam khaate hain."
+  },
+  {
+   "id": "quest.revision.recommend#1",
+   "trigger": "quest.revision.recommend",
+   "mood": "curious",
+   "en": "Today's quest: tick a revision and tell me how well you remembered it.",
+   "hi": "Aaj ka quest: ek revision tick karo aur batao kitna yaad tha."
+  },
+  {
+   "id": "quest.revision.done#1",
+   "trigger": "quest.revision.done",
+   "mood": "celebrating",
+   "en": "Noted. I'll bring that chapter back at exactly the right time.",
+   "hi": "Note kar liya. Wo chapter sahi time pe wapas laaunga."
+  },
+  {
+   "id": "quest.mistake.recommend#1",
+   "trigger": "quest.mistake.recommend",
+   "mood": "curious",
+   "en": "Today's quest: snap one question you got wrong.",
+   "hi": "Aaj ka quest: ek galat question ki photo lo."
+  },
+  {
+   "id": "quest.mistake.done#1",
+   "trigger": "quest.mistake.done",
+   "mood": "celebrating",
+   "en": "Your first mistake is saved. That's where marks hide.",
+   "hi": "Pehli mistake save. Marks yahin chhupe hote hain."
+  },
+  {
+   "id": "quest.practice.recommend#1",
+   "trigger": "quest.practice.recommend",
+   "mood": "curious",
+   "en": "Today's quest: log the questions you solved today.",
+   "hi": "Aaj ka quest: aaj solve kiye questions log karo."
+  },
+  {
+   "id": "quest.practice.done#1",
+   "trigger": "quest.practice.done",
+   "mood": "celebrating",
+   "en": "Logged. Now I see your accuracy, not just your hours.",
+   "hi": "Log ho gaya. Ab mujhe sirf hours nahi, accuracy bhi dikhti hai."
+  },
+  {
+   "id": "quest.backlog.recommend#1",
+   "trigger": "quest.backlog.recommend",
+   "mood": "curious",
+   "en": "Today's quest: add one pending chapter to your backlog.",
+   "hi": "Aaj ka quest: ek pending chapter backlog mein daalo."
+  },
+  {
+   "id": "quest.backlog.done#1",
+   "trigger": "quest.backlog.done",
+   "mood": "celebrating",
+   "en": "Added. I'll fit it into your days without wrecking your class work.",
+   "hi": "Add ho gaya. Class ka kaam bigaade bina isse tumhare din mein fit karunga."
+  },
+  {
+   "id": "quest.friend.recommend#1",
+   "trigger": "quest.friend.recommend",
+   "mood": "curious",
+   "en": "Today's quest: follow a friend and see who's studying now.",
+   "hi": "Aaj ka quest: ek dost ko follow karo, dekho kaun abhi padh raha hai."
+  },
+  {
+   "id": "quest.friend.done#1",
+   "trigger": "quest.friend.done",
+   "mood": "celebrating",
+   "en": "Now you've got company on the climb.",
+   "hi": "Ab climb pe akele nahi ho."
+  },
+  {
+   "id": "quest.map.title#1",
+   "trigger": "quest.map.title",
+   "mood": "happy",
+   "en": "Your Prepex map",
+   "hi": "Tumhara Prepex map"
+  },
+  {
+   "id": "quest.all_done#1",
+   "trigger": "quest.all_done",
+   "mood": "celebrating",
+   "en": "All 7 done. You now know Prepex better than most people. Badge unlocked.",
+   "hi": "Saare 7 ho gaye. Ab tum Prepex ko zyada tar logon se better jaante ho. Badge unlock."
+  },
+  {
+   "id": "first_visit.planner#1",
+   "trigger": "first_visit.planner",
+   "mood": "curious",
+   "en": "This is your day. Tap Start on any task and I'll set up the timer.",
+   "hi": "Ye tumhara din hai. Kisi bhi task pe Start dabao, timer main set kar dunga."
+  },
+  {
+   "id": "first_visit.focus#1",
+   "trigger": "first_visit.focus",
+   "mood": "curious",
+   "en": "Pick a subject and start. Close the app if you need to, every second still counts.",
+   "hi": "Subject chuno aur shuru karo. App band karna pade toh karo, har second count hoga."
+  },
+  {
+   "id": "first_visit.revision#1",
+   "trigger": "first_visit.revision",
+   "mood": "curious",
+   "en": "Every chapter you finish lands here. I'll tell you which ones are going stale.",
+   "hi": "Har khatam chapter yahan aata hai. Kaunsa bhoolne lage ho, main bataunga."
+  },
+  {
+   "id": "first_visit.backlog#1",
+   "trigger": "first_visit.backlog",
+   "mood": "curious",
+   "en": "Add pending chapters here. I'll split them into small daily pieces.",
+   "hi": "Pending chapters yahan daalo. Main unhe chhote daily tukdon mein baant dunga."
+  },
+  {
+   "id": "first_visit.notebooks#1",
+   "trigger": "first_visit.notebooks",
+   "mood": "curious",
+   "en": "One notebook per chapter, made automatically. Snap, paste or upload a mistake.",
+   "hi": "Har chapter ki apni notebook, apne aap banti hai. Mistake ki photo lo, paste karo ya upload karo."
+  },
+  {
+   "id": "first_visit.rank_gps#1",
+   "trigger": "first_visit.rank_gps",
+   "mood": "curious",
+   "en": "Your weekly Rank GPS. Where you stand, and the moves that gain the most marks.",
+   "hi": "Tumhara weekly Rank GPS. Tum kahan ho, aur kaunse moves se sabse zyada marks."
+  },
+  {
+   "id": "first_visit.leaderboard#1",
+   "trigger": "first_visit.leaderboard",
+   "mood": "curious",
+   "en": "Today's board resets at midnight, the monthly one on the 1st. Everyone gets a fresh shot.",
+   "hi": "Today wala board raat 12 baje reset hota hai, monthly wala 1 tarikh ko. Sabko naya mauka."
+  },
+  {
+   "id": "first_visit.profile#1",
+   "trigger": "first_visit.profile",
+   "mood": "curious",
+   "en": "This is you on Prepex. Your accuracy and mock scores stay private unless you share them.",
+   "hi": "Ye Prepex pe tum ho. Accuracy aur mock scores private rehte hain jab tak tum share na karo."
+  },
+  {
+   "id": "first_visit.goals#1",
+   "trigger": "first_visit.goals",
+   "mood": "curious",
+   "en": "Set what you want to finish this week. I'll check it fits your time.",
+   "hi": "Is hafte kya khatam karna hai, set karo. Main check karunga time mein fit hota hai ya nahi."
+  },
+  {
+   "id": "first_visit.logs#1",
+   "trigger": "first_visit.logs",
+   "mood": "curious",
+   "en": "Did work outside Prepex? Log it here and your plan updates.",
+   "hi": "Prepex ke bahar kaam kiya? Yahan log karo, plan update ho jaayega."
+  },
+  {
+   "id": "first_visit.analytics#1",
+   "trigger": "first_visit.analytics",
+   "mood": "curious",
+   "en": "Your numbers, all in one place. Rank GPS sits at the top.",
+   "hi": "Tumhare saare numbers ek jagah. Rank GPS sabse upar hai."
+  },
+  {
+   "id": "first_visit.calendar#1",
+   "trigger": "first_visit.calendar",
+   "mood": "curious",
+   "en": "Every day you studied, coloured by hours. Tap a day to see what you did.",
+   "hi": "Har din jo padha, hours ke hisaab se colour. Kisi din pe tap karke dekho kya kiya."
+  },
+  {
+   "id": "first_visit.syllabus#1",
+   "trigger": "first_visit.syllabus",
+   "mood": "curious",
+   "en": "Every chapter and where it stands. I keep this updated from your logs.",
+   "hi": "Har chapter aur uska status. Tumhare logs se main isse update rakhta hoon."
+  },
+  {
+   "id": "first_visit.sessions#1",
+   "trigger": "first_visit.sessions",
+   "mood": "curious",
+   "en": "Every study session you've done, by day and subject.",
+   "hi": "Tumhare saare study sessions, din aur subject ke hisaab se."
+  },
+  {
+   "id": "first_visit.library#1",
+   "trigger": "first_visit.library",
+   "mood": "curious",
+   "en": "Notes, formula sheets and lectures for every chapter.",
+   "hi": "Har chapter ke notes, formula sheets aur lectures."
+  },
+  {
+   "id": "first_visit.timetable#1",
+   "trigger": "first_visit.timetable",
+   "mood": "curious",
+   "en": "This is your week. Change it any time and your plans follow.",
+   "hi": "Ye tumhara hafta hai. Kabhi bhi badlo, plans saath mein badlenge."
+  },
+  {
+   "id": "empty.planner.no_slots#1",
+   "trigger": "empty.planner.no_slots",
+   "mood": "calm",
+   "en": "No study slots today. Add some to your timetable and I'll plan them.",
+   "hi": "Aaj koi study slot nahi hai. Timetable mein add karo, main plan kar dunga."
+  },
+  {
+   "id": "empty.backlog#1",
+   "trigger": "empty.backlog",
+   "mood": "calm",
+   "en": "No backlog. Either you're on top of things or you haven't told me yet.",
+   "hi": "Koi backlog nahi. Ya toh sab control mein hai, ya tumne abhi bataya nahi."
+  },
+  {
+   "id": "empty.notebooks#1",
+   "trigger": "empty.notebooks",
+   "mood": "calm",
+   "en": "No mistakes saved yet. The next question you get wrong, snap it.",
+   "hi": "Abhi koi mistake save nahi. Agla galat question, photo le lena."
+  },
+  {
+   "id": "empty.revision#1",
+   "trigger": "empty.revision",
+   "mood": "calm",
+   "en": "Nothing to revise yet. Finish a chapter and I'll start its revision ladder.",
+   "hi": "Abhi revise karne ko kuch nahi. Ek chapter khatam karo, main uska revision ladder shuru karunga."
+  },
+  {
+   "id": "empty.sessions#1",
+   "trigger": "empty.sessions",
+   "mood": "calm",
+   "en": "Nothing here yet. Start a focus session and it shows up.",
+   "hi": "Abhi kuch nahi. Focus session shuru karo, yahan dikhega."
+  },
+  {
+   "id": "empty.leaderboard.following#1",
+   "trigger": "empty.leaderboard.following",
+   "mood": "calm",
+   "en": "You're not following anyone yet. Find your friends and climb together.",
+   "hi": "Abhi kisi ko follow nahi kiya. Dosto ko dhoondo aur saath climb karo."
+  },
+  {
+   "id": "empty.mocks#1",
+   "trigger": "empty.mocks",
+   "mood": "calm",
+   "en": "No mocks logged. Log your next coaching test and I'll show where the marks went.",
+   "hi": "Koi mock log nahi. Agla coaching test log karo, main dikhaunga marks kahan gaye."
+  },
+  {
+   "id": "empty.rank_gps.locked#1",
+   "trigger": "empty.rank_gps.locked",
+   "mood": "calm",
+   "en": "Study with me for 7 days and I'll unlock your Rank GPS.",
+   "hi": "7 din mere saath padho, Rank GPS unlock kar dunga."
+  },
+  {
+   "id": "empty.search#1",
+   "trigger": "empty.search",
+   "mood": "calm",
+   "en": "Nothing matches that. Try a chapter name.",
+   "hi": "Kuch nahi mila. Chapter ka naam try karo."
+  },
+  {
+   "id": "home.morning#1",
+   "trigger": "home.morning",
+   "mood": "happy",
+   "en": "Morning. {n} tasks today, first one's {subject}. Ready?",
+   "hi": "Good morning. Aaj {n} tasks hain, pehla {subject}. Ready?"
+  },
+  {
+   "id": "home.morning#2",
+   "trigger": "home.morning",
+   "mood": "cheering",
+   "en": "New day, new step. Your plan's ready.",
+   "hi": "Naya din, naya step. Plan ready hai."
+  },
+  {
+   "id": "home.morning#3",
+   "trigger": "home.morning",
+   "mood": "calm",
+   "en": "{n} tasks, revision at {time}. Let's start small.",
+   "hi": "{n} tasks, revision {time} baje. Chhote se shuru karte hain."
+  },
+  {
+   "id": "home.morning#4",
+   "trigger": "home.morning",
+   "mood": "proud",
+   "en": "Yesterday you did {hours}h. Today, let's just match it.",
+   "hi": "Kal {hours} ghante padhe. Aaj bas utna match karte hain."
+  },
+  {
+   "id": "home.midday#1",
+   "trigger": "home.midday",
+   "mood": "focused",
+   "en": "{done} of {n} done. Keep the rhythm.",
+   "hi": "{n} mein se {done} ho gaye. Rhythm bana ke rakho."
+  },
+  {
+   "id": "home.midday#2",
+   "trigger": "home.midday",
+   "mood": "proud",
+   "en": "You're ahead of yesterday at this time.",
+   "hi": "Kal is time se aage chal rahe ho."
+  },
+  {
+   "id": "home.midday#3",
+   "trigger": "home.midday",
+   "mood": "cheering",
+   "en": "Halfway there. The second half always feels shorter.",
+   "hi": "Aadha ho gaya. Doosra half hamesha chhota lagta hai."
+  },
+  {
+   "id": "home.evening#1",
+   "trigger": "home.evening",
+   "mood": "curious",
+   "en": "Close your day with me?",
+   "hi": "Mere saath din close karein?"
+  },
+  {
+   "id": "home.evening#2",
+   "trigger": "home.evening",
+   "mood": "cheering",
+   "en": "{left} tasks left. One more push, then rest.",
+   "hi": "{left} task bache hain. Ek aur push, phir aaraam."
+  },
+  {
+   "id": "home.evening#3",
+   "trigger": "home.evening",
+   "mood": "happy",
+   "en": "Good day so far. Let's wrap it up properly.",
+   "hi": "Ab tak achha din raha. Achhe se wrap up karte hain."
+  },
+  {
+   "id": "home.night#1",
+   "trigger": "home.night",
+   "mood": "sleepy",
+   "en": "It's late. Sleep is part of the plan too. Tomorrow's ready.",
+   "hi": "Late ho gaya. Neend bhi plan ka hissa hai. Kal ka plan ready hai."
+  },
+  {
+   "id": "home.night#2",
+   "trigger": "home.night",
+   "mood": "sleepy",
+   "en": "Your brain files today's work while you sleep. Go to bed.",
+   "hi": "Sote waqt dimaag aaj ka kaam save karta hai. So jao."
+  },
+  {
+   "id": "home.night#3",
+   "trigger": "home.night",
+   "mood": "sleepy",
+   "en": "I'm sleepy, and so should you be. See you tomorrow.",
+   "hi": "Mujhe neend aa rahi hai, tumhe bhi aani chahiye. Kal milte hain."
+  },
+  {
+   "id": "home.plan_done#1",
+   "trigger": "home.plan_done",
+   "mood": "celebrating",
+   "en": "Full plan done. That's what consistency looks like.",
+   "hi": "Poora plan done. Consistency aisi dikhti hai."
+  },
+  {
+   "id": "home.plan_done#2",
+   "trigger": "home.plan_done",
+   "mood": "proud",
+   "en": "Everything ticked. Rest now, or take a suggested extra if you want.",
+   "hi": "Sab tick ho gaya. Ab aaraam, ya mann ho toh ek suggested extra."
+  },
+  {
+   "id": "home.plan_done#3",
+   "trigger": "home.plan_done",
+   "mood": "celebrating",
+   "en": "Every task done. We climbed a full step today.",
+   "hi": "Saare task done. Aaj poora ek step chadh gaye."
+  },
+  {
+   "id": "home.no_plan#1",
+   "trigger": "home.no_plan",
+   "mood": "curious",
+   "en": "No plan today. Want something useful for {mins} minutes?",
+   "hi": "Aaj koi plan nahi. {mins} minute ke liye kuch kaam ka suggest karun?"
+  },
+  {
+   "id": "home.no_plan#2",
+   "trigger": "home.no_plan",
+   "mood": "calm",
+   "en": "Free day? A quick revision keeps chapters fresh.",
+   "hi": "Free din hai? Ek quick revision chapters fresh rakhta hai."
+  },
+  {
+   "id": "home.no_goals#1",
+   "trigger": "home.no_goals",
+   "mood": "thinking",
+   "en": "No goals for this week yet. Give me 2 minutes and we'll set them together.",
+   "hi": "Is hafte ke goals nahi hain. 2 minute do, saath mein set karte hain."
+  },
+  {
+   "id": "home.no_goals#2",
+   "trigger": "home.no_goals",
+   "mood": "curious",
+   "en": "Plans get smarter with goals. Let's set this week's.",
+   "hi": "Goals ke saath plan smart hota hai. Is hafte ke set karte hain."
+  },
+  {
+   "id": "home.weekend#1",
+   "trigger": "home.weekend",
+   "mood": "happy",
+   "en": "Weekend. Good day to clear a backlog rock.",
+   "hi": "Weekend hai. Ek backlog rock clear karne ka achha din."
+  },
+  {
+   "id": "home.welcome_back#1",
+   "trigger": "home.welcome_back",
+   "mood": "waving",
+   "en": "Welcome back. I kept your place. Let's take one small step.",
+   "hi": "Welcome back. Tumhari jagah sambhal ke rakhi thi. Ek chhota step lete hain."
+  },
+  {
+   "id": "home.welcome_back#2",
+   "trigger": "home.welcome_back",
+   "mood": "happy",
+   "en": "Good to see you. No catching up, just today.",
+   "hi": "Achha laga dekh ke. Purana pending nahi, bas aaj."
+  },
+  {
+   "id": "home.welcome_back#3",
+   "trigger": "home.welcome_back",
+   "mood": "calm",
+   "en": "You're back, and that's what matters. Today's plan is light to start.",
+   "hi": "Wapas aa gaye, yahi maayne rakhta hai. Aaj ka plan halka rakha hai."
+  },
+  {
+   "id": "ask.title#1",
+   "trigger": "ask.title",
+   "mood": "curious",
+   "en": "What should I do now?",
+   "hi": "Ab kya karun?"
+  },
+  {
+   "id": "ask.next.task#1",
+   "trigger": "ask.next.task",
+   "mood": "focused",
+   "en": "Next up: {task}. Shall I start the timer?",
+   "hi": "Agla: {task}. Timer shuru karun?"
+  },
+  {
+   "id": "ask.next.revision#1",
+   "trigger": "ask.next.revision",
+   "mood": "thinking",
+   "en": "{chapter} is due for revision. 30 minutes, then you're free.",
+   "hi": "{chapter} ka revision due hai. 30 minute, phir free."
+  },
+  {
+   "id": "ask.next.backlog#1",
+   "trigger": "ask.next.backlog",
+   "mood": "cheering",
+   "en": "Knock out a backlog rock: {chapter}, about {mins} minutes.",
+   "hi": "Ek backlog rock todo: {chapter}, lagbhag {mins} minute."
+  },
+  {
+   "id": "ask.next.mistakes#1",
+   "trigger": "ask.next.mistakes",
+   "mood": "curious",
+   "en": "{n} mistakes are due for review. Quick round?",
+   "hi": "{n} mistakes review ke liye due hain. Ek quick round?"
+  },
+  {
+   "id": "ask.next.rest#1",
+   "trigger": "ask.next.rest",
+   "mood": "sleepy",
+   "en": "You've done today's work. Rest is the right move now.",
+   "hi": "Aaj ka kaam ho gaya. Ab aaraam hi sahi move hai."
+  },
+  {
+   "id": "playbook.0#1",
+   "trigger": "playbook.0",
+   "mood": "thinking",
+   "en": "Pexo's playbook",
+   "hi": "Pexo ki playbook"
+  },
+  {
+   "id": "playbook.1#1",
+   "trigger": "playbook.1",
+   "mood": "thinking",
+   "en": "Morning: check today's plan.",
+   "hi": "Subah: aaj ka plan dekho."
+  },
+  {
+   "id": "playbook.2#1",
+   "trigger": "playbook.2",
+   "mood": "thinking",
+   "en": "Study in focus sessions. Every second counts.",
+   "hi": "Focus sessions mein padho. Har second count hota hai."
+  },
+  {
+   "id": "playbook.3#1",
+   "trigger": "playbook.3",
+   "mood": "thinking",
+   "en": "Revise in your revision slot, nowhere else.",
+   "hi": "Revision sirf revision slot mein."
+  },
+  {
+   "id": "playbook.4#1",
+   "trigger": "playbook.4",
+   "mood": "thinking",
+   "en": "Snap every question you get wrong.",
+   "hi": "Har galat question ki photo lo."
+  },
+  {
+   "id": "playbook.5#1",
+   "trigger": "playbook.5",
+   "mood": "thinking",
+   "en": "Close your day at night.",
+   "hi": "Raat ko din close karo."
+  },
+  {
+   "id": "playbook.6#1",
+   "trigger": "playbook.6",
+   "mood": "thinking",
+   "en": "Sunday: review the week and set new goals.",
+   "hi": "Sunday: hafta review karo, naye goals set karo."
+  },
+  {
+   "id": "focus.start#1",
+   "trigger": "focus.start",
+   "mood": "cheering",
+   "en": "Let's go. I'll study with you.",
+   "hi": "Chalo. Main bhi saath padhta hoon."
+  },
+  {
+   "id": "focus.start#2",
+   "trigger": "focus.start",
+   "mood": "focused",
+   "en": "Phone face down. {subject}, here we come.",
+   "hi": "Phone ulta rakho. {subject}, aa rahe hain."
+  },
+  {
+   "id": "focus.start#3",
+   "trigger": "focus.start",
+   "mood": "calm",
+   "en": "One session at a time. That's the whole secret.",
+   "hi": "Ek baar mein ek session. Bas yahi raaz hai."
+  },
+  {
+   "id": "focus.start#4",
+   "trigger": "focus.start",
+   "mood": "focused",
+   "en": "Timer's running. Every second counts, even if you switch apps.",
+   "hi": "Timer chal raha hai. App badlo toh bhi har second count hoga."
+  },
+  {
+   "id": "focus.break#1",
+   "trigger": "focus.break",
+   "mood": "calm",
+   "en": "Break time. Stand up, drink water, look far away.",
+   "hi": "Break time. Utho, paani piyo, door dekho."
+  },
+  {
+   "id": "focus.break#2",
+   "trigger": "focus.break",
+   "mood": "calm",
+   "en": "Stretch with me. Back in 5.",
+   "hi": "Mere saath stretch karo. 5 minute mein wapas."
+  },
+  {
+   "id": "focus.break#3",
+   "trigger": "focus.break",
+   "mood": "calm",
+   "en": "Good block. Rest your eyes for a bit.",
+   "hi": "Achha block tha. Thodi der aankhon ko aaraam do."
+  },
+  {
+   "id": "focus.end.short#1",
+   "trigger": "focus.end.short",
+   "mood": "happy",
+   "en": "Short but real. It all adds up.",
+   "hi": "Chhota tha par asli tha. Sab judta hai."
+  },
+  {
+   "id": "focus.end.short#2",
+   "trigger": "focus.end.short",
+   "mood": "happy",
+   "en": "That counts. Small sessions build big days.",
+   "hi": "Ye count hota hai. Chhote sessions se bade din bante hain."
+  },
+  {
+   "id": "focus.end.short#3",
+   "trigger": "focus.end.short",
+   "mood": "happy",
+   "en": "Done. Want to go one more round?",
+   "hi": "Ho gaya. Ek round aur?"
+  },
+  {
+   "id": "focus.end.long#1",
+   "trigger": "focus.end.long",
+   "mood": "proud",
+   "en": "{mins} focused minutes. That's real work.",
+   "hi": "{mins} focused minute. Ye asli kaam hai."
+  },
+  {
+   "id": "focus.end.long#2",
+   "trigger": "focus.end.long",
+   "mood": "proud",
+   "en": "Solid session. I found something for you.",
+   "hi": "Solid session. Tumhare liye kuch dhoondh ke laaya hoon."
+  },
+  {
+   "id": "focus.end.long#3",
+   "trigger": "focus.end.long",
+   "mood": "proud",
+   "en": "Nicely done. Your heatmap just got darker.",
+   "hi": "Badhiya. Tumhara heatmap thoda aur gehra ho gaya."
+  },
+  {
+   "id": "focus.end.long#4",
+   "trigger": "focus.end.long",
+   "mood": "proud",
+   "en": "That's a step. Log what you did and we're square.",
+   "hi": "Ek step ho gaya. Kya kiya log kar do, hisaab barabar."
+  },
+  {
+   "id": "focus.end.great#1",
+   "trigger": "focus.end.great",
+   "mood": "celebrating",
+   "en": "{mins} minutes straight. That's topper focus.",
+   "hi": "{mins} minute lagataar. Ye topper wala focus hai."
+  },
+  {
+   "id": "focus.end.great#2",
+   "trigger": "focus.end.great",
+   "mood": "celebrating",
+   "en": "Huge session. Take a proper break now, you earned it.",
+   "hi": "Bada session. Ab proper break lo, deserve karte ho."
+  },
+  {
+   "id": "focus.end.great#3",
+   "trigger": "focus.end.great",
+   "mood": "celebrating",
+   "en": "Deep work like that moves ranks.",
+   "hi": "Aisa deep work rank badalta hai."
+  },
+  {
+   "id": "find.intro#1",
+   "trigger": "find.intro",
+   "mood": "curious",
+   "en": "I wandered off while you studied. Found this:",
+   "hi": "Tum padh rahe the, main ghoom aaya. Ye mila:"
+  },
+  {
+   "id": "find.intro#2",
+   "trigger": "find.intro",
+   "mood": "curious",
+   "en": "Look what I brought back from {chapter}:",
+   "hi": "Dekho {chapter} se kya laaya:"
+  },
+  {
+   "id": "find.intro#3",
+   "trigger": "find.intro",
+   "mood": "curious",
+   "en": "A little find for the road:",
+   "hi": "Raste ke liye ek chhoti si cheez:"
+  },
+  {
+   "id": "find.intro#4",
+   "trigger": "find.intro",
+   "mood": "curious",
+   "en": "Toppers keep this one in mind:",
+   "hi": "Toppers ye yaad rakhte hain:"
+  },
+  {
+   "id": "focus.long_session.check#1",
+   "trigger": "focus.long_session.check",
+   "mood": "thinking",
+   "en": "You were away a long time. Keep all of it, or trim?",
+   "hi": "Kaafi der door rahe. Saara time rakhein ya trim karein?"
+  },
+  {
+   "id": "focus.friend_joined#1",
+   "trigger": "focus.friend_joined",
+   "mood": "happy",
+   "en": "{friend} started studying with you.",
+   "hi": "{friend} ne tumhare saath padhna shuru kiya."
+  },
+  {
+   "id": "task.done#1",
+   "trigger": "task.done",
+   "mood": "happy",
+   "en": "Done.",
+   "hi": "Ho gaya."
+  },
+  {
+   "id": "task.done#2",
+   "trigger": "task.done",
+   "mood": "happy",
+   "en": "Ticked. Next.",
+   "hi": "Tick. Agla."
+  },
+  {
+   "id": "task.done#3",
+   "trigger": "task.done",
+   "mood": "happy",
+   "en": "One down.",
+   "hi": "Ek ho gaya."
+  },
+  {
+   "id": "task.done#4",
+   "trigger": "task.done",
+   "mood": "happy",
+   "en": "Nice and clean.",
+   "hi": "Saaf kaam."
+  },
+  {
+   "id": "task.done#5",
+   "trigger": "task.done",
+   "mood": "happy",
+   "en": "That's how it's done.",
+   "hi": "Aise hota hai."
+  },
+  {
+   "id": "task.done.revision#1",
+   "trigger": "task.done.revision",
+   "mood": "proud",
+   "en": "Revision logged. {chapter} stays fresh.",
+   "hi": "Revision log. {chapter} fresh rahega."
+  },
+  {
+   "id": "task.rating.easy#1",
+   "trigger": "task.rating.easy",
+   "mood": "proud",
+   "en": "Easy? Then I'll wait longer before bringing it back.",
+   "hi": "Easy tha? Toh wapas laane mein zyada time dunga."
+  },
+  {
+   "id": "task.rating.ok#1",
+   "trigger": "task.rating.ok",
+   "mood": "happy",
+   "en": "Good. Next revision in a few days.",
+   "hi": "Theek hai. Agla revision kuch din mein."
+  },
+  {
+   "id": "task.rating.hard#1",
+   "trigger": "task.rating.hard",
+   "mood": "calm",
+   "en": "No problem. We'll see it again sooner. That's how it sticks.",
+   "hi": "Koi baat nahi. Jaldi wapas dekhenge. Aise hi yaad rehta hai."
+  },
+  {
+   "id": "task.done.practice.high#1",
+   "trigger": "task.done.practice.high",
+   "mood": "celebrating",
+   "en": "{correct} out of {attempted}. That's sharp.",
+   "hi": "{attempted} mein se {correct}. Ekdum sharp."
+  },
+  {
+   "id": "task.done.practice.mid#1",
+   "trigger": "task.done.practice.mid",
+   "mood": "thinking",
+   "en": "{correct} out of {attempted}. The wrong ones are where the marks are. Snap one?",
+   "hi": "{attempted} mein se {correct}. Galat waalon mein hi marks hain. Ek ki photo lo?"
+  },
+  {
+   "id": "task.done.practice.low#1",
+   "trigger": "task.done.practice.low",
+   "mood": "calm",
+   "en": "Tough set. That's exactly why we practise. Save the ones that hurt.",
+   "hi": "Tough set tha. Isiliye toh practice karte hain. Jo chubhe, unhe save karo."
+  },
+  {
+   "id": "task.done.lecture#1",
+   "trigger": "task.done.lecture",
+   "mood": "happy",
+   "en": "Lecture done. I'll schedule its first revision for tomorrow.",
+   "hi": "Lecture done. Kal iska pehla revision rakh dunga."
+  },
+  {
+   "id": "task.done.all#1",
+   "trigger": "task.done.all",
+   "mood": "celebrating",
+   "en": "Every task done. Full step climbed.",
+   "hi": "Saare task done. Poora step chadh gaye."
+  },
+  {
+   "id": "task.undo#1",
+   "trigger": "task.undo",
+   "mood": "calm",
+   "en": "Undone. No worries.",
+   "hi": "Undo ho gaya. Tension nahi."
+  },
+  {
+   "id": "task.moved_tomorrow#1",
+   "trigger": "task.moved_tomorrow",
+   "mood": "calm",
+   "en": "Moved to tomorrow. It'll be waiting.",
+   "hi": "Kal pe shift. Wahin milega."
+  },
+  {
+   "id": "backlog.added#1",
+   "trigger": "backlog.added",
+   "mood": "focused",
+   "en": "Added. I'll fit it in without touching your class work.",
+   "hi": "Add ho gaya. Class ka kaam chhede bina fit karunga."
+  },
+  {
+   "id": "backlog.cleared#1",
+   "trigger": "backlog.cleared",
+   "mood": "celebrating",
+   "en": "Rock smashed. {left} to go.",
+   "hi": "Rock toot gaya. {left} baaki."
+  },
+  {
+   "id": "backlog.cleared#2",
+   "trigger": "backlog.cleared",
+   "mood": "celebrating",
+   "en": "{chapter} cleared. That one's been bothering you.",
+   "hi": "{chapter} clear. Ye kab se pareshan kar raha tha."
+  },
+  {
+   "id": "backlog.cleared#3",
+   "trigger": "backlog.cleared",
+   "mood": "celebrating",
+   "en": "Backlog down to {hours} hours. It's shrinking.",
+   "hi": "Backlog ab {hours} ghante. Ghat raha hai."
+  },
+  {
+   "id": "backlog.cleared#4",
+   "trigger": "backlog.cleared",
+   "mood": "celebrating",
+   "en": "Cleared. It goes onto your revision ladder now.",
+   "hi": "Clear. Ab ye revision ladder pe jaayega."
+  },
+  {
+   "id": "backlog.last_rock#1",
+   "trigger": "backlog.last_rock",
+   "mood": "celebrating",
+   "en": "Last rock gone. Backlog clear. Remember this feeling.",
+   "hi": "Aakhri rock bhi gaya. Backlog clear. Ye feeling yaad rakhna."
+  },
+  {
+   "id": "backlog.big_calm#1",
+   "trigger": "backlog.big_calm",
+   "mood": "calm",
+   "en": "That's a lot, I know. We'll do it piece by piece. Today's piece is small.",
+   "hi": "Bahut hai, pata hai. Tukdon mein karenge. Aaj ka tukda chhota hai."
+  },
+  {
+   "id": "backlog.infeasible#1",
+   "trigger": "backlog.infeasible",
+   "mood": "thinking",
+   "en": "That date is too tight for your free time. Here are three honest fixes.",
+   "hi": "Free time ke hisaab se ye date bahut tight hai. Teen sachche options ye rahe."
+  },
+  {
+   "id": "backlog.skip_lane#1",
+   "trigger": "backlog.skip_lane",
+   "mood": "thinking",
+   "en": "Skipping this for now is the smart call. Your time is worth more elsewhere.",
+   "hi": "Abhi isse skip karna smart hai. Tumhara time kahin aur zyada kaam aayega."
+  },
+  {
+   "id": "backlog.growing#1",
+   "trigger": "backlog.growing",
+   "mood": "calm",
+   "en": "Backlog grew a little this week. No panic, I've adjusted the plan.",
+   "hi": "Is hafte backlog thoda badha. Panic nahi, plan adjust kar diya hai."
+  },
+  {
+   "id": "mistake.saved#1",
+   "trigger": "mistake.saved",
+   "mood": "proud",
+   "en": "Saved to {chapter}. I'll bring it back in a day.",
+   "hi": "{chapter} mein save. Ek din mein wapas laaunga."
+  },
+  {
+   "id": "mistake.saved#2",
+   "trigger": "mistake.saved",
+   "mood": "proud",
+   "en": "Got it. That's one less mark to lose next time.",
+   "hi": "Mil gaya. Agli baar ek mark kam jaayega."
+  },
+  {
+   "id": "mistake.saved#3",
+   "trigger": "mistake.saved",
+   "mood": "proud",
+   "en": "Saved. Add the fix line when you can, it's the part you'll reread.",
+   "hi": "Save ho gaya. Fix line baad mein likh dena, wahi dobara padhoge."
+  },
+  {
+   "id": "mistake.review_due#1",
+   "trigger": "mistake.review_due",
+   "mood": "curious",
+   "en": "{n} mistakes want a rematch.",
+   "hi": "{n} mistakes rematch maang rahi hain."
+  },
+  {
+   "id": "mistake.review.got#1",
+   "trigger": "mistake.review.got",
+   "mood": "happy",
+   "en": "Got it right. One step closer to mastering it.",
+   "hi": "Sahi kiya. Master hone ke ek step paas."
+  },
+  {
+   "id": "mistake.review.not_yet#1",
+   "trigger": "mistake.review.not_yet",
+   "mood": "calm",
+   "en": "Not yet. That's fine, it comes back tomorrow.",
+   "hi": "Abhi nahi. Theek hai, kal wapas aayega."
+  },
+  {
+   "id": "mistake.mastered#1",
+   "trigger": "mistake.mastered",
+   "mood": "celebrating",
+   "en": "Mastered. Right three times on three different days. It's yours now.",
+   "hi": "Master. Teen alag din, teen baar sahi. Ab ye tumhara hai."
+  },
+  {
+   "id": "mistake.reason.silly#1",
+   "trigger": "mistake.reason.silly",
+   "mood": "thinking",
+   "en": "Silly mistakes are the cheapest marks to win back.",
+   "hi": "Silly mistakes sabse sasta wapas milne waale marks hain."
+  },
+  {
+   "id": "mistake.batch.done#1",
+   "trigger": "mistake.batch.done",
+   "mood": "proud",
+   "en": "{n} mistakes saved from this test. Now they work for you.",
+   "hi": "Is test se {n} mistakes save. Ab ye tumhare kaam aayengi."
+  },
+  {
+   "id": "log.quick#1",
+   "trigger": "log.quick",
+   "mood": "happy",
+   "en": "Logged.",
+   "hi": "Log ho gaya."
+  },
+  {
+   "id": "log.quick#2",
+   "trigger": "log.quick",
+   "mood": "happy",
+   "en": "Noted. Your plan knows.",
+   "hi": "Note kar liya. Plan ko pata hai."
+  },
+  {
+   "id": "log.quick#3",
+   "trigger": "log.quick",
+   "mood": "happy",
+   "en": "In the books.",
+   "hi": "Record ho gaya."
+  },
+  {
+   "id": "log.mock#1",
+   "trigger": "log.mock",
+   "mood": "thinking",
+   "en": "Mock logged. Add the mistakes and I'll show where the marks went.",
+   "hi": "Mock log ho gaya. Mistakes add karo, main dikhaunga marks kahan gaye."
+  },
+  {
+   "id": "log.mock.up#1",
+   "trigger": "log.mock.up",
+   "mood": "celebrating",
+   "en": "Up {delta} marks from your last mock. That's the work showing.",
+   "hi": "Pichle mock se {delta} marks zyada. Mehnat dikh rahi hai."
+  },
+  {
+   "id": "log.mock.down#1",
+   "trigger": "log.mock.down",
+   "mood": "calm",
+   "en": "Lower this time. One mock doesn't define you. Let's see what went wrong.",
+   "hi": "Is baar kam aaye. Ek mock tumhe define nahi karta. Dekhte hain kya galat hua."
+  },
+  {
+   "id": "log.class_covered#1",
+   "trigger": "log.class_covered",
+   "mood": "curious",
+   "en": "What did class cover today? One tap.",
+   "hi": "Aaj class mein kya hua? Ek tap."
+  },
+  {
+   "id": "dayclose.prompt#1",
+   "trigger": "dayclose.prompt",
+   "mood": "curious",
+   "en": "Ready to close the day?",
+   "hi": "Din close karein?"
+  },
+  {
+   "id": "dayclose.prompt#2",
+   "trigger": "dayclose.prompt",
+   "mood": "curious",
+   "en": "45 seconds and your day's wrapped.",
+   "hi": "45 second aur din wrap."
+  },
+  {
+   "id": "dayclose.prompt#3",
+   "trigger": "dayclose.prompt",
+   "mood": "curious",
+   "en": "Let's put today to bed.",
+   "hi": "Aaj ko sula dete hain."
+  },
+  {
+   "id": "dayclose.reward.great#1",
+   "trigger": "dayclose.reward.great",
+   "mood": "celebrating",
+   "en": "{hours}h, {tasks} tasks. That's a step up.",
+   "hi": "{hours} ghante, {tasks} tasks. Ek step upar."
+  },
+  {
+   "id": "dayclose.reward.ok#1",
+   "trigger": "dayclose.reward.ok",
+   "mood": "proud",
+   "en": "Not your biggest day, but you showed up. That's the streak.",
+   "hi": "Sabse bada din nahi tha, par aaye. Yahi streak hai."
+  },
+  {
+   "id": "dayclose.reward.zero#1",
+   "trigger": "dayclose.reward.zero",
+   "mood": "calm",
+   "en": "Quiet day. It happens. Tomorrow's plan is ready, and it's light.",
+   "hi": "Shaant din tha. Hota hai. Kal ka plan ready hai, aur halka hai."
+  },
+  {
+   "id": "dayclose.teaser.revision#1",
+   "trigger": "dayclose.teaser.revision",
+   "mood": "curious",
+   "en": "Tomorrow: your first revision. I'll show you how the memory ladder works.",
+   "hi": "Kal: tumhara pehla revision. Memory ladder kaise kaam karta hai, dikhaunga."
+  },
+  {
+   "id": "dayclose.teaser#1",
+   "trigger": "dayclose.teaser",
+   "mood": "sleepy",
+   "en": "Tomorrow starts with {task}. Sleep well.",
+   "hi": "Kal {task} se shuru. Achhe se sona."
+  },
+  {
+   "id": "sunday.intro#1",
+   "trigger": "sunday.intro",
+   "mood": "happy",
+   "en": "Here's your week.",
+   "hi": "Ye raha tumhara hafta."
+  },
+  {
+   "id": "sunday.tip#1",
+   "trigger": "sunday.tip",
+   "mood": "thinking",
+   "en": "Pexo's tip of the week:",
+   "hi": "Is hafte ka Pexo tip:"
+  },
+  {
+   "id": "pledge.prompt#1",
+   "trigger": "pledge.prompt",
+   "mood": "curious",
+   "en": "Make me a promise for this week. Hours and questions. I'll check in on Wednesday.",
+   "hi": "Is hafte ka ek promise karo. Hours aur questions. Budhwar ko check karunga."
+  },
+  {
+   "id": "pledge.mid.ahead#1",
+   "trigger": "pledge.mid.ahead",
+   "mood": "proud",
+   "en": "Wednesday check: you're ahead of your promise.",
+   "hi": "Budhwar check: promise se aage chal rahe ho."
+  },
+  {
+   "id": "pledge.mid.behind#1",
+   "trigger": "pledge.mid.behind",
+   "mood": "calm",
+   "en": "Wednesday check: a bit behind. Four days is plenty to catch up.",
+   "hi": "Budhwar check: thoda peeche. Chaar din kaafi hain."
+  },
+  {
+   "id": "pledge.hit#1",
+   "trigger": "pledge.hit",
+   "mood": "celebrating",
+   "en": "Promise kept. That's who you are now.",
+   "hi": "Promise poora. Ab tum aise hi ho."
+  },
+  {
+   "id": "pledge.missed#1",
+   "trigger": "pledge.missed",
+   "mood": "calm",
+   "en": "Didn't hit it this week. Let's set one you can beat.",
+   "hi": "Is hafte nahi hua. Aisa set karte hain jo tod sako."
+  },
+  {
+   "id": "streak.milestone#1",
+   "trigger": "streak.milestone",
+   "mood": "proud",
+   "en": "{days} days in a row. Look at that.",
+   "hi": "Lagataar {days} din. Dekho toh."
+  },
+  {
+   "id": "streak.7#1",
+   "trigger": "streak.7",
+   "mood": "celebrating",
+   "en": "A full week. Habits start here.",
+   "hi": "Poora ek hafta. Habit yahin se banti hai."
+  },
+  {
+   "id": "streak.30#1",
+   "trigger": "streak.30",
+   "mood": "celebrating",
+   "en": "30 days. Most people quit by day 5. You didn't.",
+   "hi": "30 din. Zyada tar log 5ve din chhod dete hain. Tumne nahi chhoda."
+  },
+  {
+   "id": "streak.100#1",
+   "trigger": "streak.100",
+   "mood": "celebrating",
+   "en": "100 days. I don't have words. Just respect.",
+   "hi": "100 din. Shabd nahi hain. Bas respect."
+  },
+  {
+   "id": "streak.freeze_used#1",
+   "trigger": "streak.freeze_used",
+   "mood": "calm",
+   "en": "Your streak was protected. One freeze used, no harm done.",
+   "hi": "Streak bach gayi. Ek freeze use hua, koi nuksaan nahi."
+  },
+  {
+   "id": "streak.freeze_earned#1",
+   "trigger": "streak.freeze_earned",
+   "mood": "happy",
+   "en": "7 days straight. You earned a streak freeze.",
+   "hi": "Lagataar 7 din. Ek streak freeze kama liya."
+  },
+  {
+   "id": "level.up#1",
+   "trigger": "level.up",
+   "mood": "celebrating",
+   "en": "Level {level}. You're a {title} now.",
+   "hi": "Level {level}. Ab tum {title} ho."
+  },
+  {
+   "id": "level.band#1",
+   "trigger": "level.band",
+   "mood": "proud",
+   "en": "New title: {title}. I can feel the difference.",
+   "hi": "Naya title: {title}. Farak mehsoos ho raha hai."
+  },
+  {
+   "id": "badge.earned#1",
+   "trigger": "badge.earned",
+   "mood": "celebrating",
+   "en": "Badge unlocked: {badge}.",
+   "hi": "Badge unlock: {badge}."
+  },
+  {
+   "id": "badge.hidden#1",
+   "trigger": "badge.hidden",
+   "mood": "celebrating",
+   "en": "A hidden badge. Not everyone finds this one.",
+   "hi": "Hidden badge. Ye har kisi ko nahi milta."
+  },
+  {
+   "id": "record.new#1",
+   "trigger": "record.new",
+   "mood": "proud",
+   "en": "New personal record: {record}.",
+   "hi": "Naya personal record: {record}."
+  },
+  {
+   "id": "gps.ready#1",
+   "trigger": "gps.ready",
+   "mood": "curious",
+   "en": "Your Rank GPS is ready. Let's see the route.",
+   "hi": "Rank GPS ready hai. Route dekhte hain."
+  },
+  {
+   "id": "gps.up#1",
+   "trigger": "gps.up",
+   "mood": "proud",
+   "en": "Readiness up {delta}. Here's why.",
+   "hi": "Readiness {delta} badhi. Kyun, ye dekho."
+  },
+  {
+   "id": "gps.down#1",
+   "trigger": "gps.down",
+   "mood": "calm",
+   "en": "Down {delta} this week. Here's the fix.",
+   "hi": "Is hafte {delta} kam. Fix ye raha."
+  },
+  {
+   "id": "gps.move#1",
+   "trigger": "gps.move",
+   "mood": "thinking",
+   "en": "Route update: {move}.",
+   "hi": "Route update: {move}."
+  },
+  {
+   "id": "gps.locked_progress#1",
+   "trigger": "gps.locked_progress",
+   "mood": "curious",
+   "en": "{n} more study days and your GPS unlocks.",
+   "hi": "{n} aur study din, phir GPS unlock."
+  },
+  {
+   "id": "nudge.no_mistakes#1",
+   "trigger": "nudge.no_mistakes",
+   "mood": "calm",
+   "en": "No mistakes saved in 3 days. Your tests had wrong answers, right? That's where marks hide.",
+   "hi": "3 din se koi mistake save nahi. Test mein galat toh hue honge? Marks wahin chhupe hain."
+  },
+  {
+   "id": "nudge.lecture_heavy#1",
+   "trigger": "nudge.lecture_heavy",
+   "mood": "thinking",
+   "en": "Lots of lectures this week, few questions. Let's solve 20 PYQs today.",
+   "hi": "Is hafte lectures zyada, questions kam. Aaj 20 PYQ solve karte hain."
+  },
+  {
+   "id": "nudge.revision_skipped#1",
+   "trigger": "nudge.revision_skipped",
+   "mood": "thinking",
+   "en": "Your revision slot slipped twice. Want me to move it earlier?",
+   "hi": "Revision slot do baar chhoot gaya. Thoda pehle shift karun?"
+  },
+  {
+   "id": "nudge.low_accuracy#1",
+   "trigger": "nudge.low_accuracy",
+   "mood": "focused",
+   "en": "{chapter} accuracy is {acc}%. A focused drill will move it fast.",
+   "hi": "{chapter} ki accuracy {acc}% hai. Ek focused drill se jaldi badhegi."
+  },
+  {
+   "id": "nudge.plan_heavy#1",
+   "trigger": "nudge.plan_heavy",
+   "mood": "calm",
+   "en": "Your plans have been too heavy. I'll size them down a little.",
+   "hi": "Plans thode bhaari ho rahe the. Thoda halka kar deta hoon."
+  },
+  {
+   "id": "nudge.late_night#1",
+   "trigger": "nudge.late_night",
+   "mood": "sleepy",
+   "en": "Studying past midnight again. Your memory needs sleep to keep today's work.",
+   "hi": "Phir raat 12 ke baad padh rahe ho. Aaj ka kaam yaad rakhne ke liye neend zaroori hai."
+  },
+  {
+   "id": "nudge.long_hours#1",
+   "trigger": "nudge.long_hours",
+   "mood": "calm",
+   "en": "{hours} hours today. That's a lot. Rest is training too.",
+   "hi": "Aaj {hours} ghante. Bahut hai. Aaraam bhi training hai."
+  },
+  {
+   "id": "nudge.no_class_log#1",
+   "trigger": "nudge.no_class_log",
+   "mood": "curious",
+   "en": "What did class cover today? It keeps your revision on track.",
+   "hi": "Aaj class mein kya padhaya? Isse revision track pe rehta hai."
+  },
+  {
+   "id": "care.low_mood#1",
+   "trigger": "care.low_mood",
+   "mood": "calm",
+   "en": "Rough day? We'll keep it light. Just one small thing today.",
+   "hi": "Mushkil din? Halka rakhte hain. Aaj bas ek chhota kaam."
+  },
+  {
+   "id": "care.low_mood#2",
+   "trigger": "care.low_mood",
+   "mood": "calm",
+   "en": "Some days are heavy. You don't have to win today, just show up a little.",
+   "hi": "Kuch din bhaari hote hain. Aaj jeetna zaroori nahi, thoda sa aana kaafi hai."
+  },
+  {
+   "id": "care.low_mood#3",
+   "trigger": "care.low_mood",
+   "mood": "calm",
+   "en": "Want a Light Day? I'll keep only what matters.",
+   "hi": "Light Day karein? Sirf zaroori cheezein rakhunga."
+  },
+  {
+   "id": "care.burnout#1",
+   "trigger": "care.burnout",
+   "mood": "calm",
+   "en": "You've pushed hard for days. A lighter day now protects the next month.",
+   "hi": "Kai din se bahut push kiya hai. Aaj halka din agle mahine ko bachaata hai."
+  },
+  {
+   "id": "care.rest_day#1",
+   "trigger": "care.rest_day",
+   "mood": "sleepy",
+   "en": "Rest day. No guilt. Rest is part of the plan.",
+   "hi": "Aaraam ka din. Koi guilt nahi. Aaraam bhi plan ka hissa hai."
+  },
+  {
+   "id": "care.distress#1",
+   "trigger": "care.distress",
+   "mood": "calm",
+   "en": "You've been feeling low for a while. Talking to someone you trust really helps: a friend, family or a counsellor. If it feels heavy, Tele-MANAS (14416) is free and available any time.",
+   "hi": "Kuch din se mann theek nahi lag raha. Kisi bharose waale se baat karo: dost, ghar waale ya counsellor. Agar bahut bhaari lage, Tele-MANAS (14416) free hai aur kabhi bhi call kar sakte ho."
+  },
+  {
+   "id": "care.no_compare#1",
+   "trigger": "care.no_compare",
+   "mood": "calm",
+   "en": "Your climb is yours. Compare with last week's you, not anyone else.",
+   "hi": "Tumhara climb tumhara hai. Pichle hafte waale khud se compare karo, kisi aur se nahi."
+  },
+  {
+   "id": "social.friend_studying#1",
+   "trigger": "social.friend_studying",
+   "mood": "curious",
+   "en": "{friend} is studying now. Join them?",
+   "hi": "{friend} abhi padh raha hai. Saath join karoge?"
+  },
+  {
+   "id": "social.kudos_received#1",
+   "trigger": "social.kudos_received",
+   "mood": "happy",
+   "en": "{friend} sent you a flame for today.",
+   "hi": "{friend} ne aaj ke liye flame bheja."
+  },
+  {
+   "id": "together.invite#1",
+   "trigger": "together.invite",
+   "mood": "waving",
+   "en": "Climbing is easier with a friend. Invite one and share a streak.",
+   "hi": "Dost ke saath climb aasaan hai. Ek ko invite karo, streak share karo."
+  },
+  {
+   "id": "together.started#1",
+   "trigger": "together.started",
+   "mood": "celebrating",
+   "en": "You and {friend} now share a flame. It grows when you both study.",
+   "hi": "Tum aur {friend} ab ek flame share karte ho. Dono padhoge tabhi badhega."
+  },
+  {
+   "id": "together.partner_done#1",
+   "trigger": "together.partner_done",
+   "mood": "cheering",
+   "en": "{friend} already studied today. Your turn to keep the flame alive.",
+   "hi": "{friend} aaj padh chuka hai. Ab tumhari baari, flame zinda rakho."
+  },
+  {
+   "id": "together.both#1",
+   "trigger": "together.both",
+   "mood": "celebrating",
+   "en": "You both studied. Shared flame: {days} days.",
+   "hi": "Dono ne padha. Shared flame: {days} din."
+  },
+  {
+   "id": "together.risk#1",
+   "trigger": "together.risk",
+   "mood": "curious",
+   "en": "{friend} is counting on you today.",
+   "hi": "{friend} aaj tum pe bharosa kar raha hai."
+  },
+  {
+   "id": "together.freeze#1",
+   "trigger": "together.freeze",
+   "mood": "calm",
+   "en": "Your shared flame was protected today. Back at it tomorrow.",
+   "hi": "Aaj shared flame bach gaya. Kal se phir shuru."
+  },
+  {
+   "id": "duel.start#1",
+   "trigger": "duel.start",
+   "mood": "cheering",
+   "en": "Duel on. 7 days of XP, you vs {friend}.",
+   "hi": "Duel shuru. 7 din XP, tum vs {friend}."
+  },
+  {
+   "id": "duel.lead#1",
+   "trigger": "duel.lead",
+   "mood": "proud",
+   "en": "You're {xp} XP ahead of {friend}.",
+   "hi": "{friend} se {xp} XP aage ho."
+  },
+  {
+   "id": "duel.behind#1",
+   "trigger": "duel.behind",
+   "mood": "focused",
+   "en": "{friend} leads by {xp} XP. One good session closes it.",
+   "hi": "{friend} {xp} XP aage hai. Ek achha session gap bhar dega."
+  },
+  {
+   "id": "duel.won#1",
+   "trigger": "duel.won",
+   "mood": "celebrating",
+   "en": "Duel won. Be nice about it.",
+   "hi": "Duel jeet gaye. Thoda humble rehna."
+  },
+  {
+   "id": "duel.lost#1",
+   "trigger": "duel.lost",
+   "mood": "calm",
+   "en": "{friend} took this one. Rematch next week?",
+   "hi": "Is baar {friend} jeeta. Agle hafte rematch?"
+  },
+  {
+   "id": "social.batch_rank#1",
+   "trigger": "social.batch_rank",
+   "mood": "proud",
+   "en": "You're #{rank} in your {coaching} batch on Prepex this month.",
+   "hi": "Is mahine Prepex pe apne {coaching} batch mein #{rank} ho."
+  },
+  {
+   "id": "invite.joined#1",
+   "trigger": "invite.joined",
+   "mood": "celebrating",
+   "en": "{friend} joined from your link. You both got a new look for me.",
+   "hi": "{friend} tumhare link se join hua. Dono ko mere liye naya look mila."
+  },
+  {
+   "id": "invite.message#1",
+   "trigger": "invite.message",
+   "mood": "happy",
+   "en": "I'm climbing to JEE on Prepex. Join my climb: {link}",
+   "hi": "Main Prepex pe JEE ki taraf climb kar raha hoon. Mere climb mein join karo: {link}"
+  },
+  {
+   "id": "share.prompt#1",
+   "trigger": "share.prompt",
+   "mood": "proud",
+   "en": "That's worth sharing. Want a card?",
+   "hi": "Ye share karne layak hai. Card banaun?"
+  },
+  {
+   "id": "countdown.100#1",
+   "trigger": "countdown.100",
+   "mood": "proud",
+   "en": "100 days to JEE. Every day from here is a page in the story.",
+   "hi": "JEE mein 100 din. Ab har din kahani ka ek panna hai."
+  },
+  {
+   "id": "countdown.50#1",
+   "trigger": "countdown.50",
+   "mood": "proud",
+   "en": "50 days. Revision and mocks run the show now.",
+   "hi": "50 din. Ab revision aur mocks hi sab kuch hain."
+  },
+  {
+   "id": "countdown.30#1",
+   "trigger": "countdown.30",
+   "mood": "proud",
+   "en": "30 days. Stay steady. No new panic, just the plan.",
+   "hi": "30 din. Steady raho. Naya panic nahi, bas plan."
+  },
+  {
+   "id": "countdown.10#1",
+   "trigger": "countdown.10",
+   "mood": "proud",
+   "en": "10 days. Formulas, mistakes, sleep. That's it.",
+   "hi": "10 din. Formulas, mistakes, neend. Bas."
+  },
+  {
+   "id": "countdown.1#1",
+   "trigger": "countdown.1",
+   "mood": "calm",
+   "en": "Tomorrow's the day. You've done the work. Sleep early.",
+   "hi": "Kal ka din hai. Kaam ho chuka hai. Jaldi so jana."
+  },
+  {
+   "id": "notif.morning#1",
+   "trigger": "notif.morning",
+   "mood": "curious",
+   "en": "Pexo: Your plan's ready. First up: {task}.",
+   "hi": "Pexo: Plan ready hai. Pehla: {task}."
+  },
+  {
+   "id": "notif.morning#2",
+   "trigger": "notif.morning",
+   "mood": "curious",
+   "en": "Pexo: {n} tasks today. Let's start with a short one.",
+   "hi": "Pexo: Aaj {n} tasks. Chhote se shuru karte hain."
+  },
+  {
+   "id": "notif.morning#3",
+   "trigger": "notif.morning",
+   "mood": "curious",
+   "en": "Pexo: New day, new step.",
+   "hi": "Pexo: Naya din, naya step."
+  },
+  {
+   "id": "notif.revision_due#1",
+   "trigger": "notif.revision_due",
+   "mood": "curious",
+   "en": "Pexo: {chapter} is fading. 30 minutes keeps it.",
+   "hi": "Pexo: {chapter} bhoolne lage ho. 30 minute mein wapas."
+  },
+  {
+   "id": "notif.revision_due#2",
+   "trigger": "notif.revision_due",
+   "mood": "curious",
+   "en": "Pexo: Revision slot in 15 minutes. {chapter} is waiting.",
+   "hi": "Pexo: 15 minute mein revision slot. {chapter} wait kar raha hai."
+  },
+  {
+   "id": "notif.streak_risk#1",
+   "trigger": "notif.streak_risk",
+   "mood": "curious",
+   "en": "Pexo: {days}-day streak. Two minutes in Prepex keeps it alive.",
+   "hi": "Pexo: {days} din ki streak. Prepex mein 2 minute aur streak zinda."
+  },
+  {
+   "id": "notif.streak_risk#2",
+   "trigger": "notif.streak_risk",
+   "mood": "curious",
+   "en": "Pexo: Haven't seen you today. One small session?",
+   "hi": "Pexo: Aaj dikhe nahi. Ek chhota session?"
+  },
+  {
+   "id": "notif.streak_risk#3",
+   "trigger": "notif.streak_risk",
+   "mood": "curious",
+   "en": "Pexo: I saved your spot on the climb. Come take today's step.",
+   "hi": "Pexo: Climb pe tumhari jagah rakhi hai. Aaj ka step le lo."
+  },
+  {
+   "id": "notif.backlog_near#1",
+   "trigger": "notif.backlog_near",
+   "mood": "curious",
+   "en": "Pexo: One rock left in {chapter}. Finish it today?",
+   "hi": "Pexo: {chapter} mein ek rock bacha hai. Aaj khatam karein?"
+  },
+  {
+   "id": "notif.comeback_2d#1",
+   "trigger": "notif.comeback_2d",
+   "mood": "curious",
+   "en": "Pexo: No catching up needed. Just today. I kept it light.",
+   "hi": "Pexo: Purana pending nahi. Bas aaj. Halka rakha hai."
+  },
+  {
+   "id": "notif.comeback_2d#2",
+   "trigger": "notif.comeback_2d",
+   "mood": "curious",
+   "en": "Pexo: Your plan's waiting, and it's a small one.",
+   "hi": "Pexo: Plan wait kar raha hai, chhota sa hai."
+  },
+  {
+   "id": "notif.comeback_7d#1",
+   "trigger": "notif.comeback_7d",
+   "mood": "curious",
+   "en": "Pexo: It's been a week. The climb's still here when you are.",
+   "hi": "Pexo: Ek hafta ho gaya. Jab tum aao, climb yahin hai."
+  },
+  {
+   "id": "notif.sunday#1",
+   "trigger": "notif.sunday",
+   "mood": "curious",
+   "en": "Pexo: Your week in review is ready. So is your Rank GPS.",
+   "hi": "Pexo: Hafte ka review ready hai. Rank GPS bhi."
+  },
+  {
+   "id": "notif.dayclose#1",
+   "trigger": "notif.dayclose",
+   "mood": "curious",
+   "en": "Pexo: Close your day? 45 seconds.",
+   "hi": "Pexo: Din close karein? 45 second."
+  },
+  {
+   "id": "notif.dayclose#2",
+   "trigger": "notif.dayclose",
+   "mood": "curious",
+   "en": "Pexo: Wrap today up before bed.",
+   "hi": "Pexo: Sone se pehle aaj ko wrap kar lo."
+  },
+  {
+   "id": "notif.friend_studying#1",
+   "trigger": "notif.friend_studying",
+   "mood": "curious",
+   "en": "Pexo: {friend} just started studying. Join in?",
+   "hi": "Pexo: {friend} ne abhi padhna shuru kiya. Join karoge?"
+  },
+  {
+   "id": "notif.together_risk#1",
+   "trigger": "notif.together_risk",
+   "mood": "curious",
+   "en": "Pexo: {friend} studied today. Keep your shared flame alive.",
+   "hi": "Pexo: {friend} ne aaj padh liya. Shared flame zinda rakho."
+  },
+  {
+   "id": "notif.pledge_mid#1",
+   "trigger": "notif.pledge_mid",
+   "mood": "curious",
+   "en": "Pexo: Wednesday check on your promise. Tap to see.",
+   "hi": "Pexo: Promise ka Budhwar check. Tap karke dekho."
+  },
+  {
+   "id": "easter.tap#1",
+   "trigger": "easter.tap",
+   "mood": "happy",
+   "en": "Hi.",
+   "hi": "Hi."
+  },
+  {
+   "id": "easter.tap#2",
+   "trigger": "easter.tap",
+   "mood": "happy",
+   "en": "That tickles.",
+   "hi": "Gudgudi hoti hai."
+  },
+  {
+   "id": "easter.tap#3",
+   "trigger": "easter.tap",
+   "mood": "happy",
+   "en": "I'm here.",
+   "hi": "Main yahin hoon."
+  },
+  {
+   "id": "easter.poke3#1",
+   "trigger": "easter.poke3",
+   "mood": "waving",
+   "en": "Okay okay, I'm awake. Back to work.",
+   "hi": "Haan haan, jaag raha hoon. Chalo kaam pe."
+  },
+  {
+   "id": "easter.long_idle#1",
+   "trigger": "easter.long_idle",
+   "mood": "sleepy",
+   "en": "Still here? Me too.",
+   "hi": "Abhi bhi yahin? Main bhi."
+  }
+ ]
+}

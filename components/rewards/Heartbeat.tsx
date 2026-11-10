@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { sendHeartbeat } from "@/lib/api/xp";
+import { returnPexoBatch, takePexoBatch } from "@/lib/pexo/store";
 
 /** How often the app reports that it is open and in use. The server also clamps what it credits. */
 export const HEARTBEAT_EVERY_MS = 60_000;
@@ -19,7 +20,12 @@ export function Heartbeat() {
       const now = Date.now();
       const seconds = Math.min(60, Math.round((now - visibleSince) / 1000));
       visibleSince = now;
-      if (seconds > 0) void sendHeartbeat(seconds).catch(() => undefined);
+      if (seconds <= 0) return;
+      // what Pexo showed since the last beat rides along; a failed beat hands it back for the next one
+      const pexo = takePexoBatch();
+      void sendHeartbeat(seconds, pexo).catch(() => {
+        if (pexo) returnPexoBatch(pexo);
+      });
     };
     const onVisibility = () => {
       if (document.visibilityState === "visible") {
