@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { LifetimeCounters } from "@/components/rituals/HomeRituals";
+import { RankGpsCard } from "@/components/rank-gps/RankGpsCard";
 import { StudyingNowStrip } from "@/components/social/social";
 import { CountUp } from "@/components/study/CountUp";
 import { useSubjects } from "@/components/study/useSubjects";
@@ -160,6 +161,8 @@ export function HomeTop() {
           </div>
         </div>
       </div>
+
+      <RankGpsCard card={xp?.rankGps} />
 
       <StudyingNowStrip />
       <LifetimeCounters lifetime={rewards?.lifetime ?? null} />

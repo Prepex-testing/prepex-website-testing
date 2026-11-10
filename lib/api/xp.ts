@@ -1,5 +1,6 @@
 import { CORE_API_BASE_URL } from "@/lib/api/config";
 import { authenticatedRequest } from "@/lib/api/authRequest";
+import type { RankGpsHomeCard } from "@/lib/api/rankGps";
 
 /** XP, levels, the active-time heartbeat and rewards (badges, records, lifetime counters). core-service /api/xp and /api/rewards. */
 
@@ -20,6 +21,8 @@ export type XpSummary = {
   todayMinutes: number;
   /** Real minutes studied today, including time past the XP cap. */
   todayStudyMinutes: number;
+  /** The compact Rank GPS card for Home (null when it could not be read). */
+  rankGps?: RankGpsHomeCard | null;
 };
 
 export const getXpSummary = () => core<XpSummary>("/xp/summary");

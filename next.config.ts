@@ -22,6 +22,11 @@ const nextConfig: NextConfig = {
       { source: "/mistakes", destination: "/notebooks", permanent: false },
       { source: "/practice/mistake-analysis", destination: "/notebooks", permanent: false },
 
+      // The AI diagnosis (weekly and 30-day) is replaced by Rank GPS. Old bookmarks, push links and shared links land there.
+      { source: "/diagnosis", destination: "/analytics/rank-gps", permanent: false },
+      { source: "/diagnosis/:id", destination: "/analytics/rank-gps", permanent: false },
+      { source: "/analytics/week", destination: "/analytics/rank-gps", permanent: false },
+
       // The Stats tabs used to be separate routes. They're now one page at
       // /stats that switches tabs in place, so old links land there.
       {

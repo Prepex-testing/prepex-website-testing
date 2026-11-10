@@ -119,6 +119,8 @@ const DEFAULT_TTL_MS = 15_000;
 const LONG_TTL: { match: RegExp; ms: number }[] = [
   // the syllabus list changes only when the student edits their chapters (a write, which clears this)
   { match: /\/profile\/subjects-chapters/, ms: 5 * 60_000 },
+  // a Rank GPS report is built weekly (or on a refresh, which is a write that clears this)
+  { match: /\/rank-gps(\?|$)/, ms: 5 * 60_000 },
 ];
 let ttlEnabled = typeof process === "undefined" || !process.env.VITEST;
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { DiagnoseNowCard } from "@/components/diagnosis/DiagnoseNowCard";
+import { RankGpsCard } from "@/components/rank-gps/RankGpsCard";
 import { SeriesLine } from "@/components/insights/LazyCharts";
 import { InsightsTabs } from "@/components/insights/InsightsTabs";
 import { StatTile } from "@/components/analytics/StatTile";
@@ -13,11 +13,11 @@ import { EmptyNote, StatCard } from "@/components/stats/StatCard";
 import { SubjectDonut } from "@/components/stats/SubjectDonut";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { ApiError } from "@/lib/api/http";
-import { listDiagnosisReports, type ReportLimit, type ReportListItem } from "@/lib/api/diagnosisReports";
+import { getXpSummary } from "@/lib/api/xp";
+import type { RankGpsHomeCard } from "@/lib/api/rankGps";
 import { getMasterAnalytics, type MasterAnalytics } from "@/lib/api/masterAnalytics";
 import { masterSubjectNames } from "@/lib/study/subjects";
 import { syllabusHeadline } from "@/lib/syllabus/headline";
-import { useStartReport } from "@/lib/diagnosis/useStartReport";
 import { drillHref, goalUnitLabel, latestWeek, streakCaption } from "@/lib/insights/analyticsFormat";
 import { approxRank, rankLabel } from "@/lib/insights/mockMath";
 import { readTargetRank } from "@/lib/insights/targetRank";
@@ -29,10 +29,7 @@ const GOAL_LABEL: Record<string, string> = { HOURS: "Study hours", QUESTIONS: "Q
 export default function AnalyticsPage() {
   const [data, setData] = useState<MasterAnalytics | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // "Diagnose me now": how many are left today (the button works even if this cannot be loaded; the server enforces it)
-  const [limit, setLimit] = useState<ReportLimit | null>(null);
-  const [lastReport, setLastReport] = useState<ReportListItem | null>(null);
-  const { start, starting, error: startError } = useStartReport();
+  const [rankGps, setRankGps] = useState<RankGpsHomeCard | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -49,13 +46,8 @@ export default function AnalyticsPage() {
   }, [load]);
 
   useEffect(() => {
-    void listDiagnosisReports(1).then(
-      (res) => {
-        setLimit(res.data.limit);
-        setLastReport(res.data.reports.find((r) => r.status === "complete") ?? null);
-      },
-      () => undefined,
-    );
+    // the Rank GPS card rides on the XP summary, which the app shell has usually just fetched (it is remembered)
+    void getXpSummary().then((x) => setRankGps(x.rankGps ?? null), () => undefined);
   }, []);
 
   const subjectNames = useMemo(() => masterSubjectNames(data), [data]);
@@ -65,9 +57,9 @@ export default function AnalyticsPage() {
   if (!data && !error) return <PageLoader label="Building your dashboard…" />;
 
   return (
-    <LogScreenScaffold name="analytics" title="Your dashboard" subtitle={headline ?? undefined} backHref="/home" tabBar={<InsightsTabs current="/analytics" />} sidePanelLabel="Last diagnosis and weakest chapter" sidePanel={data ? <DashboardSidePanel data={data} lastReport={lastReport} /> : undefined}>
+    <LogScreenScaffold name="analytics" title="Your dashboard" subtitle={headline ?? undefined} backHref="/home" tabBar={<InsightsTabs current="/analytics" />} sidePanelLabel="Rank GPS and weakest chapter" sidePanel={data ? <DashboardSidePanel data={data} rankGps={rankGps} /> : undefined}>
 
-      <DiagnoseNowCard limit={limit} starting={starting} error={startError} onStart={() => void start()} />
+      <RankGpsCard card={rankGps} />
 
       {error && (
         <p role="alert" className="rounded-lg bg-danger-bg px-3 py-2 text-sm font-medium text-danger">

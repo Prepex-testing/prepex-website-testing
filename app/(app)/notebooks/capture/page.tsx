@@ -18,7 +18,7 @@ import { pickFiles } from "@/lib/notebooks/compress";
 import { readLast, takePending, writeLast } from "@/lib/notebooks/pendingCapture";
 import { saveCapturedBatch } from "@/lib/notebooks/saveCapture";
 
-type Photo = { key: string; blob: Blob; url: string; reason: Reason | null };
+type Photo = { key: string; blob: Blob; url: string; reason: Reason | null; attempted: boolean };
 
 const CHIP = "min-h-10 rounded-full border px-3 text-[13px] font-semibold transition-colors";
 const FIELD = "h-12 w-full rounded-xl border border-input-border bg-surface px-3 text-[15px] text-ink outline-none focus:border-brand";
@@ -29,6 +29,20 @@ function ReasonChips({ value, onChange, label }: { value: Reason | null; onChang
       {REASONS.map((r) => (
         <button key={r} type="button" role="radio" aria-checked={value === r} onClick={() => onChange(value === r ? null : r)} className={`${CHIP} ${value === r ? "border-[1.5px] border-brand bg-tint-strong text-ink" : "border-border-subtle text-body-text dark:text-ink"}`} data-testid={`capture-reason-${r}`}>
           {REASON_LABEL[r]}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Mock mistakes: did you answer it (wrong, 5 marks lost: the 4 you missed and 1 negative) or leave it blank (4 marks lost)? Applies to numerical questions too. */
+function AttemptedToggle({ value, onChange, label }: { value: boolean; onChange: (attempted: boolean) => void; label: string }) {
+  return (
+    <div role="radiogroup" aria-label={label} className="flex flex-wrap items-center gap-1.5" data-testid="capture-attempted">
+      <span className="mr-1 text-[13px] text-muted">Did you attempt it?</span>
+      {([[true, "Yes, got it wrong"], [false, "No, left blank"]] as const).map(([v, text]) => (
+        <button key={String(v)} type="button" role="radio" aria-checked={value === v} onClick={() => onChange(v)} className={`${CHIP} ${value === v ? "border-[1.5px] border-brand bg-tint-strong text-ink" : "border-border-subtle text-body-text dark:text-ink"}`} data-testid={`capture-attempted-${v ? "yes" : "no"}`}>
+          {text}
         </button>
       ))}
     </div>
@@ -58,7 +72,7 @@ function CaptureScreen() {
   const add = useCallback((files: File[]) => {
     const images = files.filter((f) => f.type.startsWith("image/"));
     if (images.length === 0) return;
-    setPhotos((cur) => [...cur, ...images.map((f) => ({ key: `${f.name}-${f.size}-${Math.random().toString(36).slice(2, 7)}`, blob: f as Blob, url: URL.createObjectURL(f), reason: null }))]);
+    setPhotos((cur) => [...cur, ...images.map((f) => ({ key: `${f.name}-${f.size}-${Math.random().toString(36).slice(2, 7)}`, blob: f as Blob, url: URL.createObjectURL(f), reason: null, attempted: true }))]);
   }, []);
 
   // photos handed over from the screen that opened this one
@@ -113,7 +127,7 @@ function CaptureScreen() {
     if (photos.length === 0 || saving) return;
     setSaving({ done: 0, total: photos.length });
     const { saved, failed } = await saveCapturedBatch(
-      photos.map((p) => ({ blob: p.blob, reason: p.reason })),
+      photos.map((p) => ({ blob: p.blob, reason: p.reason, attempted: p.attempted })),
       { chapterId, subjectId, source, sourceRef: sourceRef.trim() || null, mockId },
       (done, total) => setSaving({ done, total }),
     );
@@ -184,6 +198,7 @@ function CaptureScreen() {
             <section className="flex flex-col gap-2 rounded-2xl bg-tint-strong/60 p-3" aria-label="Tag all together" data-testid="batch-tagging">
               <p className="text-[13px] font-bold text-ink">Why did you miss all {photos.length}? Pick one for all, or tag each below.</p>
               <ReasonChips label="Reason for all" value={allReason} onChange={(r) => setPhotos((cur) => cur.map((p) => ({ ...p, reason: r })))} />
+              {mockId && <AttemptedToggle label="Attempted, for all" value={photos.every((p) => p.attempted)} onChange={(v) => setPhotos((cur) => cur.map((p) => ({ ...p, attempted: v })))} />}
             </section>
           )}
           <ul className="flex flex-col gap-3" data-testid="capture-list">
@@ -199,6 +214,7 @@ function CaptureScreen() {
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                   <p className="text-[13px] font-bold text-ink">Why did you miss it?</p>
                   <ReasonChips label={`Reason for photo ${i + 1}`} value={p.reason} onChange={(r) => setPhotos((cur) => cur.map((x) => (x.key === p.key ? { ...x, reason: r } : x)))} />
+                  {mockId && <AttemptedToggle label={`Attempted, photo ${i + 1}`} value={p.attempted} onChange={(v) => setPhotos((cur) => cur.map((x) => (x.key === p.key ? { ...x, attempted: v } : x)))} />}
                   <GhostButton className="mt-auto w-fit !min-h-10" onClick={() => setCropping(p.key)} data-testid="capture-crop">
                     Crop
                   </GhostButton>

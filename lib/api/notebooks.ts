@@ -76,6 +76,8 @@ export type Entry = {
   masteredAt: string | null;
   practiceQuestionId: string | null;
   mockId: string | null;
+  /** For a mock mistake: true = answered wrong (costs 5 marks), false = left blank (costs 4). */
+  attempted?: boolean;
   sessionId: string | null;
   needsSolution: boolean;
   createdAt: string;
@@ -103,6 +105,7 @@ export type NewEntry = {
   difficulty?: "easy" | "medium" | "hard" | null;
   tags?: string[];
   mockId?: string | null;
+  attempted?: boolean;
 };
 export type EntryPatch = Omit<NewEntry, "entryType" | "mockId"> & { status?: Status };
 

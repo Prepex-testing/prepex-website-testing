@@ -6,7 +6,6 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CalendarSidePanel, monthTotals } from "@/components/insights/panels/CalendarSidePanel";
 import { weakestChapter } from "@/components/insights/panels/DashboardSidePanel";
-import { WeekSidePanel } from "@/components/insights/panels/WeekSidePanel";
 import { ChapterListRow } from "@/components/syllabus/ChapterListRow";
 import type { MonthView } from "@/lib/api/calendarView";
 import type { ChapterRow, SyllabusOverview } from "@/lib/api/syllabus";
@@ -18,7 +17,6 @@ vi.mock("@/lib/api/syllabus", async (orig) => ({ ...(await orig<typeof import("@
 vi.mock("@/lib/api/masterAnalytics", () => ({ getMasterAnalytics: vi.fn() }));
 vi.mock("@/lib/api/mocks", () => ({ getMockAnalytics: vi.fn() }));
 import { getSyllabus } from "@/lib/api/syllabus";
-import { getMasterAnalytics } from "@/lib/api/masterAnalytics";
 import SyllabusPage from "@/app/(app)/syllabus/page";
 
 const root = path.resolve(import.meta.dirname, "..", "..");
@@ -79,17 +77,6 @@ describe("side panels", () => {
     expect(screen.getByTestId("cal-hint")).toHaveTextContent("Click a cell to open that day.");
     expect(coralCount(document.body)).toBe(0);
   });
-
-  it("This week: the top 3 fixes each link to a goal, and nothing is coral", async () => {
-    vi.mocked(getMasterAnalytics).mockResolvedValue({ success: true, data: { bySubject: [{ subjectId: 1, name: "Physics", minutes: 300, share: 100 }], streaks: { current: 4 } } } as never);
-    const fixes = ["a", "b", "c", "d"].map((x) => ({ title: `Fix ${x}`, chapterId: null, chapterName: null, minutes: 60 }));
-    const { container } = render(<WeekSidePanel fixes={fixes} />);
-    expect(screen.getAllByTestId("week-fix")).toHaveLength(3);
-    expect(screen.getAllByTestId("week-fix-goal")[0]).toHaveAttribute("href", expect.stringContaining("/goals?week=next&type=HOURS&unit=MINUTES&target=60"));
-    expect(await screen.findByText("4 days")).toBeInTheDocument();
-    expect(screen.getByTestId("week-hours")).toHaveTextContent("Physics");
-    expect(coralCount(container)).toBe(0);
-  });
 });
 
 describe("Syllabus", () => {
@@ -113,10 +100,9 @@ describe("Syllabus", () => {
 describe("the four tabs use the scaffold; Details is untouched", () => {
   const page = (rel: string) => readFileSync(path.join(root, "app/(app)", rel, "page.tsx"), "utf8");
 
-  it("Dashboard, This week, Calendar and Syllabus render inside LogScreenScaffold with the Insights tab strip and a side panel", () => {
+  it("Dashboard, Calendar and Syllabus render inside LogScreenScaffold with the Insights tab strip and a side panel", () => {
     for (const [rel, current, panel] of [
       ["analytics", "/analytics", "DashboardSidePanel"],
-      ["analytics/week", "/analytics/week", "WeekSidePanel"],
       ["calendar", "/calendar", "CalendarSidePanel"],
       ["syllabus", "/syllabus", "SyllabusSidePanel"],
     ] as const) {
@@ -127,14 +113,20 @@ describe("the four tabs use the scaffold; Details is untouched", () => {
     }
   });
 
+  it("Rank GPS renders inside LogScreenScaffold with the Insights tab strip", () => {
+    const src = readFileSync(path.join(root, "components/rank-gps/RankGpsScreen.tsx"), "utf8");
+    expect(src).toContain("<LogScreenScaffold");
+    expect(src).toContain('tabBar={<InsightsTabs current="/analytics/rank-gps" />}');
+  });
+
   it("the Details page does not use the scaffold", () => {
     const src = page("stats");
     expect(src).not.toContain("LogScreenScaffold");
     expect(src).toContain('<InsightsTabs current="/stats" />');
   });
 
-  it("no filled coral on the analytics pages outside the diagnosis card and the week run button", () => {
-    const files = ["app/(app)/analytics/page.tsx", "app/(app)/analytics/week/page.tsx", "app/(app)/calendar/page.tsx", "components/insights/panels/DashboardSidePanel.tsx", "components/insights/panels/WeekSidePanel.tsx", "components/insights/panels/CalendarSidePanel.tsx", "components/insights/panels/SyllabusSidePanel.tsx", "components/syllabus/ChapterListRow.tsx"];
+  it("no filled coral on the analytics pages outside the Rank GPS refresh and Add buttons", () => {
+    const files = ["app/(app)/analytics/page.tsx", "app/(app)/calendar/page.tsx", "components/insights/panels/DashboardSidePanel.tsx", "components/insights/panels/CalendarSidePanel.tsx", "components/insights/panels/SyllabusSidePanel.tsx", "components/syllabus/ChapterListRow.tsx"];
     for (const f of files) expect(readFileSync(path.join(root, f), "utf8"), f).not.toMatch(/bg-cta|bg-brand-coral|CoralButton/);
     expect(readFileSync(path.join(root, "app/(app)/syllabus/page.tsx"), "utf8")).not.toMatch(/<CoralButton/);
   });

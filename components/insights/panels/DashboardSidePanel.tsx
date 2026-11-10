@@ -4,20 +4,21 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { PanelSection } from "@/components/logs/LogScreenScaffold";
 import { GhostButton } from "@/components/ui/GhostButton";
-import type { ReportListItem } from "@/lib/api/diagnosisReports";
+import type { RankGpsHomeCard } from "@/lib/api/rankGps";
 import type { MasterAnalytics } from "@/lib/api/masterAnalytics";
 import { getMockAnalytics } from "@/lib/api/mocks";
 import { startFocusSession } from "@/lib/focus/startFocusSession";
+import { RANK_GPS_HREF } from "@/lib/rankGps/labels";
 
 /** The weakest chapter in the strength grid: lowest accuracy among those labelled weak. */
 export function weakestChapter(grid: MasterAnalytics["chapterStrengthGrid"]) {
   return grid.chapters.filter((c) => c.label === "weak").sort((a, b) => (a.accuracy ?? 101) - (b.accuracy ?? 101) || a.name.localeCompare(b.name))[0] ?? null;
 }
 
-type Props = { data: MasterAnalytics; lastReport: ReportListItem | null };
+type Props = { data: MasterAnalytics; rankGps: RankGpsHomeCard | null };
 
-/** The dashboard's right column: the last diagnosis, the weakest chapter, and mocks taken this month. */
-export function DashboardSidePanel({ data, lastReport }: Props) {
+/** The dashboard's right column: Rank GPS, the weakest chapter, and mocks taken this month. */
+export function DashboardSidePanel({ data, rankGps }: Props) {
   const [mocks, setMocks] = useState<number | null>(null);
   useEffect(() => {
     let alive = true;
@@ -33,18 +34,18 @@ export function DashboardSidePanel({ data, lastReport }: Props) {
 
   return (
     <>
-      <PanelSection title="Last diagnosis" testId="dash-last-diagnosis">
-        {lastReport && lastReport.status === "complete" ? (
+      <PanelSection title="Rank GPS" testId="dash-rank-gps">
+        {rankGps && rankGps.state === "ready" && rankGps.score !== null ? (
           <>
-            <p className="text-[12px] text-muted">{new Date(lastReport.completedAt ?? lastReport.triggeredAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</p>
-            {lastReport.preview && <p className="line-clamp-4 text-[14px] text-ink">{lastReport.preview}</p>}
-            <Link href={`/diagnosis/${lastReport.id}`} data-testid="dash-open-report" className="self-start text-[13px] font-medium text-ink underline underline-offset-2">
-              Open full report
-            </Link>
+            <p className="text-[28px] font-bold leading-none text-ink">{Math.round(rankGps.score)}</p>
+            {rankGps.topMove && <p className="text-[13px] text-body-text dark:text-ink">Top move: {rankGps.topMove.name}</p>}
           </>
         ) : (
-          <p className="text-[13px] text-muted">No diagnosis yet. Run one from the card above.</p>
+          <p className="text-[13px] text-muted">Your Rank GPS report appears here once it is built.</p>
         )}
+        <Link href={RANK_GPS_HREF} data-testid="dash-open-rank-gps" className="self-start text-[13px] font-medium text-ink underline underline-offset-2">
+          Open Rank GPS
+        </Link>
       </PanelSection>
 
       <PanelSection title="Weakest chapter" testId="dash-weakest">
