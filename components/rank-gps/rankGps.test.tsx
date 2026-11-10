@@ -139,6 +139,7 @@ describe("Rank GPS screen", () => {
     render(<RankGpsScreen />);
     await screen.findByTestId("rank-gps-report");
     expect(screen.getByTestId("hero-needs-mocks")).toHaveTextContent("Log 2 full mocks to unlock your projected percentile");
+    // one mock logged but no mistakes tagged: ask for the mistakes. With no mock at all, ask for the mock instead.
     expect(screen.getByTestId("autopsy-empty")).toHaveTextContent("Log mistakes from your latest mock");
   });
 
