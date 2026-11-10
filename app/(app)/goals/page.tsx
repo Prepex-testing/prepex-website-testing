@@ -32,7 +32,7 @@ import { groupGoals } from "@/lib/goals/display";
 import { daysLeftText, describeGoal, formatWeekRange } from "@/lib/goals/format";
 import { WEEKS_AHEAD, parsePrefill } from "@/lib/goals/prefill";
 import { MOCK_TYPES, forSave, goalMinutes, labelOf } from "@/lib/goals/v2";
-import { mondayAfterWeeks, weekLabel } from "@/lib/diagnosis/format";
+import { mondayAfterWeeks, weekLabel } from "@/lib/goals/weekFormat";
 import { trackPlanner } from "@/lib/telemetry/planner";
 
 function messageOf(err: unknown, fallback: string): string {

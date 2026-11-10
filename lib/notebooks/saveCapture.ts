@@ -2,7 +2,7 @@ import { createEntry, updateEntry, uploadAsset, type Reason, type Source } from 
 import { compressImage } from "@/lib/notebooks/compress";
 import { newId } from "@/lib/notebooks/model";
 
-export type CaptureItem = { blob: Blob; reason: Reason | null };
+export type CaptureItem = { blob: Blob; reason: Reason | null; /** Mock mistakes only: false when the question was left blank. */ attempted?: boolean };
 export type CaptureTarget = { chapterId: string | null; subjectId: number | null; source: Source | null; sourceRef?: string | null; mockId?: string | null };
 
 /**
@@ -18,6 +18,7 @@ export async function saveCapturedMistake(item: CaptureItem, t: CaptureTarget): 
     source: t.source,
     sourceRef: t.sourceRef ?? null,
     mockId: t.mockId ?? null,
+    ...(t.mockId && item.attempted === false ? { attempted: false } : {}),
   });
   const body = await compressImage(item.blob);
   const asset = await uploadAsset(entry.id, body, "photo.webp");

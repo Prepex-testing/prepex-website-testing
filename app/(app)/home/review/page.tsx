@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { RankGpsCard } from "@/components/rank-gps/RankGpsCard";
 import { GoalAssistantBody } from "@/components/goals/GoalAssistant";
 import { ReviewShareCard } from "@/components/rituals/ReviewShareCard";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
@@ -263,6 +264,7 @@ export default function SundayReviewPage() {
                   Share
                 </GhostButton>
               </div>
+              <RankGpsCard card={xp?.rankGps} className="w-full" />
             </section>
           )}
         </>
