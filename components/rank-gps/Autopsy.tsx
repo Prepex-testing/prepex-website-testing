@@ -34,15 +34,15 @@ function Waterfall({ a }: { a: MockAutopsy }) {
   );
 }
 
-export function Autopsy({ autopsy, locked }: { autopsy: AutopsyData; locked: boolean }) {
+export function Autopsy({ autopsy, locked, hasMocks }: { autopsy: AutopsyData; locked: boolean; hasMocks: boolean }) {
   const a = autopsy.latest;
   return (
     <StatCard title={COPY.autopsy} subtitle={a ? `${a.name.toUpperCase()} · ${a.date}` : "YOUR LATEST FULL MOCK"}>
       {!a ? (
         <div className="flex flex-col items-start gap-2" data-testid="autopsy-empty">
-          <p className="text-[14px] text-muted">{autopsy.missing ? COPY.needsAutopsy : "Log a full mock and tag its mistakes to see where the marks went."}</p>
-          <Link href={autopsy.missing ? "/notebooks/capture" : "/logs/mocks"} className="inline-flex min-h-11 items-center text-[14px] font-bold text-brand underline dark:text-ink">
-            {autopsy.missing ? "Tag the mistakes" : "Log a mock"}
+          <p className="text-[14px] text-muted">{autopsy.missing && hasMocks ? COPY.needsAutopsy : "Log a full mock and tag its mistakes to see where the marks went."}</p>
+          <Link href={autopsy.missing && hasMocks ? "/notebooks/capture" : "/logs/mocks"} className="inline-flex min-h-11 items-center text-[14px] font-bold text-brand underline dark:text-ink">
+            {autopsy.missing && hasMocks ? "Tag the mistakes" : "Log a mock"}
           </Link>
         </div>
       ) : (

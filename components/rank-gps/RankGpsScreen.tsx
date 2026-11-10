@@ -216,7 +216,7 @@ export function RankGpsScreen() {
           {report.change && <WhyMoved change={report.change} />}
           <Route moves={report.opportunity.moves} target={report.target} targetPercentile={data.targetPercentile} track={report.track} locked={view.locked} />
           <OpportunityMap chapters={report.opportunity.chapters} locked={view.locked.fullOpportunityMap} />
-          <Autopsy autopsy={report.autopsy} locked={view.locked.autopsyTrend} />
+          <Autopsy autopsy={report.autopsy} locked={view.locked.autopsyTrend} hasMocks={report.projection.mocksHave > 0} />
           <EffortCheck effort={report.effort} />
           {report.whatIf && report.projection.data ? <WhatIf whatIf={report.whatIf} projection={report.projection.data} paperMax={report.paperMax} /> : view.locked.whatIf ? <ProLocked section="whatIf" /> : null}
 

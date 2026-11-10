@@ -11,9 +11,12 @@ import type { OpportunityChapter } from "@/lib/rankGps/types";
 
 const W = 100;
 const H = 62;
+/** A real syllabus has 70+ chapters: the map shows the biggest ones so every square stays readable. */
+const MAP_MAX = 20;
 
 /** A treemap of the marks still on the table: each square is a chapter, its area the marks you can still win there. */
-export function OpportunityMap({ chapters, locked }: { chapters: OpportunityChapter[]; locked: boolean }) {
+export function OpportunityMap({ chapters: all, locked }: { chapters: OpportunityChapter[]; locked: boolean }) {
+  const chapters = useMemo(() => all.slice(0, MAP_MAX), [all]);
   const [selected, setSelected] = useState<string | null>(chapters[0]?.chapterId ?? null);
   const cells = useMemo(() => squarify(chapters.map((c) => ({ ...c, value: Math.max(0.1, c.potential) })), W, H), [chapters]);
   const current = chapters.find((c) => c.chapterId === selected) ?? null;
@@ -64,6 +67,7 @@ export function OpportunityMap({ chapters, locked }: { chapters: OpportunityChap
               </p>
             </div>
           )}
+          {all.length > MAP_MAX && <p className="text-[12px] text-muted" data-testid="map-capped">Showing the {MAP_MAX} chapters with the most marks to win, out of {all.length}.</p>}
           {locked && <ProLocked section="fullOpportunityMap" hint="You see your top 5 chapters." />}
         </div>
       )}
