@@ -1,5 +1,6 @@
 import { CORE_API_BASE_URL } from "@/lib/api/config";
 import { authenticatedRequest } from "@/lib/api/authRequest";
+import type { PexoBatch, PexoState } from "@/lib/api/pexo";
 import type { RankGpsHomeCard } from "@/lib/api/rankGps";
 
 /** XP, levels, the active-time heartbeat and rewards (badges, records, lifetime counters). core-service /api/xp and /api/rewards. */
@@ -23,12 +24,15 @@ export type XpSummary = {
   todayStudyMinutes: number;
   /** The compact Rank GPS card for Home (null when it could not be read). */
   rankGps?: RankGpsHomeCard | null;
+  /** Pexo: is it on for this student, their settings and what was already shown (null when it could not be read). */
+  pexo?: PexoState | null;
 };
 
 export const getXpSummary = () => core<XpSummary>("/xp/summary");
 
 export type HeartbeatResult = { activeSeconds: number; countsToday: boolean; thresholdSeconds: number };
-export const sendHeartbeat = (seconds: number) => core<HeartbeatResult>("/xp/heartbeat", { method: "POST", body: JSON.stringify({ seconds }) });
+/** `pexo` is what Pexo showed since the last beat: it rides this call so a bubble never costs a request of its own. */
+export const sendHeartbeat = (seconds: number, pexo?: PexoBatch | null) => core<HeartbeatResult>("/xp/heartbeat", { method: "POST", body: JSON.stringify(pexo ? { seconds, pexo } : { seconds }) });
 
 export type BadgeInfo = { key: string; title: string; description: string; hidden: boolean; earned: boolean; earnedAt: string | null; seen: boolean };
 export type RecordKind = "most_hours_day" | "most_questions_day" | "best_weekly_accuracy" | "longest_streak" | "best_chapter_improvement";

@@ -28,6 +28,8 @@ const PUBLIC_PATHS = [
   "/shared",
   // Sentry verification page: a 404 unless NEXT_PUBLIC_SENTRY_TEST_ENABLED=true, so it is inert in production.
   "/sentry-test",
+  // development-only gallery of Pexo's moods (the page itself 404s in production)
+  "/pexo-lab",
 ];
 
 function isPublicPath(pathname: string) {

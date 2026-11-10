@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/icons";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
 import { AppearanceSettings } from "@/components/settings/AppearanceSettings";
+import { PexoSettings } from "@/components/pexo/PexoSettings";
 import {UserIcons,EmailIcon,LockIcon,LinkIcon,TrashIcon, ConfirmIcon} from "@/assets/icons";
 
 
@@ -80,6 +81,7 @@ export default function AccountSettingsPage() {
       <ProfileSubpageHeader title="Account Settings" />
 
       <AppearanceSettings />
+      <PexoSettings />
 
       <div className="overflow-hidden rounded-2xl border border-brand/10 bg-surface shadow-sm">
 

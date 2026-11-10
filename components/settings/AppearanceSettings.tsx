@@ -30,7 +30,7 @@ export function applyMotionPref(pref: MotionPref): void {
   document.documentElement.setAttribute("data-motion", reduce ? "reduce" : pref === "lite" || (pref === "auto" && lowEnd) ? "lite" : "full");
 }
 
-function Segmented<T extends string>({ name, value, options, onChange }: { name: string; value: T; options: { id: T; label: string }[]; onChange: (v: T) => void }) {
+export function Segmented<T extends string>({ name, value, options, onChange }: { name: string; value: T; options: { id: T; label: string }[]; onChange: (v: T) => void }) {
   return (
     <div role="radiogroup" aria-label={name} className="grid gap-1 rounded-xl bg-tint-strong p-1 dark:bg-[#FAF7F214]" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
       {options.map((o) => (
