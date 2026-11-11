@@ -68,9 +68,11 @@ export function primePexo(next: PexoState | null | undefined): void {
 /** Loads Pexo with the XP summary (remembered and shared by the request layer). Safe to call from anywhere, any number of times. */
 export function loadPexo(force = false): Promise<PexoState | null> {
   if (state && !force) return Promise.resolve(state);
-  loading ??= getXpSummary()
+  // never throws, even before the first call resolves
+  loading ??= Promise.resolve()
+    .then(() => getXpSummary())
     .then((s) => {
-      primePexo(s.pexo);
+      primePexo(s?.pexo);
       return state;
     })
     .catch(() => state)
