@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getStudyingNow, presenceLabel, profileHref, type StudyingNow } from "@/lib/api/social";
+import { startFocusSession } from "@/lib/focus/startFocusSession";
+import { setPendingJoin } from "@/lib/pexo/join";
+import { usePexo } from "@/lib/pexo/store";
 
 /** Initials for an avatar with no picture. */
 export function initialsOf(name: string): string {
@@ -90,6 +93,7 @@ export function YearHeatmap({ days, today = new Date() }: { days: { date: string
 /** The followed students who are studying right now, refreshed every minute. Nothing renders when nobody is. */
 export function StudyingNowStrip({ pollMs = 60_000 }: { pollMs?: number }) {
   const [list, setList] = useState<StudyingNow[]>([]);
+  const pexoOn = usePexo().enabled;
   useEffect(() => {
     let alive = true;
     const load = () => {
@@ -119,6 +123,20 @@ export function StudyingNowStrip({ pollMs = 60_000 }: { pollMs?: number }) {
               <p className="truncate text-[13px] font-semibold text-ink">{s.name}</p>
               <p className="truncate text-[12px] text-muted">{presenceLabel(s)}</p>
             </div>
+            {pexoOn && !s.onBreak && (
+              <button
+                type="button"
+                className="min-h-11 shrink-0 rounded-full border border-border-strong px-3 text-[12px] font-bold text-ink hover:bg-tint-strong"
+                aria-label={`Study with ${s.name}`}
+                data-testid="studying-now-join"
+                onClick={() => {
+                  setPendingJoin(s.userId, s.name);
+                  startFocusSession({ originSource: "standalone", ...(s.subjectName ? { subject: s.subjectName.toLowerCase() } : {}) });
+                }}
+              >
+                Join
+              </button>
+            )}
           </li>
         ))}
       </ul>

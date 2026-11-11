@@ -1,5 +1,6 @@
 import { CORE_API_BASE_URL } from "@/lib/api/config";
 import { authenticatedRequest } from "@/lib/api/authRequest";
+import { apiRequest } from "@/lib/api/http";
 import type { PexoLanguage } from "@/lib/pexo/engine";
 
 /** Pexo, the Prepex companion. core-service /api/pexo. State normally arrives with the XP summary; nothing is polled. */
@@ -86,3 +87,29 @@ export const askPexo = () => core<PexoAskAnswer | null>("/ask");
 export const getPexoTeaser = () => core<PexoTeaser | null>("/teaser");
 
 export const updatePexoSettings = (input: PexoSettingsInput) => core<PexoState>("/settings", { method: "PUT", body: JSON.stringify(input) });
+
+// Part D: Climb Together, invite links, duels, batch rank, studying with a friend. Read once per screen, never polled.
+export type PexoLine = { trigger: string; context: Record<string, string | number> } | null;
+export type PexoPerson = { userId: string; name: string; username: string | null; avatarUrl: string | null };
+export type PexoTogether = { id: string; friend: PexoPerson; status: "pending_in" | "pending_out" | "active"; streak: number; best: number; freezes: number; today: { me: boolean; friend: boolean }; line: PexoLine };
+export type PexoDuel = { id: string; friend: PexoPerson; status: "pending_in" | "pending_out" | "active" | "done"; me: number; them: number; endsAt: string | null; result: "won" | "lost" | "draw" | null; line: PexoLine };
+export type PexoSocial = {
+  together: PexoTogether[];
+  duels: PexoDuel[];
+  invite: { code: string; joined: number; rewarded: number; recent: { inviteeId: string; name: string }[] };
+  batch: { rank: number; coaching: string } | null;
+  care: boolean;
+};
+
+export const getPexoSocial = () => core<PexoSocial | null>("/social");
+export const inviteTogether = (friendId: string) => core<{ id: string }>("/together", { method: "POST", body: JSON.stringify({ friendId }) });
+export const answerTogether = (id: string, accept: boolean) => core<{ status: string }>(`/together/${id}/answer`, { method: "POST", body: JSON.stringify({ accept }) });
+export const endTogether = (id: string) => core<{ status: string }>(`/together/${id}`, { method: "DELETE" });
+export const challengeDuel = (friendId: string) => core<{ id: string }>("/duels", { method: "POST", body: JSON.stringify({ friendId }) });
+export const answerDuel = (id: string, accept: boolean) => core<{ status: string }>(`/duels/${id}/answer`, { method: "POST", body: JSON.stringify({ accept }) });
+export const claimInvite = (code: string, utm: { source?: string; medium?: string; campaign?: string }) => core<{ claimed: boolean }>("/invite/claim", { method: "POST", body: JSON.stringify({ code, utm }) });
+export const joinFriendSession = (sessionId: string, friendId: string) => core<{ joined: true }>("/focus-join", { method: "POST", body: JSON.stringify({ sessionId, friendId }) });
+/** Public: the /join/<code> page before signing in. */
+export const lookupInvite = (code: string) => apiRequest<Envelope<{ valid: boolean; name: string | null }>>(`${CORE_API_BASE_URL}/api/pexo/invite/${encodeURIComponent(code)}`).then((r) => r.data);
+/** The personal link a student shares. */
+export const inviteLink = (code: string) => `${typeof window !== "undefined" ? window.location.origin : "https://testing.prepex.io"}/join/${code}`;

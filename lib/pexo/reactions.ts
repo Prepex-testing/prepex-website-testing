@@ -1,3 +1,4 @@
+import { offerShare } from "@/lib/pexo/share";
 import { pexoMark, pexoReact } from "@/lib/pexo/store";
 
 /**
@@ -43,7 +44,9 @@ export function reactTaskDone(input: Parameters<typeof taskDoneTrigger>[0] & { c
 export const reactTaskUndo = (): void => void pexoReact("task.undo");
 export const reactMovedTomorrow = (): void => void pexoReact("task.moved_tomorrow");
 export const reactAllTasksDone = (date: string): void => {
-  if (pexoMark(`task.done.all:${date}`, true)) pexoReact("task.done.all", {}, { kind: "celebration" });
+  if (!pexoMark(`task.done.all:${date}`, true)) return;
+  pexoReact("task.done.all", {}, { kind: "celebration" });
+  offerShare({ kind: "all_tasks_done", title: "Every task done today", mood: "celebrating" });
 };
 
 export const reactBacklogAdded = (): void => void pexoReact("backlog.added");
@@ -54,7 +57,10 @@ export function reactBacklogCleared(input: { chapter?: string | null; remainingM
   if (input.remainingMinutes != null && input.remainingMinutes > 0) context.hours = Math.round((input.remainingMinutes / 60) * 10) / 10;
   pexoReact("backlog.cleared", context, { kind: "celebration" });
 }
-export const reactLastRock = (): void => void pexoReact("backlog.last_rock", {}, { kind: "celebration" });
+export function reactLastRock(): void {
+  pexoReact("backlog.last_rock", {}, { kind: "celebration" });
+  offerShare({ kind: "last_rock", title: "Backlog cleared", mood: "proud" });
+}
 
 /** Viewing a big backlog: one calm line a day. */
 export function reactBacklogView(totalMinutes: number, grewThisWeek: boolean, feasible: boolean | null): void {
@@ -83,7 +89,7 @@ export function reactMistakesSaved(input: { count: number; chapter?: string | nu
 export function reactMistakeReview(result: "correct" | "wrong", mastered: boolean, masteredTotal?: number): void {
   if (mastered) {
     pexoReact("mistake.mastered", {}, { kind: "celebration" });
-    if (masteredTotal === 10 || masteredTotal === 50) pexoMark(`share.mastered.${masteredTotal}`, true);
+    if ((masteredTotal === 10 || masteredTotal === 50) && pexoMark(`share.mastered.${masteredTotal}`, true)) offerShare({ kind: "mastered", title: `${masteredTotal} mistakes mastered`, mood: "proud" });
     return;
   }
   pexoReact(result === "correct" ? "mistake.review.got" : "mistake.review.not_yet");
@@ -96,7 +102,10 @@ export function reactMockLogged(input: { totalMarks: number; previousMarks?: num
     return;
   }
   const delta = Math.round((input.totalMarks - input.previousMarks) * 10) / 10;
-  if (delta > 0) pexoReact("log.mock.up", { delta }, { kind: "celebration" });
+  if (delta > 0) {
+    pexoReact("log.mock.up", { delta }, { kind: "celebration" });
+    offerShare({ kind: "mock_up", title: `Up ${delta} marks`, detail: "From my last mock", mood: "proud" });
+  }
   else if (delta < 0) pexoReact("log.mock.down");
   else pexoReact("log.mock");
 }
@@ -104,10 +113,14 @@ export function reactMockLogged(input: { totalMarks: number; previousMarks?: num
 /** The streak flame reached a milestone (once each). */
 export function reactStreak(days: number): void {
   if ((STREAK_DAYS as readonly number[]).includes(days)) {
-    if (pexoMark(`streak.${days}`, true)) pexoReact(`streak.${days}`, {}, { kind: "celebration" });
+    if (!pexoMark(`streak.${days}`, true)) return;
+    pexoReact(`streak.${days}`, {}, { kind: "celebration" });
   } else if ((STREAK_MILESTONES as readonly number[]).includes(days) && pexoMark(`streak.${days}`, true)) {
     pexoReact("streak.milestone", { days }, { kind: "celebration" });
+  } else {
+    return;
   }
+  offerShare({ kind: "streak", title: `${days}-day streak`, mood: "celebrating" });
 }
 
 /** Days to the exam: 100, 50, 30, 10 and 1, once each. */

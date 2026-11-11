@@ -48,7 +48,7 @@ export const getXpSummary = () =>
     return summary;
   });
 
-export type HeartbeatResult = { activeSeconds: number; countsToday: boolean; thresholdSeconds: number };
+export type HeartbeatResult = { activeSeconds: number; countsToday: boolean; thresholdSeconds: number; /** Friends who just started studying with this student (Pexo part D). */ pexoJoined?: { name: string }[] };
 /** `pexo` is what Pexo showed since the last beat: it rides this call so a bubble never costs a request of its own. */
 export const sendHeartbeat = (seconds: number, pexo?: PexoBatch | null) => core<HeartbeatResult>("/xp/heartbeat", { method: "POST", body: JSON.stringify(pexo ? { seconds, pexo } : { seconds }) });
 

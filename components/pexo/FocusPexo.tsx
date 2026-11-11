@@ -5,7 +5,8 @@ import { Bookmark, BookmarkCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Pexo } from "@/components/pexo/Pexo";
 import { PexoBubble, usePexoLine } from "@/components/pexo/PexoBubble";
-import { getPexoFind, savePexoFind, type PexoFind } from "@/lib/api/pexo";
+import { getPexoFind, joinFriendSession, savePexoFind, type PexoFind } from "@/lib/api/pexo";
+import { takePendingJoin } from "@/lib/pexo/join";
 import type { PexoPick } from "@/lib/pexo/engine";
 import { pexoFirstVisit, pexoSay, usePexo } from "@/lib/pexo/store";
 
@@ -41,6 +42,16 @@ export function FocusDesk({ sessionId, onBreak, subject }: { sessionId: string; 
   const { enabled, state } = usePexo();
   const start = usePexoLine(enabled ? "focus.start" : null, subject ? { subject } : {}, `start:${sessionId}`);
   const pause = usePexoLine(enabled && onBreak ? "focus.break" : null, {}, `break:${sessionId}:${onBreak}`);
+  // started from Studying Now -> Join: mark this session as studying with that friend (they are told on their heartbeat)
+  const [together, setTogether] = useState<string | null>(null);
+  useEffect(() => {
+    if (!enabled) return;
+    const join = takePendingJoin();
+    if (!join) return;
+    joinFriendSession(sessionId, join.friendId)
+      .then(() => setTogether(join.name))
+      .catch(() => undefined);
+  }, [enabled, sessionId]);
   if (!enabled) return null;
   const line = onBreak ? pause : start;
   const accessory = state?.accessories[state.accessories.length - 1] ?? null;
@@ -51,6 +62,11 @@ export function FocusDesk({ sessionId, onBreak, subject }: { sessionId: string; 
         <p className="min-w-0 flex-1 text-left text-[14px] leading-snug text-body-text dark:text-ink" data-testid="focus-desk-line" data-line={line.id}>
           {line.text}
         </p>
+      )}
+      {together && (
+        <span className="shrink-0 rounded-full bg-tint-strong px-3 py-1 text-[12px] font-semibold text-ink" data-testid="focus-with">
+          Studying with {together}
+        </span>
       )}
     </div>
   );

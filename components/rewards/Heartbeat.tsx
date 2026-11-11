@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { sendHeartbeat } from "@/lib/api/xp";
-import { returnPexoBatch, takePexoBatch } from "@/lib/pexo/store";
+import { pexoReact, returnPexoBatch, takePexoBatch } from "@/lib/pexo/store";
 
 /** How often the app reports that it is open and in use. The server also clamps what it credits. */
 export const HEARTBEAT_EVERY_MS = 60_000;
@@ -23,7 +23,13 @@ export function Heartbeat() {
       if (seconds <= 0) return;
       // what Pexo showed since the last beat rides along; a failed beat hands it back for the next one
       const pexo = takePexoBatch();
-      void sendHeartbeat(seconds, pexo).catch(() => {
+      void sendHeartbeat(seconds, pexo)
+        .then((r) => {
+          // a friend tapped Join on me in Studying Now: told once, on the beat that already runs
+          const friend = r?.pexoJoined?.[0]?.name;
+          if (friend) pexoReact("focus.friend_joined", { friend }, { kind: "celebration" });
+        })
+        .catch(() => {
         if (pexo) returnPexoBatch(pexo);
       });
     };

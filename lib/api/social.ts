@@ -49,6 +49,7 @@ export const getSocialSettings = () => core<SocialSettings>("/social/settings");
 export const updateSocialSettings = (patch: Partial<SocialSettings>) => core<SocialSettings>("/social/settings", send("PATCH", patch));
 
 export type Identity = { userId: string; name: string; username: string | null; avatarUrl: string | null };
+export const listFollowing = () => core<Identity[]>("/social/following");
 export const searchStudents = (q: string) => core<Identity[]>(`/social/search?q=${encodeURIComponent(q)}`);
 
 export type PublicProfile = {

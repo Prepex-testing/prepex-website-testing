@@ -55,6 +55,7 @@ import { DailyInsightCard } from "@/components/home/DailyInsightCard";
 import { HomeTop } from "@/components/home/HomeTop";
 import { HomePexo } from "@/components/pexo/HomePexo";
 import { PrepexMap } from "@/components/pexo/PrepexMap";
+import { HomeSocial } from "@/components/pexo/SocialPexo";
 import { usePexo } from "@/lib/pexo/store";
 import { HomeRituals } from "@/components/rituals/HomeRituals";
 import { NoGoalsBanner } from "@/components/planner/NoGoalsPrompt";
@@ -431,6 +432,8 @@ export default function HomePage() {
       <HomeRituals />
 
       <PrepexMap />
+
+      <HomeSocial />
 
       {/* with Pexo on, the "no goals" nudge is Pexo's own Home line */}
       {!pexoOn && <NoGoalsBanner />}
