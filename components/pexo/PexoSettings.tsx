@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { MyFinds } from "@/components/pexo/MyFinds";
 import { Pexo } from "@/components/pexo/Pexo";
 import { Segmented } from "@/components/settings/AppearanceSettings";
 import { Switch } from "@/components/ui/Switch";
@@ -73,6 +74,7 @@ export function PexoSettings() {
         </div>
         <Switch checked={state.notifications} onChange={(notifications) => void save({ notifications })} label="Pexo notifications" />
       </div>
+      <MyFinds />
       {error && (
         <p role="alert" className="text-[12px] font-medium text-danger">
           {error}

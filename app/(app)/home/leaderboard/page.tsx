@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/Switch";
 import { getBoard, getBoardRules, getHall, getSocialSettings, profileHref, searchStudents, updateSocialSettings, type BoardFilter, type BoardKind, type BoardResult, type BoardRules, type Hall, type Identity, type SocialSettings } from "@/lib/api/social";
 import { BOARDS, boardCaption, FILTERS, formatHours, gapText } from "@/lib/social/board";
 import { GlidePill } from "@/components/motion/GlidePill";
+import { CareNoCompare } from "@/components/pexo/CareNoCompare";
 
 /** The XP leaderboards: Today, This Month and Most Improved, each filtered to the people who matter. */
 export default function LeaderboardPage() {
@@ -73,6 +74,7 @@ export default function LeaderboardPage() {
   return (
     <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-4 p-4 sm:p-6 lg:p-8" data-testid="leaderboard">
       <ProfileSubpageHeader title="Leaderboard" backHref="/home" />
+      <CareNoCompare />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">

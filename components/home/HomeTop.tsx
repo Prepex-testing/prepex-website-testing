@@ -14,6 +14,8 @@ import { getStreakInfo } from "@/lib/api/streak";
 import { getRewards, getXpSummary, type RewardsSummary, type XpSummary } from "@/lib/api/xp";
 import { startFocusSession } from "@/lib/focus/startFocusSession";
 import { clockText, daysLeftText, subjectKey } from "@/lib/home/top";
+import { reactCountdown, reactStreak } from "@/lib/pexo/reactions";
+import { usePexo } from "@/lib/pexo/store";
 
 /**
  * The top of Home, modelled on the study-timer apps students already love: today's total as a big number that keeps
@@ -30,6 +32,15 @@ export function HomeTop() {
   // the running session, as the server saw it, and when this device got that answer
   const [live, setLive] = useState<{ elapsed: number; running: boolean; at: number } | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  const { enabled: pexoOn } = usePexo();
+
+  // Pexo marks a streak milestone and the exam countdown (100, 50, 30, 10, 1 days) once each
+  useEffect(() => {
+    if (pexoOn && streak) reactStreak(streak);
+  }, [pexoOn, streak]);
+  useEffect(() => {
+    if (pexoOn) reactCountdown(daysLeft?.days);
+  }, [pexoOn, daysLeft?.days]);
 
   useEffect(() => {
     void getXpSummary().then(setXp).catch(() => undefined);

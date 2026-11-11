@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { CoverageChips } from "@/components/rituals/CoverageChips";
 import { getPendingCoverage, submitCoverage, type PendingCoverage } from "@/lib/api/rituals";
+import { PexoBubble, usePexoLine } from "@/components/pexo/PexoBubble";
+import { reactQuickLog } from "@/lib/pexo/reactions";
 import { refreshXp } from "@/lib/rewards/events";
 
 /**
@@ -34,6 +36,7 @@ export function ClassCoverageCard({ prompts, onChanged }: { prompts?: PendingCov
       setBusy(true);
       try {
         await submitCoverage({ blockKey: p.blockKey, date: p.date, ...body });
+        if (!body.skip) reactQuickLog();
         setPending((rows) => rows.filter((r) => r.blockKey !== p.blockKey));
         onChanged?.();
         void refreshXp();
@@ -46,9 +49,11 @@ export function ClassCoverageCard({ prompts, onChanged }: { prompts?: PendingCov
     [onChanged],
   );
 
+  const ask = usePexoLine(pending.length > 0 ? "log.class_covered" : null, {}, "class-coverage");
   if (pending.length === 0) return null;
   return (
-    <div className="flex flex-col gap-3" data-testid="class-coverage">
+    <div className="flex flex-col gap-3" data-testid="class-coverage" id="class-coverage">
+      {ask && <PexoBubble pick={ask} size={48} testId="class-coverage-pexo" />}
       {pending.map((p) => (
         <CoverageChips
           key={p.blockKey}

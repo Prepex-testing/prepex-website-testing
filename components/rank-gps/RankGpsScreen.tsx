@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Autopsy } from "@/components/rank-gps/Autopsy";
 import { CoachNote } from "@/components/rank-gps/CoachNote";
+import { GpsPexo } from "@/components/pexo/GpsPexo";
 import { EffortCheck } from "@/components/rank-gps/EffortCheck";
 import { Hero } from "@/components/rank-gps/Hero";
 import { LockedGate } from "@/components/rank-gps/LockedGate";
@@ -211,8 +212,9 @@ export function RankGpsScreen() {
             </div>
           )}
 
+          <GpsPexo input={{ state: "ready", change, topMove: report.opportunity.moves[0]?.name ?? null }} testId="rank-gps-pexo" />
           <Hero report={report} change={change} targetPercentile={report.target?.targetPercentile ?? data.targetPercentile} onShare={() => setShare(true)} />
-          {view.coachNote && <CoachNote note={view.coachNote} />}
+          {view.coachNote && <CoachNote note={view.coachNote} change={change} />}
           {report.change && <WhyMoved change={report.change} />}
           <Route moves={report.opportunity.moves} target={report.target} targetPercentile={data.targetPercentile} track={report.track} locked={view.locked} />
           <OpportunityMap chapters={report.opportunity.chapters} locked={view.locked.fullOpportunityMap} />

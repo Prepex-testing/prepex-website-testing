@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AskSheet } from "@/components/pexo/AskSheet";
 import { celebrateFirstSession, PexoTour } from "@/components/pexo/PexoTour";
 import { Pexo, type PexoTap } from "@/components/pexo/Pexo";
@@ -25,7 +25,31 @@ export function HomePexo() {
   const home = state?.home ?? null;
   const pick = usePexoLine(home?.triggers ?? null, home?.context ?? {}, home?.key ?? "", home?.exclude ?? []);
   const nudge = state?.nudge ?? null;
-  const nudgePick = usePexoLine(nudge && !state?.care?.active ? nudge.trigger : null, nudge?.context ?? {}, nudge?.trigger ?? "");
+  // the soft card under the bubble: the pledge's result (once), the Wednesday check on the pledge (once), else the nudge
+  const [soft, setSoft] = useState<{ trigger: string; context: Record<string, string | number>; action: { label: string; href: string } | null } | null>(null);
+  const pledge = state?.pledge ?? null;
+  const decided = useRef<{ key: string; soft: typeof soft } | null>(null);
+  const softKey = `${state?.today}|${pledge?.settled?.weekStart}:${pledge?.settled?.result}|${pledge?.current?.mid}|${nudge?.trigger}|${state?.care?.active}`;
+  useEffect(() => {
+    if (!enabled || !state || state.care?.active) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- the soft card is decided once per state
+      setSoft(null);
+      return;
+    }
+    // decided once per state: marking is not repeatable, so a re-run (Strict Mode) reuses the first decision
+    if (decided.current?.key === softKey) {
+      setSoft(decided.current.soft);
+      return;
+    }
+    const wednesday = new Date(`${state.today}T00:00:00Z`).getUTCDay() === 3;
+    let next: typeof soft = nudge ? { trigger: nudge.trigger, context: nudge.context, action: nudge.action } : null;
+    if (pledge?.settled && pexoMark(`pledge.${pledge.settled.weekStart}`, true)) next = { trigger: pledge.settled.result === "hit" ? "pledge.hit" : "pledge.missed", context: {}, action: null };
+    else if (wednesday && pledge?.current?.mid && pexoMark(`pledge.mid.${pledge.current.weekStart}`, true)) next = { trigger: `pledge.mid.${pledge.current.mid}`, context: {}, action: null };
+    decided.current = { key: softKey, soft: next };
+    setSoft(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `softKey` captures the facts
+  }, [enabled, softKey]);
+  const nudgePick = usePexoLine(soft ? soft.trigger : null, soft?.context ?? {}, soft?.trigger ?? "");
   const [ask, setAsk] = useState(false);
   const [askLabel, setAskLabel] = useState("What should I do now?");
   const [egg, setEgg] = useState<PexoPick | null>(null);
@@ -98,12 +122,12 @@ export function HomePexo() {
           </button>
         </div>
       )}
-      {nudgePick && nudge && !nudgeGone && !state.care?.active && (
+      {nudgePick && soft && !nudgeGone && !state.care?.active && (
         <PexoBubble
           pick={nudgePick}
           size={48}
           testId="home-pexo-nudge"
-          actions={nudge.action ? [{ label: nudge.action.label, href: nudge.action.href }] : []}
+          actions={soft.action ? [{ label: soft.action.label, href: soft.action.href }] : []}
           onDismiss={() => setNudgeGone(true)}
           className="rounded-2xl border border-dashed border-border-subtle p-3"
         />

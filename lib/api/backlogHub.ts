@@ -1,5 +1,6 @@
 import { CORE_API_BASE_URL } from "@/lib/api/config";
 import { authenticatedRequest } from "@/lib/api/authRequest";
+import * as pexo from "@/lib/pexo/reactions";
 
 /** The Backlog log's hub, fast intake, target dates, and Welcome Back. core-service /api/backlog-items/* and /api/welcome-back. */
 
@@ -61,7 +62,11 @@ export const getBacklogHub = () => core<BacklogHub>("/backlog-items/hub");
 
 export type IntakeInput = { subjectId: number; chapterId: string; lectures: number; dpps: number; questions: number; tests: number; targetDate?: string | null };
 export type IntakeResult = { itemId: string; lane: Lane; reason: string; fullMinutes: number; laneMinutes: number; pace: Pace; merged: boolean };
-export const intakeBacklog = (input: IntakeInput) => core<IntakeResult>("/backlog-items/intake", send("POST", input));
+export const intakeBacklog = (input: IntakeInput) =>
+  core<IntakeResult>("/backlog-items/intake", send("POST", input)).then((r) => {
+    pexo.reactBacklogAdded();
+    return r;
+  });
 
 export const setBacklogTarget = (date: string | null) => core<{ date: string | null }>("/backlog-items/target", send("PUT", { date }));
 export const getFeasibility = (date: string) => core<Feasibility>(`/backlog-items/feasibility?date=${encodeURIComponent(date)}`);

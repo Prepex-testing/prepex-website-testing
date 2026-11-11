@@ -1,6 +1,7 @@
 import { CORE_API_BASE_URL } from "@/lib/api/config";
 import { apiRequest } from "@/lib/api/http";
 import { authenticatedRequest } from "@/lib/api/authRequest";
+import * as pexo from "@/lib/pexo/reactions";
 
 /**
  * My Notebooks — core-service /api/notebooks. One notebook system for mistakes and notes: chapter notebooks that appear the first time
@@ -126,13 +127,26 @@ export const getUsage = () => core<Usage>("/usage");
 
 export type ListedEntry = Entry & { thumbUrl: string | null };
 export const listEntries = (f: EntryFilter = {}) => core<{ items: ListedEntry[]; total: number }>(`/entries${query({ ...f, starred: f.starred ? true : undefined })}`);
-export const createEntry = (e: NewEntry) => core<Entry>("/entries", send("POST", e));
-export const createEntries = (entries: NewEntry[]) => core<Entry[]>("/entries/batch", send("POST", { entries }));
+export const createEntry = (e: NewEntry) =>
+  core<Entry>("/entries", send("POST", e)).then((r) => {
+    if (r.entryType === "mistake") pexo.reactMistakesSaved({ count: 1, silly: r.reason === "silly_calculation", fromMock: Boolean(r.mockId) });
+    return r;
+  });
+export const createEntries = (entries: NewEntry[]) =>
+  core<Entry[]>("/entries/batch", send("POST", { entries })).then((r) => {
+    const mistakes = r.filter((x) => x.entryType === "mistake");
+    if (mistakes.length > 0) pexo.reactMistakesSaved({ count: mistakes.length, fromMock: mistakes.some((x) => x.mockId) });
+    return r;
+  });
 export const getEntry = (id: string) => core<EntryWithAssets>(`/entries/${id}`);
 export const updateEntry = (id: string, patch: EntryPatch) => core<Entry>(`/entries/${id}`, send("PATCH", patch));
 export const deleteEntry = (id: string) => core<{ deleted: true }>(`/entries/${id}`, { method: "DELETE" });
 export const reopenEntry = (id: string) => core<Entry>(`/entries/${id}/reopen`, send("POST"));
-export const reviewEntry = (id: string, result: "correct" | "wrong", timeSpentSec?: number) => core<Entry>(`/entries/${id}/review`, send("POST", { result, ...(timeSpentSec !== undefined ? { timeSpentSec } : {}) }));
+export const reviewEntry = (id: string, result: "correct" | "wrong", timeSpentSec?: number) =>
+  core<Entry>(`/entries/${id}/review`, send("POST", { result, ...(timeSpentSec !== undefined ? { timeSpentSec } : {}) })).then((r) => {
+    pexo.reactMistakeReview(result, r.status === "mastered" && r.masteredAt !== null);
+    return r;
+  });
 export const getDue = (f: { notebookId?: string; chapterId?: string } = {}) => core<{ items: Entry[]; total: number }>(`/due${query(f)}`);
 export const getMistakeTest = (n = 10) => core<Entry[]>(`/test${query({ n })}`);
 export const setReasons = (items: { entryId: string; reason: Reason }[]) => core<{ updated: number }>("/reasons", send("POST", { items }));
