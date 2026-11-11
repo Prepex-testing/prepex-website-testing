@@ -13,6 +13,7 @@ import { getBoard, getBoardRules, getHall, getSocialSettings, profileHref, searc
 import { BOARDS, boardCaption, FILTERS, formatHours, gapText } from "@/lib/social/board";
 import { GlidePill } from "@/components/motion/GlidePill";
 import { CareNoCompare } from "@/components/pexo/CareNoCompare";
+import { BatchRank } from "@/components/pexo/SocialPexo";
 
 /** The XP leaderboards: Today, This Month and Most Improved, each filtered to the people who matter. */
 export default function LeaderboardPage() {
@@ -75,6 +76,7 @@ export default function LeaderboardPage() {
     <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-4 p-4 sm:p-6 lg:p-8" data-testid="leaderboard">
       <ProfileSubpageHeader title="Leaderboard" backHref="/home" />
       <CareNoCompare />
+      <BatchRank />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">

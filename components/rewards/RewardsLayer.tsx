@@ -1,5 +1,6 @@
 "use client";
 
+import { offerShare } from "@/lib/pexo/share";
 import confetti from "canvas-confetti";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -54,6 +55,7 @@ export function RewardsLayer() {
       } else if (e.type === "level_up") {
         // Pexo celebrates in the same moment (its line replaces nothing: the facts stay as they were)
         setMoments((m) => [...m, { id: nextId++, kind: "level_up", title: `Level ${e.level}`, lines: [e.title], pexo: pexoSay("level.up", { level: e.level, title: e.title }) }]);
+        offerShare({ kind: "level_up", title: `Level ${e.level}`, detail: e.title, mood: "celebrating" });
       } else if (e.type === "badges") {
         const hidden = e.badges.some((b) => b.hidden === true);
         setMoments((m) => [...m, { id: nextId++, kind: "badges", title: e.badges.length === 1 ? "New badge" : `${e.badges.length} new badges`, lines: e.badges.map((b) => `${b.title}: ${b.description}`), pexo: hidden ? pexoSay("badge.hidden") : pexoSay("badge.earned", { badge: e.badges[0]!.title }) }]);

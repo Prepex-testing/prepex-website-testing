@@ -37,6 +37,7 @@ import { ToggleRow } from "@/components/profile/ToggleRow";
 import { EditProfileModal } from "@/components/profile/EditProfileModal";
 import { StudyPreferencesModal } from "@/components/profile/StudyPreferencesModal";
 import { ProfileSocialSettings } from "@/components/social/ProfileSocialSettings";
+import { ClimbTogether } from "@/components/pexo/SocialPexo";
 import { TrophyIcons } from "@/components/ui/icons";
 import {
   ACADEMIC_LEVEL_LABEL,
@@ -568,6 +569,7 @@ export default function ProfilePage() {
       </div>
 
 
+      <ClimbTogether full />
       <ProfileSocialSettings />
 
       <ProfileRewards />

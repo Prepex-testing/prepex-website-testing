@@ -26,6 +26,8 @@ const PUBLIC_PATHS = [
   "/auth/callback",
   // Read-only notebook links a student chose to share: no sign-in needed to read them.
   "/shared",
+  // a friend's invite link (Pexo part D): opened before signing up
+  "/join",
   // Sentry verification page: a 404 unless NEXT_PUBLIC_SENTRY_TEST_ENABLED=true, so it is inert in production.
   "/sentry-test",
   // development-only gallery of Pexo's moods (the page itself 404s in production)

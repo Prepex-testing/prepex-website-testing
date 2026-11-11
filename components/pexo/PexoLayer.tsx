@@ -1,5 +1,7 @@
 "use client";
 
+import { PexoShareLayer } from "@/components/pexo/PexoShare";
+import { claimPendingInvite } from "@/lib/pexo/invite";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { PexoBubble } from "@/components/pexo/PexoBubble";
@@ -49,6 +51,8 @@ export function PexoLayer({ muted = false }: { muted?: boolean }) {
 
   useEffect(() => {
     void loadPexo();
+    // a friend's invite link opened before signing up: attributed once, whether or not Pexo is on
+    void claimPendingInvite();
   }, []);
 
   // the first visit to a screen: its bubble once per student, recorded only when it is really shown
@@ -71,7 +75,9 @@ export function PexoLayer({ muted = false }: { muted?: boolean }) {
     return () => clearTimeout(t);
   }, [transient]);
 
-  if (!enabled || !transient || muted) return null;
+  if (!enabled || muted) return null;
+  // the day's share offer waits for the reaction bubble to go: one bubble at a time
+  if (!transient) return <PexoShareLayer />;
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-[calc(124px+env(safe-area-inset-bottom))] z-[65] flex justify-center px-3 lg:inset-x-auto lg:bottom-6 lg:right-24 lg:justify-end lg:px-0" data-testid="pexo-layer">
       <div key={transient.key} className="motion-toast pointer-events-auto w-full max-w-[400px]">
