@@ -1,5 +1,6 @@
 "use client";
 
+import { Pexo } from "@/components/pexo/Pexo";
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -257,6 +258,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
                           item.isRead ? "bg-transparent" : "bg-cta"
                         }`}
                       />
+                      {item.type === "PEXO" && <Pexo size={24} mood="happy" />}
                       <span className="min-w-0 flex-1">
                         <span className="flex items-baseline justify-between gap-2">
                           <span
@@ -271,7 +273,8 @@ export function NotificationBell({ className }: NotificationBellProps) {
                           </span>
                         </span>
                         <span className="mt-0.5 block break-words text-xs leading-5 text-muted">
-                          {item.message}
+                          {/* the title already says Pexo: the stored "Pexo: " prefix is for channels without one */}
+                          {item.type === "PEXO" ? item.message.replace(/^Pexo:\s*/, "") : item.message}
                         </span>
                       </span>
                     </button>

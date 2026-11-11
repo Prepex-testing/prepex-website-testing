@@ -36,7 +36,9 @@ export type NotificationType =
   | "MOCK_RECOVERY_DEFER"
   | "BURNOUT_RECOVERY_SUGGESTED"
   | "BURNOUT_RECOVERY_ACTIVATED"
-  | "BURNOUT_CRITICAL";
+  | "BURNOUT_CRITICAL"
+  /** Pexo phase 1 part E: a Pexo-voiced reminder ("Pexo: ..."). */
+  | "PEXO";
 
 export type NotificationCard = {
   id: string;
