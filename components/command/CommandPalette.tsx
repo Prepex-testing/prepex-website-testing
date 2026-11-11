@@ -1,5 +1,6 @@
 "use client";
 
+import { PexoEmpty } from "@/components/pexo/PexoEmpty";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -158,7 +159,7 @@ export function CommandPalette() {
           <kbd className="hidden rounded-md border border-border-subtle px-1.5 py-0.5 text-[11px] text-muted sm:block">Esc</kbd>
         </div>
         <ul id="palette-results" role="listbox" aria-label="Commands" className="max-h-[50vh] overflow-y-auto p-1.5">
-          {results.length === 0 && <li className="px-3 py-6 text-center text-[14px] text-muted">Nothing matches that.</li>}
+          {results.length === 0 && <li className="px-3 py-6 text-center text-[14px] text-muted"><PexoEmpty trigger="empty.search" size={24}>Nothing matches that.</PexoEmpty></li>}
           {results.map((c, i) => (
             <li
               key={c.id}

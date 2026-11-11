@@ -1,5 +1,6 @@
 "use client";
 
+import { PexoEmpty } from "@/components/pexo/PexoEmpty";
 import { useState } from "react";
 import { GhostButton } from "@/components/ui/GhostButton";
 import { applyBacklogFix, getFeasibility, hm, LANE_LABEL, setBacklogLane, setBacklogTarget, type BacklogHub as Hub, type Feasibility, type Fix, type HubItem, type Lane } from "@/lib/api/backlogHub";
@@ -119,7 +120,7 @@ export function BacklogHub({ hub, onChanged }: { hub: Hub; onChanged: () => void
         <p className="text-[12px] font-semibold uppercase tracking-wide text-muted">To do</p>
         <p className="mt-1 text-[32px] font-extrabold leading-none text-ink" data-testid="hub-total-hours">{hm(hub.totalMinutes)}</p>
         <p className="mt-2 text-[13px] text-muted">
-          {empty ? "Nothing on your backlog." : `${hub.items.length} ${hub.items.length === 1 ? "item" : "items"}${hub.parkedMinutes > 0 ? `, ${hm(hub.parkedMinutes)} parked for later` : ""}. Estimated at ${hub.pace.source === "own" ? "your own pace" : "typical pace until you have logged more"}.`}
+          {empty ? <PexoEmpty trigger="empty.backlog">Nothing on your backlog.</PexoEmpty> : `${hub.items.length} ${hub.items.length === 1 ? "item" : "items"}${hub.parkedMinutes > 0 ? `, ${hm(hub.parkedMinutes)} parked for later` : ""}. Estimated at ${hub.pace.source === "own" ? "your own pace" : "typical pace until you have logged more"}.`}
         </p>
         {hub.todayQuotaMinutes > 0 && <p className="mt-1 text-[13px] text-ink" data-testid="hub-quota">Today&apos;s plan sets aside {hm(hub.todayQuotaMinutes)} for it.</p>}
       </section>

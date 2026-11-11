@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 import type { PexoBatch, PexoClientEvent, PexoState } from "@/lib/api/pexo";
-import { getXpSummary } from "@/lib/api/xp";
+import { getXpSummary, onXpSummary } from "@/lib/api/xp";
 import { quietAllows, selectLine, type PexoContext, type PexoLibrary, type PexoPick } from "@/lib/pexo/engine";
 import library from "@/lib/pexo/library.json";
 
@@ -52,8 +52,10 @@ export const pexoState = (): PexoState | null => state;
 export const pexoEnabled = (): boolean => state?.enabled === true;
 
 /** Takes the state a summary carried. Lines shown on this device since then stay marked. */
+let lastPrimed: PexoState | null = null;
 export function primePexo(next: PexoState | null | undefined): void {
-  if (!next) return;
+  if (!next || next === lastPrimed) return; // the request layer hands back the same remembered object
+  lastPrimed = next;
   const today = next.today;
   const shown = { ...next.shown };
   for (const id of pending.shown) shown[id] = today;
@@ -83,7 +85,12 @@ export function setPexoState(next: PexoState): void {
   primePexo(next);
 }
 
-export type SayOptions = { /** Keep the line out of the rotation history (a title, a label). */ silent?: boolean };
+export type SayOptions = {
+  /** Keep the line out of the rotation history (a title, a label). */
+  silent?: boolean;
+  /** Line ids that would not be true right now. */
+  exclude?: readonly string[];
+};
 
 /**
  * The line Pexo says for a trigger, or null: Pexo is off, Quiet mode does not allow it, or no variant can be filled.
@@ -91,7 +98,7 @@ export type SayOptions = { /** Keep the line out of the rotation history (a titl
  */
 export function pexoSay(trigger: string | readonly string[], context: PexoContext = {}, options: SayOptions = {}): PexoPick | null {
   if (!state?.enabled) return null;
-  const pick = selectLine(PEXO_LIBRARY, trigger, context, { language: state.language, shown: state.shown }, state.today);
+  const pick = selectLine(PEXO_LIBRARY, trigger, context, { language: state.language, shown: state.shown }, state.today, options.exclude ?? []);
   if (!pick) return null;
   if (state.bubbles === "quiet" && !quietAllows(pick.trigger, pick.mood)) return null;
   if (!options.silent) markShown(pick.id);
@@ -178,6 +185,7 @@ export function dismissPexo(key?: number): void {
 /** Tests and sign-out. */
 export function resetPexo(): void {
   state = null;
+  lastPrimed = null;
   transient = null;
   loading = null;
   pending.shown.clear();
@@ -186,3 +194,6 @@ export function resetPexo(): void {
   pending.events.length = 0;
   publish();
 }
+
+// every XP summary the app fetches (Home, the reward refresh after a tick) carries Pexo's latest state
+if (typeof onXpSummary === "function") onXpSummary((summary) => primePexo(summary.pexo));

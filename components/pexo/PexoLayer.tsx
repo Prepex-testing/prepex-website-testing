@@ -1,8 +1,37 @@
 "use client";
 
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { PexoBubble } from "@/components/pexo/PexoBubble";
-import { dismissPexo, loadPexo, usePexo } from "@/lib/pexo/store";
+import { dismissPexo, loadPexo, pexoFirstVisit, pexoMark, pexoReact, usePexo } from "@/lib/pexo/store";
+
+/**
+ * The screens with a first-visit bubble, by path. The longest prefix wins. The focus timer is not here: nothing speaks
+ * on the timer's screen from the shell (the timer shows its own first-visit line).
+ */
+export const FIRST_VISIT_PATHS: [string, string][] = [
+  ["/analytics/rank-gps", "rank_gps"],
+  ["/home/leaderboard", "leaderboard"],
+  ["/home/resource-library", "library"],
+  ["/home/backlog", "backlog"],
+  ["/logs/revision", "revision"],
+  ["/logs/backlog", "backlog"],
+  ["/analytics", "analytics"],
+  ["/notebooks", "notebooks"],
+  ["/planner", "planner"],
+  ["/profile", "profile"],
+  ["/goals", "goals"],
+  ["/logs", "logs"],
+  ["/calendar", "calendar"],
+  ["/syllabus", "syllabus"],
+  ["/sessions", "sessions"],
+  ["/timetable", "timetable"],
+];
+
+export function firstVisitScreen(pathname: string): string | null {
+  const hit = FIRST_VISIT_PATHS.filter(([p]) => pathname === p || pathname.startsWith(`${p}/`)).sort((a, b) => b[0].length - a[0].length)[0];
+  return hit ? hit[1] : null;
+}
 
 /** How long a reaction stays before it leaves on its own. First-visit and care bubbles stay until dismissed. */
 export const REACTION_MS = 5200;
@@ -14,10 +43,27 @@ export const REACTION_MS = 5200;
  */
 export function PexoLayer({ muted = false }: { muted?: boolean }) {
   const { enabled, transient } = usePexo();
+  const pathname = usePathname() ?? "";
+  const search = useSearchParams();
+  const welcome = pathname === "/goals" && search?.get("welcome") === "1";
 
   useEffect(() => {
     void loadPexo();
   }, []);
+
+  // the first visit to a screen: its bubble once per student, recorded only when it is really shown
+  useEffect(() => {
+    if (!enabled || muted) return;
+    // straight from onboarding into this week's goals: the last onboarding line instead of the plain first visit
+    if (welcome && pexoMark("onb.goals", true)) {
+      pexoFirstVisit("goals");
+      pexoReact("onb.goals", {}, { kind: "first_visit" });
+      return;
+    }
+    const screen = firstVisitScreen(pathname);
+    if (!screen || !pexoFirstVisit(screen)) return;
+    pexoReact(`first_visit.${screen}`, {}, { kind: "first_visit" });
+  }, [enabled, muted, pathname, welcome]);
 
   useEffect(() => {
     if (!transient || transient.sticky) return;

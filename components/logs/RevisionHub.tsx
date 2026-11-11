@@ -1,5 +1,6 @@
 "use client";
 
+import { PexoEmpty } from "@/components/pexo/PexoEmpty";
 import { useEffect, useState } from "react";
 import { GhostButton } from "@/components/ui/GhostButton";
 import { getRevisionHub, type Freshness, type HealthTile, type RevisionHub as Hub } from "@/lib/api/revisionLogs";
@@ -80,7 +81,7 @@ export function RevisionHub() {
         )}
         {hub.todayDue.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-border-strong p-5 text-center text-[14px] text-muted" data-testid="rev-hub-today-empty">
-            {hub.tiles.length === 0 ? "Chapters you finish show up here for revision, starting the next day." : "Nothing to revise today."}
+            {hub.tiles.length === 0 ? <PexoEmpty trigger="empty.revision">Chapters you finish show up here for revision, starting the next day.</PexoEmpty> : "Nothing to revise today."}
           </p>
         ) : (
           <ul className="flex flex-col gap-3">

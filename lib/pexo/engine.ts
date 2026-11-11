@@ -82,10 +82,12 @@ export function stableHash(text: string): number {
 /**
  * Picks the line to say for a trigger (or the first of several triggers that has a sayable line).
  * Returns null when no variant can be filled: the caller then shows nothing.
+ * `exclude` lists line ids that would not be TRUE right now (a line with no placeholder can still make a claim, such as
+ * "You're ahead of yesterday"): the caller knows the facts, so the caller rules those lines out.
  */
-export function selectLine(library: PexoLibrary, trigger: string | readonly string[], context: PexoContext, user: PexoUser, today: string): PexoPick | null {
+export function selectLine(library: PexoLibrary, trigger: string | readonly string[], context: PexoContext, user: PexoUser, today: string, exclude: readonly string[] = []): PexoPick | null {
   for (const t of typeof trigger === 'string' ? [trigger] : trigger) {
-    const fits = library.lines.filter((l) => l.trigger === t && canFill(l, context, user.language))
+    const fits = library.lines.filter((l) => l.trigger === t && !exclude.includes(l.id) && canFill(l, context, user.language))
     if (fits.length === 0) continue
     // least recently shown first (never shown = oldest); a line shown within the rotation window only wins when every
     // other variant was shown even more recently or none exists

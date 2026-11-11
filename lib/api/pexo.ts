@@ -24,7 +24,32 @@ export type PexoState = {
   marks: Record<string, string>;
   /** Today's IST date on the server. */
   today: string;
+  /** Whole days since the student signed up (the tour is for the first week). */
+  daysSinceSignup?: number;
+  /** Home: which line family Pexo opens with, the facts to fill it, and line ids that would be untrue right now. */
+  home?: PexoHomeBubble | null;
+  /** "Your Prepex map". */
+  quests?: PexoQuests | null;
+  /** Today's one smart nudge, if any. */
+  nudge?: PexoNudge | null;
+  care?: PexoCare;
 };
+
+export type PexoQuest = "focus" | "dayclose" | "revision" | "mistake" | "practice" | "backlog" | "friend";
+export type PexoHomeBubble = { key: string; triggers: string[]; context: Record<string, string | number>; exclude: string[]; actions: { label: string; href: string }[] };
+export type PexoQuests = { done: PexoQuest[]; justDone: PexoQuest[]; recommend: PexoQuest | null; allDone: boolean };
+export type PexoNudge = { trigger: string; context: Record<string, string | number>; action: { label: string; href: string } | null };
+export type PexoCare = { active: boolean; reason: "low_mood" | "burnout" | "rest_day" | null; distress: boolean };
+
+export type PexoAskAnswer = {
+  trigger: "ask.next.task" | "ask.next.revision" | "ask.next.mistakes" | "ask.next.backlog" | "ask.next.rest";
+  context: Record<string, string | number>;
+  action:
+    | { kind: "focus"; label: string; taskId?: string; subjectId?: number; chapterId?: string; taskType: "self_study" | "revision" | "practice" | "lecture" | "backlog"; minutes: number }
+    | { kind: "link"; label: string; href: string }
+    | null;
+};
+export type PexoTeaser = { trigger: "dayclose.teaser.revision" | "dayclose.teaser"; context: Record<string, string> };
 
 export type PexoClientEvent = "tour_completed" | "tour_skipped" | "onboarding_step_completed" | "share_prompt_shown" | "shared" | "invite_sent" | "notification_opened" | "bubble_action";
 
@@ -37,5 +62,10 @@ export type PexoBatch = {
 };
 
 export type PexoSettingsInput = { language?: PexoLanguage; bubbles?: "normal" | "quiet"; notifications?: boolean };
+
+/** "What should I do now?": asked when the student taps Pexo. */
+export const askPexo = () => core<PexoAskAnswer | null>("/ask");
+/** The line Day Close ends on. */
+export const getPexoTeaser = () => core<PexoTeaser | null>("/teaser");
 
 export const updatePexoSettings = (input: PexoSettingsInput) => core<PexoState>("/settings", { method: "PUT", body: JSON.stringify(input) });

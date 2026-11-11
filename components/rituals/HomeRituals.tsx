@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { OPEN_DAY_CLOSE_EVENT } from "@/components/pexo/HomePexo";
 import { ClassCoverageCard } from "@/components/rituals/ClassCoverageCard";
 import { DayCloseFlow } from "@/components/rituals/DayCloseFlow";
 import { WelcomeBack } from "@/components/home/WelcomeBack";
@@ -50,13 +51,19 @@ export function HomeRituals() {
   useEffect(() => {
     load();
   }, [load]);
+  // Pexo's "Close my day" button on Home opens the same flow
+  useEffect(() => {
+    const openIt = () => setOpen(true);
+    window.addEventListener(OPEN_DAY_CLOSE_EVENT, openIt);
+    return () => window.removeEventListener(OPEN_DAY_CLOSE_EVENT, openIt);
+  }, []);
 
   const dayReady = day?.status === "ready";
   return (
     <div className="flex flex-col gap-4" data-testid="home-rituals">
       <WelcomeBack onDone={() => window.location.reload()} />
       {dayReady && day && (
-        <section className="flex flex-col gap-3 rounded-2xl border border-border-subtle bg-surface-elevated-2 p-4 sm:flex-row sm:items-center sm:justify-between" data-testid="day-close-card">
+        <section className="flex flex-col gap-3 rounded-2xl border border-border-subtle bg-surface-elevated-2 p-4 sm:flex-row sm:items-center sm:justify-between" data-testid="day-close-card" id="day-close">
           <div className="min-w-0">
             <h2 className="text-[18px] font-extrabold text-ink">Close your day</h2>
             <p className="text-[13px] text-muted" data-testid="day-close-summary">{summaryLine(day.summary)}</p>

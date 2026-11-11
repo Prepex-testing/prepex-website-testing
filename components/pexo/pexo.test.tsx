@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/api/xp", () => ({ getXpSummary: vi.fn(), sendHeartbeat: vi.fn(async () => ({ activeSeconds: 0, countsToday: false, thresholdSeconds: 120 })) }));
+vi.mock("@/lib/api/xp", () => ({ onXpSummary: vi.fn(() => () => undefined), getXpSummary: vi.fn(), sendHeartbeat: vi.fn(async () => ({ activeSeconds: 0, countsToday: false, thresholdSeconds: 120 })) }));
 vi.mock("@/lib/api/pexo", async (orig) => ({ ...(await orig<typeof import("@/lib/api/pexo")>()), updatePexoSettings: vi.fn() }));
 
 import { Pexo } from "@/components/pexo/Pexo";
