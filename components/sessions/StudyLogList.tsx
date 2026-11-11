@@ -1,5 +1,6 @@
 "use client";
 
+import { PexoEmpty } from "@/components/pexo/PexoEmpty";
 import type { StudyLogRow } from "@/lib/api/focus";
 import { dayHeading, formatMinutes, groupByDay } from "@/lib/study/format";
 import { subjectColor, type SubjectLookup } from "@/lib/study/subjects";
@@ -19,8 +20,10 @@ export function StudyLogList({ rows, lookup, now, onEdit, onDelete }: Props) {
   if (rows.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-brand/25 p-6 text-center" data-testid="log-empty">
-        <p className="text-[16px] font-bold text-ink">Nothing logged yet</p>
-        <p className="mt-1 text-[13px] text-muted">Finish a focus session or log the time you studied, and it shows up here.</p>
+        <PexoEmpty trigger="empty.sessions" size={96} action={{ label: "Start a focus session", href: "/focus/start?origin=standalone" }}>
+          <p className="text-[16px] font-bold text-ink">Nothing logged yet</p>
+          <p className="mt-1 text-[13px] text-muted">Finish a focus session or log the time you studied, and it shows up here.</p>
+        </PexoEmpty>
       </div>
     );
   }

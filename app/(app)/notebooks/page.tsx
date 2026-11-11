@@ -1,5 +1,6 @@
 "use client";
 
+import { PexoEmpty } from "@/components/pexo/PexoEmpty";
 import { Camera, ClipboardPaste, MoreVertical, Plus, Search, Trash2, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -332,7 +333,9 @@ export default function NotebooksPage() {
         <PageLoader label="Opening your notebooks…" />
       ) : shelf.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border-subtle p-10 text-center" data-testid="shelf-empty">
-          <p className="text-[15px] font-semibold text-ink">Your notebooks start with your first mistake.</p>
+          <PexoEmpty trigger="empty.notebooks" size={96}>
+            <p className="text-[15px] font-semibold text-ink">Your notebooks start with your first mistake.</p>
+          </PexoEmpty>
           <p className="max-w-md text-[13px] text-muted">Photograph a question you got wrong, or finish a practice set. Each chapter gets its own notebook the first time a page lands in it.</p>
           <CoralButton onClick={() => camera.current?.click()}>Add a mistake</CoralButton>
         </div>

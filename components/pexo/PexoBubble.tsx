@@ -72,7 +72,7 @@ export function PexoBubble({ pick, actions = [], onDismiss, size = 48, prop, onT
  * Picks a line once for a given key (a trigger and the facts it needs) and keeps it while the key is the same, so a
  * re-render never re-rolls the line or records it twice. Null while Pexo is off, quiet, or has nothing it can say.
  */
-export function usePexoLine(trigger: string | readonly string[] | null, context: PexoContext = {}, key = ""): PexoPick | null {
+export function usePexoLine(trigger: string | readonly string[] | null, context: PexoContext = {}, key = "", exclude: readonly string[] = []): PexoPick | null {
   const { enabled, state } = usePexo();
   const [pick, setPick] = useState<PexoPick | null>(null);
   const triggerKey = trigger === null ? "" : typeof trigger === "string" ? trigger : trigger.join("|");
@@ -80,7 +80,7 @@ export function usePexoLine(trigger: string | readonly string[] | null, context:
   const bubbles = state?.bubbles;
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- the line is chosen once per key, after Pexo's state is known
-    setPick(enabled && trigger !== null ? pexoSay(trigger, context) : null);
+    setPick(enabled && trigger !== null ? pexoSay(trigger, context, { exclude }) : null);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `key` stands for the context
   }, [enabled, triggerKey, key, language, bubbles]);
   return pick;

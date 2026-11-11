@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
+import { Suspense, useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
 import { CommandPalette } from "@/components/command/CommandPalette";
 import { MotionProvider } from "@/components/motion/GlidePill";
 import { PageLoader } from "@/components/ui/PageLoader";
@@ -92,7 +92,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       {!isFocusMode && <Heartbeat />}
       <RewardsLayer />
       {/* nothing speaks during a focus session (Pexo guide, section 4) */}
-      <PexoLayer muted={isFocusMode} />
+      <Suspense fallback={null}>
+        <PexoLayer muted={isFocusMode} />
+      </Suspense>
       <BusyNotice />
       <div
         className={`relative hidden shrink-0 transition-[width] duration-[var(--dur-emphasis)] ease-[var(--ease-out)] lg:block ${

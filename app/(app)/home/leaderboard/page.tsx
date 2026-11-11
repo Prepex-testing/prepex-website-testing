@@ -1,5 +1,6 @@
 "use client";
 
+import { PexoEmpty } from "@/components/pexo/PexoEmpty";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ProfileAvatar, StudyingNowStrip } from "@/components/social/social";
@@ -136,7 +137,7 @@ export default function LeaderboardPage() {
 
           {data && data.rows.length === 0 && (
             <p className={`${CARD} text-[14px] text-muted`} data-testid="board-empty">
-              {filter === "following" ? "Follow a few students to see them here." : "Nobody has XP on this board yet. Log some study and you will be first."}
+              {filter === "following" ? <PexoEmpty trigger="empty.leaderboard.following">Follow a few students to see them here.</PexoEmpty> : "Nobody has XP on this board yet. Log some study and you will be first."}
             </p>
           )}
 

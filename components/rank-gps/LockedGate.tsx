@@ -1,3 +1,4 @@
+import { PexoEmpty } from "@/components/pexo/PexoEmpty";
 import { Check } from "lucide-react";
 import { StatCard } from "@/components/stats/StatCard";
 import { COPY } from "@/lib/rankGps/labels";
@@ -17,7 +18,8 @@ export function LockedGate({ gate }: { gate: GateState }) {
   ];
   return (
     <StatCard title={COPY.lockedTitle} subtitle={COPY.lockedSub.toUpperCase()}>
-      <div className="flex flex-col items-center gap-6 sm:flex-row" data-testid="rank-gps-locked">
+      <PexoEmpty trigger="empty.rank_gps.locked">{null}</PexoEmpty>
+      <div className="mt-4 flex flex-col items-center gap-6 sm:flex-row" data-testid="rank-gps-locked">
         <div className="relative size-28 shrink-0">
           <svg viewBox="0 0 100 100" className="size-full -rotate-90" aria-hidden>
             <circle cx={50} cy={50} r={R} fill="none" strokeWidth={9} className="stroke-tint-strong" />

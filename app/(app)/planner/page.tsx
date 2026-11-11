@@ -1,5 +1,6 @@
 "use client";
 
+import { PexoEmpty } from "@/components/pexo/PexoEmpty";
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -188,6 +189,9 @@ function PlannerScreen() {
 
           {visible.length === 0 ? (
             <section className="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-brand/25 p-8 text-center" data-testid="planner-empty">
+              {!manual && day.capacity?.slotMinutes === 0 && (
+                <PexoEmpty trigger="empty.planner.no_slots" action={{ label: "Open timetable", href: "/timetable" }}>{null}</PexoEmpty>
+              )}
               <p className="text-[16px] font-bold leading-snug text-ink">
                 {manual ? "You're in manual mode. Add tasks yourself with Add task." : "No plan yet for this day. Build it from your weekly goals."}
               </p>

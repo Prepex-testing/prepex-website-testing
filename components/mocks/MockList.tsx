@@ -1,5 +1,6 @@
 "use client";
 
+import { PexoEmpty } from "@/components/pexo/PexoEmpty";
 import type { MockTest } from "@/lib/api/mocks";
 import { approxRank, labelOfPattern, labelOfType, SUBJECT_LABEL } from "@/lib/insights/mockMath";
 
@@ -25,7 +26,7 @@ export function MockList({ rows, hasMore, onLoadMore, onEdit, onDelete, onPlanWe
   if (rows.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-brand/20 p-6 text-center text-[14px] text-muted" data-testid="mocks-empty">
-        No mock tests yet. Log one and your trend, projected rank and weak chapters start building.
+        <PexoEmpty trigger="empty.mocks">No mock tests yet. Log one and your trend, projected rank and weak chapters start building.</PexoEmpty>
       </p>
     );
   }

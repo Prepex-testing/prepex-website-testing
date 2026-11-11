@@ -28,7 +28,25 @@ export type XpSummary = {
   pexo?: PexoState | null;
 };
 
-export const getXpSummary = () => core<XpSummary>("/xp/summary");
+type SummaryListener = (summary: XpSummary) => void;
+const summaryListeners = new Set<SummaryListener>();
+/** Told about every summary that arrives (Pexo keeps its state fresh from the call the app already makes). */
+export function onXpSummary(listener: SummaryListener): () => void {
+  summaryListeners.add(listener);
+  return () => summaryListeners.delete(listener);
+}
+
+export const getXpSummary = () =>
+  core<XpSummary>("/xp/summary").then((summary) => {
+    for (const l of summaryListeners) {
+      try {
+        l(summary);
+      } catch {
+        /* a listener must never break the summary */
+      }
+    }
+    return summary;
+  });
 
 export type HeartbeatResult = { activeSeconds: number; countsToday: boolean; thresholdSeconds: number };
 /** `pexo` is what Pexo showed since the last beat: it rides this call so a bubble never costs a request of its own. */

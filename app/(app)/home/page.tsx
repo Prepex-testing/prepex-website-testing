@@ -53,6 +53,9 @@ import {
 } from "@/components/ui/icons";
 import { DailyInsightCard } from "@/components/home/DailyInsightCard";
 import { HomeTop } from "@/components/home/HomeTop";
+import { HomePexo } from "@/components/pexo/HomePexo";
+import { PrepexMap } from "@/components/pexo/PrepexMap";
+import { usePexo } from "@/lib/pexo/store";
 import { HomeRituals } from "@/components/rituals/HomeRituals";
 import { NoGoalsBanner } from "@/components/planner/NoGoalsPrompt";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
@@ -131,6 +134,7 @@ export default function HomePage() {
   const storedFullName = useStoredFullName();
   const firstName = storedFullName.trim().split(/\s+/)[0] || "there";
   const greeting = useGreeting();
+  const { enabled: pexoOn } = usePexo();
 
   const [isRegenerateOpen, setRegenerateOpen] = useState(false);
   const [isCheckInOpen, setCheckInOpen] = useState(false);
@@ -422,9 +426,14 @@ export default function HomePage() {
         </div>
       </div>
 
+      <HomePexo />
+
       <HomeRituals />
 
-      <NoGoalsBanner />
+      <PrepexMap />
+
+      {/* with Pexo on, the "no goals" nudge is Pexo's own Home line */}
+      {!pexoOn && <NoGoalsBanner />}
 
       <HomeTop />
 
