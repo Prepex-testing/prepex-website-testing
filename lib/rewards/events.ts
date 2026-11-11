@@ -8,7 +8,7 @@ import { getRewards, getXpSummary, markBadgesSeen, type BadgeInfo, type RecordKi
 export type RewardEvent =
   | { type: "xp"; amount: number; total: number }
   | { type: "level_up"; level: number; title: string }
-  | { type: "badges"; badges: Pick<BadgeInfo, "key" | "title" | "description">[] }
+  | { type: "badges"; badges: (Pick<BadgeInfo, "key" | "title" | "description"> & { hidden?: boolean })[] }
   | { type: "record"; kind: RecordKind; value: number; previous: number | null };
 
 type Listener = (event: RewardEvent) => void;
@@ -77,7 +77,7 @@ export async function refreshXp(): Promise<number> {
       const rewards = await getRewards();
       const fresh = rewards.badges.filter((b) => rewards.unseen.includes(b.key));
       if (fresh.length > 0) {
-        emitReward({ type: "badges", badges: fresh.map(({ key, title, description }) => ({ key, title, description })) });
+        emitReward({ type: "badges", badges: fresh.map(({ key, title, description, hidden }) => ({ key, title, description, hidden })) });
         haptic([20, 40, 20]);
         void markBadgesSeen(fresh.map((b) => b.key)).catch(() => undefined);
       }

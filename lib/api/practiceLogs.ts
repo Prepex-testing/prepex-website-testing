@@ -1,5 +1,6 @@
 import { CORE_API_BASE_URL } from "@/lib/api/config";
 import { authenticatedRequest } from "@/lib/api/authRequest";
+import * as pexo from "@/lib/pexo/reactions";
 import { query, type AddToPlannerInput, type HeatBand, type Page, type Period, type PlannerPlacement } from "@/lib/api/logsCommon";
 
 /**
@@ -114,7 +115,10 @@ export function listPracticeLogs(q: { subjectId?: number | null; chapterId?: str
 }
 
 export function createPracticeLog(input: NewPractice) {
-  return request<{ success: true; data: PracticeLog }>("", { method: "POST", body: JSON.stringify(input) });
+  return request<{ success: true; data: PracticeLog }>("", { method: "POST", body: JSON.stringify(input) }).then((r) => {
+    pexo.reactQuickLog();
+    return r;
+  });
 }
 
 export function updatePracticeLog(id: string, patch: Partial<NewPractice>) {

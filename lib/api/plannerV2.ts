@@ -1,5 +1,6 @@
 import { CORE_API_BASE_URL } from "@/lib/api/config";
 import { authenticatedRequest } from "@/lib/api/authRequest";
+import * as pexo from "@/lib/pexo/reactions";
 
 /**
  * Planner v2 — core-service /api/planner/v2/*. Times are minutes of the student's day (IST), so the screens never do
@@ -169,12 +170,19 @@ export type CompleteInput = {
 };
 
 export function completePlanTask(id: string, input: CompleteInput) {
-  return req<{ task: PlanTask; alreadyDone: boolean }>(`/tasks/${id}/complete`, post(input));
+  return req<{ task: PlanTask; alreadyDone: boolean }>(`/tasks/${id}/complete`, post(input)).then((r) => {
+    // Pexo's one line for the tick (a rating, practice accuracy, a lecture, a revision, or plain done)
+    if (!r.data.alreadyDone) pexo.reactTaskDone({ ...(input.recall ? { recall: input.recall } : {}), ...(input.practice ? { practice: input.practice } : {}), kind: r.data.task.kind, chapter: r.data.task.chapterName });
+    return r;
+  });
 }
 
 /** Takes back a completion made moments ago (the planner offers it for 5 seconds). XP and the logs it wrote are reversed. */
 export function undoPlanTask(id: string) {
-  return req<{ task: PlanTask; undone: boolean }>(`/tasks/${id}/undo`, post({}));
+  return req<{ task: PlanTask; undone: boolean }>(`/tasks/${id}/undo`, post({})).then((r) => {
+    if (r.data.undone) pexo.reactTaskUndo();
+    return r;
+  });
 }
 
 export function getPracticeOptions(id: string) {

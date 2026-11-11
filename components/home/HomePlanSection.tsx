@@ -12,6 +12,7 @@ import type { usePlanDay } from "@/components/planner/usePlanDay";
 import { useTaskActions } from "@/components/planner/useTaskActions";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { nowMinutes } from "@/lib/planner/format";
+import { reactAllTasksDone } from "@/lib/pexo/reactions";
 
 type Plan = ReturnType<typeof usePlanDay>;
 
@@ -38,6 +39,11 @@ export function HomePlanSection({ plan, onChanged }: { plan: Plan; onChanged?: (
   }, []);
 
   const live = day ? day.tasks.filter((t) => t.status !== "rolled_over") : [];
+  // every task of today ticked: Pexo celebrates once (the plan has to have had something in it)
+  const allDone = Boolean(day?.isToday) && live.length > 0 && live.every((t) => t.status === "done" || t.status === "skipped") && live.some((t) => t.status === "done");
+  useEffect(() => {
+    if (allDone && day) reactAllTasksDone(day.date);
+  }, [allDone, day]);
   const firstOpen = live.filter((t) => t.status === "pending" || t.status === "in_progress").sort((a, b) => (a.startMin ?? 9999) - (b.startMin ?? 9999))[0];
 
   async function build() {

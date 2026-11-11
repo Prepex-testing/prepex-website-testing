@@ -7,8 +7,11 @@ import { CoralButton } from "@/components/ui/CoralButton";
 import { RECORD_LABELS } from "@/lib/api/xp";
 import { onReward, primeXp, type RewardEvent } from "@/lib/rewards/events";
 import { getXpSummary } from "@/lib/api/xp";
+import { Pexo } from "@/components/pexo/Pexo";
+import type { PexoPick } from "@/lib/pexo/engine";
+import { pexoReact, pexoSay, usePexo } from "@/lib/pexo/store";
 
-type Moment = { id: number; kind: "level_up" | "badges"; title: string; lines: string[] };
+type Moment = { id: number; kind: "level_up" | "badges"; title: string; lines: string[]; pexo: PexoPick | null };
 
 let nextId = 1;
 
@@ -19,6 +22,7 @@ let nextId = 1;
  */
 export function RewardsLayer() {
   const reduce = useReducedMotion();
+  const { enabled: pexoOn } = usePexo();
   const [pop, setPop] = useState<{ id: number; text: string } | null>(null);
   const [toasts, setToasts] = useState<{ id: number; text: string }[]>([]);
   const [moments, setMoments] = useState<Moment[]>([]);
@@ -48,11 +52,14 @@ export function RewardsLayer() {
         setPop({ id, text: `+${e.amount} XP` });
         later(() => setPop((p) => (p?.id === id ? null : p)), 1300);
       } else if (e.type === "level_up") {
-        setMoments((m) => [...m, { id: nextId++, kind: "level_up", title: `Level ${e.level}`, lines: [e.title] }]);
+        // Pexo celebrates in the same moment (its line replaces nothing: the facts stay as they were)
+        setMoments((m) => [...m, { id: nextId++, kind: "level_up", title: `Level ${e.level}`, lines: [e.title], pexo: pexoSay("level.up", { level: e.level, title: e.title }) }]);
       } else if (e.type === "badges") {
-        setMoments((m) => [...m, { id: nextId++, kind: "badges", title: e.badges.length === 1 ? "New badge" : `${e.badges.length} new badges`, lines: e.badges.map((b) => `${b.title}: ${b.description}`) }]);
+        const hidden = e.badges.some((b) => b.hidden === true);
+        setMoments((m) => [...m, { id: nextId++, kind: "badges", title: e.badges.length === 1 ? "New badge" : `${e.badges.length} new badges`, lines: e.badges.map((b) => `${b.title}: ${b.description}`), pexo: hidden ? pexoSay("badge.hidden") : pexoSay("badge.earned", { badge: e.badges[0]!.title }) }]);
       } else if (e.type === "record") {
         const meta = RECORD_LABELS[e.kind];
+        pexoReact("record.new", { record: `${meta.label} ${e.value}${meta.unit}` });
         const id = nextId++;
         setToasts((t) => [...t, { id, text: `New record: ${meta.label} ${e.value}${meta.unit}` }]);
         later(() => setToasts((t) => t.filter((x) => x.id !== id)), 4000);
@@ -117,6 +124,7 @@ export function RewardsLayer() {
               transition={{ type: "spring", stiffness: 260, damping: 22 }}
               className="flex w-full max-w-[360px] flex-col items-center gap-3 rounded-3xl border border-border-subtle bg-surface-elevated-2 p-8 text-center"
             >
+              {pexoOn && <Pexo mood="celebrating" size={160} />}
               <p className="text-[13px] font-semibold uppercase tracking-wide text-muted">{current.kind === "level_up" ? "Level up" : "Badge earned"}</p>
               <p className="text-[34px] font-extrabold leading-tight text-ink">{current.title}</p>
               {current.lines.map((l) => (
@@ -124,6 +132,11 @@ export function RewardsLayer() {
                   {l}
                 </p>
               ))}
+              {current.pexo && (
+                <p className="text-[15px] font-semibold text-ink" data-testid="reward-pexo-line">
+                  {current.pexo.text}
+                </p>
+              )}
               <CoralButton data-testid="reward-continue" className="mt-3 w-full" onClick={() => setMoments((m) => m.slice(1))}>
                 Keep going
               </CoralButton>

@@ -1,7 +1,8 @@
 "use client";
 
 import { PexoEmpty } from "@/components/pexo/PexoEmpty";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { reactBacklogView, reactLastRock, reactSkipLane } from "@/lib/pexo/reactions";
 import { GhostButton } from "@/components/ui/GhostButton";
 import { applyBacklogFix, getFeasibility, hm, LANE_LABEL, setBacklogLane, setBacklogTarget, type BacklogHub as Hub, type Feasibility, type Fix, type HubItem, type Lane } from "@/lib/api/backlogHub";
 import { ApiError } from "@/lib/api/http";
@@ -111,6 +112,14 @@ export function BacklogHub({ hub, onChanged }: { hub: Hub; onChanged: () => void
   }
 
   const last = hub.weekly[hub.weekly.length - 1];
+  // Pexo: one calm line a day about a big or growing backlog (or an impossible date), and the last rock gone
+  const openItems = hub.items.length;
+  const before = useRef(openItems);
+  useEffect(() => {
+    if (before.current > 0 && openItems === 0) reactLastRock();
+    else reactBacklogView(hub.totalMinutes, Boolean(last && last.addedMinutes > last.clearedMinutes), hub.target.feasibility ? hub.target.feasibility.feasible : null);
+    before.current = openItems;
+  }, [openItems, hub.totalMinutes, last, hub.target.feasibility]);
   const peakWeek = Math.max(60, ...hub.weekly.flatMap((w) => [w.addedMinutes, w.clearedMinutes]));
   const empty = hub.items.length === 0;
 
@@ -140,7 +149,7 @@ export function BacklogHub({ hub, onChanged }: { hub: Hub; onChanged: () => void
                 </button>
                 {open === lane && (
                   <ul className="flex flex-col gap-2 px-3 pb-3">
-                    {items.length === 0 ? <li className="px-1 text-[13px] text-muted">Nothing here.</li> : items.map((i) => <ItemRow key={i.id} item={i} onLane={(id, l) => void run(() => setBacklogLane(id, l))} />)}
+                    {items.length === 0 ? <li className="px-1 text-[13px] text-muted">Nothing here.</li> : items.map((i) => <ItemRow key={i.id} item={i} onLane={(id, l) => void run(() => setBacklogLane(id, l).then((r) => (l === "later" && reactSkipLane(), r)))} />)}
                   </ul>
                 )}
               </div>

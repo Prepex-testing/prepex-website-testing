@@ -9,6 +9,7 @@ import { FocusRing } from "@/components/focus/FocusRing";
 import { FocusSetup, type StartExtras } from "@/components/focus/FocusSetup";
 import { FocusSummaryModal } from "@/components/focus/FocusSummaryModal";
 import { SessionDone } from "@/components/focus/SessionDone";
+import { FocusDesk, FocusFirstVisit } from "@/components/pexo/FocusPexo";
 import { SoundPicker } from "@/components/focus/SoundPicker";
 import { StreakChip } from "@/components/focus/StreakChip";
 import { useFocusSession } from "@/components/focus/useFocusSession";
@@ -362,6 +363,7 @@ export function FocusExperience({ launch }: { launch: FocusSessionIntent }) {
     <Shell header={header}>
       <Toast state={toast} />
 
+      {focus.phase === "idle" && resolved && <FocusFirstVisit />}
       {focus.phase === "idle" && resolved && (
         <FocusSetup key={launchKey} subjects={subjects.subjects} initial={resolved} busy={focus.busy} error={subjects.status === "error" ? "We couldn't load your subjects. Please refresh the page." : focus.error} onStart={handleStart} />
       )}
@@ -379,6 +381,8 @@ export function FocusExperience({ launch }: { launch: FocusSessionIntent }) {
               {TASK_TYPE_LABELS[session.taskType]} · {MODE_LABELS[session.mode]}
             </span>
           </div>
+
+          <FocusDesk sessionId={session.id} onBreak={inBreak} subject={subjectName(session.subjectId) || null} />
 
           <FocusRing
             progress={ringProgressValue}

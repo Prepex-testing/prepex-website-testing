@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { RankGpsCard } from "@/components/rank-gps/RankGpsCard";
+import { PledgeCard, pledgeFromGoals, SundayIntro } from "@/components/pexo/SundayPexo";
+import { setPexoPledge } from "@/lib/api/pexo";
 import { GoalAssistantBody } from "@/components/goals/GoalAssistant";
 import { ReviewShareCard } from "@/components/rituals/ReviewShareCard";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
@@ -52,7 +54,12 @@ export default function SundayReviewPage() {
   const [targets, setTargets] = useState<Record<number, number>>({});
   // the Goal Assistant's choices for next week; they replace the old proposed list
   const [picked, setPicked] = useState<NewGoal[]>([]);
-  const onPicked = useCallback((g: NewGoal[]) => setPicked(g), []);
+  const [pledge, setPledge] = useState<{ hours: number; questions: number; on: boolean; edited?: boolean } | null>(null);
+  const onPicked = useCallback((g: NewGoal[]) => {
+    setPicked(g);
+    // the promise starts from the goals just picked, until the student edits it
+    setPledge((p) => (p && p.on && p.edited ? p : { ...pledgeFromGoals(g), on: p?.on ?? true }));
+  }, []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -117,6 +124,8 @@ export default function SundayReviewPage() {
     try {
       const goals = picked as unknown as ReturnType<typeof toGoalInput>[];
       await completeSundayReview({ weekStart: state.weekStart, ...(goals.length > 0 ? { goals } : {}), ...(mockId ? { mockId } : {}) });
+      // the promise to Pexo for the coming week (never a reason for the review to fail)
+      if (pledge?.on && state.nextWeekStart) await setPexoPledge({ weekStart: state.nextWeekStart, hours: pledge.hours, questions: pledge.questions }).catch(() => undefined);
       setDone(true);
       void refreshXp();
       setStep("share");
@@ -179,6 +188,7 @@ export default function SundayReviewPage() {
 
           {step === "recap" && (
             <section className="flex flex-col gap-4" data-testid="step-recap">
+              <SundayIntro />
               <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 lg:grid lg:grid-cols-2 lg:overflow-visible xl:grid-cols-3" data-testid="recap-cards" tabIndex={0} aria-label="Your week, swipe through the cards">
                 {state.cards.map((c) => (
                   <article key={c.key} data-testid={`recap-${c.key}`} className="min-h-[200px] min-w-[85%] snap-center rounded-3xl border border-border-subtle bg-surface-elevated-2 p-6 shadow-sm sm:min-w-[60%] lg:min-w-0">
@@ -240,6 +250,7 @@ export default function SundayReviewPage() {
                 <p className="text-[13px] text-muted">Suggested from your timetable, how much you really complete, the classes you have and your backlog. Change a number, untick what you don&apos;t want, or accept as is.</p>
               </div>
               {state.nextWeekStart && <GoalAssistantBody weekStart={state.nextWeekStart} onChange={onPicked} />}
+              {pledge && <PledgeCard value={pledge} onChange={(p) => setPledge({ ...p, edited: true })} />}
               {error && <p role="alert" className="rounded-lg bg-danger-bg px-3 py-2 text-[13px] font-medium text-danger">{error}</p>}
               <CoralButton data-testid="review-finish" disabled={busy} onClick={() => void finish()}>
                 {busy ? "Finishing…" : picked.length > 0 ? "Accept and finish" : "Finish the review"}

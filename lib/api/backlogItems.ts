@@ -1,5 +1,6 @@
 import { CORE_API_BASE_URL } from "@/lib/api/config";
 import { authenticatedRequest } from "@/lib/api/authRequest";
+import * as pexo from "@/lib/pexo/reactions";
 import { query, type Page, type PlannerPlacement, type PlannerWindow } from "@/lib/api/logsCommon";
 
 /**
@@ -80,7 +81,10 @@ export function listBacklogItems(q: { status?: BacklogStatus | "all"; subjectId?
 }
 
 export function createBacklogItem(input: NewBacklogItem) {
-  return request<{ success: true; data: BacklogItem }>("", { method: "POST", body: JSON.stringify(input) });
+  return request<{ success: true; data: BacklogItem }>("", { method: "POST", body: JSON.stringify(input) }).then((r) => {
+    pexo.reactBacklogAdded();
+    return r;
+  });
 }
 
 export function updateBacklogItem(id: string, patch: UpdateBacklogItem) {
@@ -88,7 +92,10 @@ export function updateBacklogItem(id: string, patch: UpdateBacklogItem) {
 }
 
 export function clearBacklogItem(id: string) {
-  return request<{ success: true; data: BacklogItem }>(`/${id}/clear`, { method: "POST", body: "{}" });
+  return request<{ success: true; data: BacklogItem }>(`/${id}/clear`, { method: "POST", body: "{}" }).then((r) => {
+    pexo.reactBacklogCleared({});
+    return r;
+  });
 }
 
 export function deleteBacklogItem(id: string) {

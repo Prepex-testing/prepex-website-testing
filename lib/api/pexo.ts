@@ -33,6 +33,8 @@ export type PexoState = {
   /** Today's one smart nudge, if any. */
   nudge?: PexoNudge | null;
   care?: PexoCare;
+  /** The Sunday pledge: this week's, and last week's once settled. */
+  pledge?: PexoPledgeState | null;
 };
 
 export type PexoQuest = "focus" | "dayclose" | "revision" | "mistake" | "practice" | "backlog" | "friend";
@@ -62,6 +64,21 @@ export type PexoBatch = {
 };
 
 export type PexoSettingsInput = { language?: PexoLanguage; bubbles?: "normal" | "quiet"; notifications?: boolean };
+
+export type PexoFind = { id: number; type: "trick" | "common_mistake" | "one_liner"; subject: string; chapter: string; chapterId: string | null; text: string; saved: boolean };
+export type PexoPledgeProgress = { weekStart: string; hours: number; questions: number; done: { hours: number; questions: number }; mid: "ahead" | "behind" | null };
+export type PexoPledgeState = { current: PexoPledgeProgress | null; settled: { weekStart: string; result: "hit" | "missed" } | null };
+
+/** After a focus session of 15 minutes or more: one find. Asked once by the session's end screen. */
+export const getPexoFind = (q: { minutes: number; chapterId?: string | null; subjectId?: number | null }) => {
+  const p = new URLSearchParams({ minutes: String(Math.max(0, Math.round(q.minutes))) });
+  if (q.chapterId) p.set("chapterId", q.chapterId);
+  if (q.subjectId != null) p.set("subjectId", String(q.subjectId));
+  return core<PexoFind | null>(`/find?${p.toString()}`);
+};
+export const savePexoFind = (id: number, saved: boolean) => core<{ saved: boolean }>(`/finds/${id}/save`, { method: "PUT", body: JSON.stringify({ saved }) });
+export const listPexoFinds = () => core<PexoFind[]>("/finds");
+export const setPexoPledge = (input: { weekStart: string; hours: number; questions: number }) => core<PexoPledgeProgress>("/pledge", { method: "PUT", body: JSON.stringify(input) });
 
 /** "What should I do now?": asked when the student taps Pexo. */
 export const askPexo = () => core<PexoAskAnswer | null>("/ask");

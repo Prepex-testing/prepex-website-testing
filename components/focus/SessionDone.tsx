@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { SessionWrap } from "@/components/focus/SessionWrap";
+import { FocusEndPexo } from "@/components/pexo/FocusPexo";
 import { StreakChip } from "@/components/focus/StreakChip";
 import type { StopFocusResult } from "@/lib/api/focus";
 import { TASK_TYPE_LABELS, originBackHref, type OriginSource } from "@/lib/focus/intent";
@@ -77,6 +78,8 @@ export function SessionDone({ result, saving, subjectName, chapterName, originSo
       <p className="text-[14px] text-body-text dark:text-ink" data-testid="focus-done-text">
         {studySession ? `${formatMinutes(studySession.durationMinutes)} added to your study log.` : "That was under a minute, so nothing was added to your study log."}
       </p>
+
+      <FocusEndPexo sessionId={focusSession.id} minutes={studySession?.durationMinutes ?? focusSession.actualMinutes ?? 0} chapterId={focusSession.chapterId} subjectId={focusSession.subjectId} />
 
       {extras.goalHits.length > 0 && (
         <div role="status" data-testid="goal-hit" className="rounded-xl bg-success-bg px-3 py-3 text-[14px] font-bold text-success">

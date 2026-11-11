@@ -1,5 +1,6 @@
 import { CORE_API_BASE_URL } from "@/lib/api/config";
 import { authenticatedRequest } from "@/lib/api/authRequest";
+import * as pexo from "@/lib/pexo/reactions";
 import { query, type Page, type PlannerPlacement, type PlannerWindow } from "@/lib/api/logsCommon";
 
 /** Mock test log — core-service /api/mocks (not /api/mock, the planner's per-question mock analysis). */
@@ -109,7 +110,14 @@ export function listMocks(q: { from?: string; to?: string; testType?: TestType |
 }
 
 export function createMock(input: NewMock) {
-  return request<{ success: true; data: MockTest }>("", { method: "POST", body: JSON.stringify(input) });
+  return request<{ success: true; data: MockTest }>("", { method: "POST", body: JSON.stringify(input) }).then(async (r) => {
+    // up or down against the previous mock of the same pattern (one read, only after logging a mock)
+    const recent = await listMocks({ examPattern: r.data.examPattern, limit: 2 }).catch(() => null);
+    const previous = recent?.data.items.find((m) => m.id !== r.data.id);
+    const pct = (m: { totalMarks: number; maxMarks: number }) => (m.maxMarks > 0 ? (m.totalMarks / m.maxMarks) * 100 : m.totalMarks);
+    pexo.reactMockLogged(previous && previous.maxMarks === r.data.maxMarks ? { totalMarks: r.data.totalMarks, previousMarks: previous.totalMarks } : previous ? { totalMarks: pct(r.data), previousMarks: pct(previous) } : { totalMarks: r.data.totalMarks });
+    return r;
+  });
 }
 
 export function updateMock(id: string, patch: Partial<NewMock>) {
