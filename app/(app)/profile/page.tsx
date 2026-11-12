@@ -1,5 +1,6 @@
 "use client";
 
+import { ClimbStrip } from "@/components/climb/ClimbStrip";
 import { ProfileRewards } from "@/components/rewards/ProfileRewards";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -569,6 +570,7 @@ export default function ProfilePage() {
       </div>
 
 
+      <ClimbStrip variant="profile" />
       <ClimbTogether full />
       <ProfileSocialSettings />
 

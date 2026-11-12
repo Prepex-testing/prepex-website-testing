@@ -1036,3 +1036,25 @@ html[data-motion="full"] .pexo .pexo-talk { animation: pexo-talk 0.26s ease-in-o
 @keyframes pexo-wiggle { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } 80% { transform: rotate(-4deg); } }
 @keyframes pexo-wave { 0%, 100% { rotate: 0deg; } 50% { rotate: 20deg; } }
 @keyframes pexo-talk { 0%, 100% { scale: 1 1; } 50% { scale: 1 0.6; } }
+
+/* Pexo phase 2, the Climb: Pexo hops onto today's step, a rock breaks into rubble, a gem sparkles. Full motion only;
+   lite and reduced motion keep the static marker (no hop, no smash). */
+html[data-motion="full"] .climb-hop { animation: climb-hop 700ms var(--ease-out) 1; }
+html[data-motion="full"] .climb-smash { display: inline-flex; animation: climb-smash 900ms var(--ease-out) 1; }
+html[data-motion="full"] .climb-sparkle { display: inline-flex; animation: climb-sparkle 1200ms ease-in-out 1; }
+@keyframes climb-hop {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(-18px) scale(1.04, 0.96); }
+  70% { transform: translateY(0) scale(0.98, 1.02); }
+  100% { transform: translateY(0); }
+}
+@keyframes climb-smash {
+  0% { transform: scale(1.6); opacity: 0; }
+  30% { transform: scale(1.2) rotate(-8deg); opacity: 1; }
+  60% { transform: scale(0.9) rotate(6deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+@keyframes climb-sparkle {
+  0%, 100% { transform: scale(1); filter: none; }
+  50% { transform: scale(1.35); filter: drop-shadow(0 0 6px var(--saffron)); }
+}

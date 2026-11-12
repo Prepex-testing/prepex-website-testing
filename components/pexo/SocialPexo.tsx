@@ -227,9 +227,9 @@ export function ClimbTogether({ full = false }: { full?: boolean }) {
   const reload = useCallback(() => void reloadSocial(), []);
 
   // someone joined from my link and we both got a new look: once each
-  const recent = data?.invite.recent.map((r) => r.inviteeId).join(",") ?? "";
+  const recent = data?.invite?.recent?.map((r) => r.inviteeId).join(",") ?? "";
   useEffect(() => {
-    for (const r of data?.invite.recent ?? []) {
+    for (const r of data?.invite?.recent ?? []) {
       if (pexoMark(`invite.joined.${r.inviteeId}`, true)) {
         pexoReact("invite.joined", { friend: r.name }, { kind: "celebration" });
         break;
@@ -238,7 +238,7 @@ export function ClimbTogether({ full = false }: { full?: boolean }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `recent` captures the list
   }, [recent]);
 
-  if (!data) return null;
+  if (!data?.invite || !Array.isArray(data.together)) return null;
   const rows = full ? data.together : data.together.slice(0, 3);
   const inviteLine = data.together.length === 0 ? lineText({ trigger: "together.invite", context: {} }) : null;
   return (
@@ -305,7 +305,7 @@ function DuelRow({ d, onChange }: { d: PexoDuel; onChange: () => void }) {
 export function Duels() {
   const data = usePexoSocial();
   const [picker, setPicker] = useState(false);
-  if (!data || data.care) return null;
+  if (!data || data.care || !Array.isArray(data.duels)) return null;
   const shown = data.duels.filter((d) => d.status !== "done" || d.result !== "draw");
   return (
     <section className="flex flex-col gap-3 rounded-2xl border border-border-subtle bg-surface p-4" aria-labelledby="duels-title" data-testid="duels">

@@ -1,5 +1,6 @@
 "use client";
 
+import { ClimbStrip } from "@/components/climb/ClimbStrip";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -432,6 +433,8 @@ export default function HomePage() {
       <HomeRituals />
 
       <PrepexMap />
+
+      <ClimbStrip />
 
       <HomeSocial />
 

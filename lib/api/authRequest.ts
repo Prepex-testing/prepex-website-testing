@@ -121,6 +121,8 @@ const LONG_TTL: { match: RegExp; ms: number }[] = [
   { match: /\/profile\/subjects-chapters/, ms: 5 * 60_000 },
   // a Rank GPS report is built weekly (or on a refresh, which is a write that clears this)
   { match: /\/rank-gps(\?|$)/, ms: 5 * 60_000 },
+  // a past month of the Climb only changes with a write (a back-dated log), which clears this
+  { match: /\/pexo\/climb\?cursor=/, ms: 10 * 60_000 },
 ];
 let ttlEnabled = typeof process === "undefined" || !process.env.VITEST;
 

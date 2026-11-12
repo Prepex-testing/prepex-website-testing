@@ -1,5 +1,7 @@
 "use client";
 
+import { Pexo } from "@/components/pexo/Pexo";
+import { isForm } from "@/components/pexo/forms";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getStudyingNow, presenceLabel, profileHref, type StudyingNow } from "@/lib/api/social";
@@ -119,6 +121,7 @@ export function StudyingNowStrip({ pollMs = 60_000 }: { pollMs?: number }) {
         {list.map((s) => (
           <li key={s.userId} className="flex min-w-[150px] items-center gap-2" data-testid="studying-now-item">
             <ProfileAvatar who={s} size={36} ring={!s.onBreak} />
+            {pexoOn && <Pexo size={24} form={isForm(s.form) ? s.form : "aspirant"} mood={s.onBreak ? "calm" : "focused"} prop={false} />}
             <div className="min-w-0">
               <p className="truncate text-[13px] font-semibold text-ink">{s.name}</p>
               <p className="truncate text-[12px] text-muted">{presenceLabel(s)}</p>

@@ -101,7 +101,7 @@ export const REPORT_REASONS = [
 export const reportStudent = (id: string, reason: (typeof REPORT_REASONS)[number]["value"], note?: string) => core<{ reported: true }>(`/social/report/${id}`, send("POST", { reason, ...(note ? { note } : {}) }));
 export const sendKudos = (toUserId: string, targetType: "day" | "badge", targetKey: string) => core<{ sent: true }>("/social/kudos", send("POST", { toUserId, targetType, targetKey }));
 
-export type StudyingNow = { userId: string; name: string; username: string | null; avatarUrl: string | null; subjectName: string | null; minutes: number; onBreak: boolean };
+export type StudyingNow = { userId: string; name: string; username: string | null; avatarUrl: string | null; subjectName: string | null; minutes: number; onBreak: boolean; /** Pexo phase 2: the friend's Pexo form. */ form?: string | null };
 export const getStudyingNow = () => core<StudyingNow[]>("/social/studying-now");
 
 /** "Physics · 1h 12m", or "On break". */

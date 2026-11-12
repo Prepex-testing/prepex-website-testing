@@ -14,6 +14,7 @@ import { dismissPexo, loadPexo, pexoFirstVisit, pexoMark, pexoReact, usePexo } f
 export const FIRST_VISIT_PATHS: [string, string][] = [
   ["/analytics/rank-gps", "rank_gps"],
   ["/home/leaderboard", "leaderboard"],
+  ["/home/climb", "climb"],
   ["/home/resource-library", "library"],
   ["/home/backlog", "backlog"],
   ["/logs/revision", "revision"],
