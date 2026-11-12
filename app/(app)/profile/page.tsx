@@ -86,9 +86,9 @@ function formatLastSeen(iso: string): string {
 }
 
 function countdownLabel(overview: ProfileOverview): string | null {
-  const days = overview.daysUntilExam;
+  const days = overview.nextExam?.days ?? overview.daysUntilExam;
   if (days === null) return null;
-  const exam = overview.exam?.name ?? "your exam";
+  const exam = overview.nextExam?.label ?? overview.exam?.name ?? "your exam";
   if (days < 0) return `${exam} date has passed`;
   if (days === 0) return `${exam} is today`;
   return `${days} ${days === 1 ? "Day" : "Days"} Until ${exam}`;
@@ -187,11 +187,20 @@ export default function ProfilePage() {
       ...(inCoaching
         ? [{ label: "Batch", value: overview.batchName || "—", icon: <UserIcons /> }]
         : []),
-      {
-        label: overview.examDateIsDefault ? "Exam Date (default)" : "Exam Date",
-        value: overview.examDate ? formatDate(overview.examDate) : "Not set",
-        icon: <CalendarIcons />,
-      },
+      // A4: a JEE student sees each exam's date on its own row; anyone else keeps the single date
+      ...(overview.examDates && overview.examDates.length > 0
+        ? overview.examDates.map((e) => ({
+            label: `${e.label}${e.isDefault ? (e.estimated ? " (expected)" : " (default)") : ""}`,
+            value: formatDate(e.date),
+            icon: <CalendarIcons />,
+          }))
+        : [
+            {
+              label: overview.examDateIsDefault ? "Exam Date (default)" : "Exam Date",
+              value: overview.examDate ? formatDate(overview.examDate) : "Not set",
+              icon: <CalendarIcons />,
+            },
+          ]),
     ]
     : [];
 

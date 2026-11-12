@@ -29,7 +29,7 @@ import { PlannerCheckInModal } from "@/components/home/PlannerCheckInModal";
 import { WellnessResourceModal } from "@/components/home/WellnessResourceModal";
 import { HomePartnerMatchPrompt } from "@/components/home/HomePartnerMatchPrompt";
 import { useStoredFullName } from "@/lib/auth/useStoredFullName";
-import { formatFullDate } from "@/lib/utils/datetime";
+import { formatDayLabel, useServerToday } from "@/lib/home/useServerToday";
 import { useGreeting } from "@/lib/utils/greeting";
 import {
   regeneratePlanForMood,
@@ -136,6 +136,7 @@ export default function HomePage() {
   const storedFullName = useStoredFullName();
   const firstName = storedFullName.trim().split(/\s+/)[0] || "there";
   const greeting = useGreeting();
+  const serverToday = useServerToday();
   const { enabled: pexoOn } = usePexo();
 
   const [isRegenerateOpen, setRegenerateOpen] = useState(false);
@@ -416,7 +417,7 @@ export default function HomePage() {
           <h1 className="text-2xl font-bold text-ink lg:text-h1">
             {greeting}, {firstName}
           </h1>
-          <p className="text-sm text-muted" data-testid="home-date">{formatFullDate(new Date())}</p>
+          <p className="min-h-5 text-sm text-muted" data-testid="home-date">{serverToday ? formatDayLabel(serverToday) : ""}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           <Link href="/home/partner" aria-label="Partner and pods" title="Partner (pods are coming)" data-testid="home-pods" data-coach="quick-partner" className="flex size-11 items-center justify-center rounded-full bg-surface text-ink hover:bg-tint-strong">

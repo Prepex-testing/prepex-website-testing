@@ -116,7 +116,11 @@ export function isoToDisplayDate(iso: string): string {
   return year && month && day ? `${day}/${month}/${year}` : "";
 }
 
-/** JEE Main is mid-May, so an unanswered exam date means 15 May: two years out for Class 11, one for everyone else. */
+/**
+ * Only the legacy `targetExamDate` field still needs a value when the date is left blank. The real defaults (JEE Main
+ * in January/April, JEE Advanced in May) live in the backend's src/configs/examDates.ts, and a blank date is sent
+ * with `examDateIsDefault`, so this placeholder is never counted down to.
+ */
 export function defaultExamDateIso(level: CurrentLevel, now: Date = new Date()): string {
   return `${now.getFullYear() + (level === "CLASS_11" ? 2 : 1)}-05-15`;
 }

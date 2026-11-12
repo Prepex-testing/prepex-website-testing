@@ -6,6 +6,7 @@ import { Autopsy } from "@/components/rank-gps/Autopsy";
 import { CoachNote } from "@/components/rank-gps/CoachNote";
 import { GpsPexo } from "@/components/pexo/GpsPexo";
 import { EffortCheck } from "@/components/rank-gps/EffortCheck";
+import { ExamDates } from "@/components/rank-gps/ExamDates";
 import { Hero } from "@/components/rank-gps/Hero";
 import { LockedGate } from "@/components/rank-gps/LockedGate";
 import { OpportunityMap } from "@/components/rank-gps/OpportunityMap";
@@ -213,6 +214,7 @@ export function RankGpsScreen() {
           )}
 
           <GpsPexo input={{ state: "ready", change, topMove: report.opportunity.moves[0]?.name ?? null }} testId="rank-gps-pexo" />
+          <ExamDates />
           <Hero report={report} change={change} targetPercentile={report.target?.targetPercentile ?? data.targetPercentile} onShare={() => setShare(true)} />
           {view.coachNote && <CoachNote note={view.coachNote} change={change} />}
           {report.change && <WhyMoved change={report.change} />}
