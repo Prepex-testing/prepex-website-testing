@@ -9,8 +9,6 @@ function authRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
 // Section 13 — Parent WhatsApp weekly report
 // ---------------------------------------------------------------------------
 
-export type ParentReportLanguage = "ENGLISH" | "HINDI" | "HINGLISH";
-
 export type ParentConnectionStatus =
   | "PENDING"
   | "VERIFIED"
@@ -28,7 +26,6 @@ export type ParentConnection = {
   phone: string;
   phoneMasked: string;
   parentName: string | null;
-  language: ParentReportLanguage;
   requestedAt: string;
   reminderSentAt: string | null;
   /** When an unanswered invite gets its one reminder (PENDING only). */
@@ -68,7 +65,6 @@ export type ParentConnectionState = {
 };
 
 export type ParentReportPreview = {
-  language: ParentReportLanguage;
   weekStart: string;
   variant: string | null;
   /** Why no report would go out this week (exam day, paused after 21 days away, …). */
@@ -86,7 +82,6 @@ export function getParentConnection() {
 export function connectParent(input: {
   phone: string;
   parentName?: string | null;
-  language: ParentReportLanguage;
   /** The student confirms this is their parent's or guardian's number. */
   consent: true;
 }) {
@@ -99,7 +94,6 @@ export function updateParentPhone(input: { phone: string; parentName?: string | 
 }
 
 export function updateParentSettings(input: {
-  language?: ParentReportLanguage;
   parentName?: string | null;
   reportsEnabled?: boolean;
   hideMockScores?: boolean;
@@ -113,15 +107,10 @@ export function disconnectParent() {
   return authRequest<StateResponse>("", { method: "DELETE" });
 }
 
-export function previewParentReport(language?: ParentReportLanguage) {
-  return authRequest<{ success: true; data: ParentReportPreview }>(language ? `/preview?language=${language}` : "/preview");
+export function previewParentReport() {
+  return authRequest<{ success: true; data: ParentReportPreview }>("/preview");
 }
 
-export const PARENT_LANGUAGE_OPTIONS: { value: ParentReportLanguage; label: string }[] = [
-  { value: "ENGLISH", label: "English" },
-  { value: "HINDI", label: "हिन्दी" },
-  { value: "HINGLISH", label: "Hinglish" },
-];
 
 export const PARENT_NAME_OPTIONS = ["Mom", "Dad", "Mummy", "Papa", "Guardian"];
 

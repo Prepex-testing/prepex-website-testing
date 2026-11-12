@@ -13,7 +13,6 @@ import {
   CheckCircleIcon,
   ShieldIcon,
   ClockIcon,
-  GlobeIcon,
   EyeOffIcon,
   AlertTriangleIcon,
   CalendarIcon,
@@ -25,7 +24,6 @@ import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader"
 import { VerificationSteps } from "@/components/profile/VerificationSteps";
 import { ApiError } from "@/lib/api/http";
 import {
-  PARENT_LANGUAGE_OPTIONS,
   PARENT_NAME_OPTIONS,
   connectParent,
   disconnectParent,
@@ -35,7 +33,6 @@ import {
   updateParentSettings,
   type ParentConnection,
   type ParentConnectionState,
-  type ParentReportLanguage,
   type ParentReportPreview,
 } from "@/lib/api/parent";
 
@@ -185,27 +182,6 @@ function PhoneField({
   );
 }
 
-function LanguageChips({ value, onChange }: { value: ParentReportLanguage; onChange: (v: ParentReportLanguage) => void }) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {PARENT_LANGUAGE_OPTIONS.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          onClick={() => onChange(option.value)}
-          aria-pressed={value === option.value}
-          className={`rounded-lg border px-4 py-2 text-sm font-semibold transition-colors ${value === option.value
-              ? "border-transparent bg-toggle-on text-surface"
-              : "border-brand/15 text-body-text hover:bg-tint/40"
-            }`}
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 /** What happened to the last connection, when there's no live one. */
 function EndedNotice({ connection }: { connection: ParentConnection }) {
   const who = connection.parentName || "Your parent";
@@ -243,7 +219,6 @@ function ConnectForm({
   const router = useRouter();
   const [phone, setPhone] = useState("");
   const [parentName, setParentName] = useState("");
-  const [language, setLanguage] = useState<ParentReportLanguage>("HINGLISH");
   const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -255,7 +230,7 @@ function ConnectForm({
     setSubmitting(true);
     setError(null);
     try {
-      const { data } = await connectParent({ phone, parentName: parentName || null, language, consent: true });
+      const { data } = await connectParent({ phone, parentName: parentName || null, consent: true });
       onDone(data);
     } catch (err) {
       setError(errorMessage(err, "Couldn't send the invite. Please try again."));
@@ -297,11 +272,6 @@ function ConnectForm({
               triggerClassName="h-12 gap-2 rounded-xl px-4 py-3 sm:h-14.5 sm:px-5"
               className="gap-2! sm:gap-3!"
             />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <p className="text-sm font-semibold text-ink">Preferred language</p>
-            <LanguageChips value={language} onChange={setLanguage} />
           </div>
 
           <div className="flex flex-col gap-3 rounded-xl border border-brand/10 p-4">
@@ -522,37 +492,26 @@ const SKIP_COPY: Record<NonNullable<ParentReportPreview["skipReason"]>, string> 
   UNSAFE_COPY: "This week's report couldn't be prepared. It will try again next Sunday.",
 };
 
-function PreviewModal({
-  open,
-  onClose,
-  language,
-}: {
-  open: boolean;
-  onClose: () => void;
-  language: ParentReportLanguage;
-}) {
+function PreviewModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <WhiteModal open={open} onClose={onClose} ariaLabel="Preview this week's report" size="lg">
-      {open && <PreviewBody initialLanguage={language} onClose={onClose} />}
+      {open && <PreviewBody onClose={onClose} />}
     </WhiteModal>
   );
 }
 
-function PreviewBody({ initialLanguage, onClose }: { initialLanguage: ParentReportLanguage; onClose: () => void }) {
-  const [language, setLanguage] = useState(initialLanguage);
-  const [preview, setPreview] = useState<{ language: ParentReportLanguage; data: ParentReportPreview | null; error: string | null } | null>(null);
+function PreviewBody({ onClose }: { onClose: () => void }) {
+  const [current, setCurrent] = useState<{ data: ParentReportPreview | null; error: string | null } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    previewParentReport(language)
-      .then(({ data }) => !cancelled && setPreview({ language, data, error: null }))
-      .catch((err) => !cancelled && setPreview({ language, data: null, error: errorMessage(err, "Couldn't build the preview.") }));
+    previewParentReport()
+      .then(({ data }) => !cancelled && setCurrent({ data, error: null }))
+      .catch((err) => !cancelled && setCurrent({ data: null, error: errorMessage(err, "Couldn't build the preview.") }));
     return () => {
       cancelled = true;
     };
-  }, [language]);
-
-  const current = preview?.language === language ? preview : null;
+  }, []);
 
   return (
     <>
@@ -569,10 +528,6 @@ function PreviewBody({ initialLanguage, onClose }: { initialLanguage: ParentRepo
         >
           <XIcon />
         </button>
-      </div>
-
-      <div className="mt-4">
-        <LanguageChips value={language} onChange={setLanguage} />
       </div>
 
       <div className="mt-4 max-h-[55vh] overflow-y-auto rounded-2xl bg-[#E7F7EE] p-4 dark:bg-[#0B3D2E]">
@@ -681,10 +636,6 @@ function ConnectedView({
         }
       />
 
-      <SectionCard icon={<GlobeIcon />} title="Report language" subtitle="The language your parent reads the weekly update in.">
-        <LanguageChips value={connection.language} onChange={(language) => save("language", { language })} />
-      </SectionCard>
-
       <SectionCard
         icon={<EyeOffIcon />}
         title="Hide mock scores"
@@ -791,7 +742,7 @@ function ConnectedView({
         }
       />
 
-      <PreviewModal open={isPreviewOpen} onClose={() => setPreviewOpen(false)} language={connection.language} />
+      <PreviewModal open={isPreviewOpen} onClose={() => setPreviewOpen(false)} />
 
       <ConfirmModal
         open={isDisconnectOpen}
