@@ -39,6 +39,8 @@ export type PexoState = {
   /** Phase 2: the highest level-band form reached (never goes down), and the small Climb summary. */
   form?: PexoFormName | null;
   climb?: PexoClimbSummary | null;
+  /** Finished onboarding before they had Pexo: one "Meet Pexo" moment (hello lines + the tour). */
+  meetPexo?: boolean;
 };
 
 export type PexoQuest = "focus" | "dayclose" | "revision" | "mistake" | "practice" | "backlog" | "friend";

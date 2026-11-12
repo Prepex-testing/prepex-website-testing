@@ -167,7 +167,7 @@ test("the Climb: a brand-new student, first visit", async ({ page }, info) => {
   await shot(page, `climb-new-first-visit-${info.project.name}`);
   await page.getByTestId("pexo-transient").getByRole("button", { name: /dismiss/i }).click();
   await expect(page.getByTestId("climb-today-bubble")).toContainText(/Your climb starts|This is your climb/);
-  await expect(page.getByTestId("climb-base")).toContainText("Your climb starts here.");
+  await expect(page.getByTestId("climb-base")).toContainText("A fresh start. Every climb begins on the ground.");
   await shot(page, `climb-new-${info.project.name}`);
   expect(errors).toEqual([]);
 });

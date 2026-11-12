@@ -1,5 +1,5 @@
 {
- "version": 2,
+ "version": 3,
  "name": "Pexo line library",
  "languages": [
   "en",
@@ -2027,6 +2027,34 @@
    "mood": "curious",
    "en": "Pexo: {days} days to JEE. Come see your climb.",
    "hi": "Pexo: JEE mein {days} din. Apna climb dekho."
+  },
+  {
+   "id": "climb.milestone.care#1",
+   "trigger": "climb.milestone.care",
+   "mood": "calm",
+   "en": "{days} days to JEE. One step at a time, at your own pace.",
+   "hi": "JEE mein {days} din. Ek ek step, apni speed se."
+  },
+  {
+   "id": "climb.friends.empty#1",
+   "trigger": "climb.friends.empty",
+   "mood": "waving",
+   "en": "No friends on your climb yet. Invite one and climb together.",
+   "hi": "Abhi climb pe koi dost nahi. Ek ko invite karo, saath chadhte hain."
+  },
+  {
+   "id": "climb.step.just_done#1",
+   "trigger": "climb.step.just_done",
+   "mood": "celebrating",
+   "en": "That's today's step. We just went up one.",
+   "hi": "Aaj ka step ho gaya. Abhi ek upar gaye."
+  },
+  {
+   "id": "climb.before_prepex.none#1",
+   "trigger": "climb.before_prepex.none",
+   "mood": "calm",
+   "en": "A fresh start. Every climb begins on the ground.",
+   "hi": "Fresh start. Har climb zameen se shuru hota hai."
   }
  ]
 }

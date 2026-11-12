@@ -133,7 +133,7 @@ export function HomePexo() {
         />
       )}
       <AskSheet open={ask} onClose={() => setAsk(false)} />
-      <PexoTour firstSubject={typeof home?.context.subject === "string" ? home.context.subject : null} />
+      <PexoTour firstSubject={typeof home?.context.subject === "string" ? home.context.subject : null} meet={state.meetPexo === true} />
     </section>
   );
 }

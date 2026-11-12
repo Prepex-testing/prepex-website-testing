@@ -16,6 +16,7 @@ import { AskSheet } from "@/components/pexo/AskSheet";
 import { Pexo } from "@/components/pexo/Pexo";
 import { PexoBubble, usePexoLine } from "@/components/pexo/PexoBubble";
 import { FORM_TITLES, isForm } from "@/components/pexo/forms";
+import { InviteSheet, usePexoSocial } from "@/components/pexo/SocialPexo";
 import { Sheet } from "@/components/planner/Sheet";
 import { GhostButton } from "@/components/ui/GhostButton";
 import { PageLoader } from "@/components/ui/PageLoader";
@@ -350,7 +351,7 @@ function MonthSectionView({
               </ul>
             </>
           ) : (
-            <p className="text-[13px] text-muted">Your climb starts here.</p>
+            <Note trigger="climb.before_prepex.none" k="base:none" testId="climb-base-line" />
           )}
         </div>
       )}
@@ -516,6 +517,25 @@ function Totals({ page }: { page: ClimbPage }) {
   );
 }
 
+/** Nobody followed yet: Pexo's line and the invite link (the same sheet as Climb Together). */
+function NoFriends() {
+  const social = usePexoSocial();
+  const [invite, setInvite] = useState(false);
+  return (
+    <div className="flex flex-col gap-2" data-testid="climb-friends-empty">
+      <Note trigger="climb.friends.empty" k="friends:none" testId="climb-friends-empty-line" />
+      {social?.invite?.code && (
+        <>
+          <GhostButton className="min-h-11 self-start" onClick={() => setInvite(true)} data-testid="climb-friends-invite">
+            Invite a friend
+          </GhostButton>
+          <InviteSheet open={invite} onClose={() => setInvite(false)} code={social.invite.code} />
+        </>
+      )}
+    </div>
+  );
+}
+
 function Friends({ onOpen }: { onOpen: (d: Detail) => void }) {
   const [list, setList] = useState<ClimbFriend[] | null>(null);
   useEffect(() => {
@@ -524,12 +544,7 @@ function Friends({ onOpen }: { onOpen: (d: Detail) => void }) {
       .catch(() => setList([]));
   }, []);
   if (list === null) return <div className="skeleton h-24 rounded-xl" />;
-  if (list.length === 0)
-    return (
-      <p className="text-[13px] text-muted">
-        Follow friends to see them climbing beside you.
-      </p>
-    );
+  if (list.length === 0) return <NoFriends />;
   return (
     <ul className="flex flex-col gap-1" data-testid="climb-friends">
       {list.map((f) => (
@@ -827,15 +842,12 @@ export function ClimbScreen() {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- a one-off moment when today's step completes
       setHop(true);
       void loadFirst();
-      pexoReact(
-        "climb.step.today",
-        { steps: state?.climb?.steps ?? 0 },
-        { kind: "celebration" },
-      );
+      pexoReact("climb.step.just_done", {}, { kind: "celebration" });
     }
     prevStudied.current = studiedNow;
   }, [studiedNow, state?.climb?.steps, loadFirst]);
 
+  const careActive = state?.care?.active === true;
   // one moment per open, newest first: a milestone reached, a rock smashed, a gem; each once; then share offers
   useEffect(() => {
     if (!first?.upcoming || !totals) return;
@@ -845,7 +857,12 @@ export function ClimbScreen() {
       .sort((a, b) => a.days - b.days)[0];
     const smashedToday = today?.smashed ?? [];
     let said = false;
-    if (reached && pexoMark(`climb.milestone.${reached.days}`, true)) {
+    const care = careActive;
+    if (reached && care && pexoMark(`climb.milestone.${reached.days}`, true)) {
+      // in care mode: a calm line instead of the celebration, and no share offer
+      pexoReact("climb.milestone.care", { days: reached.days });
+      said = true;
+    } else if (reached && !care && pexoMark(`climb.milestone.${reached.days}`, true)) {
       pexoReact(
         "climb.milestone.reached",
         { days: reached.days },
@@ -879,7 +896,7 @@ export function ClimbScreen() {
         });
     // eslint-disable-next-line react-hooks/set-state-in-effect -- markers that animate once
     if (lit.size) setFresh(lit);
-  }, [first, totals, today]);
+  }, [first, totals, today, careActive]);
 
   const firstOpen = enabled && firstTime("climb.intro.seen");
   const status = totals ? todayTrigger(totals) : null;
