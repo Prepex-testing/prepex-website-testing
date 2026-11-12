@@ -66,6 +66,14 @@ export function login(input: { email: string; password: string }) {
   });
 }
 
+/** One-tap sign-in from the pilot welcome email: the link's one-time token for a session. */
+export function magicSignin(token: string) {
+  return request<{ success: true; data: AuthResult }>("/magic-signin", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+
 export function refreshAccessToken(refreshToken: string) {
   return request<{ success: true; data: AuthTokens }>("/refresh", {
     method: "POST",
