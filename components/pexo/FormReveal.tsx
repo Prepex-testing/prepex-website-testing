@@ -66,7 +66,7 @@ export function FormReveal() {
     if (!show) return;
     confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 }, disableForReducedMotion: true, colors: ["#FF6B47", "#FAF7F2", "#2F6BFF"] });
     const t = setTimeout(() => setMorphed(true), reduce ? 0 : 700);
-    if (show.to !== "aspirant") offerShare({ kind: "level_up", title: FORM_TITLES[show.to], detail: "New look for Pexo", mood: "proud" });
+    if (show.to !== "aspirant") offerShare({ kind: "climb", title: FORM_TITLES[show.to], detail: "New look for Pexo", mood: "proud", trigger: "climb.share" });
     return () => clearTimeout(t);
   }, [show, reduce]);
 

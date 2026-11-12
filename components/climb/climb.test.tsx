@@ -16,6 +16,8 @@ import { getClimbFriends, getClimbPage, type ClimbPage, type ClimbStep, type Pex
 import { startFocusSession } from "@/lib/focus/startFocusSession";
 import { foldQuiet, todayTrigger } from "@/lib/pexo/climb";
 import { primePexo, resetPexo } from "@/lib/pexo/store";
+import { offerShare } from "@/lib/pexo/share";
+import { PexoLayer } from "@/components/pexo/PexoLayer";
 
 const summary = { steps: 3, todayStudied: false, form: "solver" as const, daysToExam: 71, rocksOpen: 1, gems: 1 };
 const on = (over: Partial<PexoState> = {}): PexoState => ({ enabled: true, cohort: "existing", libraryVersion: 2, language: "en", bubbles: "normal", notifications: true, accessories: [], shown: {}, firstVisits: ["climb"], marks: { "climb.intro.seen": "2026-11-01", "climb.milestone.100": "2026-10-14" }, today: "2026-11-12", daysSinceSignup: 30, home: null, quests: null, nudge: null, care: { active: false, reason: null, distress: false }, form: "solver", climb: summary, ...over });
@@ -156,5 +158,12 @@ describe("the Climb screen", () => {
     render(<ClimbStrip />);
     expect(screen.getByTestId("home-climb-strip")).toHaveTextContent("3 steps climbed · today waiting · 71 days to JEE");
     expect(screen.getByTestId("home-climb-strip")).toHaveAttribute("href", "/home/climb");
+  });
+  it("the Climb's share offers speak climb.share (one a day, never in care)", async () => {
+    primePexo(on());
+    render(<PexoLayer />);
+    expect(offerShare({ kind: "climb", title: "30 steps climbed", mood: "proud", trigger: "climb.share" })).toBe(true);
+    expect(await screen.findByTestId("pexo-share-bubble")).toHaveTextContent("Look how far you've come. Share your climb?");
+    expect(offerShare({ kind: "climb", title: "100 steps climbed", mood: "proud", trigger: "climb.share" })).toBe(false);
   });
 });

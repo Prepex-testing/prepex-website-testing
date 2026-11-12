@@ -852,7 +852,7 @@ export function ClimbScreen() {
         { kind: "celebration" },
       );
       offerShare({
-        kind: "streak",
+        kind: "climb", trigger: "climb.share",
         title: `${reached.days} days to JEE`,
         detail: `${totals.steps} steps climbed`,
         mood: "proud",
@@ -873,7 +873,7 @@ export function ClimbScreen() {
     for (const n of [30, 100])
       if (totals.steps >= n && pexoMark(`climb.steps.${n}`, true))
         offerShare({
-          kind: "streak",
+          kind: "climb", trigger: "climb.share",
           title: `${n} steps climbed`,
           mood: "proud",
         });
