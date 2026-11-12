@@ -78,6 +78,10 @@ export type ProfileOverview = {
   examDateIsDefault: boolean;
   /** Signed: negative once the date has passed. */
   daysUntilExam: number | null;
+  /** A4: the exam being counted down to, with its own label ("JEE Main" / "JEE Advanced"). */
+  nextExam?: ExamDateEntry | null;
+  /** A4: every JEE exam the student is preparing for, earliest first. */
+  examDates?: ExamDateEntry[];
   currentLevel: AcademicLevel | null;
   coachingType: CoachingType | null;
   coachingName: string | null;
@@ -90,6 +94,21 @@ export type ProfileOverview = {
   } | null;
   partner: { status: "PENDING" | "ACTIVE" | "PAUSED"; name: string | null } | null;
 };
+
+export type ExamDateEntry = {
+  kind: "JEE_MAIN" | "JEE_ADVANCED";
+  label: string;
+  date: string;
+  days: number;
+  isDefault: boolean;
+  estimated: boolean;
+  session?: 1 | 2 | null;
+};
+
+/** A3: today in IST as the server sees it, the server's clock, and when the next IST midnight is. */
+export function getServerToday() {
+  return authRequest<{ success: true; data: { today: string; now: string; nextMidnightAt: string } }>("/today");
+}
 
 export function getProfileOverview() {
   return authRequest<{ success: true; data: ProfileOverview }>("/overview");

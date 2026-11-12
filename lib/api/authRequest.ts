@@ -133,7 +133,7 @@ let ttlEnabled = typeof process === "undefined" || !process.env.VITEST;
  */
 const MAX_STALE_MS = 2 * 60_000;
 /** Answers that must always be current when read again: the running timer, the gates, the bell, who is studying now. */
-const ALWAYS_FRESH: RegExp[] = [/\/focus-sessions\/active/, /\/checkin/, /\/onboarding/, /\/notifications/, /\/social\/studying-now/];
+const ALWAYS_FRESH: RegExp[] = [/\/profile\/today/, /\/focus-sessions\/active/, /\/checkin/, /\/onboarding/, /\/notifications/, /\/social\/studying-now/];
 /** Writes that change only a few answers: the minute heartbeat adds study time, so only time and XP views are forgotten. */
 const NARROW_WRITES: { match: RegExp; forget: RegExp }[] = [{ match: /\/xp\/heartbeat/, forget: /\/xp\/|leaderboard|study-sessions|focus-sessions|productivity|day-close|sunday-review/ }];
 
@@ -155,6 +155,12 @@ function cacheOwner(): string {
   }
   ownerCache = { token, owner };
   return owner;
+}
+
+/** The signed-in student's id from the access token, or null (used to tag failure logs). */
+export function currentUserId(): string | null {
+  const owner = cacheOwner();
+  return owner && owner !== getAccessToken() ? owner : null;
 }
 
 type Remembered = { at: number; value: unknown };

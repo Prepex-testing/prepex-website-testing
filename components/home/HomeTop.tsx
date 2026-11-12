@@ -16,6 +16,8 @@ import { startFocusSession } from "@/lib/focus/startFocusSession";
 import { clockText, daysLeftText, subjectKey } from "@/lib/home/top";
 import { reactCountdown, reactStreak } from "@/lib/pexo/reactions";
 import { usePexo } from "@/lib/pexo/store";
+import { useResource } from "@/lib/home/useResource";
+import { InlineRetry } from "@/components/home/InlineRetry";
 
 /**
  * The top of Home, modelled on the study-timer apps students already love: today's total as a big number that keeps
@@ -24,11 +26,23 @@ import { usePexo } from "@/lib/pexo/store";
  */
 export function HomeTop() {
   const { subjects } = useSubjects();
-  const [xp, setXp] = useState<XpSummary | null>(null);
-  const [streak, setStreak] = useState<number | null>(null);
-  const [rank, setRank] = useState<number | null | undefined>(undefined);
-  const [daysLeft, setDaysLeft] = useState<{ days: number | null; exam: string | null } | null>(null);
-  const [rewards, setRewards] = useState<RewardsSummary | null>(null);
+  // A1: every Home read retries passing failures with backoff, shows the last real answer while it does, and only
+  // then offers an inline Retry. Nothing here falls back to a made-up value ("Set a date", "-", an empty bar).
+  const xpRes = useResource<XpSummary>("home:xp", getXpSummary);
+  const streakRes = useResource<number>("home:streak", () => getStreakInfo().then((s) => s.currentStreak));
+  const rankRes = useResource<number | null>("home:rank", () => getBoard({ board: "today", filter: "india", limit: 0 }).then((b) => b.me.rank));
+  const examRes = useResource<{ days: number | null; exam: string | null }>("home:exam", () =>
+    getProfileOverview().then((r) => ({
+      days: r.data.nextExam?.days ?? r.data.daysUntilExam,
+      exam: r.data.nextExam?.label ?? r.data.exam?.name ?? null,
+    })),
+  );
+  const rewardsRes = useResource<RewardsSummary>("home:rewards", getRewards);
+  const xp = xpRes.data;
+  const streak = streakRes.data;
+  const rank = rankRes.status === "ready" ? rankRes.data : undefined;
+  const daysLeft = examRes.data;
+  const rewards = rewardsRes.data;
   // the running session, as the server saw it, and when this device got that answer
   const [live, setLive] = useState<{ elapsed: number; running: boolean; at: number } | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -41,16 +55,6 @@ export function HomeTop() {
   useEffect(() => {
     if (pexoOn) reactCountdown(daysLeft?.days);
   }, [pexoOn, daysLeft?.days]);
-
-  useEffect(() => {
-    void getXpSummary().then(setXp).catch(() => undefined);
-    void getStreakInfo().then((s) => setStreak(s.currentStreak)).catch(() => undefined);
-    void getBoard({ board: "today", filter: "india", limit: 0 }).then((b) => setRank(b.me.rank)).catch(() => setRank(null));
-    void getProfileOverview()
-      .then((r) => setDaysLeft({ days: r.data.daysUntilExam, exam: r.data.exam?.name ?? null }))
-      .catch(() => undefined);
-    void getRewards().then(setRewards).catch(() => undefined);
-  }, []);
 
   // sync with the server's timer every minute while the tab is visible; between syncs the number is computed from the server's elapsed seconds
   useEffect(() => {
@@ -132,7 +136,17 @@ export function HomeTop() {
 
         <div className="flex flex-col gap-3">
           {/* XP: the gamified number, so it glows (softly) and the bar shines. */}
-          <Link href="/home/leaderboard" className={`relative overflow-hidden rounded-[20px] border border-border-subtle/70 bg-surface-elevated p-5 shadow-sm ${lift}`} data-testid="home-level">
+          <Link href="/home/leaderboard" className={`relative overflow-hidden rounded-[20px] border border-border-subtle/70 bg-surface-elevated p-5 shadow-sm ${lift}`} data-testid="home-level" aria-busy={xpRes.status === "loading"}>
+            {xpRes.status === "error" ? (
+              <InlineRetry what="your level" onRetry={xpRes.retry} />
+            ) : !xp ? (
+              <div className="flex flex-col gap-3" data-testid="home-level-loading">
+                <div className="skeleton h-4 w-2/5 rounded-lg" />
+                <div className="skeleton h-9 w-1/3 rounded-lg" />
+                <div className="skeleton h-2.5 w-full rounded-full" />
+              </div>
+            ) : (
+            <>
             <div className="flex items-baseline justify-between gap-2">
               <p className="text-[13px] font-bold text-ink">{xp ? `Level ${xp.level}, ${xp.title}` : "Level"}</p>
               <p className="text-[12px] font-semibold tabular-nums text-muted">{xp ? `${xp.totalXp.toLocaleString("en-IN")} XP` : ""}</p>
@@ -151,23 +165,45 @@ export function HomeTop() {
             <p className="mt-2 text-[12px] text-muted">
               {xp ? `${toNext !== null ? `${toNext} XP to level ${xp.level + 1} · ` : ""}${xp.monthXp.toLocaleString("en-IN")} this month` : ""}
             </p>
+            </>
+            )}
           </Link>
 
           <div className="grid grid-cols-2 gap-3">
             <Link href="/profile" className={tile} data-testid="days-left" aria-label="Days left to your exam. Edit the date in your profile.">
-              <p className="text-[12px] font-semibold uppercase tracking-wide text-muted">{daysLeft?.exam ?? "Your exam"}</p>
-              <p className="mt-1 text-[30px] font-extrabold leading-none tabular-nums text-ink">{daysLeft?.days === null || daysLeft === null ? "Set a date" : daysLeftText(daysLeft.days).big}</p>
-              <p className="mt-1 text-[12px] text-muted">{daysLeft && daysLeft.days !== null ? daysLeftText(daysLeft.days).small : "Add your exam date"}</p>
+              {examRes.status === "error" ? (
+                <InlineRetry what="your countdown" onRetry={examRes.retry} />
+              ) : !daysLeft ? (
+                <div className="flex flex-col gap-2" data-testid="days-left-loading">
+                  <div className="skeleton h-3 w-2/3 rounded" />
+                  <div className="skeleton h-8 w-1/2 rounded-lg" />
+                </div>
+              ) : (
+                <>
+                  <p className="text-[12px] font-semibold uppercase tracking-wide text-muted">{daysLeft.exam ?? "Your exam"}</p>
+                  {/* only a profile with genuinely no exam date asks for one; a load that has not finished never does */}
+                  <p className="mt-1 text-[30px] font-extrabold leading-none tabular-nums text-ink">{daysLeft.days === null ? "Set a date" : daysLeftText(daysLeft.days).big}</p>
+                  <p className="mt-1 text-[12px] text-muted">{daysLeft.days !== null ? daysLeftText(daysLeft.days).small : "Add your exam date"}</p>
+                </>
+              )}
             </Link>
             <Link href="/home/streak" className={tile} data-testid="home-streak" data-coach="streak-card">
               <p className="text-[12px] font-semibold uppercase tracking-wide text-muted">Streak</p>
+              {streakRes.status === "error" ? (
+                <InlineRetry what="your streak" onRetry={streakRes.retry} />
+              ) : streak === null ? (
+                <div className="skeleton mt-2 h-8 w-1/2 rounded-lg" data-testid="home-streak-loading" />
+              ) : (
+              <>
               <p className="mt-1 flex items-center gap-1 text-[30px] font-extrabold leading-none tabular-nums text-ink">
                 <svg viewBox="0 0 24 24" className={`size-7 ${streak ? "text-[#FF6B47]" : "text-muted"}`} aria-hidden>
                   <path fill="currentColor" d="M12 2c1 3-1 4.5-2.5 6.5C8 10.5 7 12 7 14.5A5 5 0 0 0 12 20a5 5 0 0 0 5-5.5c0-2-1-3.3-2-4.5-.4 1-1 1.7-1.7 2 .4-3-.2-6.5-1.3-10z" />
                 </svg>
-                {streak ?? "–"}
+                {streak}
               </p>
               <p className="mt-1 text-[12px] text-muted">{streak === 1 ? "day" : "days"} in a row</p>
+              </>
+              )}
             </Link>
           </div>
         </div>

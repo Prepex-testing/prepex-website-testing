@@ -14,6 +14,8 @@ export function buildCompletePayload(draft: OnboardingDraft, needsSubjects: bool
     ...(about.phoneNumber.trim() && { phoneNumber: about.phoneNumber.trim() }),
     ...(about.city.trim() && { city: about.city.trim() }),
     targetExamDate: displayDateToIso(about.examDate) ?? defaultExamDateIso(about.currentLevel),
+    // A4: left blank = no date of their own; the server counts down to the configured JEE Main / Advanced default
+    ...(!displayDateToIso(about.examDate) && { examDateIsDefault: true }),
     currentLevel: about.currentLevel,
     coachingType: coaching.type,
     ...(coached && coaching.name && { coachingName: coaching.name }),
