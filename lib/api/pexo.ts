@@ -36,6 +36,9 @@ export type PexoState = {
   care?: PexoCare;
   /** The Sunday pledge: this week's, and last week's once settled. */
   pledge?: PexoPledgeState | null;
+  /** Phase 2: the highest level-band form reached (never goes down), and the small Climb summary. */
+  form?: PexoFormName | null;
+  climb?: PexoClimbSummary | null;
 };
 
 export type PexoQuest = "focus" | "dayclose" | "revision" | "mistake" | "practice" | "backlog" | "friend";
@@ -113,3 +116,31 @@ export const joinFriendSession = (sessionId: string, friendId: string) => core<{
 export const lookupInvite = (code: string) => apiRequest<Envelope<{ valid: boolean; name: string | null }>>(`${CORE_API_BASE_URL}/api/pexo/invite/${encodeURIComponent(code)}`).then((r) => r.data);
 /** The personal link a student shares. */
 export const inviteLink = (code: string) => `${typeof window !== "undefined" ? window.location.origin : "https://testing.prepex.io"}/join/${code}`;
+
+// Phase 2: the Climb.
+export type PexoFormName = "aspirant" | "grinder" | "solver" | "ranker" | "topper" | "iitian";
+export type PexoClimbSummary = { steps: number; todayStudied: boolean; form: PexoFormName; daysToExam: number | null; rocksOpen: number; gems: number };
+export type ClimbStep = {
+  date: string;
+  minutes: number;
+  studied: boolean;
+  planDone: boolean;
+  landmarks: { chapterId: string; name: string; subject: string; subjectId: number }[];
+  checkpoints: { id: string; testType: string; examPattern: string; score: { total: number; max: number } | null }[];
+  smashed: { id: string; chapter: string }[];
+  gems: number;
+  milestone: number | null;
+};
+export type ClimbRock = { key: string; chapterId: string | null; chapter: string; subjectId: number | null; hoursLeft: number; size: "small" | "medium" | "large"; lane: string | null; backlogId: string };
+export type ClimbTotals = { start: string; day: number; steps: number; chapters: number; mocks: number; rocksSmashed: number; gems: number; form: PexoFormName; daysToExam: number | null; todayStudied: boolean; todayMinutes: number };
+export type ClimbPage = {
+  month: string;
+  steps: ClimbStep[];
+  nextCursor: string | null;
+  base: { n: number; chapters: { name: string; subject: string; subjectId: number }[] } | null;
+  upcoming: { peak: { examDate: string; daysLeft: number } | null; milestones: { days: number; date: string; reached: boolean }[]; rocks: ClimbRock[] } | null;
+  totals: ClimbTotals | null;
+};
+export type ClimbFriend = { userId: string; name: string; username: string | null; avatarUrl: string | null; form: PexoFormName; steps: number; studiedToday: boolean };
+export const getClimbPage = (cursor?: string | null) => core<ClimbPage | null>(cursor ? `/climb?cursor=${cursor}` : "/climb");
+export const getClimbFriends = () => core<ClimbFriend[] | null>("/climb/friends");

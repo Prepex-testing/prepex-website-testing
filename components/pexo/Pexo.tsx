@@ -1,5 +1,7 @@
 "use client";
 
+import { FormBehind, FormFront, isForm, type PexoForm } from "@/components/pexo/forms";
+import { usePexo } from "@/lib/pexo/store";
 import { useEffect, useId, useRef, useState } from "react";
 import { MOODS, type MouthShape, type PexoAccessory, type PexoProp, type PexoSize } from "@/components/pexo/moods";
 import type { PexoMood } from "@/lib/pexo/engine";
@@ -201,6 +203,8 @@ type Props = {
   /** A prop (or several) to hold instead of the mood's own. `false` holds nothing. */
   prop?: PexoProp | PexoProp[] | false;
   accessory?: PexoAccessory | null;
+  /** The level-band form. Defaults to the student's own form (from Pexo's state); pass one for a friend's Pexo. */
+  form?: PexoForm;
   /** The mouth moves for a moment, as if saying the bubble next to it. */
   speaking?: boolean;
   /** Tappable: a tap waves, three quick taps giggle. The parent decides what Pexo says. */
@@ -212,7 +216,9 @@ type Props = {
 
 const TRIPLE_TAP_MS = 900;
 
-export function Pexo({ mood = "happy", size = 48, prop, accessory = null, speaking = false, onTap, subtle = false, className = "" }: Props) {
+export function Pexo({ mood = "happy", size = 48, prop, accessory = null, form: formProp, speaking = false, onTap, subtle = false, className = "" }: Props) {
+  const own = usePexo().state?.form;
+  const form: PexoForm = formProp ?? (isForm(own) ? own : "aspirant");
   const svg = useRef<SVGSVGElement>(null);
   const [blink, setBlink] = useState(false);
   const [glance, setGlance] = useState<[number, number] | null>(null);
@@ -283,11 +289,13 @@ export function Pexo({ mood = "happy", size = 48, prop, accessory = null, speaki
       data-testid="pexo"
       data-mood={mood}
       data-size={size}
+      data-form={form}
       {...(onTap ? { "aria-hidden": true } : { role: "img", "aria-label": "Pexo" })}
     >
       {desk && !tiny && <path d="M4 112 L116 112" stroke="var(--brand)" strokeWidth={3} strokeLinecap="round" data-part="desk" />}
       <g className={motion} data-part="body" style={{ transformOrigin: motion === "pexo-jump" ? "60px 66px" : "60px 106px" }}>
         <g data-part="lean" style={{ transform: `rotate(${spec.tilt}deg)`, transformOrigin: "60px 100px" }}>
+          <FormBehind form={form} tiny={tiny} />
           <circle cx={60} cy={66} r={40} fill={ORANGE} />
           <ellipse cx={46} cy={42} rx={14} ry={7} fill="#FFFFFF" opacity={0.16} transform="rotate(-24 46 42)" />
           {!tiny && (
@@ -314,6 +322,7 @@ export function Pexo({ mood = "happy", size = 48, prop, accessory = null, speaki
           <g data-part="mouth" data-mouth={spec.mouth} className={speaking ? "pexo-talk" : undefined} style={{ transformOrigin: "60px 84px" }}>
             <Mouth shape={spec.mouth} />
           </g>
+          <FormFront form={form} tiny={tiny} capOn={accessory === "cap" && !tiny} idle={props.length === 0} />
           {accessory && accessory !== "scarf" && !tiny && <Accessory name={accessory} />}
         </g>
       </g>
