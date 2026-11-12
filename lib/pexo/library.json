@@ -1,5 +1,5 @@
 {
- "version": 1,
+ "version": 2,
  "name": "Pexo line library",
  "languages": [
   "en",
@@ -1824,6 +1824,209 @@
    "mood": "sleepy",
    "en": "Still here? Me too.",
    "hi": "Abhi bhi yahin? Main bhi."
+  },
+  {
+   "id": "climb.intro#1",
+   "trigger": "climb.intro",
+   "mood": "waving",
+   "en": "This is your climb. Every study day is a step, all the way to JEE.",
+   "hi": "Ye tumhara climb hai. Har study din ek step, seedha JEE tak."
+  },
+  {
+   "id": "climb.today_marker#1",
+   "trigger": "climb.today_marker",
+   "mood": "happy",
+   "en": "You are here. Day {day} of your climb.",
+   "hi": "Tum yahan ho. Climb ka din {day}."
+  },
+  {
+   "id": "climb.exam_peak#1",
+   "trigger": "climb.exam_peak",
+   "mood": "thinking",
+   "en": "That's JEE, at the top. {days} days away.",
+   "hi": "Wo upar JEE hai. {days} din door."
+  },
+  {
+   "id": "climb.before_prepex#1",
+   "trigger": "climb.before_prepex",
+   "mood": "proud",
+   "en": "These {n} chapters were done before we met. Steps already climbed.",
+   "hi": "Ye {n} chapters milne se pehle ho chuke the. Steps pehle hi chadh liye."
+  },
+  {
+   "id": "climb.step.today#1",
+   "trigger": "climb.step.today",
+   "mood": "proud",
+   "en": "Today's step is done. {steps} steps climbed.",
+   "hi": "Aaj ka step ho gaya. {steps} steps chadh chuke."
+  },
+  {
+   "id": "climb.step.pending#1",
+   "trigger": "climb.step.pending",
+   "mood": "curious",
+   "en": "Today's step is waiting. One session puts it on the map.",
+   "hi": "Aaj ka step baaki hai. Ek session aur ye map pe."
+  },
+  {
+   "id": "climb.step.big#1",
+   "trigger": "climb.step.big",
+   "mood": "celebrating",
+   "en": "{hours}h today. That's a tall step.",
+   "hi": "Aaj {hours} ghante. Ye ek uncha step hai."
+  },
+  {
+   "id": "climb.gap#1",
+   "trigger": "climb.gap",
+   "mood": "calm",
+   "en": "A few quiet days here. That's okay, the climb continues.",
+   "hi": "Yahan kuch shaant din the. Koi baat nahi, climb jaari hai."
+  },
+  {
+   "id": "climb.landmark#1",
+   "trigger": "climb.landmark",
+   "mood": "proud",
+   "en": "{chapter} is now a landmark on your climb.",
+   "hi": "{chapter} ab tumhare climb pe ek landmark hai."
+  },
+  {
+   "id": "climb.checkpoint#1",
+   "trigger": "climb.checkpoint",
+   "mood": "proud",
+   "en": "Mock checkpoint: {score}. Flag planted.",
+   "hi": "Mock checkpoint: {score}. Flag gaad diya."
+  },
+  {
+   "id": "climb.checkpoint.no_score#1",
+   "trigger": "climb.checkpoint.no_score",
+   "mood": "happy",
+   "en": "Mock checkpoint. Flag planted.",
+   "hi": "Mock checkpoint. Flag gaad diya."
+  },
+  {
+   "id": "climb.rock.view#1",
+   "trigger": "climb.rock.view",
+   "mood": "calm",
+   "en": "{n} rocks on the path. We'll clear them one by one.",
+   "hi": "Raaste mein {n} rocks hain. Ek ek karke hatayenge."
+  },
+  {
+   "id": "climb.rock.none#1",
+   "trigger": "climb.rock.none",
+   "mood": "happy",
+   "en": "No rocks on the path. Clear road ahead.",
+   "hi": "Raaste mein koi rock nahi. Aage saaf raasta."
+  },
+  {
+   "id": "climb.rock.smashed#1",
+   "trigger": "climb.rock.smashed",
+   "mood": "celebrating",
+   "en": "Rock smashed. The path just got clearer.",
+   "hi": "Rock toot gaya. Raasta aur saaf ho gaya."
+  },
+  {
+   "id": "climb.gem#1",
+   "trigger": "climb.gem",
+   "mood": "proud",
+   "en": "Another gem. {n} mastered mistakes in your bag.",
+   "hi": "Ek aur gem. Bag mein {n} mastered mistakes."
+  },
+  {
+   "id": "climb.milestone.reached#1",
+   "trigger": "climb.milestone.reached",
+   "mood": "celebrating",
+   "en": "{days} days to JEE. Milestone reached.",
+   "hi": "JEE mein {days} din. Milestone aa gaya."
+  },
+  {
+   "id": "climb.milestone.ahead#1",
+   "trigger": "climb.milestone.ahead",
+   "mood": "curious",
+   "en": "Next milestone: {days} days to JEE.",
+   "hi": "Agla milestone: JEE mein {days} din."
+  },
+  {
+   "id": "climb.friend#1",
+   "trigger": "climb.friend",
+   "mood": "happy",
+   "en": "{friend} is on step {steps}, climbing beside you.",
+   "hi": "{friend} step {steps} pe hai, tumhare saath chadh raha hai."
+  },
+  {
+   "id": "climb.share#1",
+   "trigger": "climb.share",
+   "mood": "proud",
+   "en": "Look how far you've come. Share your climb?",
+   "hi": "Dekho kitna upar aa gaye. Climb share karein?"
+  },
+  {
+   "id": "form.reveal#1",
+   "trigger": "form.reveal",
+   "mood": "celebrating",
+   "en": "I changed. New look for a new title: {title}.",
+   "hi": "Main badal gaya. Naye title ke liye naya look: {title}."
+  },
+  {
+   "id": "form.aspirant#1",
+   "trigger": "form.aspirant",
+   "mood": "happy",
+   "en": "Aspirant. Every journey starts with a first step, and you've taken it.",
+   "hi": "Aspirant. Har safar pehle step se shuru hota hai, aur wo tum le chuke ho."
+  },
+  {
+   "id": "form.grinder#1",
+   "trigger": "form.grinder",
+   "mood": "proud",
+   "en": "Grinder. I got a study lamp. Consistency looks good on us.",
+   "hi": "Grinder. Mujhe study lamp mil gaya. Consistency humpe jachti hai."
+  },
+  {
+   "id": "form.solver#1",
+   "trigger": "form.solver",
+   "mood": "proud",
+   "en": "Solver. Glasses on. Questions don't scare us anymore.",
+   "hi": "Solver. Chashma lag gaya. Ab questions se dar nahi lagta."
+  },
+  {
+   "id": "form.ranker#1",
+   "trigger": "form.ranker",
+   "mood": "cheering",
+   "en": "Ranker. Backpack packed. We're playing for ranks now.",
+   "hi": "Ranker. Bag pack ho gaya. Ab rank ke liye khel rahe hain."
+  },
+  {
+   "id": "form.topper#1",
+   "trigger": "form.topper",
+   "mood": "celebrating",
+   "en": "Topper. I got a cape. Don't let it go to your head.",
+   "hi": "Topper. Mujhe cape mil gaya. Sar pe mat chadhne dena."
+  },
+  {
+   "id": "form.iitian#1",
+   "trigger": "form.iitian",
+   "mood": "celebrating",
+   "en": "IITian-in-making. The hoodie fits. Now let's earn it for real.",
+   "hi": "IITian-in-making. Hoodie fit ho gayi. Ab isse sach mein kamaate hain."
+  },
+  {
+   "id": "first_visit.climb#1",
+   "trigger": "first_visit.climb",
+   "mood": "waving",
+   "en": "Your whole journey on one path. Scroll down for where you started, up for JEE.",
+   "hi": "Poora safar ek raaste pe. Neeche scroll karo shuruaat ke liye, upar JEE ke liye."
+  },
+  {
+   "id": "empty.climb#1",
+   "trigger": "empty.climb",
+   "mood": "curious",
+   "en": "Your climb starts with your first study day. Let's take it.",
+   "hi": "Tumhara climb pehle study din se shuru hota hai. Chalo, le lete hain."
+  },
+  {
+   "id": "notif.climb_milestone#1",
+   "trigger": "notif.climb_milestone",
+   "mood": "curious",
+   "en": "Pexo: {days} days to JEE. Come see your climb.",
+   "hi": "Pexo: JEE mein {days} din. Apna climb dekho."
   }
  ]
 }

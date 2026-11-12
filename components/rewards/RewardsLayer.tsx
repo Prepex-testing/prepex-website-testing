@@ -1,5 +1,6 @@
 "use client";
 
+import { REWARD_MOMENT_EVENT } from "@/components/pexo/FormReveal";
 import { offerShare } from "@/lib/pexo/share";
 import confetti from "canvas-confetti";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
@@ -75,6 +76,11 @@ export function RewardsLayer() {
   }, [later]);
 
   const current = moments[0] ?? null;
+  // Pexo's form reveal waits while this moment is open
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(REWARD_MOMENT_EVENT, { detail: current !== null }));
+  }, [current]);
+
   useEffect(() => {
     if (!current) return;
     // confetti only here (level-ups and badges), and not at all under reduced motion

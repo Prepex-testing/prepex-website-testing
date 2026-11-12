@@ -1,5 +1,6 @@
 "use client";
 
+import { FormReveal } from "@/components/pexo/FormReveal";
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
 import { CommandPalette } from "@/components/command/CommandPalette";
@@ -91,6 +92,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <FocusLauncher />
       {!isFocusMode && <Heartbeat />}
       <RewardsLayer />
+      <FormReveal />
       {/* nothing speaks during a focus session (Pexo guide, section 4) */}
       <Suspense fallback={null}>
         <PexoLayer muted={isFocusMode} />

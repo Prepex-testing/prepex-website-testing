@@ -2,6 +2,7 @@
 
 import { Pexo } from "@/components/pexo/Pexo";
 import { PexoBubble } from "@/components/pexo/PexoBubble";
+import { FORM_TITLES, PEXO_FORMS } from "@/components/pexo/forms";
 import { MOOD_NAMES, PEXO_ACCESSORIES, PEXO_PROPS, PEXO_SIZES } from "@/components/pexo/moods";
 import { selectLine } from "@/lib/pexo/engine";
 import { PEXO_LIBRARY } from "@/lib/pexo/store";
@@ -36,6 +37,25 @@ export function PexoLab() {
             <Pexo mood="proud" size={96} accessory={a} />
             {a}
           </figure>
+        ))}
+      </section>
+      <section className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-label="Forms">
+        {PEXO_FORMS.map((form) => (
+          <div key={form} className="flex flex-col gap-3 rounded-2xl border border-border-subtle bg-surface p-4" data-testid={`lab-form-${form}`}>
+            <p className="text-[13px] font-bold text-ink">{FORM_TITLES[form]}</p>
+            {(["happy", "focused", "celebrating"] as const).map((mood) => (
+              <div key={mood} className="flex flex-wrap items-end gap-3">
+                {([24, 96, 160] as const).map((size) => (
+                  <Pexo key={size} form={form} mood={mood} size={size} />
+                ))}
+              </div>
+            ))}
+            <div className="flex items-end gap-3">
+              {PEXO_ACCESSORIES.map((a) => (
+                <Pexo key={a} form={form} mood="proud" size={96} accessory={a} />
+              ))}
+            </div>
+          </div>
         ))}
       </section>
       <section className="mt-4 max-w-md" aria-label="Bubble">
