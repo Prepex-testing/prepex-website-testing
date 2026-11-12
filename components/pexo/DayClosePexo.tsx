@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { Pexo } from "@/components/pexo/Pexo";
 import { useEffect, useState } from "react";
 import { PexoBubble, usePexoLine } from "@/components/pexo/PexoBubble";
 import { getPexoTeaser, type PexoTeaser } from "@/lib/api/pexo";
@@ -21,7 +23,7 @@ export function rewardTrigger(s: DaySummaryLike): { trigger: string; context: Re
  * first task). The teaser is one small request when the reward opens. Nothing renders when Pexo is off.
  */
 export function DayClosePexo({ summary }: { summary: DaySummaryLike }) {
-  const { enabled } = usePexo();
+  const { enabled, state } = usePexo();
   const reward = rewardTrigger(summary);
   const line = usePexoLine(reward.trigger, reward.context, `${reward.trigger}:${summary.minutes}:${summary.tasksDone}`);
   const [teaser, setTeaser] = useState<PexoPick | null>(null);
@@ -45,6 +47,14 @@ export function DayClosePexo({ summary }: { summary: DaySummaryLike }) {
     <div className="flex w-full flex-col gap-2 text-left" data-testid="day-close-pexo">
       {line && <PexoBubble pick={line} size={48} testId="day-close-pexo-reward" />}
       {teaser && <PexoBubble pick={teaser} size={48} testId="day-close-pexo-teaser" />}
+      {state?.climb && (
+        <Link href="/home/climb" className="flex items-center gap-2 text-[13px] font-semibold text-brand underline" data-testid="day-close-climb-link">
+          <span className="climb-hop inline-flex">
+            <Pexo size={24} mood="proud" />
+          </span>
+          See your climb
+        </Link>
+      )}
     </div>
   );
 }

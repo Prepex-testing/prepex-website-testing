@@ -4,7 +4,7 @@ import type { DaySummary } from "@/lib/api/calendarView";
 import { dateKey, HEAT_LABEL, heatLevel, MOOD_LABEL, monthGrid, type HeatLevel } from "@/lib/insights/heatmap";
 import { formatMinutes } from "@/lib/study/format";
 
-const LEVEL_CLASS: Record<HeatLevel, string> = {
+export const LEVEL_CLASS: Record<HeatLevel, string> = {
   0: "bg-tint-strong text-muted",
   1: "bg-[#6366F133] text-ink",
   2: "bg-[#6366F166] text-ink",

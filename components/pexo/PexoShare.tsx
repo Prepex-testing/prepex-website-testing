@@ -78,7 +78,7 @@ export function PexoShareLayer() {
   const moment = useSyncExternalStore(onShare, pendingShare, () => null);
   const [open, setOpen] = useState<ShareMoment | null>(null);
   const waiting = !!moment && !transient && enabled && !state?.care?.active;
-  const pick = usePexoLine(waiting ? "share.prompt" : null, {}, moment ? moment.kind : "");
+  const pick = usePexoLine(waiting ? (moment?.trigger ?? "share.prompt") : null, {}, moment ? `${moment.kind}:${moment.trigger ?? ""}` : "");
   return (
     <>
       {waiting && pick && (

@@ -6,7 +6,7 @@ import { pexoEvent, pexoMark, pexoState } from "@/lib/pexo/store";
  * in care mode, nothing when Pexo is off. The offer waits until the screen's reaction bubble has gone.
  */
 
-export type ShareMoment = { kind: "level_up" | "all_tasks_done" | "last_rock" | "mastered" | "mock_up" | "streak"; title: string; detail?: string; mood: PexoMood };
+export type ShareMoment = { kind: "level_up" | "all_tasks_done" | "last_rock" | "mastered" | "mock_up" | "streak" | "climb"; title: string; detail?: string; mood: PexoMood; /** The offer's line; the Climb's high points use `climb.share`. */ trigger?: string };
 
 let pending: ShareMoment | null = null;
 const listeners = new Set<() => void>();
