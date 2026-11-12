@@ -34,9 +34,9 @@ afterEach(() => {
 });
 
 describe("the bundled library and engine", () => {
-  it("is the owner's file: version 2, 287 lines, both languages with matching placeholders", () => {
-    expect(PEXO_LIBRARY.version).toBe(2);
-    expect(PEXO_LIBRARY.lines).toHaveLength(287);
+  it("is the owner's file: version 3, 291 lines, both languages with matching placeholders", () => {
+    expect(PEXO_LIBRARY.version).toBe(3);
+    expect(PEXO_LIBRARY.lines).toHaveLength(291);
     for (const l of PEXO_LIBRARY.lines) expect(placeholdersOf(l.hi).sort(), l.id).toEqual(placeholdersOf(l.en).sort());
   });
 

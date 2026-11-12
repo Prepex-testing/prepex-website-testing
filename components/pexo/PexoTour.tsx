@@ -24,23 +24,34 @@ export const TOUR_CARDS: { trigger: string; prop?: PexoProp; title: string }[] =
 export const TOUR_WINDOW_DAYS = 7;
 export const FIRST_SESSION_MINUTES = 15;
 
-type Stage = { kind: "card"; index: number } | { kind: "end" } | { kind: "finale" } | { kind: "first" } | { kind: "skipped" };
+type Stage = { kind: "hello"; index: number } | { kind: "card"; index: number } | { kind: "end" } | { kind: "finale" } | { kind: "first" } | { kind: "skipped" };
 
 /**
  * The 60-second tour: six swipeable cards, Pexo acting each one, then the finale with the real days to the exam and
  * an invitation to a 15-minute first session (the timer opens already filled in). Shown once, in the first week, on
  * Home. Every step can be skipped. Modal on purpose: it is the one guided moment.
  */
-export function PexoTour({ firstSubject }: { firstSubject: string | null }) {
+/**
+ * `meet`: the student finished onboarding before they had Pexo (the server says `meetPexo`). Once, the tour opens with
+ * Pexo's three hello lines first, whatever their signup date. Skippable at every card; onboarding is never replayed.
+ */
+export function PexoTour({ firstSubject, meet = false }: { firstSubject: string | null; meet?: boolean }) {
   const { enabled, state } = usePexo();
   const [open, setOpen] = useState(false);
   const [stage, setStage] = useState<Stage>({ kind: "card", index: 0 });
   const [days, setDays] = useState<number | null>(null);
   const [touchX, setTouchX] = useState<number | null>(null);
 
-  const due = Boolean(enabled && state && (state.daysSinceSignup ?? 0) <= TOUR_WINDOW_DAYS && !pexoHasMark("tour"));
+  const meetDue = Boolean(enabled && state && meet && !pexoHasMark("meet"));
+  const due = Boolean(enabled && state && !pexoHasMark("tour") && ((state.daysSinceSignup ?? 0) <= TOUR_WINDOW_DAYS || meetDue));
   useEffect(() => {
     if (!due) return;
+    if (meetDue) {
+      // shown once: marked as it opens, so a reload half-way does not bring it back
+      pexoMark("meet", true);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- the meeting starts with Pexo saying hello
+      setStage({ kind: "hello", index: 0 });
+    }
     // eslint-disable-next-line react-hooks/set-state-in-effect -- opened once, when the state says it is due
     setOpen(true);
     void getProfileOverview().then((r) => setDays(r.data.daysUntilExam), () => undefined);
@@ -50,7 +61,7 @@ export function PexoTour({ firstSubject }: { firstSubject: string | null }) {
 
   const close = (completed: boolean) => {
     pexoMark("tour", true);
-    pexoEvent(completed ? "tour_completed" : "tour_skipped", stage.kind === "card" ? { at: stage.index } : { at: stage.kind });
+    pexoEvent(completed ? "tour_completed" : "tour_skipped", stage.kind === "card" ? { at: stage.index } : { at: stage.kind === "hello" ? `hello-${stage.index}` : stage.kind });
     setOpen(false);
   };
   const go = (dir: 1 | -1) => {
@@ -62,7 +73,8 @@ export function PexoTour({ firstSubject }: { firstSubject: string | null }) {
 
   let pick: PexoPick | null = null;
   let prop: PexoProp | undefined;
-  if (stage.kind === "card") {
+  if (stage.kind === "hello") pick = pexoSay(`onb.hello.${stage.index + 1}`, {}, { silent: true });
+  else if (stage.kind === "card") {
     pick = pexoSay(TOUR_CARDS[stage.index]!.trigger, {}, { silent: true });
     prop = TOUR_CARDS[stage.index]!.prop;
   } else if (stage.kind === "end") pick = pexoSay("tour.end", {}, { silent: true });
@@ -81,7 +93,7 @@ export function PexoTour({ firstSubject }: { firstSubject: string | null }) {
       <div
         className="flex flex-col items-center gap-5 text-center"
         data-testid="pexo-tour"
-        data-stage={stage.kind === "card" ? `card-${stage.index}` : stage.kind}
+        data-stage={stage.kind === "card" ? `card-${stage.index}` : stage.kind === "hello" ? `hello-${stage.index}` : stage.kind}
         onTouchStart={(e) => setTouchX(e.touches[0]?.clientX ?? null)}
         onTouchEnd={(e) => {
           const end = e.changedTouches[0]?.clientX;
@@ -102,6 +114,12 @@ export function PexoTour({ firstSubject }: { firstSubject: string | null }) {
           </div>
         )}
         <div className="flex w-full flex-wrap justify-center gap-2">
+          {stage.kind === "hello" && (
+            <>
+              <GhostButton onClick={() => close(false)} data-testid="pexo-tour-skip">Skip</GhostButton>
+              <CoralButton onClick={() => setStage(stage.index < 2 ? { kind: "hello", index: stage.index + 1 } : { kind: "card", index: 0 })} data-testid="pexo-tour-next">Next</CoralButton>
+            </>
+          )}
           {stage.kind === "card" && (
             <>
               <GhostButton onClick={() => close(false)} data-testid="pexo-tour-skip">Skip</GhostButton>

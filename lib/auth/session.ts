@@ -52,9 +52,13 @@ export function updateStoredUser(patch: Partial<AuthUser>) {
   window.dispatchEvent(new Event(STORED_USER_CHANGE_EVENT));
 }
 
+/** Sent when the session is cleared, so per-student memory (Pexo's store) forgets the student who left. */
+export const SESSION_CLEARED_EVENT = "prepex:session-cleared";
+
 export function clearSession() {
   if (!isBrowser()) return;
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  window.dispatchEvent(new Event(SESSION_CLEARED_EVENT));
 }

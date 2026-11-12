@@ -64,9 +64,9 @@ export function queryDb<T = Record<string, unknown>>(sql: string, params: unknow
   return JSON.parse(out.toString()) as T[];
 }
 
-/** The "Next" button of whichever onboarding step is showing. */
+/** The "Next" button of whichever onboarding step is showing (not Pexo's own "Next" in its narration bubble). */
 export async function next(page: Page) {
-  await page.getByRole("button", { name: "Next", exact: true }).click();
+  await page.getByRole("button", { name: "Next", exact: true }).and(page.locator(':not([data-testid="onboarding-pexo-next"])')).click();
 }
 
 /** The shortest honest path from a fresh student to the app: log in, onboard (accepting the starter week, skipping the chapters), skip today's check-in. */

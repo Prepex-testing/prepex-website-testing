@@ -184,6 +184,10 @@ export function dismissPexo(key?: number): void {
   publish();
 }
 
+// sign-out (or an expired session): the next student on this tab must not inherit this one's Pexo (marks such as
+// "tour done", lines not sent yet). A plain string, not an import, so the session module stays free of this one.
+if (typeof window !== "undefined") window.addEventListener("prepex:session-cleared", () => resetPexo());
+
 /** Tests and sign-out. */
 export function resetPexo(): void {
   state = null;

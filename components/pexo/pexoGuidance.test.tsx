@@ -187,6 +187,30 @@ describe("empty states (B5)", () => {
   });
 });
 
+describe("Meet Pexo: onboarded before they had Pexo", () => {
+  it("once, outside the first week: three hello lines, then the tour; skippable; never again", async () => {
+    primePexo(on({ daysSinceSignup: 40, meetPexo: true }));
+    const first = render(<PexoTour firstSubject="Physics" meet />);
+    expect(await screen.findByTestId("pexo-tour")).toHaveAttribute("data-stage", "hello-0");
+    for (const i of [1, 2, 3]) {
+      expect(screen.getByTestId("pexo-tour-text")).toHaveTextContent(text(`onb.hello.${i}#1`));
+      fireEvent.click(screen.getByTestId("pexo-tour-next"));
+    }
+    expect(screen.getByTestId("pexo-tour")).toHaveAttribute("data-stage", "card-0");
+    fireEvent.click(screen.getByTestId("pexo-tour-skip"));
+    expect(takePexoBatch()!.marks).toEqual(expect.arrayContaining(["meet", "tour"]));
+    first.unmount();
+    render(<PexoTour firstSubject="Physics" meet />);
+    expect(screen.queryByTestId("pexo-tour")).toBeNull();
+  });
+
+  it("a student past the first week without the flag sees nothing", () => {
+    primePexo(on({ daysSinceSignup: 40 }));
+    render(<PexoTour firstSubject="Physics" />);
+    expect(screen.queryByTestId("pexo-tour")).toBeNull();
+  });
+});
+
 describe("the 60-second tour and first session (B2)", () => {
   it("six cards, the finale with real days to the exam, then a 15-minute first session pre-filled", async () => {
     primePexo(on({ daysSinceSignup: 0 }));

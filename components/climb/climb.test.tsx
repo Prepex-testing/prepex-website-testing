@@ -1,18 +1,18 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/home/climb", useSearchParams: () => new URLSearchParams(), useRouter: () => ({ push: vi.fn(), replace: vi.fn() }) }));
 vi.mock("canvas-confetti", () => ({ default: vi.fn() }));
 vi.mock("html-to-image", () => ({ toPng: vi.fn(async () => "data:image/png;base64,AAAA") }));
 vi.mock("@/lib/api/xp", () => ({ onXpSummary: vi.fn(() => () => undefined), getXpSummary: vi.fn(async () => ({})), sendHeartbeat: vi.fn() }));
-vi.mock("@/lib/api/pexo", async (orig) => ({ ...(await orig<typeof import("@/lib/api/pexo")>()), getClimbPage: vi.fn(), getClimbFriends: vi.fn(), askPexo: vi.fn(async () => null) }));
+vi.mock("@/lib/api/pexo", async (orig) => ({ ...(await orig<typeof import("@/lib/api/pexo")>()), getClimbPage: vi.fn(), getClimbFriends: vi.fn(), getPexoSocial: vi.fn(async () => null), askPexo: vi.fn(async () => null) }));
 vi.mock("@/lib/focus/startFocusSession", () => ({ startFocusSession: vi.fn() }));
 
 import { ClimbScreen, resetClimbMarks } from "@/components/climb/ClimbScreen";
 import { climbCardData } from "@/components/climb/ClimbShare";
 import { ClimbStrip } from "@/components/climb/ClimbStrip";
-import { getClimbFriends, getClimbPage, type ClimbPage, type ClimbStep, type PexoState } from "@/lib/api/pexo";
+import { getClimbFriends, getClimbPage, getPexoSocial, type ClimbPage, type ClimbStep, type PexoState } from "@/lib/api/pexo";
 import { startFocusSession } from "@/lib/focus/startFocusSession";
 import { foldQuiet, todayTrigger } from "@/lib/pexo/climb";
 import { primePexo, resetPexo } from "@/lib/pexo/store";
@@ -110,6 +110,45 @@ describe("the Climb screen", () => {
     render(<ClimbScreen />);
     expect(await screen.findByTestId("climb-today-bubble")).toHaveTextContent("Your climb starts with your first study day. Let's take it.");
     expect(screen.getByTestId("climb-rocks-line")).toHaveTextContent("No rocks on the path. Clear road ahead.");
+    // no chapters marked at onboarding: the fresh-start line at the base
+    expect(await screen.findByTestId("climb-base-line")).toHaveTextContent("A fresh start. Every climb begins on the ground.");
+  });
+
+  it("nobody followed yet: Pexo's empty-lane line with an invite button", async () => {
+    primePexo(on());
+    vi.mocked(getClimbFriends).mockResolvedValue([]);
+    vi.mocked(getPexoSocial).mockResolvedValue({ together: [], duels: [], invite: { code: "abc23xyz", joined: 0, rewarded: 0, recent: [] }, batch: null, care: false });
+    render(<ClimbScreen />);
+    fireEvent.click(await screen.findByTestId("climb-friends-toggle"));
+    expect(await screen.findByTestId("climb-friends-empty-line")).toHaveTextContent("No friends on your climb yet. Invite one and climb together.");
+    fireEvent.click(await screen.findByTestId("climb-friends-invite"));
+    expect(await screen.findByTestId("invite-message")).toHaveTextContent("/join/abc23xyz");
+  });
+
+  it("a milestone reached in care mode: the calm line, no celebration and no share offer", async () => {
+    primePexo(on({ marks: { "climb.intro.seen": "2026-11-01" }, care: { active: true, reason: "low_mood", distress: false } }));
+    render(
+      <>
+        <PexoLayer />
+        <ClimbScreen />
+      </>,
+    );
+    expect(await screen.findByTestId("pexo-transient")).toHaveAttribute("data-line", "climb.milestone.care#1");
+    expect(screen.getByTestId("pexo-text")).toHaveTextContent("100 days to JEE. One step at a time, at your own pace.");
+    expect(screen.queryByTestId("pexo-share-bubble")).toBeNull();
+  });
+
+  it("today's step completing while the Climb is open: Pexo hops with the just-done line", async () => {
+    primePexo(on());
+    render(
+      <>
+        <PexoLayer />
+        <ClimbScreen />
+      </>,
+    );
+    await screen.findByTestId("climb-today");
+    act(() => primePexo(on({ climb: { ...summary, todayStudied: true, steps: 4 } })));
+    expect(await screen.findByTestId("pexo-transient")).toHaveAttribute("data-line", "climb.step.just_done#1");
   });
 
   it("friends lane: their Pexo in their form, steps and today, and the climb.friend line", async () => {
