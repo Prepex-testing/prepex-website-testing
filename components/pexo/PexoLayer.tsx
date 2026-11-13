@@ -5,7 +5,10 @@ import { claimPendingInvite } from "@/lib/pexo/invite";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { PexoBubble } from "@/components/pexo/PexoBubble";
-import { dismissPexo, loadPexo, pexoFirstVisit, pexoMark, pexoReact, usePexo } from "@/lib/pexo/store";
+import { dismissPexo, loadPexo, pexoFirstVisit, pexoHasMark, pexoMark, pexoReact, usePexo } from "@/lib/pexo/store";
+
+/** How long the "Edit timetable" spotlight stays on (onboarding v2, C5). */
+export const SPOTLIGHT_MS = 6000;
 
 /**
  * The screens with a first-visit bubble, by path. The longest prefix wins. The focus timer is not here: nothing speaks
@@ -66,6 +69,17 @@ export function PexoLayer({ muted = false }: { muted?: boolean }) {
       return;
     }
     const screen = firstVisitScreen(pathname);
+    // C5: a student whose week was built by the v2 canvas meets the planner with a pointer to Edit timetable
+    if (screen === "planner" && pexoHasMark("onb.v2") && pexoMark("timetable.intro", true)) {
+      pexoFirstVisit("planner");
+      pexoReact("timetable.intro.planner", {}, { kind: "first_visit", actions: [{ label: "Edit timetable", href: "/timetable?from=planner" }] });
+      document.documentElement.dataset.pexoSpotlight = "edit-timetable";
+      const t = setTimeout(() => delete document.documentElement.dataset.pexoSpotlight, SPOTLIGHT_MS);
+      return () => {
+        clearTimeout(t);
+        delete document.documentElement.dataset.pexoSpotlight;
+      };
+    }
     if (!screen || !pexoFirstVisit(screen)) return;
     pexoReact(`first_visit.${screen}`, {}, { kind: "first_visit" });
   }, [enabled, muted, pathname, welcome]);

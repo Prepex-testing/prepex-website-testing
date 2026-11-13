@@ -1058,3 +1058,13 @@ html[data-motion="full"] .climb-sparkle { display: inline-flex; animation: climb
   0%, 100% { transform: scale(1); filter: none; }
   50% { transform: scale(1.35); filter: drop-shadow(0 0 6px var(--saffron)); }
 }
+
+/* Onboarding v2 (C5): Pexo points at Edit timetable on the first planner visit. No new colour: the existing CTA. */
+[data-pexo-spotlight="edit-timetable"] [data-testid="edit-timetable"] {
+  box-shadow: 0 0 0 3px var(--cta);
+  border-radius: 12px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-pexo-spotlight="edit-timetable"] [data-testid="edit-timetable"] { animation: pexo-spotlight 1.2s ease-in-out 2; }
+}
+@keyframes pexo-spotlight { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--cta) 45%, transparent); } }

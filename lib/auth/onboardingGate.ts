@@ -1,6 +1,7 @@
 import { getCheckInStatus } from "@/lib/api/checkin";
 import { getOnboardingProgress, getOnboardingStepPath } from "@/lib/api/onboarding";
 import { forgetGateMemory, isOnboardedRemembered, rememberOnboarded } from "@/lib/auth/gateMemory";
+import { cachedFlags } from "@/lib/onboardingV2/flags";
 
 /**
  * Where a signed-in student belongs right now.
@@ -50,6 +51,8 @@ export async function pendingOnboardingPath(): Promise<string | null> {
       markOnboardingComplete();
       return null;
     }
+    // Onboarding v2: an unfinished student goes to the Pexo canvas (it keeps its own answers on the device)
+    if (cachedFlags()?.onboardingV2) return "/onboarding/v2";
     return getOnboardingStepPath(data.progress.currentStep);
   } catch {
     return null;
