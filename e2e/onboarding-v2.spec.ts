@@ -31,7 +31,7 @@ async function signUp(page: Page, tag: string): Promise<string> {
 
 const at = (page: Page, q: string) => expect(page.getByTestId("onb-canvas")).toHaveAttribute("data-question", q, { timeout: 20_000 });
 
-type Path = { name: string; cls: "CLASS_11" | "CLASS_12" | "DROPPER"; school?: "morning" | "day" | "none"; coaching: "OFFLINE" | "ONLINE" | "SELF"; ctime?: "MORNING" | "AFTERNOON" | "EVENING"; hours?: number; language?: "hi"; sound?: boolean };
+type Path = { adjust?: boolean; name: string; cls: "CLASS_11" | "CLASS_12" | "DROPPER"; school?: "morning" | "day" | "none"; coaching: "OFFLINE" | "ONLINE" | "SELF"; ctime?: "MORNING" | "AFTERNOON" | "EVENING"; hours?: number; language?: "hi"; sound?: boolean };
 
 async function answerAll(page: Page, p: Path) {
   await at(page, "prefs");
@@ -66,6 +66,16 @@ async function answerAll(page: Page, p: Path) {
   await page.getByTestId("onb-windows-next").click();
   await at(page, "week");
   await expect(page.getByTestId("onb-pexo-text")).toHaveText(/\d/);
+  if (p.adjust) {
+    // Adjust opens ONE day that applies to the whole week, with the switch to edit days separately
+    await page.getByTestId("onb-week-adjust").click();
+    await expect(page.getByTestId("onb-week-editor")).toBeVisible();
+    await expect(page.getByTestId("uniform-toggle")).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByTestId("day-col-0")).toBeVisible();
+    await expect(page.locator('[data-testid^="day-col-"]')).toHaveCount(1);
+    await page.getByTestId("save-timetable").click();
+    await expect(page.getByTestId("onb-week-editor")).toHaveCount(0);
+  }
   await page.getByTestId("onb-week-ok").click();
   await at(page, "chapters");
   await page.getByTestId("onb-skip").click();
@@ -112,6 +122,18 @@ test("tap-only: Class 12, morning school, self-study, in 90 seconds or less", as
   // metrics: every question shown and answered, flow v2
   expect(events.filter((e) => e.kind === "view").length).toBeGreaterThanOrEqual(10);
   expect(events.every((e) => e.flow_version === "v2")).toBe(true);
+});
+
+test("Adjust opens one day for the whole week, saved as a uniform week", async ({ page }, info) => {
+  test.skip(info.project.name.startsWith("mobile"), "real signups: desktop project only");
+  await flagsOn(page);
+  const email = await signUp(page, "adjust");
+  await answerAll(page, { name: "adjust", cls: "CLASS_12", school: "morning", coaching: "SELF", adjust: true });
+  const [profile] = queryDb<{ timetable_uniform_week: boolean }>("SELECT p.timetable_uniform_week FROM core.user_profiles p JOIN core.users u ON u.id = p.user_id WHERE u.email = $1", [email]);
+  expect(profile!.timetable_uniform_week).toBe(true);
+  const { blocks } = savedProfile(email);
+  const dayOf = (d: number) => blocks.filter((b) => b.day_of_week === d).map((b) => `${b.activity_type} ${b.start_time}-${b.end_time}`).sort().join("|");
+  for (let d = 1; d < 7; d++) expect(dayOf(d)).toBe(dayOf(0));
 });
 
 test("Class 11, morning school, offline afternoon coaching never overlapping school", async ({ page }, info) => {

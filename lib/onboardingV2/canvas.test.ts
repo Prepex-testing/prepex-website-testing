@@ -76,6 +76,13 @@ describe("the payload: the same body the old flow sends", () => {
     expect(p).toMatchObject({ jeeMainDate: "2027-01-20", jeeAdvancedDate: "2027-05-16", timetable: { source: "MANUAL" } });
     expect(p.examDateIsDefault).toBeUndefined();
   });
+
+  it("a week adjusted as one routine for every day is sent as a uniform week", () => {
+    expect(buildPayload({ ...base, weekEdited: true, weekUniform: true, week: buildFor(base).blocks }, "exam-1").timetable.uniformWeek).toBe(true);
+    expect(buildPayload({ ...base, weekEdited: true, weekUniform: false, week: buildFor(base).blocks }, "exam-1").timetable.uniformWeek).toBe(false);
+    // the untouched generated week differs on Sunday, so it is never uniform
+    expect(buildPayload({ ...base, weekUniform: true }, "exam-1").timetable.uniformWeek).toBe(false);
+  });
 });
 
 describe("voice answers (English and Hinglish), never a guess", () => {

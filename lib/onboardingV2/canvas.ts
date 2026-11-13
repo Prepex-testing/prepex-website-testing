@@ -48,6 +48,8 @@ export interface CanvasAnswers {
   /** The built (or adjusted) week. */
   week: GridBlock[];
   weekEdited: boolean;
+  /** Adjusted as one routine for every day ("same every day" in the editor). Absent on drafts saved before it existed. */
+  weekUniform?: boolean;
   chapters: string[];
   /** Questions answered, in order: Back walks this list. */
   history: QuestionId[];
@@ -170,7 +172,8 @@ export function buildPayload(a: CanvasAnswers, examId: string): CompleteOnboardi
     currentLevel: levelOf(a.level),
     coachingType: COACHING_TYPE[a.coaching ?? "SELF"],
     timetable: {
-      uniformWeek: false,
+      // the generated week differs on Sunday; an adjusted one is uniform when the student kept "same every day"
+      uniformWeek: a.weekEdited ? a.weekUniform === true : false,
       source: a.weekEdited ? "MANUAL" : "COACHING_TEMPLATE",
       blocks: toApiBlocks(blocks).map((b) => {
         const rest = { ...b };
