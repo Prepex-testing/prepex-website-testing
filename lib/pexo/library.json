@@ -1,5 +1,5 @@
 {
- "version": 3,
+ "version": 4,
  "name": "Pexo line library",
  "languages": [
   "en",
@@ -86,8 +86,8 @@
    "id": "onb.chapters#1",
    "trigger": "onb.chapters",
    "mood": "curious",
-   "en": "Tap the chapters you've finished. Tap twice if you're confident in them.",
-   "hi": "Jo chapters ho gaye unpe tap karo. Pakka aate hain toh double tap."
+   "en": "Tap the chapters you've finished. If a whole class is done, mark it all at once.",
+   "hi": "Jo chapters ho gaye unpe tap karo. Poori class ho gayi ho toh ek saath sab mark kar do."
   },
   {
    "id": "onb.chapters.after#1",
@@ -2055,6 +2055,223 @@
    "mood": "calm",
    "en": "A fresh start. Every climb begins on the ground.",
    "hi": "Fresh start. Har climb zameen se shuru hota hai."
+  },
+  {
+   "id": "onb.signin#1",
+   "trigger": "onb.signin",
+   "mood": "waving",
+   "en": "Hi, I'm Pexo. Let's get you set up in about a minute.",
+   "hi": "Hi, main Pexo hoon. Ek minute mein setup kar dete hain."
+  },
+  {
+   "id": "onb.signin.guest_note#1",
+   "trigger": "onb.signin.guest_note",
+   "mood": "calm",
+   "en": "Just looking? Try Prepex first. You can save your progress any time.",
+   "hi": "Bas dekhna hai? Pehle try karo. Progress kabhi bhi save kar sakte ho."
+  },
+  {
+   "id": "onb.prefs#1",
+   "trigger": "onb.prefs",
+   "mood": "curious",
+   "en": "Before we start: which language, and should I talk out loud?",
+   "hi": "Shuru karne se pehle: kaunsi language, aur kya main bolkar baat karun?"
+  },
+  {
+   "id": "onb.name#1",
+   "trigger": "onb.name",
+   "mood": "curious",
+   "en": "What should I call you?",
+   "hi": "Tumhe kya bulaun?"
+  },
+  {
+   "id": "onb.name.after#1",
+   "trigger": "onb.name.after",
+   "mood": "happy",
+   "en": "Nice to meet you, {name}.",
+   "hi": "Milke achha laga, {name}."
+  },
+  {
+   "id": "onb.exam#1",
+   "trigger": "onb.exam",
+   "mood": "curious",
+   "en": "What are you preparing for?",
+   "hi": "Kiski taiyaari kar rahe ho?"
+  },
+  {
+   "id": "onb.exam_date.confirm#1",
+   "trigger": "onb.exam_date.confirm",
+   "mood": "thinking",
+   "en": "{exam} is on {date}. That's {days} days away. Right?",
+   "hi": "{exam} {date} ko hai. Yaani {days} din baaki. Sahi hai?"
+  },
+  {
+   "id": "onb.school#1",
+   "trigger": "onb.school",
+   "mood": "curious",
+   "en": "Do you go to school?",
+   "hi": "School jaate ho?"
+  },
+  {
+   "id": "onb.school.dummy#1",
+   "trigger": "onb.school.dummy",
+   "mood": "happy",
+   "en": "More time for prep then. I'll use it well.",
+   "hi": "Matlab prep ke liye zyada time. Achhe se use karunga."
+  },
+  {
+   "id": "onb.school.yes#1",
+   "trigger": "onb.school.yes",
+   "mood": "calm",
+   "en": "Got it. I'll keep school hours free and plan around them.",
+   "hi": "Samajh gaya. School ka time chhod ke uske aas-paas plan karunga."
+  },
+  {
+   "id": "onb.coaching.time#1",
+   "trigger": "onb.coaching.time",
+   "mood": "curious",
+   "en": "When's your class?",
+   "hi": "Class kab hoti hai?"
+  },
+  {
+   "id": "onb.hours#1",
+   "trigger": "onb.hours",
+   "mood": "curious",
+   "en": "How many hours can you self-study on a normal day?",
+   "hi": "Normal din mein kitne ghante self-study kar paate ho?"
+  },
+  {
+   "id": "onb.hours.high#1",
+   "trigger": "onb.hours.high",
+   "mood": "calm",
+   "en": "Big days. I'll make sure you rest too.",
+   "hi": "Bade din hain. Aaraam bhi karwaunga."
+  },
+  {
+   "id": "onb.windows#1",
+   "trigger": "onb.windows",
+   "mood": "curious",
+   "en": "When do you study best? Pick all that fit.",
+   "hi": "Sabse achha kab padhte ho? Jitne fit hon, sab chuno."
+  },
+  {
+   "id": "onb.week_preview#1",
+   "trigger": "onb.week_preview",
+   "mood": "proud",
+   "en": "Here's your week: {hours}h a day, revision at {time}. You can change it any time.",
+   "hi": "Ye raha tumhara hafta: roz {hours} ghante, revision {time} baje. Kabhi bhi badal sakte ho."
+  },
+  {
+   "id": "onb.goals.proposal#1",
+   "trigger": "onb.goals.proposal",
+   "mood": "thinking",
+   "en": "Your first week: {lectures} lectures, {questions} questions, {revisions} revisions. Lock it in?",
+   "hi": "Pehla hafta: {lectures} lectures, {questions} questions, {revisions} revisions. Final karein?"
+  },
+  {
+   "id": "onb.building#1",
+   "trigger": "onb.building",
+   "mood": "focused",
+   "en": "Building your plan around your day.",
+   "hi": "Tumhare din ke hisaab se plan bana raha hoon."
+  },
+  {
+   "id": "onb.voice.hint#1",
+   "trigger": "onb.voice.hint",
+   "mood": "calm",
+   "en": "Tap an answer, or hold the mic and say it.",
+   "hi": "Answer pe tap karo, ya mic dabaake bol do."
+  },
+  {
+   "id": "onb.voice.didnt_catch#1",
+   "trigger": "onb.voice.didnt_catch",
+   "mood": "calm",
+   "en": "I didn't catch that. Tap an answer instead?",
+   "hi": "Samajh nahi aaya. Answer pe tap kar do?"
+  },
+  {
+   "id": "guest.save.first_session#1",
+   "trigger": "guest.save.first_session",
+   "mood": "proud",
+   "en": "Nice first session. Save your climb so it's never lost?",
+   "hi": "Badhiya pehla session. Climb save karein taaki kabhi kho na jaaye?"
+  },
+  {
+   "id": "guest.save.dayclose#1",
+   "trigger": "guest.save.dayclose",
+   "mood": "happy",
+   "en": "Your first day is done. Save your progress?",
+   "hi": "Pehla din ho gaya. Progress save karein?"
+  },
+  {
+   "id": "guest.save.day3#1",
+   "trigger": "guest.save.day3",
+   "mood": "curious",
+   "en": "Three days in. Save your climb with Google or email?",
+   "hi": "Teen din ho gaye. Climb Google ya email se save karein?"
+  },
+  {
+   "id": "guest.locked_feature#1",
+   "trigger": "guest.locked_feature",
+   "mood": "calm",
+   "en": "Save your account to unlock this.",
+   "hi": "Isse unlock karne ke liye account save karo."
+  },
+  {
+   "id": "guest.saved#1",
+   "trigger": "guest.saved",
+   "mood": "celebrating",
+   "en": "Saved. Your climb is safe now.",
+   "hi": "Save ho gaya. Ab tumhara climb safe hai."
+  },
+  {
+   "id": "guest.ask.class#1",
+   "trigger": "guest.ask.class",
+   "mood": "curious",
+   "en": "Quick one: which class are you in?",
+   "hi": "Ek chhota sawaal: kaunsi class mein ho?"
+  },
+  {
+   "id": "guest.ask.exam_date#1",
+   "trigger": "guest.ask.exam_date",
+   "mood": "curious",
+   "en": "Quick one: when's your exam?",
+   "hi": "Ek chhota sawaal: exam kab hai?"
+  },
+  {
+   "id": "guest.ask.school#1",
+   "trigger": "guest.ask.school",
+   "mood": "curious",
+   "en": "Quick one: do you go to school?",
+   "hi": "Ek chhota sawaal: school jaate ho?"
+  },
+  {
+   "id": "guest.ask.hours#1",
+   "trigger": "guest.ask.hours",
+   "mood": "curious",
+   "en": "Quick one: how many hours can you study on a normal day?",
+   "hi": "Ek chhota sawaal: normal din mein kitne ghante padh paate ho?"
+  },
+  {
+   "id": "guest.ask.chapters#1",
+   "trigger": "guest.ask.chapters",
+   "mood": "curious",
+   "en": "Quick one: mark the chapters you've finished, so I plan the rest.",
+   "hi": "Ek chhota sawaal: jo chapters ho gaye unhe mark karo, baaki main plan karunga."
+  },
+  {
+   "id": "timetable.intro.planner#1",
+   "trigger": "timetable.intro.planner",
+   "mood": "thinking",
+   "en": "This plan follows your timetable. Tap Edit timetable to match your real day.",
+   "hi": "Ye plan tumhare timetable pe chalta hai. Asli routine ke hisaab se Edit timetable pe tap karo."
+  },
+  {
+   "id": "timetable.nudge.day2#1",
+   "trigger": "timetable.nudge.day2",
+   "mood": "curious",
+   "en": "Does your plan fit your real day? Two minutes on your timetable makes every plan sharper.",
+   "hi": "Plan tumhare asli din se match karta hai? Timetable pe 2 minute, aur har plan aur sharp."
   }
  ]
 }

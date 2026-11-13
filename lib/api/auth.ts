@@ -134,3 +134,28 @@ export async function performLogout() {
   // The next student to sign in on this tab may not be through onboarding.
   forgetOnboardingStatus();
 }
+
+// ---- Onboarding v2, Part B --------------------------------------------------------------------------------------------
+
+export type AuthFlags = { onboardingV2: boolean; guestMode: boolean };
+
+/** Which sign-in and onboarding to show; read from the server's environment, so it changes with a restart. */
+export function getAuthFlags() {
+  return request<{ success: true; data: AuthFlags }>("/flags");
+}
+
+/** E-mail a 6-digit sign-in code. Works for a new address and an existing account alike. */
+export function requestEmailCode(email: string) {
+  return request<{ success: true; data: { cooldownSeconds: number; expiresInSeconds: number } }>("/email-code/request", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+/** Check the code: signs in the existing account or creates a new one (with no password). */
+export function verifyEmailCode(input: { email: string; code: string; fullName?: string }) {
+  return request<{ success: true; data: AuthResult & { isNewUser: boolean } }>("/email-code/verify", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}

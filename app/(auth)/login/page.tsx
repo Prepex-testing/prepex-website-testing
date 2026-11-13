@@ -13,6 +13,7 @@ import { saveSession } from "@/lib/auth/session";
 import { markAccountRestored } from "@/lib/auth/accountRestored";
 import { resolveAuthedLanding } from "@/lib/auth/onboardingGate";
 import { syncTargetRankAfterLogin } from "@/lib/insights/targetRank";
+import { useV2Entry } from "@/lib/onboardingV2/useV2Entry";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,6 +21,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
+  // Onboarding v2: hands over to /start when the flag is on; renders this page unchanged when it is off
+  const handedOver = useV2Entry();
 
   const handleForgotPassword = () => {
     if (!email.trim()) {
@@ -54,6 +57,7 @@ export default function LoginPage() {
     }
   };
 
+  if (handedOver) return null;
   return (
     <AuthCard>
       <div className="flex flex-col items-center gap-1 text-center">

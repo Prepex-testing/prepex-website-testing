@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { UserIcon, MailIcon, LockIcon } from "@/components/ui/icons";
 import { registerAccount, ApiError } from "@/lib/api/auth";
+import { useV2Entry } from "@/lib/onboardingV2/useV2Entry";
 
 export default function CreateAccountPage() {
   const router = useRouter();
@@ -17,6 +18,8 @@ export default function CreateAccountPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
+  // Onboarding v2: hands over to /start when the flag is on; renders this page unchanged when it is off
+  const handedOver = useV2Entry();
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -33,6 +36,7 @@ export default function CreateAccountPage() {
     }
   };
 
+  if (handedOver) return null;
   return (
     <AuthCard>
       <div className="flex flex-col items-center gap-1 text-center">

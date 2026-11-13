@@ -19,6 +19,8 @@ const PUBLIC_PATHS = [
   "/splash",
   "/welcome",
   "/login",
+  // Onboarding v2: the Pexo sign-in screen (and guest mode under it)
+  "/start",
   "/create-account",
   "/email-verification",
   "/forgot-password",
@@ -44,7 +46,7 @@ function isPublicPath(pathname: string) {
 // the URL by hand) shouldn't see the splash/login flow again — they're sent
 // on to wherever they actually belong, which is their unfinished onboarding
 // step if they have one and only otherwise /home or /check-in.
-const AUTHED_REDIRECT_PATHS = ["/", "/splash", "/login"];
+const AUTHED_REDIRECT_PATHS = ["/", "/splash", "/login", "/start"];
 
 function isAuthedRedirectPath(pathname: string) {
   return AUTHED_REDIRECT_PATHS.includes(pathname);
