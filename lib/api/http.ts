@@ -16,6 +16,9 @@ export class ApiError extends Error {
  */
 export const REQUEST_TIMEOUT_MS = 20_000;
 
+/** Fired when the server refuses a feature to a guest account (403 guest_locked). */
+export const GUEST_LOCKED_EVENT = "prepex:guest-locked";
+
 function retryAfterMs(response: Response): number | null {
   const raw = response.headers.get("Retry-After");
   if (!raw) return null;
@@ -61,6 +64,11 @@ export async function apiRequest<T>(url: string, options: RequestInit = {}): Pro
   const body = await response.json().catch(() => null);
 
   if (!response.ok) {
+    // Onboarding v2, Part D: a guest tapped a feature that needs a saved account; Pexo says so (PexoLayer listens).
+    // Background reads (the rank tile, who is studying now) stay quiet.
+    if (response.status === 403 && body?.code === "guest_locked" && (options.method ?? "GET").toUpperCase() !== "GET" && typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent(GUEST_LOCKED_EVENT));
+    }
     throw new ApiError(
       response.status,
       body?.message ?? "Something went wrong. Please try again.",

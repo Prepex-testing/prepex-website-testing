@@ -159,3 +159,8 @@ export function verifyEmailCode(input: { email: string; code: string; fullName?:
     body: JSON.stringify(input),
   });
 }
+
+/** Onboarding v2, Part D: start as a guest (404 unless GUEST_MODE is on). */
+export function createGuest() {
+  return request<{ success: true; data: AuthResult }>("/guest", { method: "POST" });
+}
