@@ -122,6 +122,9 @@ export function getProfileOverview() {
 export type ProfileUpdate = Partial<{
   currentLevel: AcademicLevel;
   targetExamDate: string | null;
+  /** A4: the two JEE dates separately; null = back to the configured default. */
+  jeeMainDate: string | null;
+  jeeAdvancedDate: string | null;
   coachingType: CoachingType;
   coachingName: string | null;
   batchName: string | null;

@@ -2,6 +2,7 @@
 
 import { PexoShareLayer } from "@/components/pexo/PexoShare";
 import { claimPendingInvite } from "@/lib/pexo/invite";
+import { GUEST_LOCKED_EVENT } from "@/lib/api/http";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { PexoBubble } from "@/components/pexo/PexoBubble";
@@ -83,6 +84,13 @@ export function PexoLayer({ muted = false }: { muted?: boolean }) {
     if (!screen || !pexoFirstVisit(screen)) return;
     pexoReact(`first_visit.${screen}`, {}, { kind: "first_visit" });
   }, [enabled, muted, pathname, welcome]);
+
+  // Onboarding v2, Part D: a guest tapped something that needs a saved account
+  useEffect(() => {
+    const onLocked = () => pexoReact("guest.locked_feature", {}, { kind: "reaction" });
+    window.addEventListener(GUEST_LOCKED_EVENT, onLocked);
+    return () => window.removeEventListener(GUEST_LOCKED_EVENT, onLocked);
+  }, []);
 
   useEffect(() => {
     if (!transient || transient.sticky) return;
