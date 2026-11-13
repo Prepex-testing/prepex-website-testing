@@ -141,3 +141,19 @@ export async function getStudentChapters(options: { allClasses?: boolean } = {})
 
   return { success, data: subjects };
 }
+
+// ---- Onboarding v2 (Pexo canvas) ---------------------------------------------------------------------------------------
+
+export type DefaultExamDate = { kind: "JEE_MAIN" | "JEE_ADVANCED"; label: string; date: string; days: number; isDefault: boolean; estimated: boolean; session: 1 | 2 | null };
+
+/** The configured default dates Pexo confirms, for a class and a JEE goal (server: src/configs/examDates.ts). */
+export function getDefaultExamDates(level: CompleteOnboardingInput["currentLevel"], goal: "JEE_MAIN" | "JEE_BOTH") {
+  return authRequest<{ success: true; data: { today: string; dates: DefaultExamDate[] } }>(`/exam-dates?level=${level}&goal=${goal}`);
+}
+
+export type OnboardingMetric = { question: string; kind: "view" | "answer" | "skip" | "back" | "complete" | "abandon"; ms?: number; input?: "tap" | "voice" };
+
+/** Per-question metrics (C6): what happened and how long it took, never the answers. */
+export function postOnboardingEvents(body: { flowVersion: "v1" | "v2"; cohort: "account" | "guest"; events: OnboardingMetric[] }) {
+  return authRequest<{ success: true; data: { count: number } }>("/events", { method: "POST", body: JSON.stringify(body) });
+}
