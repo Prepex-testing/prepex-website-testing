@@ -8,6 +8,7 @@ import { getProfile, ApiError } from "@/lib/api/auth";
 import { saveSession } from "@/lib/auth/session";
 import { markAccountRestored } from "@/lib/auth/accountRestored";
 import { resolveAuthedLanding } from "@/lib/auth/onboardingGate";
+import { GUEST_CONFLICT_KEY, markGuestSaved } from "@/lib/onboardingV2/guest";
 
 export default function GoogleCallbackPage() {
   return (
@@ -24,6 +25,9 @@ function GoogleCallbackHandler() {
   const refreshToken = searchParams.get("refresh_token");
   // Set by auth-service when this Google sign-in cancelled a scheduled deletion.
   const restored = searchParams.get("restored") === "1";
+  // Part D: this Google sign-in saved a guest account (same account), or found the Google account already had Prepex
+  const savedGuest = searchParams.get("saved") === "1";
+  const guestConflict = searchParams.get("guest_conflict") === "1";
 
   const missingTokens = !accessToken || !refreshToken;
   const [asyncError, setAsyncError] = useState<string | null>(null);
@@ -36,6 +40,14 @@ function GoogleCallbackHandler() {
       .then(async ({ data: user }) => {
         saveSession({ accessToken, refreshToken }, user);
         if (restored) markAccountRestored();
+        if (savedGuest) markGuestSaved(user.id);
+        if (guestConflict) {
+          try {
+            window.localStorage.setItem(GUEST_CONFLICT_KEY, "1");
+          } catch {
+            /* private mode */
+          }
+        }
 
         router.push(await resolveAuthedLanding());
       })

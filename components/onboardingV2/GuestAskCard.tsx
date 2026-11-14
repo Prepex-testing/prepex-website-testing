@@ -7,7 +7,7 @@ import { updateProfile } from "@/lib/api/profile";
 import { createTimetable } from "@/lib/api/timetable";
 import { getStoredUser } from "@/lib/auth/session";
 import { buildFor, levelOf, spokenDate, type ClassAnswer } from "@/lib/onboardingV2/canvas";
-import { askShownThisSession, isGuestUser, loadGuest, markAskShown, nextAsk, saveGuest, type GuestAsk, type GuestState } from "@/lib/onboardingV2/guest";
+import { askShownThisSession, hasGuestAsks, isGuestUser, loadGuest, markAskShown, nextAsk, saveGuest, type GuestAsk, type GuestState } from "@/lib/onboardingV2/guest";
 import { sayLocal } from "@/lib/onboardingV2/lines";
 import type { HoursAnswer } from "@/lib/onboardingV2/timetable";
 import { toApiBlocks } from "@/lib/timetable/grid";
@@ -27,7 +27,8 @@ export function GuestAskCard() {
 
   useEffect(() => {
     const user = getStoredUser();
-    if (!user || !isGuestUser(user) || askShownThisSession()) return;
+    // a guest, or an account saved from a guest that still has questions left: the defaults are refined day by day
+    if (!user || !(isGuestUser(user) || hasGuestAsks(user.id)) || askShownThisSession()) return;
     const guest = loadGuest(user.id);
     const ask = nextAsk(guest);
     if (!ask) return;

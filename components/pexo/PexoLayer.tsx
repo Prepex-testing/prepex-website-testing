@@ -87,7 +87,7 @@ export function PexoLayer({ muted = false }: { muted?: boolean }) {
 
   // Onboarding v2, Part D: a guest tapped something that needs a saved account
   useEffect(() => {
-    const onLocked = () => pexoReact("guest.locked_feature", {}, { kind: "reaction" });
+    const onLocked = () => pexoReact("guest.locked_feature", {}, { kind: "reaction", actions: [{ label: "Save my account", href: "/home?save=1" }] });
     window.addEventListener(GUEST_LOCKED_EVENT, onLocked);
     return () => window.removeEventListener(GUEST_LOCKED_EVENT, onLocked);
   }, []);

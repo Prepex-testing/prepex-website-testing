@@ -24,6 +24,8 @@ export const GUEST_ASK_ORDER: GuestAsk[] = ["class", "exam_date", "school", "hou
 export interface GuestState {
   answers: CanvasAnswers;
   asked: GuestAsk[];
+  /** When the guest started (ISO), for the day-3 save prompt. Missing on states saved before it existed. */
+  startedAt?: string;
 }
 
 const key = (userId: string) => `prepex_guest:${userId}`;
@@ -74,3 +76,69 @@ export function markAskShown(): void {
 }
 
 export const isGuestUser = (u: { authProvider?: string; email?: string } | null | undefined) => u?.authProvider === "guest" || (u?.email ?? "").endsWith("@guest.prepex.invalid");
+
+// ---- D3: saving the guest ---------------------------------------------------------------------------------------------
+
+const savedKey = (userId: string) => `prepex_guest_saved:${userId}`;
+const promptsKey = (userId: string) => `prepex_guest_prompts:${userId}`;
+export const GUEST_CONFLICT_KEY = "prepex_guest_conflict";
+
+function readList(key: string): string[] {
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+/** The account was just saved (same id): Pexo says guest.saved once, and the ask cards keep going. */
+export function markGuestSaved(userId: string): void {
+  try {
+    window.localStorage.setItem(savedKey(userId), "1");
+  } catch {
+    /* private mode */
+  }
+}
+
+/** True once, right after saving. */
+export function takeGuestSaved(userId: string): boolean {
+  try {
+    const v = window.localStorage.getItem(savedKey(userId)) === "1";
+    if (v) window.localStorage.removeItem(savedKey(userId));
+    return v;
+  } catch {
+    return false;
+  }
+}
+
+/** A saved-from-guest account still has questions to answer (the cards go on after saving). */
+export function hasGuestAsks(userId: string): boolean {
+  try {
+    return window.localStorage.getItem(`prepex_guest:${userId}`) !== null;
+  } catch {
+    return false;
+  }
+}
+
+export type SavePrompt = "first_session" | "dayclose" | "day3";
+
+/** Each save prompt is shown at most once per guest. */
+export function promptShown(userId: string, prompt: SavePrompt): boolean {
+  return readList(promptsKey(userId)).includes(prompt);
+}
+export function markPromptShown(userId: string, prompt: SavePrompt): void {
+  try {
+    window.localStorage.setItem(promptsKey(userId), JSON.stringify([...new Set([...readList(promptsKey(userId)), prompt])]));
+  } catch {
+    /* private mode */
+  }
+}
+
+/** Which save prompt is due, most important first: day 3, then a closed day, then a first study session. */
+export function duePrompt(facts: { daysSinceStart: number; dayClosed: boolean; studied: boolean }, shown: (p: SavePrompt) => boolean): SavePrompt | null {
+  if (facts.daysSinceStart >= 2 && !shown("day3")) return "day3";
+  if (facts.dayClosed && !shown("dayclose")) return "dayclose";
+  if (facts.studied && !shown("first_session")) return "first_session";
+  return null;
+}

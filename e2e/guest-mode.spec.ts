@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import { queryDb } from "./helpers";
 
@@ -59,4 +60,43 @@ test("Try Prepex first: a guest lands on Home with the defaults, one ask card, a
   const duel = await request.post(`${core}/api/pexo/duels`, { headers: { Authorization: `Bearer ${token}` }, data: {} });
   expect(duel.status()).toBe(403);
   expect(await duel.json()).toMatchObject({ code: "guest_locked" });
+
+  // D3: save the guest with an e-mail code, from the menu. Same account, nothing lost.
+  const email = `guest.save.${Date.now()}@test.prepex.io`;
+  await page.goto("/home?save=1");
+  await expect(page.getByTestId("save-sheet")).toBeVisible({ timeout: 30_000 });
+  await page.getByTestId("save-email").click();
+  await page.getByTestId("save-name").fill("Asha Rao");
+  await page.getByTestId("save-address").fill(email);
+  await page.getByTestId("save-send-code").click();
+  await expect(page.getByTestId("save-code")).toBeVisible({ timeout: 20_000 });
+  queryDb("UPDATE auth.email_login_codes SET code_hash = $1 WHERE email = $2", [createHash("sha256").update("314159").digest("hex"), email]);
+  await page.getByTestId("save-code").fill("314159");
+  // back on Home, Pexo says guest.saved
+  await expect(page.getByTestId("guest-saved")).toHaveText("Saved. Your climb is safe now.", { timeout: 30_000 });
+
+  const [savedAuth] = queryDb<{ id: string; email: string; is_guest: boolean; full_name: string }>("SELECT id, email, is_guest, full_name FROM auth.users WHERE id = $1", [userId]);
+  expect(savedAuth).toMatchObject({ id: userId, email, is_guest: false, full_name: "Asha Rao" });
+  const [savedCore] = queryDb<{ email: string; is_guest: boolean; current_level: string }>(
+    "SELECT u.email, u.is_guest, p.current_level FROM core.users u JOIN core.user_profiles p ON p.user_id = u.id WHERE u.id = $1",
+    [userId],
+  );
+  // the class answered as a guest is still there: the same account, every answer kept
+  expect(savedCore).toMatchObject({ email, is_guest: false, current_level: "CLASS_11" });
+
+  // the locks are gone for the saved account
+  const fresh = await page.evaluate(() => {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)!;
+      const v = localStorage.getItem(k) ?? "";
+      if (/access/i.test(k) && v.split(".").length === 3) return v;
+    }
+    return null;
+  });
+  const now = await request.get(`${core}/api/social/studying-now`, { headers: { Authorization: `Bearer ${fresh}` } });
+  expect(now.status()).not.toBe(403);
+  // and the menu no longer offers to save
+  await page.reload();
+  await expect(page.getByTestId("home-top")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId("menu-save-account")).toHaveCount(0);
 });
