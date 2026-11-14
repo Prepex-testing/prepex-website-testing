@@ -46,7 +46,7 @@ const pexo = (over: Record<string, unknown> = {}) => ({
 async function open(page: Page, state: Record<string, unknown>, theme: "light" | "dark" = "light", route = "/home", ask?: unknown) {
   await page.emulateMedia({ colorScheme: theme });
   await stubPlannerApi(page, theme);
-  await page.route(/localhost:400[123]\/api\/(xp\/summary|pexo|backlog-items|class-coverage|day-close|sunday-review|profile\/overview|social|rewards|productivity|streak)/, (route: Route) => {
+  await page.route(/localhost:4\d{3}\/api\/(xp\/summary|pexo|backlog-items|class-coverage|day-close|sunday-review|profile\/overview|social|rewards|productivity|streak)/, (route: Route) => {
     const p = new URL(route.request().url()).pathname;
     if (p.endsWith("/xp/summary")) return route.fulfill(ok({ level: 3, title: "Aspirant", totalXp: 420, currentThreshold: 300, nextThreshold: 600, progressPct: 40, todayXp: 20, monthXp: 200, todayMinutes: 50, todayStudyMinutes: 95, rankGps: null, pexo: state }));
     if (p.endsWith("/pexo/ask")) return route.fulfill(ok(ask ?? { trigger: "ask.next.task", context: { task: "Practice: Mole Concept" }, action: { kind: "focus", label: "Start", taskId: "t1", subjectId: 2, taskType: "practice", minutes: 60 } }));
@@ -99,7 +99,7 @@ for (const theme of ["light", "dark"] as const) {
 }
 
 test("the invite link page, before signing in", async ({ page }, info) => {
-  await page.route(/localhost:400[123]\/api\/pexo\/invite\//, (r: Route) => r.fulfill(ok({ valid: true, name: "Asha" })));
+  await page.route(/localhost:4\d{3}\/api\/pexo\/invite\//, (r: Route) => r.fulfill(ok({ valid: true, name: "Asha" })));
   await page.goto("/join/abc23xyz?utm_source=whatsapp");
   await expect(page.getByTestId("join-title")).toHaveText("Asha invited you to Prepex");
   expect(await page.evaluate(() => JSON.parse(window.localStorage.getItem("prepex-invite") ?? "null")?.utm?.source)).toBe("whatsapp");
@@ -108,7 +108,7 @@ test("the invite link page, before signing in", async ({ page }, info) => {
 
 test("care mode: no duel on Home", async ({ page }) => {
   await open(page, pexo({ care: { active: true, reason: "low_mood", distress: false } }));
-  await page.route(/localhost:400[123]\/api\/pexo\/social/, (r: Route) => r.fulfill(ok({ ...SOCIAL, care: true })));
+  await page.route(/localhost:4\d{3}\/api\/pexo\/social/, (r: Route) => r.fulfill(ok({ ...SOCIAL, care: true })));
   await page.reload();
   await expect(page.getByTestId("climb-together")).toBeVisible();
   await expect(page.getByTestId("duels")).toHaveCount(0);

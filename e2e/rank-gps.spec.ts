@@ -26,13 +26,13 @@ async function open(page: Page, overview: RankGpsOverview, theme: "light" | "dar
   await page.emulateMedia({ colorScheme: theme });
   await stubPlannerApi(page, theme);
   let rankGpsCalls = 0;
-  await page.route(/localhost:400[123]\/api\/(rank-gps|xp\/summary)/, (route: Route) => {
+  await page.route(/localhost:4\d{3}\/api\/(rank-gps|xp\/summary)/, (route: Route) => {
     const p = new URL(route.request().url()).pathname;
     if (p.endsWith("/xp/summary")) return route.fulfill(ok({ level: 3, title: "Aspirant", totalXp: 420, currentThreshold: 300, nextThreshold: 600, progressPct: 40, todayXp: 20, monthXp: 200, todayMinutes: 50, todayStudyMinutes: 95, rankGps: homeCardReady }));
     rankGpsCalls += 1;
     return route.fulfill(ok(overview));
   });
-  await page.route(/localhost:400[123]\/api\/backlog/, (route: Route) => route.fulfill(ok({ totals: { open: 3, scheduled: 1, overdue: 1, total: 4 }, items: [], bySubject: [] })));
+  await page.route(/localhost:4\d{3}\/api\/backlog/, (route: Route) => route.fulfill(ok({ totals: { open: 3, scheduled: 1, overdue: 1, total: 4 }, items: [], bySubject: [] })));
   const errors: string[] = [];
   page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); if (m.text().includes("share image failed")) console.log(m.text()); });
   page.on("pageerror", (e) => errors.push(String(e)));

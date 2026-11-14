@@ -101,7 +101,7 @@ const seen = { tour: today, "climb.intro.seen": today, "climb.milestone.100": to
 async function open(page: Page, state: Record<string, unknown>, theme: "light" | "dark" = "light", route = "/home") {
   await page.emulateMedia({ colorScheme: theme });
   await stubPlannerApi(page, theme);
-  await page.route(/localhost:400[123]\/api\/(xp\/summary|pexo|backlog-items|class-coverage|day-close|sunday-review|profile\/overview|social|rewards|productivity|streak)/, (r: Route) => {
+  await page.route(/localhost:4\d{3}\/api\/(xp\/summary|pexo|backlog-items|class-coverage|day-close|sunday-review|profile\/overview|social|rewards|productivity|streak)/, (r: Route) => {
     const u = new URL(r.request().url());
     const p = u.pathname;
     if (p.endsWith("/xp/summary")) return r.fulfill(ok({ level: 3, title: "Aspirant", totalXp: 420, currentThreshold: 300, nextThreshold: 600, progressPct: 40, todayXp: 20, monthXp: 200, todayMinutes: 50, todayStudyMinutes: 95, rankGps: null, pexo: state }));
