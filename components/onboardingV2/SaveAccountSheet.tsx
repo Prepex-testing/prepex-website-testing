@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { SubmitEvent } from "react";
 import { GoogleIcon, MailIcon } from "@/components/ui/icons";
 import { ApiError, googleSaveUrl, requestEmailCode, saveGuestWithEmailCode, verifyEmailCode } from "@/lib/api/auth";
@@ -92,8 +93,10 @@ export function SaveAccountSheet({ onClose, onSaved }: { onClose: () => void; on
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/50 sm:items-center sm:px-6" role="dialog" aria-modal="true" aria-labelledby="save-title" data-testid="save-sheet">
+  // rendered at the page root: a Home card that animates (a transform) would otherwise trap the sheet under the
+  // bottom navigation and the + button on a phone
+  return createPortal(
+    <div className="fixed inset-0 z-[200] flex items-end justify-center bg-black/50 sm:items-center sm:px-6" role="dialog" aria-modal="true" aria-labelledby="save-title" data-testid="save-sheet">
       <div ref={panel} tabIndex={-1} className="flex w-full max-w-[460px] flex-col gap-4 rounded-t-2xl bg-background p-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-modal outline-none sm:rounded-2xl sm:p-7">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -163,7 +166,8 @@ export function SaveAccountSheet({ onClose, onSaved }: { onClose: () => void; on
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
