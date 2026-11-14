@@ -19,6 +19,8 @@ type Props = {
   onChange: (completed: string[]) => void;
   /** While a search is active every subject is opened so no match is hidden behind a closed header. */
   expandAll?: boolean;
+  /** Chapters per row on wide screens (the v2 canvas uses 3; the old step keeps 2). */
+  columns?: 2 | 3;
 };
 
 /**
@@ -26,7 +28,7 @@ type Props = {
  * pinned while you scroll through its chapters and carries a "Mark all complete" switch for the student who
  * finished a whole subject. Every tap target is at least 44px tall.
  */
-export function ChapterPicker({ sections, completed, onChange, expandAll = false }: Props) {
+export function ChapterPicker({ sections, completed, onChange, expandAll = false, columns = 2 }: Props) {
   const done = new Set(completed);
   const [open, setOpen] = useState<Record<string, boolean>>(() => {
     const first = sections[0]?.subjects[0]?.key;
@@ -47,6 +49,7 @@ export function ChapterPicker({ sections, completed, onChange, expandAll = false
               onToggleOpen={() => setOpen((o) => ({ ...o, [subject.key]: !(expandAll || o[subject.key]) }))}
               onChange={onChange}
               completed={completed}
+              columns={columns}
             />
           ))}
         </section>
@@ -62,6 +65,7 @@ function SubjectBlock({
   isOpen,
   onToggleOpen,
   onChange,
+  columns = 2,
 }: {
   subject: SubjectSection;
   done: ReadonlySet<string>;
@@ -69,6 +73,7 @@ function SubjectBlock({
   isOpen: boolean;
   onToggleOpen: () => void;
   onChange: (completed: string[]) => void;
+  columns?: 2 | 3;
 }) {
   const panelId = useId();
   const count = countCompleted(subject, done);
@@ -109,7 +114,7 @@ function SubjectBlock({
       </div>
 
       {isOpen && (
-        <ul id={panelId} className="grid grid-cols-1 gap-3 p-3 sm:auto-rows-fr sm:grid-cols-2">
+        <ul id={panelId} className={`grid grid-cols-1 gap-3 p-3 sm:auto-rows-fr sm:grid-cols-2 ${columns === 3 ? "lg:grid-cols-3" : ""}`}>
           {subject.chapters.map((chapter) => {
             const isDone = done.has(chapter.id);
             return (
