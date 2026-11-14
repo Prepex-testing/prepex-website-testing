@@ -74,6 +74,17 @@ export function SignInScreen() {
           <Link href="/login?password=1" className="mt-4 self-center text-[13px] font-semibold text-muted underline" data-testid="signin-password">
             Log in with password
           </Link>
+          <p className="mt-2 text-center text-[12px] leading-relaxed text-muted" data-testid="signin-legal">
+            By continuing, you agree to our{" "}
+            <Link href="/terms" className="underline">
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="underline">
+              Privacy Policy
+            </Link>
+            .
+          </p>
         </div>
       )}
       {stage.kind === "email" && <EmailStep onBack={() => setStage({ kind: "choose" })} onSent={(email) => setStage({ kind: "code", email })} />}

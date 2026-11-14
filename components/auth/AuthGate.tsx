@@ -21,6 +21,9 @@ const PUBLIC_PATHS = [
   "/login",
   // Onboarding v2: the Pexo sign-in screen (and guest mode under it)
   "/start",
+  // the legal pages Google (and every student) must be able to read without signing in
+  "/privacy",
+  "/terms",
   "/create-account",
   "/email-verification",
   "/forgot-password",

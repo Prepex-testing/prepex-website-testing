@@ -145,3 +145,13 @@ describe("the v2 sign-in screen", () => {
     vi.useRealTimers();
   });
 });
+
+describe("legal links", () => {
+  it("the sign-in screen links the Terms and the Privacy Policy", async () => {
+    vi.mocked(getAuthFlags).mockResolvedValue({ success: true, data: { onboardingV2: true, guestMode: false } });
+    render(<SignInScreen />);
+    const legal = screen.getByTestId("signin-legal");
+    expect(legal.querySelector('a[href="/terms"]')).toBeTruthy();
+    expect(legal.querySelector('a[href="/privacy"]')).toBeTruthy();
+  });
+});
