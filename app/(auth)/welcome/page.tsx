@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { OutlineChip } from "@/components/ui/OutlineChip";
 import { GoogleIcon, CheckIcon } from "@/components/ui/icons";
 import { getGoogleAuthUrl } from "@/lib/api/auth";
+import { useV2Entry } from "@/lib/onboardingV2/useV2Entry";
 
 const PREVIEW_TASKS = [
   {
@@ -26,6 +27,9 @@ const HIGHLIGHTS = [
 ];
 
 export default function WelcomePage() {
+  // Onboarding v2: hands over to /start when the flag is on (a bookmark or an old link); unchanged when it is off
+  const handedOver = useV2Entry();
+  if (handedOver) return null;
   return (
     <main className="flex flex-1 items-center justify-center bg-background px-3 py-6 sm:px-6 sm:py-12">
       <div

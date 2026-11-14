@@ -16,7 +16,7 @@ export function cachedFlags(): AuthFlags | null {
     const raw = typeof window === "undefined" ? null : window.localStorage.getItem(KEY);
     if (!raw) return null;
     const v = JSON.parse(raw) as Partial<AuthFlags>;
-    return { onboardingV2: v.onboardingV2 === true, guestMode: v.guestMode === true };
+    return { onboardingV2: v.onboardingV2 === true, guestMode: v.guestMode === true, googleSignIn: v.googleSignIn !== false };
   } catch {
     return null;
   }
@@ -33,7 +33,8 @@ function remember(flags: AuthFlags) {
 export async function loadFlags(): Promise<AuthFlags> {
   try {
     const { data } = await getAuthFlags();
-    const flags = { onboardingV2: data.onboardingV2 === true, guestMode: data.onboardingV2 === true && data.guestMode === true };
+    // an older server that does not report Google is assumed to have it, as before
+    const flags = { onboardingV2: data.onboardingV2 === true, guestMode: data.onboardingV2 === true && data.guestMode === true, googleSignIn: data.googleSignIn !== false };
     remember(flags);
     return flags;
   } catch {

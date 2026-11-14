@@ -39,10 +39,10 @@ describe("flags", () => {
 
   it("guest mode is never on without onboarding v2, and the answer is remembered", async () => {
     flags(false, true);
-    await expect(loadFlags()).resolves.toEqual({ onboardingV2: false, guestMode: false });
+    await expect(loadFlags()).resolves.toEqual({ onboardingV2: false, guestMode: false, googleSignIn: true });
     flags(true, true);
     await loadFlags();
-    expect(cachedFlags()).toEqual({ onboardingV2: true, guestMode: true });
+    expect(cachedFlags()).toEqual({ onboardingV2: true, guestMode: true, googleSignIn: true });
   });
 });
 
@@ -57,6 +57,21 @@ describe("the v2 sign-in screen", () => {
     expect(screen.getByTestId("signin-password").getAttribute("href")).toBe("/login?password=1");
     await waitFor(() => expect(getAuthFlags).toHaveBeenCalled());
     expect(screen.queryByTestId("signin-guest")).toBeNull();
+  });
+
+  it("hides Google when the server has no Google credentials", async () => {
+    vi.mocked(getAuthFlags).mockResolvedValue({ success: true, data: { onboardingV2: true, guestMode: false, googleSignIn: false } });
+    render(<SignInScreen />);
+    await waitFor(() => expect(screen.queryByTestId("signin-google")).toBeNull());
+    expect(screen.getByTestId("signin-email")).toBeTruthy();
+  });
+
+  it("explains a Google attempt that came back with an error", async () => {
+    flags(true, false);
+    window.history.replaceState(null, "", "/start?error=google_failed");
+    render(<SignInScreen />);
+    await waitFor(() => expect(screen.getByTestId("signin-google-error").textContent).toBe("Google sign-in didn't finish. Please try again, or continue with email."));
+    window.history.replaceState(null, "", "/start");
   });
 
   it("shows Try Prepex first with the guest note only when guest mode is on", async () => {
