@@ -36,6 +36,7 @@ import {
   type QuestionId,
 } from "@/lib/onboardingV2/canvas";
 import { sayLocal } from "@/lib/onboardingV2/lines";
+import { loadSyllabus, prefetchSyllabus } from "@/lib/onboardingV2/syllabus";
 import { flushMetrics, questionDone, questionShown } from "@/lib/onboardingV2/metrics";
 import { coachingSlotsFor, defaultHours, type HoursAnswer, type StudyWindow } from "@/lib/onboardingV2/timetable";
 import { buzz, canListen, listenOnce, speak, stopSpeaking } from "@/lib/onboardingV2/voice";
@@ -99,6 +100,8 @@ export function OnboardingCanvas() {
     setA(saved ?? emptyAnswers(usablePrefill(getStoredUser()?.fullName)));
     if (!saved) setReaction(sayLocal("onb.hello.1"));
     void loadPexo();
+    // resumed after a reload: warm the chapter list for the exam already picked
+    prefetchSyllabus(saved?.goal);
   }, []);
 
   useEffect(() => {
@@ -209,6 +212,7 @@ export function OnboardingCanvas() {
     // a new week is built whenever an answer it depends on changes, unless the student already adjusted it by hand
     if (["class", "school", "coaching", "coaching_time", "hours", "windows"].includes(q) && !next.weekEdited) next.week = [];
     if (after === "week" && next.week.length === 0) next.week = buildFor(next).blocks;
+    if (q === "exam") prefetchSyllabus(next.goal);
     if (react) setReaction(react);
     if (after) setA({ ...next, history: [...next.history, q], current: after });
     else {
@@ -299,7 +303,7 @@ export function OnboardingCanvas() {
   const showMic = phase.kind === "ask" && canListen() && VOICE_QUESTIONS.has(q);
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[600px] flex-col px-4 pb-8 pt-4" data-testid="onb-canvas" data-question={phase.kind === "ask" ? q : phase.kind}>
+    <main className={"mx-auto flex min-h-dvh w-full flex-col px-4 pt-4 " + (phase.kind === "ask" && q === "chapters" ? "max-w-[1120px] pb-0" : "max-w-[600px] pb-8")} data-testid="onb-canvas" data-question={phase.kind === "ask" ? q : phase.kind}>
       <div className="flex min-h-11 items-center justify-between">
         {phase.kind === "ask" && a.history.length > 0 ? (
           <button type="button" onClick={back} className="min-h-11 rounded-lg px-2 text-[15px] font-semibold text-ink" data-testid="onb-back">
@@ -748,49 +752,92 @@ function WeekStep({ a, onLooksGood, onAdjusted }: { a: CanvasAnswers; onLooksGoo
 function ChaptersStep({ goal, initial, onDone }: { goal: CanvasAnswers["goal"]; initial: string[]; onDone: (c: string[]) => void }) {
   const [syllabus, setSyllabus] = useState<OnboardingSyllabus | null>(null);
   const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const [completed, setCompleted] = useState<string[]>(initial);
   const [cls, setCls] = useState<string | null>(null);
+  const [subject, setSubject] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   useEffect(() => {
     let alive = true;
-    void getExams()
-      .then(({ data }) => {
-        const exam = examForOption(goalOption(goal === "JEE_BOTH" ? "JEE_BOTH" : "JEE_MAIN")!, data);
-        if (!exam) throw new Error("exam");
-        return getOnboardingChapters({ examId: exam.id });
-      })
-      .then(({ data }) => alive && setSyllabus(data))
-      .catch(() => alive && setFailed(true));
+    // usually already loaded: the canvas started this when the exam was picked
+    void loadSyllabus(goal === "JEE_BOTH" ? "JEE_BOTH" : "JEE_MAIN").then(
+      (data) => {
+        if (alive) setSyllabus(data);
+      },
+      () => {
+        if (alive) setFailed(true);
+      },
+    );
     return () => {
       alive = false;
     };
-  }, [goal]);
+  }, [goal, attempt]);
   const sections = useMemo(() => groupByClass(syllabus?.subjects ?? []), [syllabus]);
-  const shown = useMemo(() => filterSections(sections.filter((s) => !cls || s.key === cls), query), [sections, cls, query]);
-  if (failed) return <p className="text-center text-[14px] text-muted">We couldn&apos;t load the chapters. You can mark them later from Syllabus.</p>;
-  if (!syllabus) return <div className="skeleton mx-auto h-40 w-full rounded-2xl" aria-busy />;
+  const subjects = useMemo(() => [...new Set(sections.flatMap((s) => s.subjects.map((x) => x.subjectName)))], [sections]);
+  const shown = useMemo(() => {
+    const byClass = sections.filter((s) => !cls || s.key === cls);
+    const bySubject = subject ? byClass.map((s) => ({ ...s, subjects: s.subjects.filter((x) => x.subjectName === subject) })).filter((s) => s.subjects.length > 0) : byClass;
+    return filterSections(bySubject, query);
+  }, [sections, cls, subject, query]);
+  if (failed)
+    return (
+      <div className="flex flex-col items-center gap-3 text-center">
+        <p className="text-[14px] text-muted">We couldn&apos;t load the chapters.</p>
+        <Chip
+          onClick={() => {
+            setFailed(false);
+            setAttempt((n) => n + 1);
+          }}
+          testId="onb-chapters-retry"
+        >
+          Try again
+        </Chip>
+      </div>
+    );
+  if (!syllabus) return <div className="skeleton mx-auto h-64 w-full rounded-2xl" aria-busy />;
+  const tab = (active: boolean) => "min-h-11 shrink-0 whitespace-nowrap rounded-xl px-4 text-[14px] font-bold transition " + (active ? "bg-[var(--cta)] text-white" : "border border-border-subtle bg-surface text-ink hover:border-brand");
   return (
-    <div className="flex flex-col gap-3" data-testid="onb-chapters">
-      <div role="tablist" aria-label="Class" className="flex justify-center gap-2">
-        {[{ key: null, label: "All" }, ...sections.map((s) => ({ key: s.key, label: s.label }))].map((t) => (
-          <button key={t.key ?? "all"} role="tab" aria-selected={cls === t.key} type="button" onClick={() => setCls(t.key)} className={`min-h-11 rounded-xl px-3 text-[14px] font-bold ${cls === t.key ? "bg-[var(--cta)] text-white" : "bg-surface text-ink"}`}>
-            {t.label}
-          </button>
-        ))}
+    <div className="flex flex-col gap-4" data-testid="onb-chapters">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:px-0">
+          <div role="tablist" aria-label="Class" className="flex shrink-0 gap-2">
+            {[{ key: null as string | null, label: "All classes" }, ...sections.map((s) => ({ key: s.key as string | null, label: s.label }))].map((t) => (
+              <button key={t.key ?? "all"} role="tab" aria-selected={cls === t.key} type="button" onClick={() => setCls(t.key)} className={tab(cls === t.key)} data-testid={"onb-class-tab-" + (t.key ?? "all")}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <span aria-hidden className="mx-1 hidden h-6 w-px bg-border-subtle sm:block" />
+          <div role="tablist" aria-label="Subject" className="flex shrink-0 gap-2">
+            {[null, ...subjects].map((name) => (
+              <button key={name ?? "all"} role="tab" aria-selected={subject === name} type="button" onClick={() => setSubject(name)} className={tab(subject === name)} data-testid={"onb-subject-tab-" + (name ?? "all")}>
+                {name ?? "All subjects"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <label className="sr-only" htmlFor="onb-chapter-search">
+          Search chapters
+        </label>
+        <input id="onb-chapter-search" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search chapters" className="min-h-11 w-full rounded-xl border border-border-subtle bg-surface px-3 text-[15px] text-ink lg:w-72" />
       </div>
-      <label className="sr-only" htmlFor="onb-chapter-search">
-        Search chapters
-      </label>
-      <input id="onb-chapter-search" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search chapters" className="min-h-11 rounded-xl border border-border-subtle bg-surface px-3 text-[15px] text-ink" />
-      <p aria-live="polite" className="text-center text-[13px] font-semibold text-ink" data-testid="onb-chapter-count">
-        {completed.length} of {countChapters(sections)} done
-      </p>
-      <div className="max-h-[45dvh] overflow-y-auto rounded-2xl border border-border-subtle bg-surface-elevated p-3">
-        <ChapterPicker sections={shown} completed={completed} onChange={setCompleted} expandAll={query.trim().length > 0} />
+      {/* the list flows down the page (no small inner scroll box); subject headers stay pinned while scrolling */}
+      <ChapterPicker
+        key={(cls ?? "all") + "|" + (subject ?? "all")}
+        sections={shown}
+        completed={completed}
+        onChange={setCompleted}
+        expandAll={query.trim().length > 0 || subject !== null}
+        columns={3}
+      />
+      <div className="sticky bottom-0 z-20 -mx-4 mt-2 flex items-center justify-between gap-4 border-t border-border-subtle bg-[var(--background)] px-4 py-3" data-testid="onb-chapters-bar">
+        <p aria-live="polite" className="text-[14px] font-semibold text-ink" data-testid="onb-chapter-count">
+          {completed.length} of {countChapters(sections)} done
+        </p>
+        <button type="button" onClick={() => onDone(completed)} className="min-h-12 min-w-40 rounded-2xl bg-[var(--cta)] px-6 text-[16px] font-bold text-white transition active:scale-[0.98]" data-testid="onb-chapters-next">
+          {completed.length > 0 ? "Done" : "None yet"}
+        </button>
       </div>
-      <PrimaryChip onClick={() => onDone(completed)} testId="onb-chapters-next">
-        {completed.length > 0 ? "Done" : "None yet"}
-      </PrimaryChip>
     </div>
   );
 }
