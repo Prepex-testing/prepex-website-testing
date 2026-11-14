@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { securityHeaders } from "./lib/security/headers";
 
 const svgrOptions = {
   svgoConfig: {
@@ -14,6 +15,15 @@ const svgrOptions = {
 const nextConfig: NextConfig = {
   // Self-contained server for the Docker image (see Dockerfile).
   output: "standalone",
+  // Launch step 1 (C4): no framework banner in responses.
+  poweredByHeader: false,
+  async headers() {
+    return [
+      { source: "/:path*", headers: securityHeaders(process.env, process.env.NODE_ENV !== "production") },
+      // The service worker must always be re-checked, so a new deploy replaces an older cached app at once.
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }] },
+    ];
+  },
   async redirects() {
     return [
       // The three old notebooks are one: My Notebooks. Old bookmarks, push links and saved deep links land on the new hub.
