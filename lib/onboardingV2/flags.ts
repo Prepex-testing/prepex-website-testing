@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { getAuthFlags, type AuthFlags } from "@/lib/api/auth";
 
 /**
@@ -42,17 +42,34 @@ export async function loadFlags(): Promise<AuthFlags> {
   }
 }
 
-/** `ready` turns true once the server has answered (or failed); until then `flags` is the remembered answer, if any. */
+const noSubscribe = () => () => {};
+/** The raw remembered value: a string, so React can compare snapshots by value. */
+const rememberedRaw = () => {
+  try {
+    return window.localStorage.getItem(KEY);
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * `ready` turns true once the server has answered (or failed); until then `flags` is the remembered answer, if any.
+ * The remembered answer is read with useSyncExternalStore: during hydration React uses the server snapshot (nothing
+ * remembered, the same tree the server drew) and then re-renders with the device's value. Reading localStorage in the
+ * first render instead caused React hydration error #418 on /start for every returning visitor.
+ */
 export function useAuthFlags(): { flags: AuthFlags; ready: boolean } {
-  const [state, setState] = useState<{ flags: AuthFlags; ready: boolean }>(() => ({ flags: cachedFlags() ?? OFF, ready: false }));
+  const raw = useSyncExternalStore(noSubscribe, rememberedRaw, () => null);
+  const [answer, setAnswer] = useState<AuthFlags | null>(null);
   useEffect(() => {
     let alive = true;
     void loadFlags().then((flags) => {
-      if (alive) setState({ flags, ready: true });
+      if (alive) setAnswer(flags);
     });
     return () => {
       alive = false;
     };
   }, []);
-  return state;
+  const remembered = useMemo(() => (raw ? cachedFlags() : null), [raw]);
+  return { flags: answer ?? remembered ?? OFF, ready: answer !== null };
 }
