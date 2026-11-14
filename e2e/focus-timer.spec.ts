@@ -77,7 +77,7 @@ test("setup: log in, onboard, build today's plan", async ({ page }) => {
   planTask = learning!;
 
   const state = await page.context().storageState();
-  const o = state.origins.find((x) => x.origin.includes("5000"));
+  const o = state.origins.find((x) => x.origin === new URL(page.url()).origin);
   saved = { origin: o!.origin, entries: o!.localStorage.map((e) => [e.name, e.value] as [string, string]) };
   expect(saved.entries.some(([k]) => k === "prepex_access_token")).toBe(true);
 });

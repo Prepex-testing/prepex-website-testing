@@ -77,7 +77,7 @@ export async function stubPlannerApi(page: Page, theme: "light" | "dark", option
   const days = Array.from({ length: today.getDate() }, (_, i) => ({ date: iso(new Date(today.getFullYear(), today.getMonth(), i + 1)), dayCompletionPercentage: [0, 30, 60, 90, 100][i % 5] }));
   const day = options.day ?? planDay();
 
-  await page.route(/localhost:400[123]\//, (route: Route) => {
+  await page.route(/localhost:4\d{3}\//, (route: Route) => {
     const p = new URL(route.request().url()).pathname;
     if (p.endsWith("/api/planner/v2/day")) return route.fulfill(ok(day));
     if (p.endsWith("/api/planner/today/explain")) return route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ success: false, message: "Not found" }) });
