@@ -132,7 +132,7 @@ export function SaveAccountSheet({ onClose, onSaved }: { onClose: () => void; on
         )}
 
         {step.kind === "email" && (
-          <form onSubmit={sendCode} className="flex flex-col gap-3" data-testid="save-email-form">
+          <form method="post" onSubmit={sendCode} className="flex flex-col gap-3" data-testid="save-email-form">
             <label className="flex flex-col gap-1 text-[14px] font-semibold text-ink">
               Your name
               <input name="name" autoComplete="name" maxLength={60} className="min-h-12 rounded-xl border border-border-subtle bg-surface px-3 text-[16px] text-ink" placeholder="Rohan Sharma" data-testid="save-name" />
