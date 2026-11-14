@@ -19,6 +19,7 @@ import { usePexo } from "@/lib/pexo/store";
 import { useResource } from "@/lib/home/useResource";
 import { InlineRetry } from "@/components/home/InlineRetry";
 import { GuestAskCard } from "@/components/onboardingV2/GuestAskCard";
+import { GuestSaveCard } from "@/components/onboardingV2/GuestSaveCard";
 
 /**
  * The top of Home, modelled on the study-timer apps students already love: today's total as a big number that keeps
@@ -211,6 +212,7 @@ export function HomeTop() {
       </div>
 
       {/* Onboarding v2, Part D: a guest is asked what the defaults guessed, one card a session */}
+      <GuestSaveCard />
       <GuestAskCard />
       <RankGpsCard card={xp?.rankGps} />
 

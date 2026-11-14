@@ -9,6 +9,9 @@ import { onboardAndEnterApp, resetStudent } from "./helpers";
 test("a freshly onboarded student's first Home load shows plan, countdown, streak and level", async ({ page }, info) => {
   test.skip(info.project.name.startsWith("mobile"), "the seeded student is shared between projects");
   resetStudent();
+  // this is the old five-step flow; pin ONBOARDING_V2 off whatever the local auth service says
+  await page.addInitScript(() => window.localStorage.removeItem("prepex:auth-flags"));
+  await page.route("**/api/auth/flags", (r) => r.fulfill({ json: { success: true, data: { onboardingV2: false, guestMode: false } } }));
   const failures: string[] = [];
   page.on("response", (r) => {
     if (r.url().includes("/api/") && r.status() >= 400 && r.status() !== 401) failures.push(`${r.status()} ${r.url()}`);

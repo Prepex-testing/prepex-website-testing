@@ -9,6 +9,8 @@ import { useStoredFullName } from "@/lib/auth/useStoredFullName";
 import { useAvatarSrc } from "@/lib/profile/avatar";
 import { AvatarFace } from "@/components/ui/AvatarFace";
 import { performLogout } from "@/lib/api/auth";
+import { getStoredUser } from "@/lib/auth/session";
+import { isGuestUser } from "@/lib/onboardingV2/guest";
 
 type UserMenuProps = {
   name?: string;
@@ -23,6 +25,12 @@ export function UserMenu({ name, initial }: UserMenuProps) {
   const router = useRouter();
   const [isOpen, setOpen] = useState(false);
   const [isLogoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  // Part D: a guest can save their account from here at any time, and is warned before logging out unsaved
+  const [isGuest, setIsGuest] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- read once from this device
+    setIsGuest(isGuestUser(getStoredUser()));
+  }, []);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -124,6 +132,22 @@ export function UserMenu({ name, initial }: UserMenuProps) {
             Profile
           </Link>
 
+          {isGuest && (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                window.location.assign("/home?save=1");
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-bold text-ink hover:bg-tint-strong"
+              data-testid="menu-save-account"
+            >
+              <UserIcon />
+              Save your account
+            </button>
+          )}
+
           <button
             type="button"
             role="menuitem"
@@ -147,7 +171,7 @@ export function UserMenu({ name, initial }: UserMenuProps) {
           router.push("/login");
         }}
         title="Log out"
-        description="Are you sure you want to logout?"
+        description={isGuest ? "You are using a guest account. If you log out before saving it, your progress cannot be recovered." : "Are you sure you want to logout?"}
         confirmLabel="Logout"
       />
     </div>

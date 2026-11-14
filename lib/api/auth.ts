@@ -165,6 +165,30 @@ export function verifyEmailCode(input: { email: string; code: string; fullName?:
   });
 }
 
+/**
+ * Onboarding v2, Part D: save the signed-in guest with this address. Same account (same id, all progress). A 409
+ * with code "email_taken" means the address already has an account; the code is NOT used, so the student can sign in
+ * to that account with it instead (verifyEmailCode).
+ */
+export function saveGuestWithEmailCode(input: { email: string; code: string; fullName?: string }) {
+  const token = getAccessToken();
+  return request<{ success: true; data: AuthResult & { isNewUser: boolean; saved?: boolean } }>("/email-code/verify", {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: JSON.stringify({ ...input, saveGuest: true }),
+  });
+}
+
+/** Part D: the address that saves the signed-in guest with Google (a one-time link, two minutes). */
+export async function googleSaveUrl(): Promise<string> {
+  const token = getAccessToken();
+  const { data } = await request<{ success: true; data: { path: string } }>("/guest/google-intent", {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  return `${AUTH_API_BASE_URL}${data.path}`;
+}
+
 /** Onboarding v2, Part D: start as a guest (404 unless GUEST_MODE is on). */
 export function createGuest() {
   return request<{ success: true; data: AuthResult }>("/guest", { method: "POST" });

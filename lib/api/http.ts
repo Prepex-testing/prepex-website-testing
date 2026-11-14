@@ -1,4 +1,6 @@
 export class ApiError extends Error {
+  /** A machine-readable reason some endpoints add (for example "email_taken", "guest_locked"). */
+  code: string | null = null;
   status: number;
   /** On a 429: how long the server asked us to wait before trying again (from Retry-After). */
   retryAfterMs: number | null;
@@ -69,11 +71,13 @@ export async function apiRequest<T>(url: string, options: RequestInit = {}): Pro
     if (response.status === 403 && body?.code === "guest_locked" && (options.method ?? "GET").toUpperCase() !== "GET" && typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent(GUEST_LOCKED_EVENT));
     }
-    throw new ApiError(
+    const error = new ApiError(
       response.status,
       body?.message ?? "Something went wrong. Please try again.",
       response.status === 429 ? retryAfterMs(response) : null,
     );
+    if (typeof body?.code === "string") error.code = body.code;
+    throw error;
   }
 
   return body as T;

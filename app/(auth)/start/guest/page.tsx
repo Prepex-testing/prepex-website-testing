@@ -49,7 +49,7 @@ export default function GuestStartPage() {
         void postOnboardingEvents({ flowVersion: "v2", cohort: "guest", events: [{ question: "finale", kind: "complete" }] }).catch(() => undefined);
         flushMetrics();
         markOnboardingComplete();
-        saveGuest(data.user.id, { answers, asked: [] });
+        saveGuest(data.user.id, { answers, asked: [], startedAt: new Date().toISOString() });
         router.replace("/home");
       } catch (err) {
         setError(err instanceof ApiError && err.status === 429 ? err.message : "We couldn't start a guest session. Please try again, or sign in.");
