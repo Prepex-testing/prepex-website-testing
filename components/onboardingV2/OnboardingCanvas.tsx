@@ -41,7 +41,7 @@ import { coachingSlotsFor, defaultHours, type HoursAnswer, type StudyWindow } fr
 import { buzz, canListen, listenOnce, speak, stopSpeaking } from "@/lib/onboardingV2/voice";
 import { loadPexo, pexoEvent, pexoMark } from "@/lib/pexo/store";
 import type { PexoContext, PexoPick } from "@/lib/pexo/engine";
-import { formatDuration } from "@/lib/timetable/grid";
+import { formatDuration, replicateDay } from "@/lib/timetable/grid";
 
 const STORE = "prepex_onboarding_v2";
 const REACTION_MS = 1300;
@@ -481,7 +481,7 @@ export function OnboardingCanvas() {
       case "windows":
         return <WindowsStep initial={a.windows} onDone={(windows) => answer({ windows })} />;
       case "week":
-        return <WeekStep a={a} onLooksGood={() => answer({})} onAdjusted={(week) => setA({ ...a, week, weekEdited: true })} />;
+        return <WeekStep a={a} onLooksGood={() => answer({})} onAdjusted={(week, uniform) => setA({ ...a, week, weekEdited: true, weekUniform: uniform })} />;
       case "chapters":
         return (
           <ChaptersStep
@@ -688,20 +688,25 @@ const DAY_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const TYPE_LABEL: Record<string, string> = { SELF_STUDY: "Self-study", PRACTICE: "Practice", REVISION: "Revision", SCHOOL: "School", COACHING: "Coaching", SLEEP: "Sleep", MEAL: "Meal", BREAK: "Break" };
 const clockOf = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 
-function WeekStep({ a, onLooksGood, onAdjusted }: { a: CanvasAnswers; onLooksGood: () => void; onAdjusted: (week: CanvasAnswers["week"]) => void }) {
+function WeekStep({ a, onLooksGood, onAdjusted }: { a: CanvasAnswers; onLooksGood: () => void; onAdjusted: (week: CanvasAnswers["week"], uniform: boolean) => void }) {
   const [day, setDay] = useState(0);
   const [editing, setEditing] = useState(false);
+  // Adjust opens on ONE day that applies to the whole week (few students plan seven different days); the editor's
+  // "same every day" switch lets them edit days separately. A week adjusted that way before stays as it was.
+  const [uniform, setUniform] = useState(a.weekEdited ? a.weekUniform === true : true);
   const blocks = a.week.filter((b) => b.dayOfWeek === day && b.activityType !== "SLEEP" && b.activityType !== "BREAK").sort((x, y) => x.startMin - y.startMin);
   const study = a.week.filter((b) => b.dayOfWeek === day && ["SELF_STUDY", "PRACTICE", "REVISION"].includes(b.activityType)).reduce((s, b) => s + b.endMin - b.startMin, 0);
   if (editing)
     return (
       <div className="fixed inset-0 z-50 overflow-y-auto bg-[var(--background)] p-4" role="dialog" aria-modal="true" aria-label="Adjust your week" data-testid="onb-week-editor">
         <TimetableBuilder
-          initialBlocks={a.week}
+          initialBlocks={uniform ? replicateDay(a.week, 0) : a.week}
           subjects={[]}
           saveLabel="Use this week"
+          uniformWeek={uniform}
+          onUniformWeekChange={setUniform}
           onSave={(next) => {
-            onAdjusted(next);
+            onAdjusted(next, uniform);
             setEditing(false);
           }}
           secondaryAction={{ label: "Cancel", onClick: () => setEditing(false), placement: "before" }}
