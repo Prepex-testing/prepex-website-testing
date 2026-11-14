@@ -137,7 +137,12 @@ export async function performLogout() {
 
 // ---- Onboarding v2, Part B --------------------------------------------------------------------------------------------
 
-export type AuthFlags = { onboardingV2: boolean; guestMode: boolean };
+export type AuthFlags = {
+  onboardingV2: boolean;
+  guestMode: boolean;
+  /** False when the server has no Google credentials: the button is hidden instead of leading to an error. */
+  googleSignIn?: boolean;
+};
 
 /** Which sign-in and onboarding to show; read from the server's environment, so it changes with a restart. */
 export function getAuthFlags() {

@@ -27,6 +27,15 @@ export function SignInScreen() {
   const [stage, setStage] = useState<Stage>({ kind: "choose" });
   const hello = useMemo(() => sayLocal("onb.signin"), []);
   const guestNote = useMemo(() => sayLocal("onb.signin.guest_note"), []);
+  // a Google attempt that came back here explains itself (the server redirects with ?error=)
+  const [googleError, setGoogleError] = useState<string | null>(null);
+  useEffect(() => {
+    const reason = new URLSearchParams(window.location.search).get("error");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- read once from the address
+    if (reason === "google_unavailable") setGoogleError("Google sign-in isn't available right now. Continue with email instead.");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- read once from the address
+    else if (reason === "google_failed") setGoogleError("Google sign-in didn't finish. Please try again, or continue with email.");
+  }, []);
 
   const signedIn = async (data: Awaited<ReturnType<typeof verifyEmailCode>>["data"]) => {
     saveSession(data.tokens, data.user);
@@ -39,10 +48,17 @@ export function SignInScreen() {
       <PexoSpeaks pick={stage.kind === "choose" ? hello : null} />
       {stage.kind === "choose" && (
         <div className="flex w-full flex-col gap-3">
-          <Button type="button" variant="primary" className="min-h-12" onClick={() => (window.location.href = getGoogleAuthUrl())} data-testid="signin-google">
-            <GoogleIcon />
-            Continue with Google
-          </Button>
+          {googleError && (
+            <p role="alert" className="rounded-lg bg-danger-bg px-3 py-2 text-[13px] font-medium text-danger" data-testid="signin-google-error">
+              {googleError}
+            </p>
+          )}
+          {flags.googleSignIn !== false && (
+            <Button type="button" variant="primary" className="min-h-12" onClick={() => (window.location.href = getGoogleAuthUrl())} data-testid="signin-google">
+              <GoogleIcon />
+              Continue with Google
+            </Button>
+          )}
           <Button type="button" variant="secondary" className="min-h-12" onClick={() => setStage({ kind: "email" })} data-testid="signin-email">
             <MailIcon />
             Continue with email
@@ -50,7 +66,7 @@ export function SignInScreen() {
           {flags.guestMode && (
             <div className="mt-2 flex flex-col items-center gap-2 text-center">
               {guestNote && <p className="text-[14px] text-muted" data-testid="signin-guest-note">{guestNote.text}</p>}
-              <Link href="/start/guest" className="min-h-11 rounded-xl px-4 py-2.5 text-[15px] font-bold text-ink underline" data-testid="signin-guest">
+              <Link href="/start/guest" className="flex min-h-12 w-full items-center justify-center rounded-xl border border-dashed border-border-subtle bg-transparent px-4 text-[15px] font-bold text-ink transition hover:border-brand" data-testid="signin-guest">
                 Try Prepex first
               </Link>
             </div>
