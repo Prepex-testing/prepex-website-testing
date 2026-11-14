@@ -116,7 +116,7 @@ function EmailStep({ onBack, onSent }: { onBack: () => void; onSent: (email: str
     }
   };
   return (
-    <form onSubmit={submit} className="flex w-full flex-col gap-4" data-testid="signin-email-form">
+    <form method="post" onSubmit={submit} className="flex w-full flex-col gap-4" data-testid="signin-email-form">
       <h1 className="text-center text-[22px] font-bold text-ink">Your email</h1>
       <p className="-mt-2 text-center text-[14px] text-muted">We&apos;ll send you a 6-digit code. No password needed.</p>
       {error && (
@@ -178,6 +178,7 @@ function CodeStep({ email, onBack, onSignedIn }: { email: string; onBack: () => 
 
   return (
     <form
+      method="post"
       onSubmit={(e) => {
         e.preventDefault();
         void verify(code);

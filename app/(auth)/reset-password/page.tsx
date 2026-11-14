@@ -82,7 +82,7 @@ function ResetPasswordForm() {
         <p className="text-sm text-muted">Choose a new password below.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
+      <form method="post" onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
         {error && (
           <p
             role="alert"

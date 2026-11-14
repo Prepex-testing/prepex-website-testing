@@ -48,7 +48,7 @@ export default function CreateAccountPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-6 pt-2">
+      <form method="post" onSubmit={handleSubmit} className="mt-8 flex flex-col gap-6 pt-2">
         {error && (
           <p
             role="alert"
