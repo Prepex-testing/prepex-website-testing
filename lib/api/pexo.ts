@@ -117,7 +117,7 @@ export const joinFriendSession = (sessionId: string, friendId: string) => core<{
 /** Public: the /join/<code> page before signing in. */
 export const lookupInvite = (code: string) => apiRequest<Envelope<{ valid: boolean; name: string | null }>>(`${CORE_API_BASE_URL}/api/pexo/invite/${encodeURIComponent(code)}`).then((r) => r.data);
 /** The personal link a student shares. */
-export const inviteLink = (code: string) => `${typeof window !== "undefined" ? window.location.origin : "https://testing.prepex.io"}/join/${code}`;
+export const inviteLink = (code: string) => `${typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL ?? "")}/join/${code}`;
 
 // Phase 2: the Climb.
 export type PexoFormName = "aspirant" | "grinder" | "solver" | "ranker" | "topper" | "iitian";
