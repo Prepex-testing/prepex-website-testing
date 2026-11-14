@@ -2,13 +2,14 @@
 
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/layout/AuthCard";
 import { getProfile, ApiError } from "@/lib/api/auth";
 import { saveSession } from "@/lib/auth/session";
 import { markAccountRestored } from "@/lib/auth/accountRestored";
 import { resolveAuthedLanding } from "@/lib/auth/onboardingGate";
 import { GUEST_CONFLICT_KEY, markGuestSaved } from "@/lib/onboardingV2/guest";
+import { readOAuthHandoff, type OAuthHandoff } from "@/lib/auth/oauthHandoff";
 
 export default function GoogleCallbackPage() {
   return (
@@ -20,18 +21,27 @@ export default function GoogleCallbackPage() {
 
 function GoogleCallbackHandler() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const accessToken = searchParams.get("access_token");
-  const refreshToken = searchParams.get("refresh_token");
+  // Read once: the tokens arrive in the URL fragment (never sent to a server); the query is an older auth-service.
+  const [handoff, setHandoff] = useState<OAuthHandoff | null>(null);
+  const accessToken = handoff?.accessToken ?? null;
+  const refreshToken = handoff?.refreshToken ?? null;
   // Set by auth-service when this Google sign-in cancelled a scheduled deletion.
-  const restored = searchParams.get("restored") === "1";
+  const restored = handoff?.restored ?? false;
   // Part D: this Google sign-in saved a guest account (same account), or found the Google account already had Prepex
-  const savedGuest = searchParams.get("saved") === "1";
-  const guestConflict = searchParams.get("guest_conflict") === "1";
+  const savedGuest = handoff?.saved ?? false;
+  const guestConflict = handoff?.guestConflict ?? false;
 
-  const missingTokens = !accessToken || !refreshToken;
+  const missingTokens = handoff !== null && (!accessToken || !refreshToken);
   const [asyncError, setAsyncError] = useState<string | null>(null);
   const error = missingTokens ? "Google sign-in failed. Please try again." : asyncError;
+
+  // Read after hydration (the server never sees the fragment), then take the tokens out of the address bar and history.
+  useEffect(() => {
+    const read = readOAuthHandoff(window.location.hash, window.location.search);
+    if (window.location.hash || window.location.search) window.history.replaceState(null, "", "/auth/callback");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one read of browser-only state after mount
+    setHandoff(read);
+  }, []);
 
   useEffect(() => {
     if (!accessToken || !refreshToken) return;
@@ -56,7 +66,7 @@ function GoogleCallbackHandler() {
           err instanceof ApiError ? err.message : "Google sign-in failed. Please try again.",
         );
       });
-  }, [accessToken, refreshToken, router]);
+  }, [accessToken, refreshToken, router, restored, savedGuest, guestConflict]);
 
   return (
     <AuthCard>
