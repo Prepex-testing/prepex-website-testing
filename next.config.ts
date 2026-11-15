@@ -26,6 +26,12 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // Launch step 2 (1a): the old password sign-up is retired. Every new student starts at /start (Google, an e-mail
+      // code, or a guest); an e-mail code also verifies an old unverified password account.
+      { source: "/create-account", destination: "/start", permanent: false },
+      { source: "/email-verification", destination: "/start", permanent: false },
+      { source: "/register", destination: "/start", permanent: false },
+
       // The three old notebooks are one: My Notebooks. Old bookmarks, push links and saved deep links land on the new hub.
       { source: "/home/mistake-notebook", destination: "/notebooks", permanent: false },
       { source: "/home/mistake-notebook/entry", destination: "/notebooks/capture", permanent: false },

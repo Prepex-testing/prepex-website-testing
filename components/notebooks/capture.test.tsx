@@ -102,7 +102,7 @@ describe("shared page", () => {
     expect(screen.getByTestId("shared-page")).toHaveTextContent("A block slides down");
     expect(screen.getByTestId("shared-page")).toHaveTextContent("Fix: Check units");
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
-    expect(screen.getByTestId("shared-cta")).toHaveAttribute("href", "/create-account");
+    expect(screen.getByTestId("shared-cta")).toHaveAttribute("href", "/start");
     expect(screen.getByTestId("shared-view")).toHaveTextContent("Read only");
   });
 

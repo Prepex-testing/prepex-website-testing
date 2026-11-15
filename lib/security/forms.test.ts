@@ -8,7 +8,6 @@ import { describe, expect, it } from "vitest";
 
 const CREDENTIAL_FORMS = [
   "app/(auth)/login/page.tsx",
-  "app/(auth)/create-account/page.tsx",
   "app/(auth)/forgot-password/page.tsx",
   "app/(auth)/reset-password/page.tsx",
   "components/onboardingV2/SaveAccountSheet.tsx",

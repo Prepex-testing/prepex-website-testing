@@ -57,7 +57,7 @@ function Join() {
         </div>
       )}
       <div className="flex w-full max-w-xs flex-col gap-2">
-        <Link href="/create-account" className="flex min-h-12 items-center justify-center rounded-full bg-brand px-6 text-[15px] font-bold text-white dark:text-[#0b0b1f]" data-testid="join-signup">
+        <Link href="/start" className="flex min-h-12 items-center justify-center rounded-full bg-brand px-6 text-[15px] font-bold text-white dark:text-[#0b0b1f]" data-testid="join-signup">
           Join Prepex
         </Link>
         <Link href="/login" className="flex min-h-11 items-center justify-center text-[14px] font-semibold text-ink underline">
