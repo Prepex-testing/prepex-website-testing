@@ -24,3 +24,13 @@ describe("website Sentry scrubbing", () => {
     expect(baseOptions()).toMatchObject({ release: "abc123def456", sendDefaultPii: false });
   });
 });
+
+describe("website span scrubbing", () => {
+  it("strips query strings and drops input-bearing attributes", async () => {
+    const { scrubSpan } = await import("@/lib/observability/sentry-options");
+    const span = scrubSpan({ name: "/notebooks?q=asha@example.com", attributes: { "url.full": "https://t/x?email=asha@example.com", "url.query": "a=b", "user.email": "asha@example.com", "http.status_code": 200 } });
+    expect(JSON.stringify(span)).not.toContain("asha@example.com");
+    expect(span.name).toBe("/notebooks");
+    expect(span.attributes).not.toHaveProperty("url.query");
+  });
+});

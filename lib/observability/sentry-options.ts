@@ -42,6 +42,24 @@ export function scrubEvent(event: ErrorEvent): ErrorEvent {
   return event;
 }
 
+/** Launch step 2 (C1): performance spans follow the same rules (query-less URLs, masked text, no input attributes). */
+const DROP_SPAN_ATTRS = /(^|\.)(query|query_string|body|request\.body|user\.(email|name|username|full_name)|cookies?)$/i;
+export function scrubSpan<T extends { name: string; attributes?: Record<string, unknown> }>(span: T): T {
+  span.name = scrubText(stripQuery(span.name));
+  if (span.attributes) {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(span.attributes)) {
+      if (DROP_SPAN_ATTRS.test(k)) continue;
+      const clean = (s: string) => scrubText(/url|target|route|path/i.test(k) ? stripQuery(s) : s);
+      if (typeof v === "string") out[k] = clean(v);
+      else if (v && typeof v === "object" && typeof (v as { value?: unknown }).value === "string") out[k] = { ...(v as object), value: clean((v as { value: string }).value) };
+      else out[k] = v;
+    }
+    span.attributes = out;
+  }
+  return span;
+}
+
 export function baseOptions() {
   return {
     dsn: SENTRY_DSN,
@@ -51,5 +69,6 @@ export function baseOptions() {
     tracesSampleRate: Number(process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE ?? 0.1),
     sendDefaultPii: false,
     beforeSend: scrubEvent,
+    beforeSendSpan: scrubSpan,
   };
 }
