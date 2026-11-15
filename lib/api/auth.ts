@@ -1,4 +1,4 @@
-import { AUTH_API_BASE_URL } from "@/lib/api/config";
+import { AUTH_API_BASE_URL, AUTH_OAUTH_BASE_URL } from "@/lib/api/config";
 import { apiRequest, ApiError } from "@/lib/api/http";
 import { getAccessToken, getRefreshToken, clearSession } from "@/lib/auth/session";
 import { forgetOnboardingStatus } from "@/lib/auth/onboardingGate";
@@ -78,7 +78,7 @@ export function updateTargetRank(accessToken: string, targetRank: number | null)
 }
 
 export function getGoogleAuthUrl() {
-  return `${AUTH_API_BASE_URL}/api/auth/google`;
+  return `${AUTH_OAUTH_BASE_URL}/api/auth/google`;
 }
 
 export function logout(accessToken: string, refreshToken: string) {
@@ -161,7 +161,7 @@ export async function googleSaveUrl(): Promise<string> {
     method: "POST",
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
-  return `${AUTH_API_BASE_URL}${data.path}`;
+  return `${AUTH_OAUTH_BASE_URL}${data.path}`;
 }
 
 /** Onboarding v2, Part D: start as a guest (404 unless GUEST_MODE is on). */
