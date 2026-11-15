@@ -105,7 +105,8 @@ test("planner: Start opens the timer pre-filled → run → auto-log, task done,
   const shot = (name: string) => page.screenshot({ path: `e2e/.shots/${info.project.name}-focus-${name}.png` });
 
   await page.goto("/home");
-  const start = page.locator(`a[href*="/focus/start?origin=planner&id=${planTask.id}"]`).first();
+  // the plan's Start is a button on the task card now (it marks the task started, then opens the timer)
+  const start = page.locator(`[data-testid="study-task"][data-task-id="${planTask.id}"]`).first().getByTestId("task-cta");
   await expect(start).toBeVisible({ timeout: 60_000 });
   await start.click();
 

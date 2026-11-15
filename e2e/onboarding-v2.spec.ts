@@ -31,7 +31,7 @@ async function signUp(page: Page, tag: string): Promise<string> {
 
 const at = (page: Page, q: string) => expect(page.getByTestId("onb-canvas")).toHaveAttribute("data-question", q, { timeout: 20_000 });
 
-type Path = { adjust?: boolean; name: string; cls: "CLASS_11" | "CLASS_12" | "DROPPER"; school?: "morning" | "day" | "none"; coaching: "OFFLINE" | "ONLINE" | "SELF"; ctime?: "MORNING" | "AFTERNOON" | "EVENING"; hours?: number; language?: "hi"; sound?: boolean };
+type Path = { adjust?: boolean; name: string; cls: "CLASS_11" | "CLASS_12" | "DROPPER"; school?: "morning" | "day" | "none"; coaching: "OFFLINE" | "ONLINE" | "SELF"; ctime?: "MORNING" | "AFTERNOON" | "EVENING"; hours?: number; language?: "hi"; sound?: boolean; age?: "13-14" | "15" | "16" | "17" | "18+"; parentEmail?: string };
 
 async function answerAll(page: Page, p: Path) {
   await at(page, "prefs");
@@ -45,6 +45,14 @@ async function answerAll(page: Page, p: Path) {
   await page.getByTestId("onb-exam-both").click();
   await at(page, "class");
   await page.getByTestId(`onb-class-${p.cls}`).click();
+  // launch step 2 (A2): the age question comes right after class
+  await at(page, "age");
+  const age = p.age ?? (p.cls === "DROPPER" ? "18+" : "17");
+  await page.getByTestId(`onb-age-${age}`).click();
+  if (age !== "18+") {
+    if (p.parentEmail) await page.getByTestId("onb-parent-email").fill(p.parentEmail);
+    await page.getByTestId("onb-age-next").click();
+  }
   await at(page, "exam_date");
   // the date Pexo confirms is a real, filled number
   await expect(page.getByTestId("onb-pexo-text")).toHaveText(/\d+/, { timeout: 15_000 });
@@ -185,4 +193,30 @@ test("ONBOARDING_V2 off: /onboarding/v2 sends students to the old first step", a
   await page.addInitScript(() => window.localStorage.removeItem("prepex:auth-flags"));
   await page.goto("/onboarding/v2");
   await expect(page).not.toHaveURL(/onboarding\/v2/, { timeout: 15_000 });
+});
+
+// ---- launch step 2 (A2): the age question -------------------------------------------------------------------------
+
+function savedAge(email: string) {
+  const [row] = queryDb<{ age_band: string | null; is_minor: boolean | null; parent_email: string | null; parent_consent_status: string; birth_year_estimate: number | null }>(
+    "SELECT p.age_band, p.is_minor, p.parent_email, p.parent_consent_status, p.birth_year_estimate FROM core.user_profiles p JOIN core.users u ON u.id = p.user_id WHERE u.email = $1",
+    [email],
+  );
+  return row;
+}
+
+test("A2: a 15-year-old adds a parent e-mail; under-18 flag, consent status none", async ({ page }, info) => {
+  test.skip(info.project.name.startsWith("mobile"), "real signups: desktop project only");
+  await flagsOn(page);
+  const email = await signUp(page, "minor");
+  await answerAll(page, { name: "minor", cls: "CLASS_11", school: "morning", coaching: "SELF", age: "15", parentEmail: "parent.e2e@example.com" });
+  expect(savedAge(email)).toMatchObject({ age_band: "15", is_minor: true, parent_email: "parent.e2e@example.com", parent_consent_status: "none", birth_year_estimate: new Date().getUTCFullYear() - 15 });
+});
+
+test("A2: an 18+ student moves straight on; no parent e-mail is stored", async ({ page }, info) => {
+  test.skip(info.project.name.startsWith("mobile"), "real signups: desktop project only");
+  await flagsOn(page);
+  const email = await signUp(page, "adult");
+  await answerAll(page, { name: "adult", cls: "DROPPER", coaching: "SELF", age: "18+" });
+  expect(savedAge(email)).toMatchObject({ age_band: "18+", is_minor: false, parent_email: null, parent_consent_status: "none" });
 });

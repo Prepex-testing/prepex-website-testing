@@ -73,6 +73,8 @@ test("sign-in + canvas + first Home: CLS, INP and the 429 count", async ({ page 
   await page.getByTestId("onb-exam-both").click();
   await at("class");
   await page.getByTestId("onb-class-CLASS_12").click();
+  await at("age");
+  await page.getByTestId("onb-age-18+").click();
   await at("exam_date");
   await expect(page.getByTestId("onb-date-yes")).toBeVisible({ timeout: 15_000 });
   await page.getByTestId("onb-date-yes").click();
@@ -148,6 +150,7 @@ test("screenshots: light and dark, 390 and 1440", async ({ browser }) => {
       await page.getByTestId("onb-name-next").click();
       await page.getByTestId("onb-exam-both").click();
       await page.getByTestId("onb-class-CLASS_12").click();
+      await page.getByTestId("onb-age-18+").click();
       await expect(page.getByTestId("onb-date-yes")).toBeVisible({ timeout: 15_000 });
       await page.waitForTimeout(1600);
       await page.screenshot({ path: `${OUT}/canvas-date-${scheme}-${width}.png`, fullPage: true });
