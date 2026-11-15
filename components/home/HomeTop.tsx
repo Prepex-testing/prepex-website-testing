@@ -18,7 +18,7 @@ import { reactCountdown, reactStreak } from "@/lib/pexo/reactions";
 import { usePexo } from "@/lib/pexo/store";
 import { useResource } from "@/lib/home/useResource";
 import { InlineRetry } from "@/components/home/InlineRetry";
-import { GuestAskCard } from "@/components/onboardingV2/GuestAskCard";
+import { AgeAskCard, GuestAskCard } from "@/components/onboardingV2/GuestAskCard";
 import { GuestSaveCard } from "@/components/onboardingV2/GuestSaveCard";
 
 /**
@@ -214,6 +214,7 @@ export function HomeTop() {
       {/* Onboarding v2, Part D: a guest is asked what the defaults guessed, one card a session */}
       <GuestSaveCard />
       <GuestAskCard />
+      <AgeAskCard />
       <RankGpsCard card={xp?.rankGps} />
 
       <StudyingNowStrip />

@@ -15,8 +15,18 @@ const with_ = (over: Partial<CanvasAnswers>): CanvasAnswers => ({ ...emptyAnswer
 
 describe("the canvas flow", () => {
   it("Class 11/12 is asked about school; droppers are not", () => {
-    expect(walk(with_({ level: "CLASS_12", coaching: "SELF" }))).toEqual(["prefs", "name", "exam", "class", "exam_date", "school", "coaching", "hours", "windows", "week", "chapters"]);
+    expect(walk(with_({ level: "CLASS_12", coaching: "SELF" }))).toEqual(["prefs", "name", "exam", "class", "age", "exam_date", "school", "coaching", "hours", "windows", "week", "chapters"]);
     expect(walk(with_({ level: "DROPPER", coaching: "SELF" }))).not.toContain("school");
+  });
+
+  it("launch step 2 (A2): the age question comes right after class, and its answer is sent", () => {
+    expect(nextQuestion("class", with_({}))).toBe("age");
+    expect(nextQuestion("age", with_({}))).toBe("exam_date");
+    const minor = with_({ goal: "JEE_MAIN", level: "CLASS_12", ageBand: "16", parentEmail: "mom@example.com", examDates: [{ kind: "JEE_MAIN", label: "JEE Main", date: "2027-01-20", days: 60, isDefault: true }] });
+    expect(buildPayload(minor, "e")).toMatchObject({ ageBand: "16", parentEmail: "mom@example.com" });
+    // an adult's parent e-mail is never sent; no answer sends nothing
+    expect(buildPayload({ ...minor, ageBand: "18+" }, "e")).not.toHaveProperty("parentEmail");
+    expect(buildPayload({ ...minor, ageBand: null }, "e")).not.toHaveProperty("ageBand");
   });
 
   it("offline coaching adds the class time; online and self-study do not", () => {
@@ -25,8 +35,8 @@ describe("the canvas flow", () => {
   });
 
   it("counts the stairs Pexo climbs, including the goals proposal", () => {
-    expect(totalSteps(with_({ level: "CLASS_12", coaching: "OFFLINE" }))).toBe(13);
-    expect(totalSteps(with_({ level: "DROPPER", coaching: "SELF" }))).toBe(11);
+    expect(totalSteps(with_({ level: "CLASS_12", coaching: "OFFLINE" }))).toBe(14);
+    expect(totalSteps(with_({ level: "DROPPER", coaching: "SELF" }))).toBe(12);
   });
 
   it("a Google placeholder name is not used to greet anyone", () => {

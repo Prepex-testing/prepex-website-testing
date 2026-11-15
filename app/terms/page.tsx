@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import { LegalPage, type LegalSection } from "@/components/legal/LegalPage";
+import { LEGAL } from "@/lib/legal/contacts";
 
 export const metadata: Metadata = { title: "Terms of Service | Prepex", description: "The rules for using Prepex." };
-
-const UPDATED = "14 November 2026";
 
 const SECTIONS: LegalSection[] = [
   {
     heading: "Using Prepex",
     body: [
-      "By creating an account or using Prepex, you agree to these terms and to our Privacy Policy. If you are under 18, please use Prepex with the permission of a parent or guardian, who also agrees to these terms for you.",
+      `Prepex is run by ${LEGAL.entityName}. By creating an account or using Prepex, you agree to these terms and to our Privacy Policy.`,
+      "If you are under 18, please use Prepex with the permission of a parent or guardian, who also agrees to these terms for you. We ask your age when you start, and before 13 May 2027 we will ask a parent or guardian of every student under 18 for verifiable consent, as Indian law requires.",
     ],
   },
   {
@@ -53,7 +53,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     heading: "Ending your account",
-    body: ["You can delete your account at any time from Profile, Settings. We may suspend or close accounts that break these terms."],
+    body: ["You can delete your account at any time from Profile, Settings. You have 7 days to change your mind by signing in again; after that your account and data are deleted for good. You can download your data first. We may suspend or close accounts that break these terms."],
   },
   {
     heading: "Liability",
@@ -65,10 +65,10 @@ const SECTIONS: LegalSection[] = [
   },
   {
     heading: "Contact",
-    body: ["Questions about these terms: hello@prepex.io."],
+    body: [`Questions about these terms: ${LEGAL.supportEmail}. Complaints: our Grievance Officer, ${LEGAL.grievanceOfficer}, ${LEGAL.grievanceEmail}. See the Contact page for everything else.`],
   },
 ];
 
 export default function TermsPage() {
-  return <LegalPage title="Terms of Service" updated={UPDATED} intro="These are the rules for using Prepex, written to be easy to read." sections={SECTIONS} />;
+  return <LegalPage title="Terms of Service" updated={LEGAL.effectiveDate} intro={`These are the rules for using Prepex, written to be easy to read.${LEGAL.pendingLawyerReview ? " (Draft, pending legal review.)" : ""}`} sections={SECTIONS} />;
 }

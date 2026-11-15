@@ -1,13 +1,15 @@
 "use client";
 
+import { LegalLinks } from "@/components/legal/LegalLinks";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { ChangePasswordModal } from "@/components/profile/ChangePasswordModal";
 import { ApiError } from "@/lib/api/http";
-import { deleteAccount, getAccountDetails, type AccountDetails } from "@/lib/api/account";
+import { getAccountDetails, type AccountDetails } from "@/lib/api/account";
+import { DeleteAccountModal, DELETION_GRACE_DAYS } from "@/components/settings/DeleteAccountModal";
+import { YourDataSettings } from "@/components/settings/YourDataSettings";
 import { clearSession } from "@/lib/auth/session";
 import {
   // UserIcon,
@@ -39,8 +41,6 @@ export default function AccountSettingsPage() {
   const [loadError, setLoadError] = useState(false);
   const [isPasswordOpen, setPasswordOpen] = useState(false);
   const [isDeleteOpen, setDeleteOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -59,21 +59,6 @@ export default function AccountSettingsPage() {
   const hasPassword = account?.authProvider === "email";
   const isGoogle = account?.authProvider === "google";
 
-  const handleDelete = async () => {
-    setDeleting(true);
-    setDeleteError(null);
-    try {
-      const { data } = await deleteAccount();
-      // Every session was revoked server-side; drop this one and show the
-      // sign-in page with the date the deletion becomes final.
-      clearSession();
-      router.replace(`/login?deletionScheduled=${encodeURIComponent(data.finalAt)}`);
-    } catch (err) {
-      setDeleteError(err instanceof ApiError ? err.message : "Couldn't delete your account. Please try again.");
-      setDeleting(false);
-    }
-  };
-
   if (!account && !loadError) return <PageLoader label="Loading your account settings…" />;
 
   return (
@@ -82,6 +67,7 @@ export default function AccountSettingsPage() {
 
       <AppearanceSettings />
       <PexoSettings />
+      <YourDataSettings />
 
       <div className="overflow-hidden rounded-2xl border border-brand/10 bg-surface shadow-sm">
 
@@ -302,7 +288,7 @@ export default function AccountSettingsPage() {
 
               <p className="mt-1 text-[13px] leading-5 text-[#F59E0B] sm:text-[14px]">
                 You can restore your account within{" "}
-                <span className="font-bold">30 days</span> from the deletion date.
+                <span className="font-bold">{DELETION_GRACE_DAYS} days</span> by signing in again.
               </p>
             </div>
 
@@ -328,10 +314,8 @@ export default function AccountSettingsPage() {
             <div className="h-[46px] w-full shrink-0 sm:w-43.25">
               <Button
                 variant="secondary"
-                onClick={() => {
-                  setDeleteError(null);
-                  setDeleteOpen(true);
-                }}
+                onClick={() => setDeleteOpen(true)}
+                data-testid="delete-open"
                 // h-full! so it fills the 46px wrapper instead of Button's md h-14.
                 className="h-full! w-full rounded-lg border border-[#F59E0B]! px-8 text-[13px]! font-bold text-[#F59E0B]! sm:text-[14px]!"
               >
@@ -346,16 +330,18 @@ export default function AccountSettingsPage() {
       </div>
 
       <ChangePasswordModal open={isPasswordOpen} onClose={() => setPasswordOpen(false)} />
-      <ConfirmModal
+      <DeleteAccountModal
         open={isDeleteOpen}
-        onClose={() => !deleting && setDeleteOpen(false)}
-        onConfirm={handleDelete}
-        busy={deleting}
-        error={deleteError}
-        title="Delete account?"
-        description="Your account will be scheduled for deletion and you'll be signed out on every device. Sign in again within 30 days to restore it — after that it's deleted for good."
-        confirmLabel={deleting ? "Scheduling…" : "Delete"}
+        onClose={() => setDeleteOpen(false)}
+        // a guest account has no e-mail to send a code to
+        needsCode={account?.authProvider !== "guest"}
+        onDeleted={(schedule) => {
+          // Every session was revoked server-side; drop this one and show the sign-in page with the date it becomes final.
+          clearSession();
+          router.replace(`/login?deletionScheduled=${encodeURIComponent(schedule.finalAt)}`);
+        }}
       />
+      <LegalLinks />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { LegalLinks } from "@/components/legal/LegalLinks";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BookIcon, CalendarIcon, ClockIcon, GraduationCapIcon } from "@/assets/icons";
@@ -18,6 +19,8 @@ import { toNewGoal } from "@/lib/goalAssistant/model";
 import { countChapters, filterSections, groupByClass } from "@/lib/onboarding/chapters";
 import { examForOption, goalOption } from "@/lib/onboarding/goal";
 import {
+  AGE_BANDS,
+  isMinorBand,
   buildFor,
   buildPayload,
   emptyAnswers,
@@ -30,6 +33,7 @@ import {
   totalSteps,
   usablePrefill,
   VOICE_QUESTIONS,
+  type AgeBand,
   type CanvasAnswers,
   type ClassAnswer,
   type ExamDateChoice,
@@ -147,6 +151,8 @@ export function OnboardingCanvas() {
         return say("onb.exam");
       case "class":
         return say("onb.class");
+      case "age":
+        return say("onb.age");
       case "exam_date": {
         const next = a.examDates[0];
         return next ? say("onb.exam_date.confirm", { exam: next.label, date: spokenDate(next.date), days: next.days }) : null;
@@ -369,6 +375,7 @@ export function OnboardingCanvas() {
           )}
         </section>
       </div>
+      <LegalLinks className="pb-4" />
     </main>
   );
 
@@ -423,6 +430,14 @@ export function OnboardingCanvas() {
           </Chips>
         );
       }
+      case "age":
+        return (
+          <AgeStep
+            a={a}
+            onMinor={() => setReaction(sayLocal("onb.age.minor", {}, a.language))}
+            onDone={(ageBand, parentEmail) => answer({ ageBand, parentEmail }, ageBand === "18+" ? sayLocal("onb.age.adult", {}, a.language) : null)}
+          />
+        );
       case "exam_date":
         return <ExamDateStep a={a} suggested={suggested} onYes={() => answer({}, null, voiceInput("YES"))} onChange={(dates) => answer({ examDates: dates, examDatesChanged: true })} />;
       case "school":
@@ -588,6 +603,61 @@ function PrimaryChip({ children, onClick, disabled = false, testId }: { children
     <button type="button" onClick={onClick} disabled={disabled} data-testid={testId} className="min-h-12 w-full max-w-[320px] rounded-2xl bg-[var(--cta)] px-5 text-[16px] font-bold text-white transition active:scale-[0.98] disabled:opacity-50">
       {children}
     </button>
+  );
+}
+
+/**
+ * Launch step 2 (A2): how old the student is. Under 18, Pexo explains a parent can get a weekly update and an optional
+ * parent e-mail field appears (skippable); 18+ moves straight on.
+ */
+const AGE_LABEL: Record<AgeBand, string> = { "13-14": "13–14", "15": "15", "16": "16", "17": "17", "18+": "18+" };
+export function AgeStep({ a, onMinor, onDone }: { a: CanvasAnswers; onMinor: () => void; onDone: (band: AgeBand, parentEmail: string) => void }) {
+  const [band, setBand] = useState<AgeBand | null>(isMinorBand(a.ageBand) ? (a.ageBand ?? null) : null);
+  const [email, setEmail] = useState(a.parentEmail ?? "");
+  const emailOk = email.trim() === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  if (!band)
+    return (
+      <Chips label="Your age">
+        {AGE_BANDS.map((b) => (
+          <Chip
+            key={b}
+            selected={a.ageBand === b}
+            onClick={() => {
+              if (b === "18+") return onDone(b, "");
+              setBand(b);
+              onMinor();
+            }}
+            testId={`onb-age-${b}`}
+          >
+            {AGE_LABEL[b]}
+          </Chip>
+        ))}
+      </Chips>
+    );
+  return (
+    <form
+      className="flex flex-col items-center gap-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (emailOk) onDone(band, email.trim());
+      }}
+    >
+      <label htmlFor="onb-parent-email" className="text-[14px] font-semibold text-muted">
+        Parent&apos;s e-mail (optional)
+      </label>
+      <input id="onb-parent-email" type="email" inputMode="email" autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} placeholder="parent@example.com" className="min-h-12 w-full max-w-[320px] rounded-2xl border border-border-subtle bg-surface px-4 text-center text-[16px] text-ink focus:border-brand focus:outline-none" data-testid="onb-parent-email" />
+      {!emailOk && (
+        <p role="alert" className="text-[13px] text-danger">
+          That e-mail doesn&apos;t look right.
+        </p>
+      )}
+      <button type="submit" disabled={!emailOk} className="min-h-12 w-full max-w-[320px] rounded-2xl bg-[var(--cta)] px-5 text-[16px] font-bold text-white disabled:opacity-50" data-testid="onb-age-next">
+        {email.trim() ? "Continue" : "Skip for now"}
+      </button>
+      <button type="button" onClick={() => setBand(null)} className="text-[13px] font-semibold text-muted underline" data-testid="onb-age-change">
+        Change age
+      </button>
+    </form>
   );
 }
 

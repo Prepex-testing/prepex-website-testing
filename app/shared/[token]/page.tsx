@@ -1,5 +1,6 @@
 "use client";
 
+import { LegalLinks } from "@/components/legal/LegalLinks";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -73,6 +74,7 @@ export default function SharedNotebookPage() {
           Make your own notebook on Prepex
         </Link>
       </footer>
+      <LegalLinks className="py-2" />
     </main>
   );
 }
