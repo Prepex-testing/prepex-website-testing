@@ -83,7 +83,10 @@ export function SignInScreen() {
             <Link href="/privacy" className="underline">
               Privacy Policy
             </Link>
-            .
+            .{" "}
+            <Link href="/contact" className="underline">
+              Contact us
+            </Link>
           </p>
         </div>
       )}

@@ -18,9 +18,13 @@ import {
  * POST /onboarding/complete body the old five screens send). Pure, so the flow and every path are unit-tested.
  */
 
-export type QuestionId = "prefs" | "name" | "exam" | "class" | "exam_date" | "school" | "coaching" | "coaching_time" | "hours" | "windows" | "week" | "chapters" | "goals";
+export type QuestionId = "prefs" | "name" | "exam" | "class" | "age" | "exam_date" | "school" | "coaching" | "coaching_time" | "hours" | "windows" | "week" | "chapters" | "goals";
 export type Goal = "JEE_MAIN" | "JEE_BOTH";
 export type ClassAnswer = "CLASS_11" | "CLASS_12" | "DROPPER" | "OTHER";
+/** Launch step 2 (A2): the age question. Under 18 is a child under India's DPDP Act. */
+export type AgeBand = "13-14" | "15" | "16" | "17" | "18+";
+export const AGE_BANDS: readonly AgeBand[] = ["13-14", "15", "16", "17", "18+"];
+export const isMinorBand = (b: AgeBand | null | undefined) => !!b && b !== "18+";
 
 export interface ExamDateChoice {
   kind: "JEE_MAIN" | "JEE_ADVANCED";
@@ -37,6 +41,10 @@ export interface CanvasAnswers {
   name: string;
   goal: Goal | null;
   level: ClassAnswer | null;
+  /** Absent on drafts saved before the age question existed. */
+  ageBand?: AgeBand | null;
+  /** Optional, under 18 only: for the parent weekly report and future parental consent. */
+  parentEmail?: string;
   /** The dates Pexo confirmed or the student changed; empty until the date question. */
   examDates: ExamDateChoice[];
   examDatesChanged: boolean;
@@ -64,6 +72,8 @@ export function emptyAnswers(prefillName = ""): CanvasAnswers {
     name: prefillName,
     goal: null,
     level: null,
+    ageBand: null,
+    parentEmail: "",
     examDates: [],
     examDatesChanged: false,
     school: null,
@@ -100,6 +110,8 @@ export function nextQuestion(q: QuestionId, a: CanvasAnswers): QuestionId | null
     case "exam":
       return "class";
     case "class":
+      return "age";
+    case "age":
       return "exam_date";
     case "exam_date":
       return schoolAsked(a) ? "school" : "coaching";
@@ -158,7 +170,7 @@ export function buildFor(a: CanvasAnswers) {
 const COACHING_TYPE: Record<CoachingAnswer, CompleteOnboardingInput["coachingType"]> = { OFFLINE: "COACHING", ONLINE: "ONLINE_SELF_PREP", SELF: "SELF_PREP" };
 
 /** The exact body the old flow also sends, plus the v2-only fields the server accepts. */
-export function buildPayload(a: CanvasAnswers, examId: string): CompleteOnboardingInput & { jeeMainDate?: string; jeeAdvancedDate?: string; examDateIsDefault?: boolean; flowVersion: "v2" } {
+export function buildPayload(a: CanvasAnswers, examId: string): CompleteOnboardingInput & { jeeMainDate?: string; jeeAdvancedDate?: string; examDateIsDefault?: boolean; ageBand?: AgeBand; parentEmail?: string; flowVersion: "v2" } {
   const next = a.examDates[0];
   const dateOf = (kind: ExamDateChoice["kind"]) => a.examDates.find((d) => d.kind === kind)?.date;
   const blocks = a.week.length > 0 ? a.week : buildFor(a).blocks;
@@ -182,6 +194,7 @@ export function buildPayload(a: CanvasAnswers, examId: string): CompleteOnboardi
       }),
     },
     completedChapterIds: a.chapters,
+    ...(a.ageBand ? { ageBand: a.ageBand, ...(isMinorBand(a.ageBand) && a.parentEmail?.trim() ? { parentEmail: a.parentEmail.trim() } : {}) } : {}),
     flowVersion: "v2",
   };
 }

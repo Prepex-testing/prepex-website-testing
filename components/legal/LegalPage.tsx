@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
+import { LegalLinks } from "@/components/legal/LegalLinks";
 
 export type LegalSection = { heading: string; body: (string | string[])[] };
 
@@ -33,16 +34,8 @@ export function LegalPage({ title, updated, intro, sections }: { title: string; 
           )}
         </section>
       ))}
-      <footer className="flex flex-wrap gap-4 border-t border-border-subtle pt-5 text-[14px] text-muted">
-        <Link href="/privacy" className="underline">
-          Privacy Policy
-        </Link>
-        <Link href="/terms" className="underline">
-          Terms of Service
-        </Link>
-        <a href="mailto:hello@prepex.io" className="underline">
-          hello@prepex.io
-        </a>
+      <footer className="border-t border-border-subtle pt-5">
+        <LegalLinks className="justify-start! text-[14px]!" />
       </footer>
     </main>
   );

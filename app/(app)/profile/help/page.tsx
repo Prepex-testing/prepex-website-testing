@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { LEGAL } from "@/lib/legal/contacts";
 import { Button } from "@/components/ui/Button";
 import { InfoIcon, ChevronRightIcon, PhoneIcon, ExternalLinkIcon } from "@/components/ui/icons";
 import { ProfileSubpageHeader } from "@/components/profile/ProfileSubpageHeader";
@@ -78,7 +79,7 @@ const NATIONAL_LINES: (Helpline & { description: string })[] = [
   },
 ];
 
-const SUPPORT_EMAIL = "hello@prepex.io";
+const SUPPORT_EMAIL = LEGAL.supportEmail;
 // No support WhatsApp number exists yet; set this (digits with country code,
 // e.g. 919876543210) and the WhatsApp row turns on.
 const SUPPORT_WHATSAPP = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP?.replace(/\D/g, "") ?? "";

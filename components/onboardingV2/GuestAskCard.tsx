@@ -6,6 +6,8 @@ import { Pexo } from "@/components/pexo/Pexo";
 import { updateProfile } from "@/lib/api/profile";
 import { createTimetable } from "@/lib/api/timetable";
 import { getStoredUser } from "@/lib/auth/session";
+import { AgeStep } from "@/components/onboardingV2/OnboardingCanvas";
+import { getAge, setAge } from "@/lib/api/dataRights";
 import { buildFor, levelOf, spokenDate, type ClassAnswer } from "@/lib/onboardingV2/canvas";
 import { askShownThisSession, hasGuestAsks, isGuestUser, loadGuest, markAskShown, nextAsk, saveGuest, type GuestAsk, type GuestState } from "@/lib/onboardingV2/guest";
 import { sayLocal } from "@/lib/onboardingV2/lines";
@@ -21,7 +23,7 @@ const SEEN_MS = 3000;
  * services (profile update, a new timetable built by the canvas's generator); nothing is stored twice.
  */
 export function GuestAskCard() {
-  const [state, setState] = useState<{ userId: string; guest: GuestState; ask: GuestAsk } | null>(null);
+  const [state, setState] = useState<{ userId: string; guest: GuestState; ask: GuestAsk; minorLine?: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +43,8 @@ export function GuestAskCard() {
 
   if (!state) return null;
   const { guest, ask, userId } = state;
-  const pick = sayLocal(`guest.ask.${ask}`, {}, guest.answers.language);
+  const [minorLine, setMinorLine] = [state.minorLine, (on: boolean) => setState({ ...state, minorLine: on })];
+  const pick = ask === "age" ? sayLocal(minorLine ? "onb.age.minor" : "onb.age", {}, guest.answers.language) : sayLocal(`guest.ask.${ask}`, {}, guest.answers.language);
   if (!pick) return null;
 
   const done = async (patch: Partial<GuestState["answers"]>, save: () => Promise<unknown>) => {
@@ -80,6 +83,9 @@ export function GuestAskCard() {
           <p role="alert" className="text-[13px] font-medium text-danger">
             {error}
           </p>
+        )}
+        {ask === "age" && (
+          <AgeStep a={guest.answers} onMinor={() => setMinorLine(true)} onDone={(band, email) => void done({ ageBand: band, parentEmail: email }, () => setAge(band, email || undefined))} />
         )}
         <div className="flex flex-wrap gap-2">
           {ask === "class" &&
@@ -151,5 +157,65 @@ function ExamDateOptions({ guest, busy, onSave }: { guest: GuestState; busy: boo
         Save dates
       </Option>
     </div>
+  );
+}
+
+/**
+ * Launch step 2 (A2): a student who onboarded before the age question (and is not a guest, who gets it above) is asked
+ * once per session on Home until they answer. Shares the one-card-a-session rule with the guest cards.
+ */
+export function AgeAskCard() {
+  const [show, setShow] = useState<{ language: "en" | "hi" } | null>(null);
+  const [minor, setMinor] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const user = getStoredUser();
+    if (!user || isGuestUser(user) || hasGuestAsks(user.id) || askShownThisSession()) return;
+    let alive = true;
+    void getAge()
+      .then((age) => {
+        if (alive && age.ageBand === null) setShow({ language: "en" });
+      })
+      .catch(() => undefined);
+    const t = setTimeout(markAskShown, SEEN_MS);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+    };
+  }, []);
+
+  if (!show) return null;
+  const pick = sayLocal(minor ? "onb.age.minor" : "onb.age", {}, show.language);
+  if (!pick) return null;
+  return (
+    <section className="flex items-start gap-3 rounded-2xl border border-border-subtle/70 bg-surface-elevated p-4 shadow-sm" data-testid="age-ask" aria-label="A quick question">
+      <Pexo mood={pick.mood} size={48} />
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <p className="text-[15px] font-semibold text-ink" role="status">
+          {pick.text}
+        </p>
+        {error && (
+          <p role="alert" className="text-[13px] font-medium text-danger">
+            {error}
+          </p>
+        )}
+        <AgeStep
+          a={{ ageBand: null, parentEmail: "" } as never}
+          onMinor={() => setMinor(true)}
+          onDone={(band, email) => {
+            if (busy) return;
+            markAskShown();
+            setBusy(true);
+            setError(null);
+            void setAge(band, email || undefined)
+              .then(() => setShow(null))
+              .catch(() => setError("That didn't save. Please try again."))
+              .finally(() => setBusy(false));
+          }}
+        />
+      </div>
+    </section>
   );
 }

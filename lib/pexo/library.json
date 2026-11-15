@@ -1,5 +1,5 @@
 {
- "version": 4,
+ "version": 5,
  "name": "Pexo line library",
  "languages": [
   "en",
@@ -2272,6 +2272,41 @@
    "mood": "curious",
    "en": "Does your plan fit your real day? Two minutes on your timetable makes every plan sharper.",
    "hi": "Plan tumhare asli din se match karta hai? Timetable pe 2 minute, aur har plan aur sharp."
+  },
+  {
+   "id": "onb.age#1",
+   "trigger": "onb.age",
+   "mood": "curious",
+   "en": "How old are you?",
+   "hi": "Tumhari umar kya hai?"
+  },
+  {
+   "id": "onb.age.minor#1",
+   "trigger": "onb.age.minor",
+   "mood": "calm",
+   "en": "Got it. Studying goes better with a parent in the loop. You can add their email for a weekly update.",
+   "hi": "Theek hai. Parent saath ho toh padhai aur achhi chalti hai. Weekly update ke liye unka email add kar sakte ho."
+  },
+  {
+   "id": "onb.age.adult#1",
+   "trigger": "onb.age.adult",
+   "mood": "happy",
+   "en": "Got it. Let's keep going.",
+   "hi": "Theek hai. Aage badhte hain."
+  },
+  {
+   "id": "feedback.prompt#1",
+   "trigger": "feedback.prompt",
+   "mood": "curious",
+   "en": "Found a bug or have an idea? Tell me, the team reads every message.",
+   "hi": "Koi bug mila ya koi idea hai? Batao, team har message padhti hai."
+  },
+  {
+   "id": "feedback.thanks#1",
+   "trigger": "feedback.thanks",
+   "mood": "happy",
+   "en": "Thanks. That goes straight to the team.",
+   "hi": "Shukriya. Ye seedha team tak jaayega."
   }
  ]
 }

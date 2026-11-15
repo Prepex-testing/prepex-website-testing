@@ -18,8 +18,9 @@ export const GUEST_DEFAULTS: CanvasAnswers = {
   current: "chapters",
 };
 
-export type GuestAsk = "class" | "exam_date" | "school" | "hours" | "chapters";
-export const GUEST_ASK_ORDER: GuestAsk[] = ["class", "exam_date", "school", "hours", "chapters"];
+/** Launch step 2 (A2): the age is asked first (under 18 is a child under the DPDP Act). */
+export type GuestAsk = "age" | "class" | "exam_date" | "school" | "hours" | "chapters";
+export const GUEST_ASK_ORDER: GuestAsk[] = ["age", "class", "exam_date", "school", "hours", "chapters"];
 
 export interface GuestState {
   answers: CanvasAnswers;
