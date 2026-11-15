@@ -24,8 +24,6 @@ const PUBLIC_PATHS = [
   // the legal pages Google (and every student) must be able to read without signing in
   "/privacy",
   "/terms",
-  "/create-account",
-  "/email-verification",
   "/forgot-password",
   "/reset-password",
   "/auth/callback",

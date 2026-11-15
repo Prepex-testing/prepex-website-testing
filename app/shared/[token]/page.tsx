@@ -69,7 +69,7 @@ export default function SharedNotebookPage() {
 
       <footer className="mt-4 flex flex-col items-center gap-3 rounded-2xl bg-tint-strong/60 p-6 text-center">
         <p className="text-[15px] font-bold text-ink">Keep your own mistakes in one place and get them back at the right time.</p>
-        <Link href="/create-account" className="inline-flex min-h-12 items-center justify-center rounded-[10px] bg-brand-coral px-6 py-3 text-[15px] font-semibold text-white transition hover:brightness-95" data-testid="shared-cta">
+        <Link href="/start" className="inline-flex min-h-12 items-center justify-center rounded-[10px] bg-brand-coral px-6 py-3 text-[15px] font-semibold text-white transition hover:brightness-95" data-testid="shared-cta">
           Make your own notebook on Prepex
         </Link>
       </footer>

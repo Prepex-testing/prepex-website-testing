@@ -46,7 +46,7 @@ export default function LoginPage() {
       router.push(await resolveAuthedLanding());
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) {
-        router.push(`/email-verification?email=${encodeURIComponent(email)}`);
+        router.push("/start");
         return;
       }
       setError(
@@ -141,7 +141,7 @@ export default function LoginPage() {
       <p className="mt-6 border-t border-tint pt-5 text-center text-[16px] font-bold leading-[1.4] text-muted dark:text-ink">
         Don&apos;t have an account?{" "}
         <Link
-          href="/create-account"
+          href="/start"
           className="mt-2 block font-semibold text-ink underline dark:text-cta sm:mt-0 sm:inline"
         >
           Create an Account

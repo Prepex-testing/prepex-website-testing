@@ -34,31 +34,6 @@ function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return apiRequest<T>(`${AUTH_API_BASE_URL}/api/auth${path}`, options);
 }
 
-export function registerAccount(input: {
-  fullName: string;
-  email: string;
-  password: string;
-}) {
-  return request<{ success: true; message: string }>("/register", {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
-}
-
-export function verifyOtp(input: { email: string; otp: string }) {
-  return request<{ success: true; data: AuthResult }>("/verify-otp", {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
-}
-
-export function resendOtp(email: string) {
-  return request<{ success: true; message: string }>("/resend-otp", {
-    method: "POST",
-    body: JSON.stringify({ email }),
-  });
-}
-
 export function login(input: { email: string; password: string }) {
   return request<{ success: true; data: AuthResult }>("/login", {
     method: "POST",

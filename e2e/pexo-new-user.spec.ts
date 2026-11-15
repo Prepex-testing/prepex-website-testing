@@ -1,50 +1,27 @@
-import { createHash } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
 import { EMAIL, onboardAndEnterApp, queryDb, resetStudent } from "./helpers";
 
 /**
  * Pexo for every new user, end to end against the REAL local stack (auth 4001, core 4002, dashboard 4003, prepex_dev):
  *
- *   1. a brand-new signup through the real sign-up + OTP screens -> onboarding with Pexo's narration -> the tour ->
- *      Home with Pexo, the Prepex map and "Your climb";
+ *   1. the retired sign-up pages hand over to /start;
  *   2. a student who finished onboarding without Pexo -> "Meet Pexo" once -> everything visible.
  *
- * The OTP: the local auth service e-mails a random code and keeps only its hash, so the test writes the hash of a
- * known test code into the LOCAL database (the helpers refuse anything but localhost).
  */
 
 test.describe.configure({ mode: "serial" });
 
-const TEST_OTP = "246810";
-const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
 
 async function skipDialogsUntilHome(page: Page) {
   await page.waitForURL((u) => u.pathname === "/home", { timeout: 90_000 });
 }
 
-test("a brand-new signup gets Pexo from the first onboarding screen", async ({ page }, info) => {
-  test.skip(info.project.name.startsWith("mobile"), "one real signup per run is enough");
-  const email = `pexo.new.${Date.now()}@test.prepex.io`;
-  await page.goto("/create-account");
-  await page.getByPlaceholder("Rohan Sharma").fill("Pexo Newcomer");
-  await page.getByPlaceholder("Rohan@example.com").fill(email);
-  await page.getByPlaceholder("At least 8 characters").fill("E2eTest!234");
-  await page.getByRole("button", { name: "Sign up" }).click();
-
-  // the real OTP screen; the code the server stored is replaced with the test code (local database only)
-  await expect(page).toHaveURL(/email-verification/, { timeout: 30_000 });
-  queryDb("UPDATE auth.email_otps SET otp_hash = $1 WHERE user_id = (SELECT id FROM auth.users WHERE email = $2)", [sha256(TEST_OTP), email]);
-  await page.locator("input[inputmode='numeric']").first().click();
-  await page.keyboard.type(TEST_OTP);
-  await page.getByRole("button", { name: "Verify & Continue" }).click();
-
-  // onboarding: Pexo narrates from the very first step
-  await expect(page.getByRole("heading", { name: /I.m preparing for/ })).toBeVisible({ timeout: 60_000 });
-  await expect(page.getByTestId("onboarding-pexo")).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByTestId("onboarding-pexo")).toContainText("Hi, I'm Pexo");
-
-  const [user] = queryDb<{ id: string }>("SELECT id FROM auth.users WHERE email = $1", [email]);
-  expect(user).toBeTruthy();
+// Launch step 2 (1a): the old password sign-up is retired; new students start at /start (covered by the onboarding-v2 specs).
+test("the old sign-up pages send new students to /start", async ({ page }) => {
+  for (const path of ["/create-account", "/email-verification", "/register"]) {
+    await page.goto(path);
+    await expect(page).toHaveURL(/\/start/, { timeout: 30_000 });
+  }
 });
 
 test("a student who onboarded without Pexo meets Pexo once, then sees everything", async ({ page }, info) => {

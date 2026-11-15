@@ -208,7 +208,7 @@ export default function WelcomePage() {
 
           {/* Email */}
           <div className="flex w-full flex-col items-center gap-4">
-            <Button href="/create-account" variant="primary">
+            <Button href="/start" variant="primary">
               Continue with Email
             </Button>
 
