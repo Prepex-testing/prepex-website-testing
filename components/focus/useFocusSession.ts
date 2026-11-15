@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ApiError } from "@/lib/api/http";
+import { ApiError, REQUEST_TIMEOUT_MS } from "@/lib/api/http";
 import {
   createFocusSession,
   getActiveFocusSession,
@@ -50,12 +50,25 @@ function withoutSheet(input: StopFocusInput): StopFocusInput {
  * before the page is closed and asks for fullscreen. Finishing is one request that the server saves all-or-nothing; when
  * it cannot be sent, the answers are kept and re-sent in the background until they land.
  */
+/**
+ * A Pause / Resume / Start / End that has been waiting this long has failed, whatever the request is doing: the request
+ * layer gives up after REQUEST_TIMEOUT_MS. Coming back to the tab after that releases the buttons and re-reads the
+ * session from the server, so a request lost while the tab was in the background can never lock them.
+ */
+export const BUSY_RELEASE_MS = REQUEST_TIMEOUT_MS + 5_000;
+
 export function useFocusSession() {
   const [phase, setPhase] = useState<FocusPhase>("loading");
   const [session, setSession] = useState<FocusSession | null>(null);
   const [receivedAt, setReceivedAt] = useState(() => Date.now());
   const [now, setNow] = useState(() => Date.now());
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusyState] = useState(false);
+  /** When the buttons were locked (null = not locked). */
+  const busySince = useRef<number | null>(null);
+  const setBusy = useCallback((on: boolean) => {
+    busySince.current = on ? Date.now() : null;
+    setBusyState(on);
+  }, []);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<StopFocusResult | null>(null);
   /** The save has not gone through yet and is being retried in the background. */
@@ -220,6 +233,31 @@ export function useFocusSession() {
     document.addEventListener("visibilitychange", onVisibility);
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, [phase]);
+
+  // Coming back to the tab (or the window): a lock older than any request can take is released and the session re-read,
+  // so the buttons always work again without a reload.
+  useEffect(() => {
+    const onReturn = () => {
+      if (document.visibilityState !== "visible") return;
+      const since = busySince.current;
+      if (since === null || Date.now() - since < BUSY_RELEASE_MS) return;
+      setBusy(false);
+      getActiveFocusSession()
+        .then((res) => {
+          if (unmounted.current) return;
+          if (res.data.session) adopt(res.data.session);
+        })
+        .catch(() => undefined);
+    };
+    document.addEventListener("visibilitychange", onReturn);
+    window.addEventListener("focus", onReturn);
+    window.addEventListener("pageshow", onReturn);
+    return () => {
+      document.removeEventListener("visibilitychange", onReturn);
+      window.removeEventListener("focus", onReturn);
+      window.removeEventListener("pageshow", onReturn);
+    };
+  }, [adopt, setBusy]);
 
   // Deep Focus: warn before the page is closed or reloaded.
   const deep = phase === "running" && session?.deepFocusMode === true;
