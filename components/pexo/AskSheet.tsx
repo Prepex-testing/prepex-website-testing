@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { FeedbackSheet } from "@/components/feedback/FeedbackSheet";
 import { PexoBubble } from "@/components/pexo/PexoBubble";
 import { GhostButton, GHOST_CLASSES } from "@/components/ui/GhostButton";
 import { Modal } from "@/components/ui/Modal";
@@ -50,6 +51,7 @@ export function askActions(answer: PexoAskAnswer, close: () => void): PexoAction
  * opens), then Pexo's playbook and a few quick links. Nothing here is generated: every sentence is a library line.
  */
 export function AskSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [feedback, setFeedback] = useState(false);
   const [answer, setAnswer] = useState<{ pick: PexoPick; data: PexoAskAnswer } | null>(null);
   const [failed, setFailed] = useState(false);
   const [text, setText] = useState<{ title: string; playbook: string; steps: string[] } | null>(null);
@@ -80,6 +82,7 @@ export function AskSheet({ open, onClose }: { open: boolean; onClose: () => void
   }, [open]);
 
   return (
+    <>
     <Modal open={open} onClose={onClose} ariaLabel={text?.title ?? "What should I do now?"}>
       <div className="flex flex-col gap-4" data-testid="ask-sheet">
         <h2 className="text-lg font-bold text-ink">{text?.title}</h2>
@@ -112,8 +115,24 @@ export function AskSheet({ open, onClose }: { open: boolean; onClose: () => void
             </Link>
           ))}
         </nav>
-        <GhostButton onClick={onClose} className="self-end">Close</GhostButton>
+        <div className="flex items-center justify-between gap-2">
+          {/* Launch step 2 (B1) */}
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              setFeedback(true);
+            }}
+            className="text-[13px] font-semibold text-ink underline"
+            data-testid="ask-feedback"
+          >
+            Report a bug or share an idea
+          </button>
+          <GhostButton onClick={onClose}>Close</GhostButton>
+        </div>
       </div>
     </Modal>
+    <FeedbackSheet open={feedback} onClose={() => setFeedback(false)} />
+    </>
   );
 }
