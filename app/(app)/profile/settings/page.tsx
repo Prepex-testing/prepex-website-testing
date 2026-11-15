@@ -10,6 +10,7 @@ import { ApiError } from "@/lib/api/http";
 import { getAccountDetails, type AccountDetails } from "@/lib/api/account";
 import { DeleteAccountModal, DELETION_GRACE_DAYS } from "@/components/settings/DeleteAccountModal";
 import { YourDataSettings } from "@/components/settings/YourDataSettings";
+import { FeedbackSheet } from "@/components/feedback/FeedbackSheet";
 import { clearSession } from "@/lib/auth/session";
 import {
   // UserIcon,
@@ -41,6 +42,7 @@ export default function AccountSettingsPage() {
   const [loadError, setLoadError] = useState(false);
   const [isPasswordOpen, setPasswordOpen] = useState(false);
   const [isDeleteOpen, setDeleteOpen] = useState(false);
+  const [isFeedbackOpen, setFeedbackOpen] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -68,6 +70,17 @@ export default function AccountSettingsPage() {
       <AppearanceSettings />
       <PexoSettings />
       <YourDataSettings />
+      {/* Launch step 2 (B1) */}
+      <section className="flex flex-col gap-3 rounded-2xl border border-brand/10 bg-surface p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6" aria-label="Feedback">
+        <div>
+          <h2 className="text-[15px] font-bold leading-6 text-ink sm:text-[16px]">Report a bug or share an idea</h2>
+          <p className="text-[12px] leading-4 text-muted">The team reads every message.</p>
+        </div>
+        <button type="button" onClick={() => setFeedbackOpen(true)} className="min-h-11 shrink-0 rounded-lg border border-ink/20 px-4 text-[14px] font-semibold text-ink" data-testid="settings-feedback">
+          Send feedback
+        </button>
+      </section>
+      <FeedbackSheet open={isFeedbackOpen} onClose={() => setFeedbackOpen(false)} />
 
       <div className="overflow-hidden rounded-2xl border border-brand/10 bg-surface shadow-sm">
 
