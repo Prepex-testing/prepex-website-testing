@@ -28,9 +28,19 @@ ARG NEXT_PUBLIC_SENTRY_DSN
 ENV NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
 ARG NEXT_PUBLIC_SENTRY_ENVIRONMENT
 ENV NEXT_PUBLIC_SENTRY_ENVIRONMENT=${NEXT_PUBLIC_SENTRY_ENVIRONMENT}
+# Launch step 2 (C1): events carry the commit they came from; source maps upload to Sentry only with a token.
+ARG NEXT_PUBLIC_SENTRY_RELEASE
+ENV NEXT_PUBLIC_SENTRY_RELEASE=${NEXT_PUBLIC_SENTRY_RELEASE}
+ARG SENTRY_ORG
+ARG SENTRY_PROJECT
 ENV NEXT_TELEMETRY_DISABLED=1 \
     NODE_OPTIONS=--max-old-space-size=2048
-RUN npm run build
+# The Sentry token is a build secret (never an ARG, which would stay in the image history). Empty or absent = no maps.
+RUN --mount=type=secret,id=sentry_auth_token,required=false \
+    T="$(cat /run/secrets/sentry_auth_token 2>/dev/null || true)"; \
+    if [ -n "$T" ]; then export SENTRY_AUTH_TOKEN="$T" SENTRY_ORG="$SENTRY_ORG" SENTRY_PROJECT="$SENTRY_PROJECT"; fi; \
+    npm run build && \
+    if find .next/static public -name '*.map' | grep -q .; then echo "source maps would be served publicly" >&2; exit 1; fi
 
 FROM node:22-alpine AS runtime
 WORKDIR /app

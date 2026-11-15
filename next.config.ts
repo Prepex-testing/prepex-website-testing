@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs/config";
 import { securityHeaders } from "./lib/security/headers";
 
 const svgrOptions = {
@@ -104,4 +105,19 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+/**
+ * Launch step 2 (C1): source maps go to Sentry and are never served. They are built only when a Sentry auth token is
+ * present at build time (a Docker build secret, never an image layer), uploaded, then deleted from the build; without
+ * a token nothing is generated (Next's default) and the Dockerfile fails the build if any .map file is left public.
+ */
+export default process.env.SENTRY_AUTH_TOKEN
+  ? withSentryConfig(nextConfig, {
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      release: { name: process.env.NEXT_PUBLIC_SENTRY_RELEASE },
+      sourcemaps: { deleteSourcemapsAfterUpload: true },
+      silent: true,
+      telemetry: false,
+    })
+  : nextConfig;
