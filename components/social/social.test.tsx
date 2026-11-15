@@ -60,7 +60,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(getBoardRules).mockResolvedValue({ earn: [{ label: "Focus timer", value: "0.5 XP a minute" }], resets: { today: "Midnight IST every day", month: "The 1st of every month, IST", improved: "The 1st of every month, IST" }, caps: ["XP from study minutes stops after 10 hours in an IST day."] });
   vi.mocked(getHall).mockResolvedValue({ months: [], month: null, boards: [] });
-  vi.mocked(getSocialSettings).mockResolvedValue({ username: "me_1", displayName: "Me", leaderboardHidden: false, showAccuracy: false, showMockScores: false });
+  vi.mocked(getSocialSettings).mockResolvedValue({ username: "me_1", displayName: "Me", leaderboardHidden: false, showAccuracy: false, showMockScores: false, showFullName: false, showCity: false, showCoaching: false });
   vi.mocked(getStudyingNow).mockResolvedValue([]);
 });
 
@@ -174,7 +174,7 @@ describe("leaderboard page", () => {
 
   it("the hide switch saves and reloads the board", async () => {
     vi.mocked(getBoard).mockResolvedValue(board());
-    vi.mocked(updateSocialSettings).mockResolvedValue({ username: "me_1", displayName: "Me", leaderboardHidden: true, showAccuracy: false, showMockScores: false });
+    vi.mocked(updateSocialSettings).mockResolvedValue({ username: "me_1", displayName: "Me", leaderboardHidden: true, showAccuracy: false, showMockScores: false, showFullName: false, showCity: false, showCoaching: false });
     render(<LeaderboardPage />);
     await userEvent.click(await screen.findByTestId("settings-open"));
     await userEvent.click(await screen.findByRole("switch", { name: "Hide me from leaderboards" }));

@@ -44,7 +44,7 @@ export const getBoard = (q: { board: BoardKind; filter: BoardFilter; limit?: num
 export const getBoardRules = () => core<BoardRules>("/productivity/leaderboard/rules");
 export const getHall = (month?: string) => core<Hall>(`/productivity/leaderboard/hall${month ? `?month=${month}` : ""}`);
 
-export type SocialSettings = { username: string | null; displayName: string | null; leaderboardHidden: boolean; showAccuracy: boolean; showMockScores: boolean };
+export type SocialSettings = { username: string | null; displayName: string | null; leaderboardHidden: boolean; showAccuracy: boolean; showMockScores: boolean; showFullName: boolean; showCity: boolean; showCoaching: boolean };
 export const getSocialSettings = () => core<SocialSettings>("/social/settings");
 export const updateSocialSettings = (patch: Partial<SocialSettings>) => core<SocialSettings>("/social/settings", send("PATCH", patch));
 
@@ -79,7 +79,7 @@ export type PublicProfile = {
   blockedByMe: boolean;
   accuracy?: number | null;
   latestMockPercent?: number | null;
-  settings?: { showAccuracy: boolean; showMockScores: boolean; leaderboardHidden: boolean };
+  settings?: { showAccuracy: boolean; showMockScores: boolean; leaderboardHidden: boolean; showFullName?: boolean; showCity?: boolean; showCoaching?: boolean };
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

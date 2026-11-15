@@ -83,6 +83,9 @@ export function ProfileSocialSettings() {
       </div>
 
       {[
+        { id: "showFullName" as const, label: "Show my full name", hint: "Off by default. Other students see your display name or @username." },
+        { id: "showCity" as const, label: "Show my city", hint: "Off by default." },
+        { id: "showCoaching" as const, label: "Show my coaching", hint: "Off by default. When on, you appear on your classmates' My coaching board." },
         { id: "showAccuracy" as const, label: "Show my accuracy on my profile", hint: "Off by default. Other students only see it when this is on." },
         { id: "showMockScores" as const, label: "Show my latest mock score", hint: "Off by default." },
         { id: "leaderboardHidden" as const, label: "Hide me from leaderboards", hint: "You still earn XP. Only you can see it." },
