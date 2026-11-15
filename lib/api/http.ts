@@ -56,14 +56,25 @@ export async function apiRequest<T>(url: string, options: RequestInit = {}): Pro
             ...options.headers,
           },
     });
+    // The time limit covers reading the body too: a body that stalls (a browser freezing a background tab, a dropped
+    // mobile connection) used to keep the request, and anything waiting on it, hanging forever.
   } catch (err) {
+    if (timer) clearTimeout(timer);
     if (timeout?.signal.aborted) throw new ApiError(408, "The connection is slow. Please try again.");
     throw err;
+  }
+
+  let body: { message?: string; code?: unknown } | null;
+  try {
+    body = await response.json().catch((err: unknown) => {
+      if (timeout?.signal.aborted) throw err;
+      return null;
+    });
+  } catch {
+    throw new ApiError(408, "The connection is slow. Please try again.");
   } finally {
     if (timer) clearTimeout(timer);
   }
-
-  const body = await response.json().catch(() => null);
 
   if (!response.ok) {
     // Onboarding v2, Part D: a guest tapped a feature that needs a saved account; Pexo says so (PexoLayer listens).
