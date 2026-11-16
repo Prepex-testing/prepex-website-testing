@@ -409,6 +409,7 @@ export default function BacklogPage() {
         subject={scheduling ? itemTitle(scheduling, subjects.lookup) : undefined}
         defaultMinutes={scheduling?.estimatedMinutes ?? 30}
         confirmLabel="Schedule"
+        maxDaysAhead={7}
         loadSuggestions={scheduling ? async () => (await getBacklogSuggestions(scheduling.id, 3)).data.suggestions : undefined}
         busy={busy}
         error={planError}

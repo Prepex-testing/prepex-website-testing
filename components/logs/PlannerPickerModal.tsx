@@ -36,11 +36,13 @@ type Props = {
   busy: boolean;
   error: string | null;
   confirmLabel?: string;
+  /** The furthest day the date field allows (the backlog planner holds tasks up to 7 days ahead). */
+  maxDaysAhead?: number;
   onConfirm: (placement: PickedPlacement) => void;
 };
 
 /** "Add to planner": pick a day and a time slot (and optionally a length), then confirm. */
-export function PlannerPickerModal({ open, onClose, title, subject, defaultMinutes, loadSuggestions, busy, error, confirmLabel = "Add to planner", onConfirm }: Props) {
+export function PlannerPickerModal({ open, onClose, title, subject, defaultMinutes, loadSuggestions, busy, error, confirmLabel = "Add to planner", maxDaysAhead = MAX_DAYS_AHEAD, onConfirm }: Props) {
   const days = useMemo(() => nextDays(7), [open]); // eslint-disable-line react-hooks/exhaustive-deps -- recomputed each time it opens
   const [date, setDate] = useState(() => dayKey(new Date()));
   const [timeSlot, setTimeSlot] = useState<PlannerWindow>(() => currentWindow());
@@ -67,7 +69,7 @@ export function PlannerPickerModal({ open, onClose, title, subject, defaultMinut
   }, [open]);
 
   const today = dayKey(new Date());
-  const maxDate = addDaysToKey(today, MAX_DAYS_AHEAD);
+  const maxDate = addDaysToKey(today, maxDaysAhead);
   const inQuickList = days.some((d) => d.key === date);
 
   return (
