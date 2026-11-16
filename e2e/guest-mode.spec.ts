@@ -43,7 +43,13 @@ test("Try Prepex first: a guest lands on Home with the defaults, one ask card, a
 
   // Pexo's 60-second tour opens for a new account; skip it like a student can
   const tourSkip = page.getByTestId("pexo-tour-skip");
-  if (await tourSkip.waitFor({ timeout: 20_000 }).then(() => true, () => false)) await tourSkip.click();
+  if (await tourSkip.waitFor({ timeout: 20_000 }).then(() => true, () => false)) {
+    await tourSkip.click();
+    // the skip reaches the server with the minute heartbeat; reloading sooner would show the tour again (known gap)
+    await expect
+      .poll(() => queryDb<{ t: boolean }>("SELECT (marks ? 'tour') AS t FROM core.pexo_users WHERE user_id = $1", [userId])[0]?.t, { timeout: 90_000, intervals: [5000] })
+      .toBe(true);
+  }
 
   // D2 + launch step 2 (A2): the first ask card is the age; under 18 shows Pexo's minor line and an optional parent e-mail
   await expect(page.getByTestId("guest-ask")).toHaveAttribute("data-ask", "age", { timeout: 30_000 });

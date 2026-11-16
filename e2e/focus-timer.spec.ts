@@ -284,8 +284,11 @@ test("practice with no Prepex questions: the timer opens for the task, with the 
   await page.reload();
 
   await page.getByRole("button", { name: /^Start Practice$/ }).first().click();
-  await expect(page.getByTestId("practice-no-questions-timer")).toBeVisible();
-  await page.getByTestId("practice-no-questions-timer").click();
+  // planner v2: a practice task asks how to practise; with an empty bank, Prepex questions falls back to the timer
+  await expect(page.getByTestId("practice-choice")).toBeVisible();
+  await expect(page.getByTestId("practice-bank-text")).toHaveText("No questions for this chapter yet");
+  await page.getByTestId("practice-prepex").click();
+  await expect(page.getByTestId("practice-notice")).toBeVisible();
 
   await expect(page).toHaveURL(/origin=practice_own_content_fallback/);
   await expect(page.getByTestId("focus-notice")).toContainText("No Prepex questions for this chapter yet");
