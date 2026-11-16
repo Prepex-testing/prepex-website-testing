@@ -1,4 +1,5 @@
 import type { AuthTokens, AuthUser } from "@/lib/api/auth";
+import { setAccountHint } from "@/lib/auth/accountHint";
 
 const ACCESS_TOKEN_KEY = "prepex_access_token";
 const REFRESH_TOKEN_KEY = "prepex_refresh_token";
@@ -13,6 +14,7 @@ export function saveSession(tokens: AuthTokens, user: AuthUser) {
   localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
   localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
   localStorage.setItem(USER_KEY, JSON.stringify(user));
+  setAccountHint(); // step 3: this browser has an account (for the prepex.io landing later)
 }
 
 export function saveTokens(tokens: AuthTokens) {

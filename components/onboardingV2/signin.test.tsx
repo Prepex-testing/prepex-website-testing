@@ -55,6 +55,11 @@ describe("the v2 sign-in screen", () => {
     expect(screen.getByTestId("signin-google").textContent).toContain("Continue with Google");
     expect(screen.getByTestId("signin-email").textContent).toContain("Continue with email");
     expect(screen.getByTestId("signin-password").getAttribute("href")).toBe("/login?password=1");
+    // launch step 3: the old app's accounts live on legacy.prepex.io
+    const legacy = screen.getByTestId("signin-legacy-link");
+    expect(screen.getByTestId("signin-legacy")).toHaveTextContent("Used Prepex before? Your old account is at legacy.prepex.io");
+    expect(legacy).toHaveAttribute("href", "https://legacy.prepex.io");
+    expect(legacy).toHaveAttribute("rel", "noopener noreferrer");
     await waitFor(() => expect(getAuthFlags).toHaveBeenCalled());
     expect(screen.queryByTestId("signin-guest")).toBeNull();
   });

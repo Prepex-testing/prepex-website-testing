@@ -1,6 +1,7 @@
 "use client";
 
 import { LegalLinks } from "@/components/legal/LegalLinks";
+import { clearAccountHint } from "@/lib/auth/accountHint";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -351,6 +352,7 @@ export default function AccountSettingsPage() {
         onDeleted={(schedule) => {
           // Every session was revoked server-side; drop this one and show the sign-in page with the date it becomes final.
           clearSession();
+          clearAccountHint(); // the account is going; logout alone keeps the hint
           router.replace(`/login?deletionScheduled=${encodeURIComponent(schedule.finalAt)}`);
         }}
       />

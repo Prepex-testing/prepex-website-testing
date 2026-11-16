@@ -38,3 +38,10 @@ export const COMMUNITY = {
   label: "Join the Prepex community",
   note: "Opens WhatsApp. Other members can see your phone number.",
 } as const;
+
+/** Launch step 3: the old app keeps running at legacy.prepex.io with its own accounts and data. */
+export const LEGACY = {
+  url: "https://legacy.prepex.io",
+  line: "Used Prepex before? Your old account is at",
+  host: "legacy.prepex.io",
+} as const;

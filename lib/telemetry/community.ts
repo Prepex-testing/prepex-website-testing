@@ -17,3 +17,14 @@ export function trackCommunityClick(placement: CommunityPlacement): void {
   }
   if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent(TRACK_DOM_EVENT, { detail: { event: "community_link_click", placement } }));
 }
+
+/** legacy_link_click: "Used Prepex before?" on the sign-in screen. Same telemetry as the community link. */
+export function trackLegacyClick(placement: "signin"): void {
+  try {
+    Sentry.addBreadcrumb({ category: "legacy", level: "info", message: "legacy_link_click", data: { placement } });
+    Sentry.metrics.count("legacy_link_click", 1, { attributes: { placement } });
+  } catch {
+    // telemetry must never get in a student's way
+  }
+  if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent(TRACK_DOM_EVENT, { detail: { event: "legacy_link_click", placement } }));
+}

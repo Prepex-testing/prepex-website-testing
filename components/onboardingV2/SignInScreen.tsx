@@ -12,6 +12,8 @@ import { ApiError, getGoogleAuthUrl, requestEmailCode, verifyEmailCode } from "@
 import { markAccountRestored } from "@/lib/auth/accountRestored";
 import { resolveAuthedLanding } from "@/lib/auth/onboardingGate";
 import { saveSession } from "@/lib/auth/session";
+import { LEGACY } from "@/lib/legal/contacts";
+import { trackLegacyClick } from "@/lib/telemetry/community";
 import { useAuthFlags } from "@/lib/onboardingV2/flags";
 import { sayLocal } from "@/lib/onboardingV2/lines";
 
@@ -74,6 +76,12 @@ export function SignInScreen() {
           <Link href="/login?password=1" className="mt-4 self-center text-[13px] font-semibold text-muted underline" data-testid="signin-password">
             Log in with password
           </Link>
+          <p className="mt-2 text-center text-[12px] text-muted" data-testid="signin-legacy">
+            {LEGACY.line}{" "}
+            <a href={LEGACY.url} target="_blank" rel="noopener noreferrer" className="font-semibold underline" onClick={() => trackLegacyClick("signin")} data-testid="signin-legacy-link">
+              {LEGACY.host}
+            </a>
+          </p>
           <p className="mt-2 text-center text-[12px] leading-relaxed text-muted" data-testid="signin-legal">
             By continuing, you agree to our{" "}
             <Link href="/terms" className="underline">
