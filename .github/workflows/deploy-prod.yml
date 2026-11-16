@@ -1,0 +1,51 @@
+name: Deploy to PRODUCTION
+
+# Launch step 3: production moves ONLY when someone runs this by hand with a commit, and the owner approves it
+# (the "production" environment must list the owner as a required reviewer: Settings -> Environments -> production).
+# Merges to main keep deploying TESTING (deploy.yml). Roll back: ssh vps '/opt/prepex-prod/promote.sh rollback website'.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: "Commit to release (full SHA, green on testing)"
+        required: true
+
+concurrency:
+  group: deploy-prod-vps
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 40
+    env:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      SHA: ${{ inputs.sha }}
+    steps:
+      - name: Check the commit is on main
+        uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: |
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::give the full 40-character SHA"; exit 1; }
+          git merge-base --is-ancestor "$SHA" origin/main || { echo "::error::$SHA is not on main"; exit 1; }
+
+      - name: Set up SSH (host key is pinned)
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -t ed25519 "$VPS_HOST" > ~/.ssh/known_hosts 2>/dev/null
+          fp=$(ssh-keygen -lf ~/.ssh/known_hosts | awk '{print $2}')
+          if [ "$fp" != "SHA256:eLGdpYfJ+jyQreNRLVq97qX9NhVtLJlcxVTyURU8SjI" ]; then echo "::error::VPS host key mismatch ($fp)"; exit 1; fi
+          printf 'Host vps\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_deploy\n  IdentitiesOnly yes\n' "$VPS_HOST" "$VPS_USER" > ~/.ssh/config
+
+      - name: Ship the commit and promote it
+        run: |
+          git archive --format=tar --add-virtual-file=".deployed-sha:$SHA" "$SHA" | ssh vps "/opt/prepex-prod/promote.sh receive prepex-website-testing $SHA"
+          ssh vps "/opt/prepex-prod/promote.sh website $SHA"
+
+      - name: Public health check
+        run: curl -fsS --retry 5 --retry-delay 5 -o /dev/null https://app.prepex.io/api/health
