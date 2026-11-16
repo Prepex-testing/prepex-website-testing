@@ -23,8 +23,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://app.prepex.io"),
   title: "prepex",
   description: "Plan. Execute. Survive. Win.",
+  // Launch step 3: the app is not for search engines; the public pages (privacy, terms, contact) opt back in.
+  robots: { index: false, follow: false },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

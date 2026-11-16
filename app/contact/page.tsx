@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { publicPageRobots } from "@/lib/seo";
 import { CommunityLink } from "@/components/legal/CommunityLink";
 import { LegalPage, type LegalSection } from "@/components/legal/LegalPage";
 import { LEGAL } from "@/lib/legal/contacts";
 
-export const metadata: Metadata = { title: "Contact | Prepex", description: "How to reach Prepex: support, privacy requests and grievances." };
+export const metadata: Metadata = { title: "Contact | Prepex", description: "How to reach Prepex: support, privacy requests and grievances.", robots: publicPageRobots(), alternates: { canonical: "/contact" } };
 
 const SECTIONS: LegalSection[] = [
   {

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { publicPageRobots } from "@/lib/seo";
 import { LegalPage, type LegalSection } from "@/components/legal/LegalPage";
 import { LEGAL } from "@/lib/legal/contacts";
 
-export const metadata: Metadata = { title: "Terms of Service | Prepex", description: "The rules for using Prepex." };
+export const metadata: Metadata = { title: "Terms of Service | Prepex", description: "The rules for using Prepex.", robots: publicPageRobots(), alternates: { canonical: "/terms" } };
 
 const SECTIONS: LegalSection[] = [
   {

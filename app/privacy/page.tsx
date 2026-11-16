@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { publicPageRobots } from "@/lib/seo";
 import { LegalPage, type LegalSection } from "@/components/legal/LegalPage";
 import { HOSTING, LEGAL } from "@/lib/legal/contacts";
 
-export const metadata: Metadata = { title: "Privacy Policy | Prepex", description: "How Prepex collects, uses and protects your information." };
+export const metadata: Metadata = { title: "Privacy Policy | Prepex", description: "How Prepex collects, uses and protects your information.", robots: publicPageRobots(), alternates: { canonical: "/privacy" } };
 
 /**
  * Launch step 2 (A1): written against what the code does (step 1's personal-data inventory). Pending lawyer review;
