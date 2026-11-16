@@ -27,9 +27,8 @@ export const LEGAL = {
 export const HOSTING = {
   /** Hostinger VPS: the server's public address is registered to Hostinger in Mumbai, Maharashtra. */
   appServers: "Mumbai, India",
-  /** TODO(owner): the Backblaze B2 bucket's region (e.g. "US West" or "EU Central"), from the bucket page in Backblaze.
-   *  Not readable from the server yet: no backup has been uploaded since the B2 key was added. Null leaves it out. */
-  backupRegion: null as string | null,
+  /** The Backblaze B2 bucket's region (owner-confirmed 2026-11-16: us-east). Null leaves it out of the policy. */
+  backupRegion: "US East" as string | null,
 } as const;
 
 /** The Prepex community group on WhatsApp. One constant: the contact page, the footer and Help all use it. */

@@ -59,7 +59,7 @@ const SECTIONS: LegalSection[] = [
     body: [
       [
         `The app and its database run on a Hostinger virtual server in ${HOSTING.appServers}. Notebook photos and files are stored in the same database.`,
-        `Every day an encrypted backup copy is sent to Backblaze B2${HOSTING.backupRegion ? ` (${HOSTING.backupRegion})` : ""}, and kept for up to 8 weeks. It is encrypted before it leaves our server.`,
+        `Every day an encrypted backup copy is sent to Backblaze B2${HOSTING.backupRegion ? ` in the ${HOSTING.backupRegion} region` : ""}, and kept for up to 8 weeks. It is encrypted before it leaves our server.`,
         "Every week Hostinger also takes a snapshot of the whole server, kept by Hostinger.",
       ],
     ],
