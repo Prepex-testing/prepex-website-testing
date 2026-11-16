@@ -63,19 +63,22 @@ test.describe("Home", () => {
     expect(await coralFilled(page)).toEqual([]);
   });
 
-  test("Quick Access has nine rows, no Partner and no Analytics", async ({ page }) => {
+  test("Quick Access has ten rows, no Partner and no Analytics", async ({ page }) => {
     await open(page, "/home");
     await expect(page.getByTestId("quick-focus")).toBeVisible();
-    const labels = await page.locator('[data-testid^="quick-"]').allTextContents();
-    expect(labels).toHaveLength(9);
+    // the rows of the Quick Access card (the Quick Log button also starts with "quick-", so scope to the card)
+    const card = page.locator("div.rounded-2xl", { has: page.getByText("Quick Access", { exact: true }) }).last();
+    const labels = await card.locator('[data-testid^="quick-"]').allTextContents();
+    expect(labels).toHaveLength(10);
     const text = labels.join(" | ");
-    for (const want of ["Focus", "Practice", "Revision", "Mistakes", "Mocks", "Where to focus next", "Leader Board", "Resource Library", "Weekly review"]) expect(text).toContain(want);
+    for (const want of ["Focus", "Practice", "Revision", "Backlog", "Notebooks", "Mocks", "Where to focus next", "Leader Board", "Resource Library", "Weekly review"]) expect(text).toContain(want);
     expect(text).not.toContain("Partner");
     expect(text).not.toContain("Analytics");
-    expect(text).toContain("15 unresolved");
+    expect(text).toContain("3 due"); // notebooks: pages due for review
     // the Partner link and the theme toggle stay in the top right
     await expect(page.getByTestId("home-pods")).toBeVisible();
   });
+
 
   test("nothing scrolls sideways", async ({ page }) => {
     await open(page, "/home");
@@ -157,10 +160,10 @@ test.describe("Today's plan", () => {
     expect(side!.x + side!.width).toBeGreaterThan(1100);
   });
 
-  test("a study card's menu offers Mark done, Skip, Reschedule and Delete", async ({ page }) => {
+  test("a study card's menu offers Mark done, Skip, Reschedule, Keep in place and Delete", async ({ page }) => {
     await open(page, "/planner");
     await page.getByTestId("study-task").first().getByTestId("task-menu").click();
-    await expect(page.getByRole("menuitem")).toHaveText(["Mark done", "Skip", "Reschedule to tomorrow", "Delete"]);
+    await expect(page.getByRole("menuitem")).toHaveText(["Mark done", "Skip", "Reschedule to tomorrow", "Keep in place", "Delete"]);
   });
 });
 

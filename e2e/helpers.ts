@@ -27,18 +27,10 @@ export async function login(page: Page) {
 
 /** Answers onboarding steps 1-3 (the first goal option, Class 12, self-prep) and stops on the timetable step. */
 export async function reachTimetableStep(page: Page) {
-  await login(page);
-  await expect(page.getByRole("heading", { name: /I.m preparing for/ })).toBeVisible({ timeout: 60_000 });
-  await next(page);
-  await expect(page.getByRole("heading", { name: "Tell us about you" })).toBeVisible();
-  await page.getByPlaceholder("City").fill("Kota");
-  await page.getByText("Class 12", { exact: true }).click();
-  await next(page);
-  await expect(page).toHaveURL(/where-do-you-study/);
-  await page.getByText("Self-prep only").click();
-  await next(page);
-  await expect(page.getByRole("heading", { name: "Build your week" })).toBeVisible();
-  await expect(page.getByTestId("timetable-builder")).toBeVisible();
+  // Onboarding v2 asks for the week on its canvas; the grid builder is "Edit timetable" (/timetable) for an onboarded student.
+  await onboardAndEnterApp(page);
+  await page.goto("/timetable");
+  await expect(page.getByTestId("timetable-builder")).toBeVisible({ timeout: 60_000 });
 }
 
 /** Runs a read-only SQL query against the local E2E database and returns the rows. */
@@ -71,7 +63,7 @@ export async function next(page: Page) {
 }
 
 /** The shortest honest path from a fresh student to the app: log in, onboard (accepting the starter week, skipping the chapters), skip today's check-in. */
-export async function onboardAndEnterApp(page: Page) {
+export async function onboardAndEnterApp(page: Page, opts: { keepOverlays?: boolean } = {}) {
   // Onboarding v2 (the canvas) has its own specs (onboarding-v2*.spec.ts); everything else signs in with the password
   // and finishes onboarding through the same endpoint the canvas calls: Class 12, self-prep, a uniform starter week,
   // no chapters done, age 17.
@@ -99,7 +91,7 @@ export async function onboardAndEnterApp(page: Page) {
   const skip = page.getByRole("button", { name: "Skip for today" });
   if (await skip.waitFor({ timeout: 10_000 }).then(() => true, () => false)) await skip.click();
   await page.waitForURL((u) => u.pathname === "/home", { timeout: 60_000 });
-  await dismissFirstRunOverlays(page);
+  if (!opts.keepOverlays) await dismissFirstRunOverlays(page);
 }
 
 /**

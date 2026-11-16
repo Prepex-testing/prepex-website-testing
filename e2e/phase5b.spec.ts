@@ -1,7 +1,10 @@
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { expectTapTargets, noHorizontalScroll, onboardAndEnterApp, resetStudent } from "./helpers";
+import { expectTapTargets, noHorizontalScroll, onboardAndEnterApp, resetStudent, dismissFirstRunOverlays, queryDb } from "./helpers";
+
+// a new student meets Pexo's tour and the "no goals yet" modal; dismiss them wherever they appear
+test.beforeEach(({ page }) => dismissFirstRunOverlays(page));
 
 /**
  * Phase 5B — the daily AI insight on Home. Runs against the FAKE Brain (e2e/fake-brain.mjs on :4999); core-service must
@@ -21,12 +24,22 @@ async function brain(p: string, body?: unknown) {
 
 /** Runs the daily job once; returns what it reported. */
 function runDailyJob(): { students: number; ready: number; failed: number; skipped: number } {
-  const out = execFileSync("npx", ["tsx", path.resolve(__dirname, "run-daily-insight.mts"), BACKEND], {
-    cwd: path.join(BACKEND, "services/core-service"),
-    env: { ...process.env, BRAIN_BASE_URL: BRAIN, BRAIN_API_KEY: "e2e-brain-key" },
-    encoding: "utf8",
-    shell: process.platform === "win32",
-  });
+  let out: string;
+  try {
+    const [me] = queryDb<{ id: string }>("SELECT id FROM core.users WHERE email = 'e2e.student@test.prepex.io'");
+    out = execFileSync("npx", ["tsx", path.resolve(__dirname, "run-daily-insight.mts"), BACKEND, me!.id], {
+      cwd: path.join(BACKEND, "services/core-service"),
+      env: { ...process.env, BRAIN_BASE_URL: BRAIN, BRAIN_API_KEY: "e2e-brain-key" },
+      encoding: "utf8",
+      shell: process.platform === "win32",
+    });
+  } catch (err) {
+    // On Windows, Node can abort on exit with an open handle (libuv "UV_HANDLE_CLOSING") after the job already printed
+    // its result; the result line is what this test checks, so read it from the output either way.
+    const e = err as { stdout?: string; stderr?: string };
+    if (!e.stdout?.includes("{") || !String(e.stderr ?? "").includes("UV_HANDLE_CLOSING")) throw err;
+    out = e.stdout;
+  }
   const line = out.trim().split("\n").filter((l) => l.startsWith("{")).pop();
   return JSON.parse(line ?? "{}");
 }
@@ -80,14 +93,16 @@ test("5B: no card on a zero-activity day → activity + the 22:30 job → card a
   await brain("/__mode", { delayMs: 300 });
   const ran = runDailyJob();
   expect(ran.ready, JSON.stringify(ran)).toBeGreaterThanOrEqual(1);
-  const seen = (await brain("/__requests")) as { path: string; mode: string; payload: { question: string; subject: string } }[];
+  const seen = (await brain("/__requests")) as { path: string; mode: string; payload: { question: string; context: object; language: string } }[];
   expect(seen).toHaveLength(1);
   expect(seen[0]!.mode).toBe("fast");
   expect(seen[0]!.payload.question).toContain("One honest observation about today. One nudge for tomorrow. 50 words max each.");
   expect(seen[0]!.payload.question).toContain("TODAY (IST");
-  expect(Object.keys(seen[0]!.payload).sort()).toEqual(["question", "subject"]);
+  // the Brain 0.3.0 contract (backend #21): the question, a structured study context and the language; nothing else
+  expect(Object.keys(seen[0]!.payload).sort()).toEqual(["context", "language", "question"]);
+  expect(Object.keys((seen[0]!.payload as unknown as { context: object }).context).sort()).toEqual(["notes", "recent_mistakes", "weak_chapters"]);
 
-  // ── the card is on Home, right under today's plan (planner v2 order: greeting, check-in, plan, insight) ──
+  // ── the card is on Home, above today's plan ──
   await page.goto("/home");
   const card = page.getByTestId("insight-card");
   await expect(card).toBeVisible();
@@ -96,11 +111,11 @@ test("5B: no card on a zero-activity day → activity + the 22:30 job → card a
   await expect(card).not.toContainText("Tutor preamble");
   const above = await page.evaluate(() => {
     const c = document.querySelector('[data-testid="insight-card"]')!.getBoundingClientRect().top;
-    const plan = document.querySelector('[data-testid="today-plan-card"]')!.getBoundingClientRect().top;
-    const quick = document.querySelector('[data-testid="quick-access"]')!.getBoundingClientRect().top;
-    return c > plan && (quick > c || quick < plan);
+    const plan = document.querySelector('[data-testid="home-plan"]')!.getBoundingClientRect().top;
+    return c < plan;
   });
-  expect(above, "the insight sits below today's plan and before the weekly strip / quick access on a phone").toBe(true);
+  // the Home redesign (Pexo era) puts last night's insight above today's plan, under the greeting and Pexo
+  expect(above, "the insight sits above today's plan").toBe(true);
   await shot("card");
   if (mobile) {
     await noHorizontalScroll(page);

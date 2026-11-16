@@ -1,7 +1,10 @@
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { reachTimetableStep } from "./helpers";
+import { generateTodayPlan, onboardAndEnterApp, queryDb, reachTimetableStep, dismissFirstRunOverlays } from "./helpers";
+
+// a new student meets Pexo's tour and the "no goals yet" modal; dismiss them wherever they appear
+test.beforeEach(({ page }) => dismissFirstRunOverlays(page));
 
 const EMAIL = "e2e.student@test.prepex.io";
 const PASSWORD = "E2eTest!234";
@@ -39,62 +42,17 @@ test.describe.configure({ mode: "serial" });
 
 test.beforeAll(() => resetStudent());
 
-test("login → onboarding → timetable → weekly goals → plan", async ({ page }, info) => {
+test("onboarded student → weekly goals → today's plan follows them → a watched lecture moves the goal", async ({ page }, info) => {
+  // Onboarding itself (the v2 canvas, age included) is covered by onboarding-v2*.spec.ts; this journey starts after it.
   const mobile = info.project.name.startsWith("mobile");
   const shot = (name: string) => page.screenshot({ path: `e2e/.shots/${info.project.name}-${name}.png`, fullPage: false });
-
-  // ── login ────────────────────────────────────────────────────────────────────
-  await page.goto("/login");
-  await page.getByPlaceholder("Rohan@example.com").fill(EMAIL);
-  await page.getByPlaceholder("Enter password").fill(PASSWORD);
-  await page.getByRole("button", { name: "Log In" }).click();
-
-  // ── onboarding 1: goal ───────────────────────────────────────────────────────
-  await expect(page.getByRole("heading", { name: /I.m preparing for/ })).toBeVisible({ timeout: 60_000 });
-  await page.getByRole("button", { name: "Next", exact: true }).click();
-
-  // ── onboarding 2: about you ──────────────────────────────────────────────────
-  await expect(page.getByRole("heading", { name: "Tell us about you" })).toBeVisible();
-  await page.getByPlaceholder("Rohan Sharma").fill("Aarav E2E");
-  await page.getByPlaceholder("City").fill("Kota");
-  await page.getByText("Class 12", { exact: true }).click();
-  await page.getByRole("button", { name: "Next", exact: true }).click();
-
-  // ── onboarding 3: coaching ───────────────────────────────────────────────────
-  await expect(page).toHaveURL(/where-do-you-study/);
-  await page.getByText("Self-prep only").click();
-  await page.getByRole("button", { name: "Next", exact: true }).click();
-
-  // ── onboarding 4: build the timetable (the self-prep answer already loaded its starter week) ─────
-  await expect(page.getByRole("heading", { name: "Build your week" })).toBeVisible();
-  await expect(page.getByTestId("timetable-builder")).toBeVisible();
-  await expect(page.getByTestId("template-note")).toContainText("Self-Prep Only");
-  await expect.poll(() => page.getByTestId("tt-block").count()).toBeGreaterThan(5);
-  await shot("timetable-self-prep");
-  if (mobile) await noHorizontalScroll(page);
-
-  await page.getByTestId("template-SCHOOL_COACHING").click();
-  await expect(page.getByTestId("study-summary")).toContainText(/study/i);
-  await shot("timetable-template");
-  if (mobile) {
-    await expectTapTargets(page, '[data-testid^="template-"]');
-    await expectTapTargets(page, '[data-testid="save-timetable"]');
-  }
-
-  await page.getByTestId("save-timetable").click();
-
-  // ── onboarding 5: chapters (skipped), then the first plan ────────────────────
-  await expect(page).toHaveURL(/which-chapters-have-you-studied/);
-  await page.getByTestId("skip-chapters").click();
-  await expect(page).toHaveURL(/welcome-to-prepex/, { timeout: 90_000 });
-  await expect(page.getByRole("heading", { name: "Your first plan is ready" })).toBeVisible();
-  await page.getByRole("link", { name: /Set this week's goals/ }).click();
+  await onboardAndEnterApp(page);
 
   // ── weekly goals ─────────────────────────────────────────────────────────────
-  await expect(page).toHaveURL(/\/goals\?welcome=1/);
-  await expect(page.getByTestId("goals-welcome")).toBeVisible();
+  await page.goto("/goals");
+  await expect(page.getByTestId("goals-page")).toBeVisible({ timeout: 60_000 });
+  if (!(await page.getByTestId("goal-composer").isVisible())) await page.getByTestId("open-add-goal").click();
   await expect(page.getByTestId("goal-composer")).toBeVisible();
-  await shot("goals-empty");
   if (mobile) await noHorizontalScroll(page);
 
   await page.getByTestId("goal-type-LECTURES").click();
@@ -108,31 +66,30 @@ test("login → onboarding → timetable → weekly goals → plan", async ({ pa
   await page.getByTestId("add-goal").click();
   await shot("goals-drafts");
   if (mobile) await expectTapTargets(page, '[data-testid="save-goals"]');
-
   await page.getByTestId("save-goals").click();
+  await expect(page.getByTestId("goal-card")).toHaveCount(2, { timeout: 30_000 });
+  await expect(page.getByTestId("week-summary")).toBeVisible();
+  await shot("goals-saved");
+  if (mobile) await noHorizontalScroll(page);
 
-  // ── check-in, then the home plan with the "based on your goals" banner ───────
-  await expect(page).toHaveURL(/check-in/, { timeout: 60_000 });
-  await page.getByRole("button", { name: /Steady/ }).click();
-  await page.getByRole("button", { name: "Continue to today's plan" }).click();
-  await page.waitForURL((u) => u.pathname === "/home", { timeout: 90_000 });
-  await expect(page.getByTestId("plan-source-banner")).toContainText("Based on your weekly goals", { timeout: 60_000 });
+  // ── today's plan is built from the goals ─────────────────────────────────────
+  await generateTodayPlan(page);
+  const linked = queryDb<{ n: string }>(
+    "SELECT count(*)::text AS n FROM core.plan_tasks t JOIN core.users u ON u.id = t.\"userId\" WHERE u.email = $1 AND t.weekly_goal_id IS NOT NULL",
+    [EMAIL],
+  );
+  expect(Number(linked[0]!.n), "today's plan holds tasks from the weekly goals").toBeGreaterThan(0);
+  await page.goto("/planner");
+  await expect(page.getByTestId("study-task").first()).toBeVisible({ timeout: 60_000 });
   await shot("home-plan");
   if (mobile) await noHorizontalScroll(page);
 
-  // ── goals screen now lists both goals with progress ──────────────────────────
+  // ── self-reporting a lecture moves the progress ──────────────────────────────
   await page.goto("/goals");
-  await expect(page.getByTestId("goal-card")).toHaveCount(2);
-  await expect(page.getByTestId("week-summary")).toBeVisible();
-  await shot("goals-saved");
-  if (mobile) {
-    await noHorizontalScroll(page);
-    await expectTapTargets(page, '[data-testid="lecture-plus"]');
-  }
-
-  // Self-reporting a lecture moves the progress.
+  const lectures = page.getByTestId("goal-card").filter({ hasText: /lecture/i }).first();
+  await lectures.getByTestId("goal-menu").click();
   await page.getByTestId("lecture-plus").first().click();
-  await expect(page.getByTestId("lectures-watched").first()).toHaveText("1");
+  await expect(lectures.getByTestId("goal-progress-text")).toContainText("1", { timeout: 20_000 });
 });
 
 test("timetable: drag on the grid creates a block, snapped to 15 minutes", async ({ page }) => {

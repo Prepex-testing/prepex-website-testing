@@ -1,5 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
-import { expectTapTargets, generateTodayPlan, noHorizontalScroll, onboardAndEnterApp, resetStudent } from "./helpers";
+import { expectTapTargets, generateTodayPlan, noHorizontalScroll, onboardAndEnterApp, resetStudent, dismissFirstRunOverlays } from "./helpers";
+
+// a new student meets Pexo's tour and the "no goals yet" modal; dismiss them wherever they appear
+test.beforeEach(({ page }) => dismissFirstRunOverlays(page));
 
 /**
  * The one focus timer, end to end against the real stack: every entry point opens it pre-filled, a finished session is
@@ -245,7 +248,8 @@ test("revision: the confidence rating reschedules the chapter (SM-2)", async ({ 
   await page.getByTestId("win-yes").click();
   await page.getByTestId("save-session").click();
   await expect(page.getByTestId("focus-done")).toBeVisible();
-  await expect(page.getByTestId("logged-list")).toContainText("Your next revision of this chapter is in 1 day.");
+  // the revision ladder (launch P2: 1, 3, 7, 14, 30, 60, 90 days): a first revision rated OK moves step 1 → 2 = 3 days
+  await expect(page.getByTestId("logged-list")).toContainText("Your next revision of this chapter is in 3 days.");
 
   const revisions = await api<{ data: { items: { chapterId: string }[] } }>(page, "GET", "/api/revisions?limit=5");
   expect(revisions.body.data.items[0]?.chapterId).toBe(thermo);

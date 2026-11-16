@@ -27,7 +27,7 @@ test("the old sign-up pages send new students to /start", async ({ page }) => {
 test("a student who onboarded without Pexo meets Pexo once, then sees everything", async ({ page }, info) => {
   test.skip(info.project.name.startsWith("mobile"), "the seeded student is shared between projects");
   resetStudent();
-  await onboardAndEnterApp(page);
+  await onboardAndEnterApp(page, { keepOverlays: true }); // this spec is about the tour itself
   // make this student look like one who went through onboarding before they had Pexo
   queryDb("DELETE FROM core.pexo_events WHERE user_id = (SELECT id FROM core.users WHERE email = $1) AND name = 'onboarding_step_completed'", [EMAIL]);
   queryDb("UPDATE core.pexo_users SET marks = '{}'::jsonb WHERE user_id = (SELECT id FROM core.users WHERE email = $1)", [EMAIL]);
