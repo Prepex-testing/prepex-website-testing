@@ -5,6 +5,9 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "prepex — Plan. Execute. Survive. Win.",
     short_name: "prepex",
     description: "Plan. Execute. Survive. Win.",
+    // launch step 3: the installed app is app.prepex.io (its own origin; the old prepex.io PWA is retired)
+    id: "/",
+    scope: "/",
     start_url: "/splash",
     display: "standalone",
     orientation: "portrait",
