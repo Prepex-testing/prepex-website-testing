@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
-import { expectTapTargets, generateTodayPlan, noHorizontalScroll, onboardAndEnterApp, resetStudent, dismissFirstRunOverlays } from "./helpers";
+import { expectTapTargets, generateTodayPlan, noHorizontalScroll, onboardAndEnterApp, resetStudent, dismissFirstRunOverlays, queryDb } from "./helpers";
 
 // a new student meets Pexo's tour and the "no goals yet" modal; dismiss them wherever they appear
 test.beforeEach(({ page }) => dismissFirstRunOverlays(page));
@@ -163,9 +163,13 @@ test("backlog: add an item → schedule it → it is on today's plan; clear it �
   await page.goto("/plan");
   await expect(page.getByText("Custom", { exact: true }).first()).toBeVisible();
   await shot("plan-calendar-pinned");
-  // Known gap (reported): the schedule picker adds a plain task (kind "other") that is not linked to the backlog item.
+  // pre-step 3: the schedule picker adds the planner's own backlog task, linked to the item (finishing it clears it)
+  const [linked] = queryDb<{ id: string; kind: string }>(
+    "SELECT t.id, t.kind FROM core.plan_tasks t JOIN core.users u ON u.id = t.\"userId\" WHERE u.email = 'e2e.student@test.prepex.io' AND t.backlog_item_id IS NOT NULL AND t.status = 'PENDING'",
+  );
+  expect(linked, "the scheduled item is a linked task on the plan").toMatchObject({ kind: "backlog" });
   await page.goto("/planner");
-  await expect(page.getByTestId("study-task").filter({ hasText: "Projectile motion" })).toBeVisible({ timeout: 60_000 });
+  await expect(page.locator(`[data-testid="study-task"][data-task-id="${linked!.id}"]`)).toBeVisible({ timeout: 60_000 });
   await shot("home-with-backlog");
   if (mobile) await noHorizontalScroll(page);
 
