@@ -45,9 +45,9 @@ test("Try Prepex first: a guest lands on Home with the defaults, one ask card, a
   const tourSkip = page.getByTestId("pexo-tour-skip");
   if (await tourSkip.waitFor({ timeout: 20_000 }).then(() => true, () => false)) {
     await tourSkip.click();
-    // the skip reaches the server with the minute heartbeat; reloading sooner would show the tour again (known gap)
+    // the skip is saved on the server as the tour closes (pre-step 3); confirm it before the reloads below
     await expect
-      .poll(() => queryDb<{ t: boolean }>("SELECT (marks ? 'tour') AS t FROM core.pexo_users WHERE user_id = $1", [userId])[0]?.t, { timeout: 90_000, intervals: [5000] })
+      .poll(() => queryDb<{ t: boolean }>("SELECT (marks ? 'tour') AS t FROM core.pexo_users WHERE user_id = $1", [userId])[0]?.t, { timeout: 15_000 })
       .toBe(true);
   }
 

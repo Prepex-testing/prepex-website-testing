@@ -6,10 +6,11 @@ import type { PexoProp } from "@/components/pexo/moods";
 import { CoralButton } from "@/components/ui/CoralButton";
 import { GhostButton } from "@/components/ui/GhostButton";
 import { Modal } from "@/components/ui/Modal";
+import { sendPexoBatch } from "@/lib/api/pexo";
 import { getProfileOverview } from "@/lib/api/profile";
 import { startFocusSession } from "@/lib/focus/startFocusSession";
 import type { PexoPick } from "@/lib/pexo/engine";
-import { pexoEvent, pexoHasMark, pexoMark, pexoReact, pexoSay, usePexo } from "@/lib/pexo/store";
+import { flushPexoNow, pexoEvent, pexoHasMark, pexoMark, pexoReact, pexoSay, usePexo } from "@/lib/pexo/store";
 
 /** The six feature cards, each with the prop Pexo holds while acting it out. */
 export const TOUR_CARDS: { trigger: string; prop?: PexoProp; title: string }[] = [
@@ -62,6 +63,8 @@ export function PexoTour({ firstSubject, meet = false }: { firstSubject: string 
   const close = (completed: boolean) => {
     pexoMark("tour", true);
     pexoEvent(completed ? "tour_completed" : "tour_skipped", stage.kind === "card" ? { at: stage.index } : { at: stage.kind === "hello" ? `hello-${stage.index}` : stage.kind });
+    // saved on the server now, not on the next heartbeat: a reload straight after must not bring the tour back
+    void flushPexoNow(sendPexoBatch);
     setOpen(false);
   };
   const go = (dir: 1 | -1) => {

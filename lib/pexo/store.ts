@@ -152,6 +152,20 @@ export function takePexoBatch(): PexoBatch | null {
   return batch;
 }
 
+/**
+ * Sends what is queued right away (a tour that was skipped or finished must not come back on a reload within the
+ * minute). A failure hands the batch back, so the heartbeat still carries it.
+ */
+export async function flushPexoNow(send: (batch: PexoBatch) => Promise<unknown>): Promise<void> {
+  const batch = takePexoBatch();
+  if (!batch) return;
+  try {
+    await send(batch);
+  } catch {
+    returnPexoBatch(batch);
+  }
+}
+
 /** A heartbeat that failed hands its batch back, so the next one carries it. */
 export function returnPexoBatch(batch: PexoBatch): void {
   batch.shown?.forEach((id) => pending.shown.add(id));
