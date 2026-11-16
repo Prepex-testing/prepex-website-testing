@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
-import { expectTapTargets, noHorizontalScroll, onboardAndEnterApp, resetStudent } from "./helpers";
+import { expectTapTargets, noHorizontalScroll, onboardAndEnterApp, resetStudent, dismissFirstRunOverlays } from "./helpers";
+
+// a new student meets Pexo's tour and the "no goals yet" modal; dismiss them wherever they appear
+test.beforeEach(({ page }) => dismissFirstRunOverlays(page));
 
 test.describe.configure({ mode: "serial" });
 

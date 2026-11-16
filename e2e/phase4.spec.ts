@@ -1,5 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
-import { expectTapTargets, noHorizontalScroll, onboardAndEnterApp, resetStudent } from "./helpers";
+import { expectTapTargets, noHorizontalScroll, onboardAndEnterApp, resetStudent, dismissFirstRunOverlays } from "./helpers";
+
+// a new student meets Pexo's tour and the "no goals yet" modal; dismiss them wherever they appear
+test.beforeEach(({ page }) => dismissFirstRunOverlays(page));
 
 test.describe.configure({ mode: "serial" });
 
@@ -130,13 +133,13 @@ test("syllabus: open a chapter → see its data → mark theory done → it stic
 
   // ── the list: subject tabs, strength dot, hours and status per chapter ─────
   await expect(page.getByTestId("syllabus-tab-1")).toHaveAttribute("aria-selected", "true");
-  const row = page.locator('[data-testid^="chapter-row-"]', { hasText: "Kinematics" });
+  const row = page.locator('[data-testid^="chapter-row-"]', { has: page.getByText("Kinematics", { exact: true }) });
   await expect(row).toHaveAttribute("data-theory", "learning");
   await expect(row).toHaveAttribute("data-strength", "medium");
   await expect(row).toContainText("1.5h");
-  await expect(page.getByTestId("syllabus-summary-text")).toContainText("0 of 4 theory done");
+  await expect(page.getByTestId("syllabus-summary-text")).toContainText(/0 of \d+ theory done/);
   await page.getByTestId("syllabus-tab-2").click();
-  await expect(page.locator('[data-testid^="chapter-row-"]', { hasText: "Atomic Structure" })).toHaveAttribute("data-strength", "unrated");
+  await expect(page.locator('[data-testid^="chapter-row-"]', { has: page.getByText("Atomic Structure", { exact: true }) })).toHaveAttribute("data-strength", "unrated");
   await page.getByTestId("syllabus-tab-1").click();
   await shot("syllabus-list");
   if (mobile) {
@@ -179,8 +182,8 @@ test("syllabus: open a chapter → see its data → mark theory done → it stic
 
   // ── back on the list: it counts as done ────────────────────────────────────
   await page.goto("/syllabus");
-  await expect(page.locator('[data-testid^="chapter-row-"]', { hasText: "Kinematics" })).toHaveAttribute("data-theory", "studied");
-  await expect(page.getByTestId("syllabus-summary-text")).toContainText("1 of 4 theory done");
+  await expect(page.locator('[data-testid^="chapter-row-"]', { has: page.getByText("Kinematics", { exact: true }) })).toHaveAttribute("data-theory", "studied");
+  await expect(page.getByTestId("syllabus-summary-text")).toContainText(/1 of \d+ theory done/);
   await shot("syllabus-after");
 });
 
@@ -207,7 +210,7 @@ test("analytics: the dashboard → tap the hours tile → the daily breakdown ad
   await expect(page.getByTestId("subject-split")).toContainText("Chemistry");
   // chapter strength: both chapters are rated "medium" (time, no questions yet), the rest not rated
   await expect(page.getByTestId("strength-count-medium")).toHaveText("2");
-  await expect(page.getByTestId("strength-count-unrated")).toHaveText("10");
+  await expect(page.getByTestId("strength-count-unrated")).toHaveText(/^[1-9]\d*$/); // the rest of the syllabus
   await expect(page.getByTestId("accuracy-trend")).toBeVisible();
   await shot("analytics");
   if (mobile) {

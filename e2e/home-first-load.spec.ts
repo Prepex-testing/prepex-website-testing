@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
-import { onboardAndEnterApp, resetStudent } from "./helpers";
+import { onboardAndEnterApp, resetStudent, dismissFirstRunOverlays } from "./helpers";
+
+// a new student meets Pexo's tour and the "no goals yet" modal; dismiss them wherever they appear
+test.beforeEach(({ page }) => dismissFirstRunOverlays(page));
 
 /**
  * Onboarding v2, A6 — against the REAL local stack (auth 4001, core 4002, dashboard 4003, prepex_dev): a freshly

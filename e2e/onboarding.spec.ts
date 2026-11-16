@@ -9,6 +9,15 @@ import { expectTapTargets, login, next, noHorizontalScroll, queryDb, reachTimeta
 
 test.describe.configure({ mode: "serial" });
 
+// The five-step flow is retired wherever ONBOARDING_V2 is on (testing today, production at launch); the canvas is
+// covered by onboarding-v2*.spec.ts. These still guard the old flow for an environment that has the flag off.
+test.beforeEach(async ({ request }) => {
+  const core = process.env.E2E_CORE_URL ?? "http://localhost:4002";
+  const auth = process.env.E2E_AUTH_URL ?? core.replace(/:(\d+)$/, (_, p) => `:${Number(p) - 1}`);
+  const flags = await (await request.get(`${auth}/api/auth/flags`)).json().catch(() => null);
+  test.skip(flags?.data?.onboardingV2 === true, "onboarding v2 is on: the five-step flow is retired");
+});
+
 const STUDENT = "e2e.student@test.prepex.io";
 
 async function trackedEvents(page: Page) {

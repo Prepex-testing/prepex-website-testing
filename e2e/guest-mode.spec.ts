@@ -43,17 +43,34 @@ test("Try Prepex first: a guest lands on Home with the defaults, one ask card, a
 
   // Pexo's 60-second tour opens for a new account; skip it like a student can
   const tourSkip = page.getByTestId("pexo-tour-skip");
-  if (await tourSkip.waitFor({ timeout: 20_000 }).then(() => true, () => false)) await tourSkip.click();
+  if (await tourSkip.waitFor({ timeout: 20_000 }).then(() => true, () => false)) {
+    await tourSkip.click();
+    // the skip reaches the server with the minute heartbeat; reloading sooner would show the tour again (known gap)
+    await expect
+      .poll(() => queryDb<{ t: boolean }>("SELECT (marks ? 'tour') AS t FROM core.pexo_users WHERE user_id = $1", [userId])[0]?.t, { timeout: 90_000, intervals: [5000] })
+      .toBe(true);
+  }
 
-  // D2: one ask card, answered through the profile service
+  // D2 + launch step 2 (A2): the first ask card is the age; under 18 shows Pexo's minor line and an optional parent e-mail
+  await expect(page.getByTestId("guest-ask")).toHaveAttribute("data-ask", "age", { timeout: 30_000 });
+  await page.getByTestId("onb-age-16").click();
+  await expect(page.getByTestId("guest-ask")).toContainText("parent");
+  await page.getByTestId("onb-age-next").click(); // skip the parent e-mail
+  await expect(page.getByTestId("guest-ask")).toHaveCount(0);
+  const [aged] = queryDb<{ age_band: string; is_minor: boolean; parent_email: string | null; parent_consent_status: string }>("SELECT age_band, is_minor, parent_email, parent_consent_status FROM core.user_profiles WHERE user_id = $1", [userId]);
+  expect(aged).toMatchObject({ age_band: "16", is_minor: true, parent_email: null, parent_consent_status: "none" });
+  await page.reload();
+  await expect(page.getByTestId("home-top")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId("guest-ask")).toHaveCount(0); // one card a session
+
+  // the next session asks the class, through the profile service
+  await page.evaluate(() => window.sessionStorage.clear());
+  await page.reload();
   await expect(page.getByTestId("guest-ask")).toHaveAttribute("data-ask", "class", { timeout: 30_000 });
   await page.getByTestId("guest-ask").getByText("Class 11").click();
   await expect(page.getByTestId("guest-ask")).toHaveCount(0);
   const [after] = queryDb<{ current_level: string }>("SELECT current_level FROM core.user_profiles WHERE user_id = $1", [userId]);
   expect(after!.current_level).toBe("CLASS_11");
-  await page.reload();
-  await expect(page.getByTestId("home-top")).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByTestId("guest-ask")).toHaveCount(0); // one card a session
 
   // D4: the server refuses social features, whatever the app shows
   const core = process.env.E2E_CORE_URL ?? "http://localhost:4002";

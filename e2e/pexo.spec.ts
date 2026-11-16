@@ -16,6 +16,12 @@ export async function shot(page: Page, name: string, fullPage = true) {
   await page.screenshot({ path: path.join(SHOTS, `${name}.png`), fullPage });
 }
 
+/** The Pexo lab is a development page (it 404s on a production build): these checks run against `next dev`. */
+test.beforeEach(async ({ request, baseURL }) => {
+  const res = await request.get(`${baseURL}/pexo-lab`);
+  test.skip(res.status() === 404, "the Pexo lab is development-only; run these against next dev");
+});
+
 for (const theme of ["light", "dark"] as const) {
   for (const width of [390, 1440]) {
     test(`every mood at every size (${theme}, ${width})`, async ({ page }) => {

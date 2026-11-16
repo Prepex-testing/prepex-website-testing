@@ -91,10 +91,26 @@ export async function stubPlannerApi(page: Page, theme: "light" | "dark", option
     if (p.endsWith("/api/revision")) return route.fulfill(ok({ todaysRevisionTasks: { count: 3, tasks: [] }, upcomingRevisions: { count: 0, chapters: [] }, masteredChapters: { count: 0, chapters: [] } }));
     if (p.endsWith("/api/notebooks")) return route.fulfill(ok({ notebooks: [], dueTotal: 3, usage: { images: 0, bytes: 0, maxImages: 500, maxBytes: 1073741824, share: 0, warn: false, full: false } }));
     if (p.includes("/api/mocks")) return route.fulfill(ok({ items: [{ id: "m1" }], nextCursor: null }));
-    if (p.endsWith("/api/goals/current")) return route.fulfill(ok({ weekStart: "", weekEnd: "", isCurrentWeek: true, daysLeft: 3, carryOverCandidates: [], summary: { total: 5, done: 2, percent: 40 }, goals: [{ id: "g", status: "ACTIVE" }] }));
+    if (p.endsWith("/api/goals/current")) return route.fulfill(ok({ weekStart: "", weekEnd: "", isCurrentWeek: true, daysLeft: 3, carryOverCandidates: [], summary: { total: 5, done: 2, percent: 40 }, goals: [{ id: "g", status: "ACTIVE", type: "QUESTIONS", unit: "COUNT", target: 60, subjectId: 1, chapterId: null, topic: null, progress: { current: 24, target: 60, percent: 40, complete: false } }, { id: "g2", status: "ACTIVE", type: "LECTURES", unit: "COUNT", target: 4, subjectId: 2, chapterId: null, topic: null, progress: { current: 1, target: 4, percent: 25, complete: false } }] }));
     if (p.endsWith("/api/weakness/top5")) return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ topics: [{ chapterId: "22222222-2222-4222-8222-222222222222", practiceAccuracy: 41, chapter: { name: "Kinematics", subject: { name: "Physics", code: "PHY" } } }] }) });
     if (p.endsWith("/api/insights/daily")) return route.fulfill(ok({ insight: { id: "i1", date: iso(today), insight: "You studied 95 minutes today, mostly Physics.", nudge: "Spend 20 minutes on Kinematics graph mistakes tomorrow.", feedback: null, createdAt: today.toISOString() }, resting: false }));
     if (p.includes("/api/notifications")) return route.fulfill(ok({ items: [], unreadCount: 0, nextCursor: null }));
+    // Home's newer cards (launch P1–P4): XP, rewards, rituals, social — shapes as in pexo-home.spec.ts
+    if (p.endsWith("/api/xp/summary")) return route.fulfill(ok({ level: 3, title: "Aspirant", totalXp: 420, currentThreshold: 300, nextThreshold: 600, progressPct: 40, todayXp: 20, monthXp: 200, todayMinutes: 50, todayStudyMinutes: 95, rankGps: null, pexo: null }));
+    if (p.endsWith("/api/rewards")) return route.fulfill(ok({ lifetime: { questions: 0, hours: 0, chaptersCompleted: 0 }, badges: [], unseen: [], records: [], brokenRecords: [] }));
+    if (p.endsWith("/api/day-close")) return route.fulfill(ok({ date: iso(today), status: "not_yet", triggerMinute: 1290, triggerReason: "fallback", summary: { minutes: 95, tasksDone: 1, tasksTotal: 6, questions: 0, revisions: 0 }, unfinished: [], coverage: [] }));
+    if (p.endsWith("/api/sunday-review")) return route.fulfill(ok({ status: "none", weekStart: null, nextWeekStart: null, cards: [], stats: null, proposedGoals: [] }));
+    if (p.includes("/api/class-coverage")) return route.fulfill(ok([]));
+    if (p.includes("/api/social/studying-now")) return route.fulfill(ok([]));
+    if (p.includes("/api/productivity/streak")) return route.fulfill(ok({ currentStreak: 4, longestStreak: 9 }));
+    if (p.includes("/api/productivity")) return route.fulfill(ok({ rows: [], me: { rank: null } }));
+    if (p.endsWith("/api/welcome-back")) return route.fulfill(ok(null));
+    if (p.endsWith("/api/profile/overview")) return route.fulfill(ok({ daysUntilExam: 142, exam: { name: "JEE Main" } }));
+    // the planner's side panels (launch P2): revision health and the backlog hub
+    if (p.endsWith("/api/revisions/hub"))
+      return route.fulfill(ok({ today: iso(today), examDate: "2027-01-24", daysToExam: 70, tiles: [], todayDue: [], load7: Array.from({ length: 7 }, (_, i) => ({ date: iso(new Date(today.getTime() + i * 86_400_000)), due: i % 3 })), overdueCount: 0, dueTodayCount: 0, coverage: { onTime: 0, total: 0, percent: null }, slotMinutesToday: 30 }));
+    if (p.endsWith("/api/backlog-items/hub"))
+      return route.fulfill(ok({ today: iso(today), daysToExam: 70, pace: { source: "default", questionMin: 3, lectureMin: 60, dppMin: 45, testMin: 180 }, totalMinutes: 0, parkedMinutes: 0, lanes: { must: { count: 0, minutes: 0 }, smart: { count: 0, minutes: 0 }, later: { count: 0, minutes: 0 } }, items: [], target: { date: null, feasibility: null }, projectedClearDate: null, burndown: [], weekly: [], grewThisWeek: false, todayQuotaMinutes: 0 }));
     return route.fulfill(ok({}));
   });
 }

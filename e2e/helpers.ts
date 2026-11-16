@@ -18,7 +18,8 @@ export function resetStudent() {
 }
 
 export async function login(page: Page) {
-  await page.goto("/login");
+  // Onboarding v2: /login opens Pexo's sign-in screen; the password form sits behind "Log in with password".
+  await page.goto("/login?password=1");
   await page.getByPlaceholder("Rohan@example.com").fill(EMAIL);
   await page.getByPlaceholder("Enter password").fill(PASSWORD);
   await page.getByRole("button", { name: "Log In" }).click();
@@ -26,18 +27,10 @@ export async function login(page: Page) {
 
 /** Answers onboarding steps 1-3 (the first goal option, Class 12, self-prep) and stops on the timetable step. */
 export async function reachTimetableStep(page: Page) {
-  await login(page);
-  await expect(page.getByRole("heading", { name: /I.m preparing for/ })).toBeVisible({ timeout: 60_000 });
-  await next(page);
-  await expect(page.getByRole("heading", { name: "Tell us about you" })).toBeVisible();
-  await page.getByPlaceholder("City").fill("Kota");
-  await page.getByText("Class 12", { exact: true }).click();
-  await next(page);
-  await expect(page).toHaveURL(/where-do-you-study/);
-  await page.getByText("Self-prep only").click();
-  await next(page);
-  await expect(page.getByRole("heading", { name: "Build your week" })).toBeVisible();
-  await expect(page.getByTestId("timetable-builder")).toBeVisible();
+  // Onboarding v2 asks for the week on its canvas; the grid builder is "Edit timetable" (/timetable) for an onboarded student.
+  await onboardAndEnterApp(page);
+  await page.goto("/timetable");
+  await expect(page.getByTestId("timetable-builder")).toBeVisible({ timeout: 60_000 });
 }
 
 /** Runs a read-only SQL query against the local E2E database and returns the rows. */
@@ -70,39 +63,44 @@ export async function next(page: Page) {
 }
 
 /** The shortest honest path from a fresh student to the app: log in, onboard (accepting the starter week, skipping the chapters), skip today's check-in. */
-export async function onboardAndEnterApp(page: Page) {
-  await page.goto("/login");
-  await page.getByPlaceholder("Rohan@example.com").fill(EMAIL);
-  await page.getByPlaceholder("Enter password").fill(PASSWORD);
-  await page.getByRole("button", { name: "Log In" }).click();
-
-  await expect(page.getByRole("heading", { name: /I.m preparing for/ })).toBeVisible({ timeout: 60_000 });
-  await next(page);
-
-  await expect(page.getByRole("heading", { name: "Tell us about you" })).toBeVisible();
-  await page.getByPlaceholder("Rohan Sharma").fill("Aarav E2E");
-  await page.getByPlaceholder("City").fill("Kota");
-  await page.getByText("Class 12", { exact: true }).click();
-  await next(page);
-
-  await expect(page).toHaveURL(/where-do-you-study/);
-  await page.getByText("Self-prep only").click();
-  await next(page);
-
-  // The coaching answer already loaded a starter week, so the shortest honest path is to accept it.
-  await expect(page.getByRole("heading", { name: "Build your week" })).toBeVisible();
-  await expect(page.getByTestId("tt-block").first()).toBeVisible();
-  await next(page);
-
-  await expect(page).toHaveURL(/which-chapters-have-you-studied/);
-  await page.getByTestId("skip-chapters").click();
-
-  await expect(page).toHaveURL(/welcome-to-prepex/, { timeout: 90_000 });
-  await page.getByRole("link", { name: /Skip — go to my dashboard/ }).click();
-
-  await expect(page).toHaveURL(/check-in/);
-  await page.getByRole("button", { name: "Skip for today" }).click();
+export async function onboardAndEnterApp(page: Page, opts: { keepOverlays?: boolean } = {}) {
+  // Onboarding v2 (the canvas) has its own specs (onboarding-v2*.spec.ts); everything else signs in with the password
+  // and finishes onboarding through the same endpoint the canvas calls: Class 12, self-prep, a uniform starter week,
+  // no chapters done, age 17.
+  await login(page);
+  await page.waitForURL((u) => !u.pathname.startsWith("/login"), { timeout: 60_000 });
+  const core = process.env.E2E_CORE_URL ?? "http://localhost:4002";
+  const [exam] = queryDb<{ id: string }>("SELECT id FROM dashboard.exams WHERE is_active ORDER BY (code = 'JEE_MAIN') DESC, code LIMIT 1");
+  const blocks = Array.from({ length: 7 }, (_, d) => [
+    { dayOfWeek: d, startTime: "06:00", endTime: "08:00", activityType: "SELF_STUDY" },
+    { dayOfWeek: d, startTime: "16:00", endTime: "21:00", activityType: "SELF_STUDY" },
+  ]).flat();
+  const status = await page.evaluate(
+    async ({ base, body }) => {
+      const token = localStorage.getItem("prepex_access_token");
+      const res = await fetch(`${base}/api/onboarding/complete`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
+      return res.status;
+    },
+    {
+      base: core,
+      body: { examId: exam!.id, fullName: "Aarav E2E", city: "Kota", targetExamDate: "2027-01-24", examDateIsDefault: true, currentLevel: "CLASS_12", coachingType: "SELF_PREP", timetable: { uniformWeek: true, source: "COACHING_TEMPLATE", blocks }, completedChapterIds: [], ageBand: "17" },
+    },
+  );
+  expect(status, "onboarding complete").toBeLessThan(300);
+  await page.goto("/home");
+  const skip = page.getByRole("button", { name: "Skip for today" });
+  if (await skip.waitFor({ timeout: 10_000 }).then(() => true, () => false)) await skip.click();
   await page.waitForURL((u) => u.pathname === "/home", { timeout: 60_000 });
+  if (!opts.keepOverlays) await dismissFirstRunOverlays(page);
+}
+
+/**
+ * First-run overlays a new student meets (Pexo's tour, "no goals for this week yet"): dismissed the way a student
+ * can, whenever they appear, so a spec about something else is not blocked by them.
+ */
+export async function dismissFirstRunOverlays(page: Page) {
+  await page.addLocatorHandler(page.getByTestId("pexo-tour-skip"), async (b) => b.click(), { noWaitAfter: true });
+  await page.addLocatorHandler(page.getByTestId("no-goals-later"), async (b) => b.click(), { noWaitAfter: true });
 }
 
 export async function noHorizontalScroll(page: Page) {

@@ -1,5 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
-import { expectTapTargets, generateTodayPlan, noHorizontalScroll, onboardAndEnterApp, resetStudent } from "./helpers";
+import { expectTapTargets, generateTodayPlan, noHorizontalScroll, onboardAndEnterApp, resetStudent, dismissFirstRunOverlays } from "./helpers";
+
+// a new student meets Pexo's tour and the "no goals yet" modal; dismiss them wherever they appear
+test.beforeEach(({ page }) => dismissFirstRunOverlays(page));
 
 /**
  * The one focus timer, end to end against the real stack: every entry point opens it pre-filled, a finished session is
@@ -105,7 +108,8 @@ test("planner: Start opens the timer pre-filled → run → auto-log, task done,
   const shot = (name: string) => page.screenshot({ path: `e2e/.shots/${info.project.name}-focus-${name}.png` });
 
   await page.goto("/home");
-  const start = page.locator(`a[href*="/focus/start?origin=planner&id=${planTask.id}"]`).first();
+  // the plan's Start is a button on the task card now (it marks the task started, then opens the timer)
+  const start = page.locator(`[data-testid="study-task"][data-task-id="${planTask.id}"]`).first().getByTestId("task-cta");
   await expect(start).toBeVisible({ timeout: 60_000 });
   await start.click();
 
@@ -244,7 +248,8 @@ test("revision: the confidence rating reschedules the chapter (SM-2)", async ({ 
   await page.getByTestId("win-yes").click();
   await page.getByTestId("save-session").click();
   await expect(page.getByTestId("focus-done")).toBeVisible();
-  await expect(page.getByTestId("logged-list")).toContainText("Your next revision of this chapter is in 1 day.");
+  // the revision ladder (launch P2: 1, 3, 7, 14, 30, 60, 90 days): a first revision rated OK moves step 1 → 2 = 3 days
+  await expect(page.getByTestId("logged-list")).toContainText("Your next revision of this chapter is in 3 days.");
 
   const revisions = await api<{ data: { items: { chapterId: string }[] } }>(page, "GET", "/api/revisions?limit=5");
   expect(revisions.body.data.items[0]?.chapterId).toBe(thermo);
@@ -279,8 +284,11 @@ test("practice with no Prepex questions: the timer opens for the task, with the 
   await page.reload();
 
   await page.getByRole("button", { name: /^Start Practice$/ }).first().click();
-  await expect(page.getByTestId("practice-no-questions-timer")).toBeVisible();
-  await page.getByTestId("practice-no-questions-timer").click();
+  // planner v2: a practice task asks how to practise; with an empty bank, Prepex questions falls back to the timer
+  await expect(page.getByTestId("practice-choice")).toBeVisible();
+  await expect(page.getByTestId("practice-bank-text")).toHaveText("No questions for this chapter yet");
+  await page.getByTestId("practice-prepex").click();
+  await expect(page.getByTestId("practice-notice")).toBeVisible();
 
   await expect(page).toHaveURL(/origin=practice_own_content_fallback/);
   await expect(page.getByTestId("focus-notice")).toContainText("No Prepex questions for this chapter yet");
