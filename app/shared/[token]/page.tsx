@@ -74,7 +74,7 @@ export default function SharedNotebookPage() {
           Make your own notebook on Prepex
         </Link>
       </footer>
-      <LegalLinks className="py-2" />
+      <LegalLinks className="py-2" community />
     </main>
   );
 }
