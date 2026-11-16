@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CommunityLink } from "@/components/legal/CommunityLink";
 import { LEGAL } from "@/lib/legal/contacts";
 import { Button } from "@/components/ui/Button";
 import { InfoIcon, ChevronRightIcon, PhoneIcon, ExternalLinkIcon } from "@/components/ui/icons";
@@ -80,9 +81,6 @@ const NATIONAL_LINES: (Helpline & { description: string })[] = [
 ];
 
 const SUPPORT_EMAIL = LEGAL.supportEmail;
-// No support WhatsApp number exists yet; set this (digits with country code,
-// e.g. 919876543210) and the WhatsApp row turns on.
-const SUPPORT_WHATSAPP = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP?.replace(/\D/g, "") ?? "";
 
 // Cards and rows are links to the service's site, with a Call button on top.
 // Anchors can't nest, so the site link is stretched over the whole card and
@@ -227,24 +225,16 @@ export default function HelpAndSupportPage() {
           </div>
 
           <div className="mt-6 flex flex-col gap-4">
-            {SUPPORT_WHATSAPP ? (
-              <a
-                href={`https://wa.me/${SUPPORT_WHATSAPP}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-17 w-full items-center justify-between rounded-xl border border-brand/10 bg-tint px-4 transition-colors hover:bg-tint-strong"
-              >
-                <SupportRowBody icon={<WhatsApp className="h-4 w-4" />} title="WhatsApp" detail="Chat with us on WhatsApp" />
-                <ChevronRightIcon className="h-4 w-4 text-muted" />
-              </a>
-            ) : (
-              <div
-                aria-disabled="true"
-                className="flex h-17 w-full items-center justify-between rounded-xl border border-brand/10 bg-tint px-4 opacity-60"
-              >
-                <SupportRowBody icon={<WhatsApp className="h-4 w-4" />} title="WhatsApp" detail="Coming soon" />
-              </div>
-            )}
+            <a
+              href={LEGAL.whatsAppUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-17 w-full items-center justify-between rounded-xl border border-brand/10 bg-tint px-4 transition-colors hover:bg-tint-strong"
+              data-testid="help-whatsapp"
+            >
+              <SupportRowBody icon={<WhatsApp className="h-4 w-4" />} title="WhatsApp" detail={`Chat with us: ${LEGAL.whatsAppSupport}`} />
+              <ChevronRightIcon className="h-4 w-4 text-muted" />
+            </a>
 
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
@@ -253,6 +243,10 @@ export default function HelpAndSupportPage() {
               <SupportRowBody icon={<EmailIcon className="h-4 w-4" />} title="Email" detail={SUPPORT_EMAIL} />
               <ChevronRightIcon className="h-4 w-4 text-muted" />
             </a>
+
+            <div className="rounded-xl border border-brand/10 bg-tint px-4 py-3">
+              <CommunityLink placement="help" variant="card" />
+            </div>
           </div>
         </div>
       </div>

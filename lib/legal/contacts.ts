@@ -1,21 +1,40 @@
 /**
- * Launch step 2 (A1, A4): every contact and legal detail the policies and the contact page show, in one place.
- * Values marked OWNER are placeholders only the owner can supply; each one is listed in docs/launch-step2.md and must be
- * filled before launch. The policies are pending lawyer review.
+ * Every contact and legal detail the policies, the contact page and the app show, in one place.
+ * Prepex is not incorporated yet: it is run by Ishwar Birla as an individual. When it is registered, change the
+ * operator line and the address here (and drop `addressNote`). The policies are pending lawyer review.
  */
 export const LEGAL = {
-  /** OWNER: the registered legal entity that runs Prepex. */
-  entityName: "[OWNER: registered company or proprietor name]",
-  /** OWNER: registered address. */
-  address: "[OWNER: registered address]",
+  /** Who runs Prepex (the data fiduciary under the DPDP Act). */
+  entityName: "Prepex, operated by Ishwar Birla",
+  operator: "Ishwar Birla",
+  /** No registered postal address yet. */
+  address: "Madhya Pradesh, India",
+  addressNote: "A full postal address will be published once Prepex is registered.",
   supportEmail: "support@prepex.io",
   securityEmail: "security@prepex.io",
-  /** OWNER: WhatsApp support number (wa.me link). Empty hides the WhatsApp line. */
-  whatsAppSupport: "",
-  /** OWNER: Grievance Officer's name (DPDP Act / IT Rules). */
-  grievanceOfficer: "[OWNER: Grievance Officer name]",
+  /** WhatsApp support, shown as written and linked through wa.me. */
+  whatsAppSupport: "+91 75019 97123",
+  whatsAppUrl: "https://wa.me/917501997123",
+  /** Grievance Officer (DPDP Act / IT Rules). */
+  grievanceOfficer: "Ishwar Birla",
   grievanceEmail: "grievance@prepex.io",
   responseHours: 72,
-  effectiveDate: "15 November 2026",
+  effectiveDate: "16 November 2026",
   pendingLawyerReview: true,
+} as const;
+
+/** Where data lives (Privacy Policy, "Where it is stored"). */
+export const HOSTING = {
+  /** Hostinger VPS: the server's public address is registered to Hostinger in Mumbai, Maharashtra. */
+  appServers: "Mumbai, India",
+  /** TODO(owner): the Backblaze B2 bucket's region (e.g. "US West" or "EU Central"), from the bucket page in Backblaze.
+   *  Not readable from the server yet: no backup has been uploaded since the B2 key was added. Null leaves it out. */
+  backupRegion: null as string | null,
+} as const;
+
+/** The Prepex community group on WhatsApp. One constant: the contact page, the footer and Help all use it. */
+export const COMMUNITY = {
+  url: "https://chat.whatsapp.com/H5940Tm9yOs2oe9wXqtx2Y",
+  label: "Join the Prepex community",
+  note: "Opens WhatsApp. Other members can see your phone number.",
 } as const;

@@ -8,7 +8,7 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Using Prepex",
     body: [
-      `Prepex is run by ${LEGAL.entityName}. By creating an account or using Prepex, you agree to these terms and to our Privacy Policy.`,
+      `Prepex is operated by ${LEGAL.operator}, an individual (Prepex is not yet incorporated), in ${LEGAL.address}. By creating an account or using Prepex, you agree to these terms and to our Privacy Policy.`,
       "If you are under 18, please use Prepex with the permission of a parent or guardian, who also agrees to these terms for you. We ask your age when you start, and before 13 May 2027 we will ask a parent or guardian of every student under 18 for verifiable consent, as Indian law requires.",
     ],
   },

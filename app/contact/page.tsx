@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CommunityLink } from "@/components/legal/CommunityLink";
 import { LegalPage, type LegalSection } from "@/components/legal/LegalPage";
 import { LEGAL } from "@/lib/legal/contacts";
 
@@ -9,9 +10,22 @@ const SECTIONS: LegalSection[] = [
     heading: "Help with the app",
     body: [
       `E-mail ${LEGAL.supportEmail}. In the app you can also use Report a bug or Share an idea (ask Pexo, or go to Profile, Settings).`,
-      ...(LEGAL.whatsAppSupport ? [`WhatsApp: ${LEGAL.whatsAppSupport}`] : []),
+      {
+        node: (
+          <p>
+            WhatsApp:{" "}
+            <a href={LEGAL.whatsAppUrl} target="_blank" rel="noopener noreferrer" className="underline" data-testid="contact-whatsapp">
+              {LEGAL.whatsAppSupport}
+            </a>
+          </p>
+        ),
+      },
       `We reply within ${LEGAL.responseHours} hours.`,
     ],
+  },
+  {
+    heading: "Prepex community",
+    body: [{ node: <CommunityLink placement="contact" variant="card" /> }],
   },
   {
     heading: "Your data",
@@ -32,7 +46,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     heading: "Who runs Prepex",
-    body: [`${LEGAL.entityName}, ${LEGAL.address}.`],
+    body: [`${LEGAL.entityName}, ${LEGAL.address}. Prepex is not yet incorporated; it is run by ${LEGAL.operator} as an individual.`, LEGAL.addressNote],
   },
 ];
 

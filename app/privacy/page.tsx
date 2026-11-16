@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { LegalPage, type LegalSection } from "@/components/legal/LegalPage";
-import { LEGAL } from "@/lib/legal/contacts";
+import { HOSTING, LEGAL } from "@/lib/legal/contacts";
 
 export const metadata: Metadata = { title: "Privacy Policy | Prepex", description: "How Prepex collects, uses and protects your information." };
 
 /**
  * Launch step 2 (A1): written against what the code does (step 1's personal-data inventory). Pending lawyer review;
- * the OWNER placeholders in lib/legal/contacts.ts must be filled before launch.
+ * the operator and contact details live in lib/legal/contacts.ts (the backup region is still a TODO there).
  */
 const SECTIONS: LegalSection[] = [
   {
@@ -23,7 +23,9 @@ const SECTIONS: LegalSection[] = [
   },
   {
     heading: "Who we are",
-    body: [`Prepex is run by ${LEGAL.entityName}, ${LEGAL.address}. Contact: ${LEGAL.supportEmail}.`],
+    body: [
+      `Prepex is not yet incorporated. It is operated by ${LEGAL.operator}, an individual, in ${LEGAL.address}, who decides how your data is used (the "data fiduciary"). ${LEGAL.addressNote} Contact: ${LEGAL.supportEmail}.`,
+    ],
   },
   {
     heading: "What we collect",
@@ -54,7 +56,11 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Where it is stored",
     body: [
-      "Prepex runs on servers in India (Mumbai). Notebook photos and files are stored in the same database. Encrypted backup copies are kept with our backup provider (Backblaze) for up to 8 weeks.",
+      [
+        `The app and its database run on a Hostinger virtual server in ${HOSTING.appServers}. Notebook photos and files are stored in the same database.`,
+        `Every day an encrypted backup copy is sent to Backblaze B2${HOSTING.backupRegion ? ` (${HOSTING.backupRegion})` : ""}, and kept for up to 8 weeks. It is encrypted before it leaves our server.`,
+        "Every week Hostinger also takes a snapshot of the whole server, kept by Hostinger.",
+      ],
     ],
   },
   {
@@ -62,12 +68,12 @@ const SECTIONS: LegalSection[] = [
     body: [
       "Only these service providers, and only what each needs:",
       [
-        "Hostinger: the servers that run Prepex, and the e-mail service that sends sign-in codes and account e-mails.",
+        "Hostinger: the server that runs Prepex, its weekly snapshots, and the e-mail service that sends sign-in codes and account e-mails.",
         "Google: sign-in with Google, if you choose it.",
-        "Anthropic: AI features, only when you use one (reading a timetable or mock scorecard photo, or writing a study note or coach note for you).",
+        "Anthropic (our AI provider): AI features, only when you use one (reading a timetable or mock scorecard photo, or writing a study note or coach note for you).",
         "Sentry: error reports, with names, e-mail addresses and your content removed.",
         "Meta (WhatsApp): the weekly report to your parent, only if you connect one.",
-        "Backblaze: encrypted backups.",
+        "Backblaze (B2): encrypted daily backups.",
       ],
       "Prepex does not use advertising or analytics trackers in the app. We may disclose information if the law requires it.",
     ],

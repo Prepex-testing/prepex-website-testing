@@ -1,8 +1,11 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { Logo } from "@/components/ui/Logo";
 import { LegalLinks } from "@/components/legal/LegalLinks";
 
-export type LegalSection = { heading: string; body: (string | string[])[] };
+/** A paragraph, a bullet list, or `{ node }` for a paragraph with links. */
+export type LegalPart = string | string[] | { node: ReactNode };
+export type LegalSection = { heading: string; body: LegalPart[] };
 
 /** A plain, readable legal page (Privacy Policy, Terms). Public: no sign-in needed. */
 export function LegalPage({ title, updated, intro, sections }: { title: string; updated: string; intro: string; sections: LegalSection[] }) {
@@ -27,15 +30,15 @@ export function LegalPage({ title, updated, intro, sections }: { title: string; 
                 ))}
               </ul>
             ) : (
-              <p key={i} className="text-[15px] leading-relaxed text-body-text dark:text-ink">
-                {part}
-              </p>
+              <div key={i} className="text-[15px] leading-relaxed text-body-text dark:text-ink">
+                {typeof part === "string" ? <p>{part}</p> : part.node}
+              </div>
             ),
           )}
         </section>
       ))}
       <footer className="border-t border-border-subtle pt-5">
-        <LegalLinks className="justify-start! text-[14px]!" />
+        <LegalLinks className="justify-start! text-[14px]!" community />
       </footer>
     </main>
   );
