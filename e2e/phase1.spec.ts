@@ -7,7 +7,6 @@ import { generateTodayPlan, onboardAndEnterApp, queryDb, reachTimetableStep, dis
 test.beforeEach(({ page }) => dismissFirstRunOverlays(page));
 
 const EMAIL = "e2e.student@test.prepex.io";
-const PASSWORD = "E2eTest!234";
 
 /** Recreate the seeded student at onboarding step 1 (the seed script refuses non-local databases). */
 function resetStudent() {

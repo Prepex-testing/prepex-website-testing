@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
-import { expectTapTargets, generateTodayPlan, noHorizontalScroll, onboardAndEnterApp, resetStudent, dismissFirstRunOverlays, queryDb } from "./helpers";
+import { expectTapTargets, generateTodayPlan, noHorizontalScroll, onboardAndEnterApp, resetStudent, dismissFirstRunOverlays } from "./helpers";
 
 // a new student meets Pexo's tour and the "no goals yet" modal; dismiss them wherever they appear
 test.beforeEach(({ page }) => dismissFirstRunOverlays(page));
