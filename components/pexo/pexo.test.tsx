@@ -14,7 +14,7 @@ import { Heartbeat } from "@/components/rewards/Heartbeat";
 import { updatePexoSettings, type PexoState } from "@/lib/api/pexo";
 import { getXpSummary, sendHeartbeat } from "@/lib/api/xp";
 import { placeholdersOf, selectLine } from "@/lib/pexo/engine";
-import { PEXO_LIBRARY, dismissPexo, loadPexo, pexoEvent, pexoFirstVisit, pexoMark, pexoReact, pexoSay, primePexo, resetPexo, returnPexoBatch, takePexoBatch } from "@/lib/pexo/store";
+import { PEXO_LIBRARY, dismissPexo, flushPexoNow, loadPexo, pexoEvent, pexoFirstVisit, pexoMark, pexoReact, pexoSay, primePexo, resetPexo, returnPexoBatch, takePexoBatch } from "@/lib/pexo/store";
 
 const TODAY = "2026-11-12";
 const on = (over: Partial<PexoState> = {}): PexoState => ({ enabled: true, cohort: "existing", libraryVersion: 1, language: "en", bubbles: "normal", notifications: true, accessories: [], shown: {}, firstVisits: [], marks: {}, today: TODAY, ...over });
@@ -303,5 +303,23 @@ describe("Settings → Pexo", () => {
     await waitFor(() => expect(updatePexoSettings).toHaveBeenCalledWith({ bubbles: "quiet" }));
     fireEvent.click(screen.getByRole("switch", { name: "Pexo notifications" }));
     await waitFor(() => expect(updatePexoSettings).toHaveBeenCalledWith({ notifications: false }));
+  });
+});
+
+describe("flushPexoNow (pre-step 3: a dismissed tour is saved at once)", () => {
+  it("sends the queue now; a failed send hands it back for the next heartbeat; an empty queue sends nothing", async () => {
+    resetPexo();
+    primePexo(on());
+    pexoMark("tour", true);
+    const ok = vi.fn(async () => ({ recorded: 1 }));
+    await flushPexoNow(ok);
+    expect(ok).toHaveBeenCalledWith(expect.objectContaining({ marks: ["tour"] }));
+    expect(takePexoBatch()).toBeNull();
+    await flushPexoNow(ok);
+    expect(ok).toHaveBeenCalledTimes(1);
+
+    pexoEvent("tour_skipped", { at: 0 });
+    await flushPexoNow(vi.fn(async () => Promise.reject(new Error("offline"))));
+    expect(takePexoBatch()!.events).toEqual([{ name: "tour_skipped", props: { at: 0 } }]);
   });
 });

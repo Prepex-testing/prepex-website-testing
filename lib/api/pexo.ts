@@ -146,3 +146,6 @@ export type ClimbPage = {
 export type ClimbFriend = { userId: string; name: string; username: string | null; avatarUrl: string | null; form: PexoFormName; steps: number; studiedToday: boolean };
 export const getClimbPage = (cursor?: string | null) => core<ClimbPage | null>(cursor ? `/climb?cursor=${cursor}` : "/climb");
 export const getClimbFriends = () => core<ClimbFriend[] | null>("/climb/friends");
+
+/** Records Pexo's queued marks and events now, instead of on the next minute heartbeat (a dismissed tour must stick). */
+export const sendPexoBatch = (batch: PexoBatch) => core<{ recorded: number }>("/batch", { method: "POST", body: JSON.stringify(batch), keepalive: true });

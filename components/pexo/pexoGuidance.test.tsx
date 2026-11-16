@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const nav = vi.hoisted(() => ({ pathname: "/home", search: new URLSearchParams() }));
 vi.mock("next/navigation", () => ({ usePathname: () => nav.pathname, useSearchParams: () => nav.search, useRouter: () => ({ push: vi.fn(), replace: vi.fn() }) }));
 vi.mock("@/lib/api/xp", () => ({ onXpSummary: vi.fn(() => () => undefined), getXpSummary: vi.fn(async () => ({})), sendHeartbeat: vi.fn() }));
-vi.mock("@/lib/api/pexo", async (orig) => ({ ...(await orig<typeof import("@/lib/api/pexo")>()), askPexo: vi.fn(), getPexoTeaser: vi.fn() }));
+vi.mock("@/lib/api/pexo", async (orig) => ({ ...(await orig<typeof import("@/lib/api/pexo")>()), askPexo: vi.fn(), getPexoTeaser: vi.fn(), sendPexoBatch: vi.fn(async () => ({ recorded: 1 })) }));
 vi.mock("@/lib/api/profile", () => ({ getProfileOverview: vi.fn(async () => ({ data: { daysUntilExam: 180 } })) }));
 vi.mock("@/lib/focus/startFocusSession", () => ({ startFocusSession: vi.fn() }));
 const draft = vi.hoisted(() => ({ value: { about: { currentLevel: "CLASS_12" }, chapters: { completedIds: [] as string[] } } }));
@@ -18,9 +18,15 @@ import { PexoEmpty } from "@/components/pexo/PexoEmpty";
 import { firstVisitScreen, PexoLayer } from "@/components/pexo/PexoLayer";
 import { PexoTour, TOUR_CARDS } from "@/components/pexo/PexoTour";
 import { PrepexMap } from "@/components/pexo/PrepexMap";
-import { askPexo, getPexoTeaser, type PexoState } from "@/lib/api/pexo";
+import { askPexo, getPexoTeaser, sendPexoBatch, type PexoBatch, type PexoState } from "@/lib/api/pexo";
 import { startFocusSession } from "@/lib/focus/startFocusSession";
 import { PEXO_LIBRARY, primePexo, resetPexo, takePexoBatch } from "@/lib/pexo/store";
+
+/** Everything the tour recorded: what it sent at once (pre-step 3: a closed tour is saved now) plus what is still queued. */
+function recorded(): PexoBatch {
+  const all = [...vi.mocked(sendPexoBatch).mock.calls.map((c) => c[0]), takePexoBatch() ?? {}];
+  return { marks: all.flatMap((b) => b.marks ?? []), events: all.flatMap((b) => b.events ?? []) };
+}
 
 const TODAY = "2026-11-12";
 const on = (over: Partial<PexoState> = {}): PexoState => ({ enabled: true, cohort: "existing", libraryVersion: 1, language: "en", bubbles: "normal", notifications: true, accessories: [], shown: {}, firstVisits: [], marks: {}, today: TODAY, daysSinceSignup: 30, home: null, quests: null, nudge: null, care: { active: false, reason: null, distress: false }, ...over });
@@ -34,6 +40,7 @@ beforeEach(() => {
   vi.mocked(askPexo).mockReset();
   vi.mocked(getPexoTeaser).mockReset();
   vi.mocked(startFocusSession).mockReset();
+  vi.mocked(sendPexoBatch).mockClear();
 });
 afterEach(cleanup);
 
@@ -198,7 +205,8 @@ describe("Meet Pexo: onboarded before they had Pexo", () => {
     }
     expect(screen.getByTestId("pexo-tour")).toHaveAttribute("data-stage", "card-0");
     fireEvent.click(screen.getByTestId("pexo-tour-skip"));
-    expect(takePexoBatch()!.marks).toEqual(expect.arrayContaining(["meet", "tour"]));
+    expect(sendPexoBatch).toHaveBeenCalled(); // saved on the server at once, not on the next heartbeat
+    expect(recorded().marks).toEqual(expect.arrayContaining(["meet", "tour"]));
     first.unmount();
     render(<PexoTour firstSubject="Physics" meet />);
     expect(screen.queryByTestId("pexo-tour")).toBeNull();
@@ -227,7 +235,7 @@ describe("the 60-second tour and first session (B2)", () => {
     expect(screen.getByTestId("pexo-tour-text")).toHaveTextContent(text("onb.first_session#1"));
     fireEvent.click(screen.getByTestId("pexo-first-start"));
     expect(startFocusSession).toHaveBeenCalledWith({ originSource: "home_quick_tile", targetMinutes: 15, taskType: "self_study", subject: "physics" });
-    const batch = takePexoBatch()!;
+    const batch = recorded();
     expect(batch.marks).toEqual(expect.arrayContaining(["tour", "first_session.offered"]));
     expect(batch.events).toEqual([{ name: "tour_completed", props: { at: "first" } }]);
   });
@@ -237,7 +245,7 @@ describe("the 60-second tour and first session (B2)", () => {
     const { unmount } = render(<PexoTour firstSubject={null} />);
     fireEvent.click(screen.getByTestId("pexo-tour-skip"));
     expect(screen.queryByTestId("pexo-tour")).toBeNull();
-    expect(takePexoBatch()!.events).toEqual([{ name: "tour_skipped", props: { at: 0 } }]);
+    expect(recorded().events).toEqual([{ name: "tour_skipped", props: { at: 0 } }]);
     unmount();
     render(<PexoTour firstSubject={null} />);
     expect(screen.queryByTestId("pexo-tour")).toBeNull();
